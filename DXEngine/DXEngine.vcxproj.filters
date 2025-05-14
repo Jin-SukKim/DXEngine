@@ -14,10 +14,18 @@
     <ClInclude Include="pch.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="AppBase.h" />
     <ClInclude Include="WindowUtils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="AppBase.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiBase.h" />
+    <ClInclude Include="Common.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderBase.h" />
+    <ClInclude Include="D3D11Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -27,6 +35,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AppBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GuiBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D11Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

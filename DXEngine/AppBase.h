@@ -1,6 +1,7 @@
 #pragma once
 
 namespace DE {
+	class RenderBase;
 	class AppBase
 	{
 	public:
@@ -10,6 +11,7 @@ namespace DE {
 		bool Initialize();
 		int Run();
 
+	private:
 		void Update();
 		void Render();
 
@@ -18,9 +20,9 @@ namespace DE {
 
 		LRESULT CALLBACK MsgProc(HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam);
 	private:
-		int m_screenWidth;
-		int m_screenHeight;
-		HWND m_mainWindow;
+		WindowInfo m_window;
 
+	protected:
+		std::unique_ptr<RenderBase> m_renderer;
 	};
 }
