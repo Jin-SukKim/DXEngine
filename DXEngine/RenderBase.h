@@ -8,7 +8,7 @@ namespace DE {
 		RenderBase();
 		virtual ~RenderBase();
 
-		virtual bool Initialize(const WindowInfo& window);
+		virtual bool Initialize(WindowInfo& window);
 		virtual void Update();
 		virtual void Render();
 
@@ -21,6 +21,13 @@ namespace DE {
 		void InitDepthStencilState();
 		// DepthStencilView Buffer »ý¼º
 		void CreateDepthStencilBuffer(const WindowInfo& window);
+
+		//ComPtr<ID3D11Device>& GetDevice() {
+		//	return m_device;
+		//}
+		//ComPtr<ID3D11DeviceContext>& GetContext() {
+		//	return m_context;
+		//}
 
 	protected:
 		ComPtr<ID3D11Device> m_device;

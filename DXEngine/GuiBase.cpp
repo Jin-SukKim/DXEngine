@@ -20,18 +20,18 @@ namespace DE {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
-	bool GuiBase::Initialize(const HWND& window, const int& screenWidth, const int& screenHeight)
+	bool GuiBase::Initialize(const WindowInfo& window)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
-		io.DisplaySize = ImVec2(float(screenWidth), float(screenHeight));
+		io.DisplaySize = ImVec2(float(window.Width), float(window.Height));
 		ImGui::StyleColorsDark();
 
 		// Setup Playform/Renderer backends
-		//if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get()))
-		//	return false;
+		if (!ImGui_ImplDX11_Init(window.Device.Get(), window.Context.Get()))
+			return false;
 		return true;
 	}
 	void GuiBase::PreUpdate()

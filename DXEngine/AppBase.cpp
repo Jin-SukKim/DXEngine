@@ -17,8 +17,8 @@ namespace DE {
 		if (!m_renderer->Initialize(m_window))
 			return false;
 
-		//if (!InitGUI())
-		//	return false;
+		if (!InitGUI())
+			return false;
 
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.Hwnd);

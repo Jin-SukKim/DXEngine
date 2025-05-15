@@ -7,5 +7,7 @@ namespace DE {
 		HWND Hwnd;
 		int Width;
 		int Height;
+		Microsoft::WRL::ComPtr<ID3D11Device> Device;
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> Context;
 	};
 }

@@ -9,7 +9,7 @@ namespace DE {
 	{
 	}
 
-	bool RenderBase::Initialize(const WindowInfo& window)
+	bool RenderBase::Initialize(WindowInfo& window)
 	{
 		// 그래픽카드 하드ㅜ에어 호환성 설정
 		const D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_HARDWARE;
@@ -50,6 +50,9 @@ namespace DE {
 			0, driverType, 0, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels),
 			D3D11_SDK_VERSION, &sd, m_swapChain.GetAddressOf(),
 			m_device.GetAddressOf(), &featureLevel, m_context.GetAddressOf()));
+
+		window.Device = m_device;
+		window.Context = m_context;
 
 		// 원하는 D3D 버전인지 확인
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
