@@ -8,7 +8,7 @@ namespace DE {
 		: m_window(0, 1080, 720), m_renderer(std::make_unique<RenderBase>()) {
 	}
 
-	AppBase::~AppBase() { WindowUtils::Destroy(m_window.Hwnd); }
+	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
 
 	bool AppBase::Initialize() {
 		if (!InitWindow())
@@ -21,7 +21,7 @@ namespace DE {
 			return false;
 
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
-		::SetForegroundWindow(m_window.Hwnd);
+		::SetForegroundWindow(m_window.hwnd);
 
 		return true;
 	}
@@ -30,17 +30,23 @@ namespace DE {
 		while (WindowUtils::Tick()) {
 			Update();
 			Render();
+
+			m_renderer->Present();
 		}
 		
 		return 0; 
 	}
 
-	void AppBase::Update() {}
+	void AppBase::Update() {
+		m_renderer->Update();
+	}
 
-	void AppBase::Render() {}
+	void AppBase::Render() {
+		m_renderer->Render();
+	}
 
 	bool AppBase::InitWindow() {
-		m_window.Hwnd = WindowUtils::Create(L"DXEngine", m_window.Width, m_window.Height, [](HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+		m_window.hwnd = WindowUtils::Create(L"DXEngine", m_window.width, m_window.height, [](HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
 			AppBase* app = reinterpret_cast<AppBase*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			if (app) {
 				return app->MsgProc(hwnd, msg, wParam, lParam);
@@ -48,14 +54,14 @@ namespace DE {
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 			});
 
-		if (!m_window.Hwnd) {
+		if (!m_window.hwnd) {
 			std::cout << "CreateWindow() failed." << std::endl;
 			return false;
 		}
 
-		SetWindowLongPtr(m_window.Hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+		SetWindowLongPtr(m_window.hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
-		WindowUtils::Show(m_window.Hwnd, SW_SHOWDEFAULT);
+		WindowUtils::Show(m_window.hwnd, SW_SHOWDEFAULT);
 
 		return true;
 	}

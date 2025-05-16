@@ -26,11 +26,11 @@ namespace DE {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
-		io.DisplaySize = ImVec2(float(window.Width), float(window.Height));
+		io.DisplaySize = ImVec2(float(window.width), float(window.height));
 		ImGui::StyleColorsDark();
 
 		// Setup Playform/Renderer backends
-		if (!ImGui_ImplDX11_Init(window.Device.Get(), window.Context.Get()))
+		if (!ImGui_ImplDX11_Init(window.device.Get(), window.context.Get()))
 			return false;
 		return true;
 	}

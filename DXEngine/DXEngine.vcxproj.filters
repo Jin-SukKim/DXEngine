@@ -26,6 +26,12 @@
     </ClInclude>
     <ClInclude Include="RenderBase.h" />
     <ClInclude Include="D3D11Utils.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="GeometryGenerator.h" />
+    <ClInclude Include="MeshData.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="ConstantBuffers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -46,5 +52,15 @@
     <ClCompile Include="D3D11Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="BasicVS.hlsl" />
+    <FxCompile Include="BasicPS.hlsl" />
   </ItemGroup>
 </Project>

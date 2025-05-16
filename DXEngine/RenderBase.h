@@ -1,6 +1,9 @@
 #pragma once
 #include "D3D11Utils.h"
 
+#include "Mesh.h"
+#include "ConstantBuffers.h"
+
 namespace DE {
 	class RenderBase
 	{
@@ -11,6 +14,7 @@ namespace DE {
 		virtual bool Initialize(WindowInfo& window);
 		virtual void Update();
 		virtual void Render();
+		void Present();
 
 		void CreateBackBufferRTV();
 		// 렌더링하고 싶은 화면 설정
@@ -42,5 +46,13 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> m_solidRS;
 		ComPtr<ID3D11DepthStencilState> m_defaultDSS;
 		ComPtr<ID3D11DepthStencilView> m_defaultDSV;
+
+		Mesh triangle;
+
+		MeshConstants constantData;
+		ComPtr<ID3D11InputLayout> il;
+		ComPtr<ID3D11VertexShader> vs;
+		ComPtr<ID3D11PixelShader> ps;
+
 	};
 }

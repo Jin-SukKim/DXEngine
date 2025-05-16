@@ -2,6 +2,8 @@
 
 namespace DE {
 	class RenderBase;
+	struct Mesh;
+
 	class AppBase
 	{
 	public:

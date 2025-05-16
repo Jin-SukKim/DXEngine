@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "RenderBase.h"
 
+
+#include "GeometryGenerator.h"
+#include "D3D11Utils.h"
+#include "MeshData.h"
+
 namespace DE {
 	RenderBase::RenderBase() : m_screenViewport(D3D11_VIEWPORT())
 	{
@@ -28,8 +33,8 @@ namespace DE {
 		// Swap-Chain 설정
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd)); // 메모리 초기화
-		sd.BufferDesc.Width = window.Width;
-		sd.BufferDesc.Height = window.Height;
+		sd.BufferDesc.Width = window.width;
+		sd.BufferDesc.Height = window.height;
 		sd.BufferDesc.Format = m_backBufferFormat;
 		sd.BufferCount = 2; // double-buffering
 		sd.BufferDesc.RefreshRate.Numerator = 60;
@@ -37,7 +42,7 @@ namespace DE {
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering용
 			// Compute Shader 용(CS에서 Back-Buffer를 사용할게 아니라면 필요없지만 후처리때 사용할 수 있으므로 설정)
 			DXGI_USAGE_UNORDERED_ACCESS; 
-		sd.OutputWindow = window.Hwnd; // 렌더링할 윈도우
+		sd.OutputWindow = window.hwnd; // 렌더링할 윈도우
 		sd.Windowed = TRUE; // windowed/full-screen
 		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // full-screen 모드 변경 가능
 		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -51,8 +56,8 @@ namespace DE {
 			D3D11_SDK_VERSION, &sd, m_swapChain.GetAddressOf(),
 			m_device.GetAddressOf(), &featureLevel, m_context.GetAddressOf()));
 
-		window.Device = m_device;
-		window.Context = m_context;
+		window.device = m_device;
+		window.context = m_context;
 
 		// 원하는 D3D 버전인지 확인
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
@@ -71,15 +76,68 @@ namespace DE {
 		// DepthStencilView 생성
 		CreateDepthStencilBuffer(window);
 
+
+		MeshData meshData = GeometryGenerator::MakeTriangle();
+		triangle.indexCount = UINT(meshData.indices.size());
+		D3D11Utils::CreateVertexBuffer(m_device, meshData.vertices, triangle.vertexBuffer);
+		D3D11Utils::CreateIndexBuffer(m_device, meshData.indices, triangle.indexBuffer);
+
+		constantData.world = Matrix();
+		constantData.view = Matrix();
+		constantData.proj = Matrix();
+		D3D11Utils::CreateConstantBuffer(m_device, constantData, triangle.meshConstBuffer);
+
+		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 6, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		};
+		D3D11Utils::CreateVSAndIL(m_device, L"BasicVS.hlsl", inputElements, vs, il);
+		D3D11Utils::CreatePS(m_device, L"BasicPS.hlsl", ps);
+
+
 		return true;
 	}
 
 	void RenderBase::Update()
 	{
+		// constant buffer data 갱신
+
+		// Constant Data를 CPU -> GPU
+		D3D11Utils::UpdateBuffer(m_context, constantData, triangle.meshConstBuffer);
+
 	}
 
 	void RenderBase::Render()
 	{
+		m_context->RSSetViewports(1, &m_screenViewport);
+
+		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+		m_context->ClearRenderTargetView(m_backBufferRTV.Get(), clearColor);
+		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+
+		m_context->OMSetRenderTargets(1, m_backBufferRTV.GetAddressOf(), m_defaultDSV.Get());
+		m_context->OMSetDepthStencilState(m_defaultDSS.Get(), 0);
+
+		m_context->VSSetShader(vs.Get(), 0, 0);
+		m_context->VSSetConstantBuffers(0, 1, triangle.meshConstBuffer.GetAddressOf());
+		m_context->PSSetShader(ps.Get(), 0, 0);
+
+		m_context->RSSetState(m_solidRS.Get());
+		
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+		m_context->IASetInputLayout(il.Get());
+		m_context->IASetVertexBuffers(0, 1, triangle.vertexBuffer.GetAddressOf(), &stride, &offset);
+		m_context->IASetIndexBuffer(triangle.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_context->DrawIndexed(triangle.indexCount, 0, 0);
+	}
+
+	void RenderBase::Present()
+	{
+		m_swapChain->Present(1, 0);
 	}
 
 	void RenderBase::CreateBackBufferRTV()
@@ -98,8 +156,8 @@ namespace DE {
 		ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
 		m_screenViewport.TopLeftX = 0;
 		m_screenViewport.TopLeftY = 0;
-		m_screenViewport.Width = float(window.Width);
-		m_screenViewport.Height = float(window.Height);
+		m_screenViewport.Width = float(window.width);
+		m_screenViewport.Height = float(window.height);
 		m_screenViewport.MinDepth = 0.f;
 		m_screenViewport.MaxDepth = 1.f;
 
@@ -110,7 +168,7 @@ namespace DE {
 		D3D11_RASTERIZER_DESC rastDesc;
 		ZeroMemory(&rastDesc, sizeof(D3D11_RASTERIZER_DESC));
 		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+		rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
 		rastDesc.FrontCounterClockwise = false;
 		rastDesc.DepthClipEnable = true; // zNear, zFar
 		rastDesc.MultisampleEnable = true;
@@ -136,8 +194,8 @@ namespace DE {
 	void RenderBase::CreateDepthStencilBuffer(const WindowInfo& window)
 	{
 		D3D11_TEXTURE2D_DESC dsBufferDesc;
-		dsBufferDesc.Width = window.Width;
-		dsBufferDesc.Height = window.Height;
+		dsBufferDesc.Width = window.width;
+		dsBufferDesc.Height = window.height;
 		dsBufferDesc.MipLevels = 1;
 		dsBufferDesc.ArraySize = 1;
 		dsBufferDesc.Usage = D3D11_USAGE_DEFAULT;
