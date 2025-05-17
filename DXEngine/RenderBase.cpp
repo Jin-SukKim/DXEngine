@@ -56,8 +56,8 @@ namespace DE {
 			D3D11_SDK_VERSION, &sd, m_swapChain.GetAddressOf(),
 			m_device.GetAddressOf(), &featureLevel, m_context.GetAddressOf()));
 
-		window.device = m_device;
-		window.context = m_context;
+		//window.device = m_device;
+		//window.context = m_context;
 
 		// 원하는 D3D 버전인지 확인
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
@@ -76,36 +76,12 @@ namespace DE {
 		// DepthStencilView 생성
 		CreateDepthStencilBuffer(window);
 
-
-		MeshData meshData = GeometryGenerator::MakeTriangle();
-		triangle.indexCount = UINT(meshData.indices.size());
-		D3D11Utils::CreateVertexBuffer(m_device, meshData.vertices, triangle.vertexBuffer);
-		D3D11Utils::CreateIndexBuffer(m_device, meshData.indices, triangle.indexBuffer);
-
-		constantData.world = Matrix();
-		constantData.view = Matrix();
-		constantData.proj = Matrix();
-		D3D11Utils::CreateConstantBuffer(m_device, constantData, triangle.meshConstBuffer);
-
-		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements = {
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 6, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		};
-		D3D11Utils::CreateVSAndIL(m_device, L"BasicVS.hlsl", inputElements, vs, il);
-		D3D11Utils::CreatePS(m_device, L"BasicPS.hlsl", ps);
-
-
 		return true;
 	}
 
 	void RenderBase::Update()
 	{
-		// constant buffer data 갱신
-
-		// Constant Data를 CPU -> GPU
-		D3D11Utils::UpdateBuffer(m_context, constantData, triangle.meshConstBuffer);
-
+		
 	}
 
 	void RenderBase::Render()
@@ -119,20 +95,7 @@ namespace DE {
 		m_context->OMSetRenderTargets(1, m_backBufferRTV.GetAddressOf(), m_defaultDSV.Get());
 		m_context->OMSetDepthStencilState(m_defaultDSS.Get(), 0);
 
-		m_context->VSSetShader(vs.Get(), 0, 0);
-		m_context->VSSetConstantBuffers(0, 1, triangle.meshConstBuffer.GetAddressOf());
-		m_context->PSSetShader(ps.Get(), 0, 0);
-
 		m_context->RSSetState(m_solidRS.Get());
-		
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-
-		m_context->IASetInputLayout(il.Get());
-		m_context->IASetVertexBuffers(0, 1, triangle.vertexBuffer.GetAddressOf(), &stride, &offset);
-		m_context->IASetIndexBuffer(triangle.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_context->DrawIndexed(triangle.indexCount, 0, 0);
 	}
 
 	void RenderBase::Present()

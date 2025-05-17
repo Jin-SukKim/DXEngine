@@ -21,6 +21,7 @@ using DirectX::SimpleMath::Vector2;
 using DirectX::SimpleMath::Vector3;
 using DirectX::SimpleMath::Vector4;
 using DirectX::SimpleMath::Matrix;
+using DirectX::SimpleMath::Quaternion;
 
 #include "Common.h"
 #include "Vertex.h"

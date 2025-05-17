@@ -1,9 +1,6 @@
 #pragma once
 #include "D3D11Utils.h"
 
-#include "Mesh.h"
-#include "ConstantBuffers.h"
-
 namespace DE {
 	class RenderBase
 	{
@@ -26,12 +23,12 @@ namespace DE {
 		// DepthStencilView Buffer »ý¼º
 		void CreateDepthStencilBuffer(const WindowInfo& window);
 
-		//ComPtr<ID3D11Device>& GetDevice() {
-		//	return m_device;
-		//}
-		//ComPtr<ID3D11DeviceContext>& GetContext() {
-		//	return m_context;
-		//}
+		ComPtr<ID3D11Device>& GetDevice() {
+			return m_device;
+		}
+		ComPtr<ID3D11DeviceContext>& GetContext() {
+			return m_context;
+		}
 
 	protected:
 		ComPtr<ID3D11Device> m_device;
@@ -46,13 +43,5 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> m_solidRS;
 		ComPtr<ID3D11DepthStencilState> m_defaultDSS;
 		ComPtr<ID3D11DepthStencilView> m_defaultDSV;
-
-		Mesh triangle;
-
-		MeshConstants constantData;
-		ComPtr<ID3D11InputLayout> il;
-		ComPtr<ID3D11VertexShader> vs;
-		ComPtr<ID3D11PixelShader> ps;
-
 	};
 }

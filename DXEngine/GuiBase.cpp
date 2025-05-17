@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GuiBase.h"
+#include "RenderBase.h"
 
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
@@ -20,7 +21,7 @@ namespace DE {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
-	bool GuiBase::Initialize(const WindowInfo& window)
+	bool GuiBase::Initialize(const WindowInfo& window, RenderBase& renderer)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -30,7 +31,7 @@ namespace DE {
 		ImGui::StyleColorsDark();
 
 		// Setup Playform/Renderer backends
-		if (!ImGui_ImplDX11_Init(window.device.Get(), window.context.Get()))
+		if (!ImGui_ImplDX11_Init(renderer.GetDevice().Get(), renderer.GetContext().Get()))
 			return false;
 		return true;
 	}

@@ -9,29 +9,110 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="public">
+      <UniqueIdentifier>{cc443f4f-7418-4622-98c1-99bc62c4ae19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private">
+      <UniqueIdentifier>{18851b5a-f5f9-4834-bfce-99fcf6c41508}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Utils">
+      <UniqueIdentifier>{f2c01c6f-6b6d-4d40-acd2-76568cd947ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Renderer">
+      <UniqueIdentifier>{d2b3e086-c692-40db-ae69-d4c61b0b4acb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Resource">
+      <UniqueIdentifier>{b295db2b-66e7-4808-814f-789e2e52a903}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{75b07219-9a9e-4569-b8f6-f56e8c417dcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Basic">
+      <UniqueIdentifier>{b8faa81d-ced3-4b20-9c2a-d316187a3b0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Mesh">
+      <UniqueIdentifier>{fa5b461a-64d2-4202-acc3-48f49329d6e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Scene">
+      <UniqueIdentifier>{956e8678-f719-4229-ab02-42e2e3289cf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Scene">
+      <UniqueIdentifier>{a806efab-60b0-4623-bc62-59a015bed7e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Renderer">
+      <UniqueIdentifier>{270953fc-bbeb-41da-8bde-a6ffd4085088}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Utils">
+      <UniqueIdentifier>{81099726-78e7-44fc-9243-0087dd039cdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Actor">
+      <UniqueIdentifier>{4fef21ba-032c-4359-b4b8-d196f729f596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Actor">
+      <UniqueIdentifier>{538b9470-624e-4de8-93db-8199e703f085}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Component">
+      <UniqueIdentifier>{793ec352-f7ed-4687-b34a-808a52a089d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Component">
+      <UniqueIdentifier>{3a236955-12ee-4376-a15b-738240c3a00d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowUtils.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Mesh.h">
+      <Filter>public\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>public\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11Utils.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryGenerator.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffers.h">
+      <Filter>public\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiBase.h">
+      <Filter>public\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderBase.h">
+      <Filter>public\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>public\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>public\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>public\Utils</Filter>
     </ClInclude>
     <ClInclude Include="AppBase.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="GuiBase.h" />
-    <ClInclude Include="Common.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="WindowUtils.h">
+      <Filter>public\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="RenderBase.h" />
-    <ClInclude Include="D3D11Utils.h" />
-    <ClInclude Include="Vertex.h" />
-    <ClInclude Include="GeometryGenerator.h" />
-    <ClInclude Include="MeshData.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="ConstantBuffers.h" />
+    <ClInclude Include="Object.h">
+      <Filter>public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>public\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraActor.h">
+      <Filter>public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponent.h">
+      <Filter>public\Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -43,24 +124,43 @@
     <ClCompile Include="AppBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>private\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="GuiBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="RenderBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="D3D11Utils.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Utils</Filter>
     </ClCompile>
     <ClCompile Include="GeometryGenerator.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Object.cpp">
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor.cpp">
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraActor.cpp">
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>private\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>private\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="BasicVS.hlsl" />
-    <FxCompile Include="BasicPS.hlsl" />
+    <FxCompile Include="BasicPS.hlsl">
+      <Filter>Shaders\Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS.hlsl">
+      <Filter>Shaders\Basic</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -17,7 +17,12 @@ struct PSOutput {
 
 PSOutput main(VSInput input) {
     PSOutput output;
-    output.pos = float4(input.pos, 1.0);
+    float4 pos = float4(input.pos, 1.0);
+    pos = mul(pos, world);
+    pos = mul(pos, view);
+    pos = mul(pos, proj);
+    
+    output.pos = pos;
     output.color = float3(1.0, 1.0, 1.0);
 
     return output;

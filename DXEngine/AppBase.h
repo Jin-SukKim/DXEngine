@@ -2,7 +2,7 @@
 
 namespace DE {
 	class RenderBase;
-	struct Mesh;
+	class Scene;
 
 	class AppBase
 	{
@@ -26,5 +26,6 @@ namespace DE {
 
 	protected:
 		std::unique_ptr<RenderBase> m_renderer;
+		std::unique_ptr<Scene> m_scene;
 	};
 }

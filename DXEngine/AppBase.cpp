@@ -2,6 +2,7 @@
 #include "AppBase.h"
 #include "WindowUtils.h"
 #include "RenderBase.h"
+#include "Scene.h"
 
 namespace DE {
 	AppBase::AppBase()
@@ -23,6 +24,9 @@ namespace DE {
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.hwnd);
 
+		m_scene = std::make_unique<Scene>(m_renderer->GetDevice(), m_renderer->GetContext());
+		m_scene->Initialize();
+
 		return true;
 	}
 
@@ -30,8 +34,6 @@ namespace DE {
 		while (WindowUtils::Tick()) {
 			Update();
 			Render();
-
-			m_renderer->Present();
 		}
 		
 		return 0; 
@@ -39,10 +41,14 @@ namespace DE {
 
 	void AppBase::Update() {
 		m_renderer->Update();
+		m_scene->Update();
 	}
 
 	void AppBase::Render() {
 		m_renderer->Render();
+		m_scene->Render();
+
+		m_renderer->Present();
 	}
 
 	bool AppBase::InitWindow() {
