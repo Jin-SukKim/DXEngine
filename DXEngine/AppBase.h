@@ -2,8 +2,8 @@
 
 namespace DE {
 	class RenderBase;
+	class GuiBase;
 	class Scene;
-
 	class AppBase
 	{
 	public:
@@ -18,7 +18,6 @@ namespace DE {
 		void Render();
 
 		bool InitWindow();
-		bool InitGUI();
 
 		LRESULT CALLBACK MsgProc(HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam);
 
@@ -27,6 +26,7 @@ namespace DE {
 
 	protected:
 		std::unique_ptr<RenderBase> m_renderer;
+		std::unique_ptr<GuiBase> m_gui;
 		std::unique_ptr<Scene> m_scene;
 	};
 }

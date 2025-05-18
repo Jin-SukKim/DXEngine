@@ -10,7 +10,7 @@ namespace DE {
 		Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context);
 		virtual ~Scene() {}
 		virtual void Initialize();
-		virtual void Update();
+		virtual void Update(const float& deltaTime);
 		virtual void Render();
 		void SetGlobalConsts();
 

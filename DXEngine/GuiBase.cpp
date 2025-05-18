@@ -6,11 +6,6 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
-// imgui_impl_win32.cpp에 정의된 메시지 처리 함수에 대한 전방 선언
-// Vcpkg를 통해 IMGUI를 사용할 경우 빨간줄로 경고가 뜰 수 있음
-//extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
-//	HWND hWnd,	UINT msg, WPARAM wParam, LPARAM lParam);
-
 namespace DE {
 	GuiBase::GuiBase()
 	{
@@ -21,7 +16,7 @@ namespace DE {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
-	bool GuiBase::Initialize(const WindowInfo& window, RenderBase& renderer)
+	bool GuiBase::Initialize(const WindowInfo& window, RenderBase* renderer)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -31,10 +26,16 @@ namespace DE {
 		ImGui::StyleColorsDark();
 
 		// Setup Playform/Renderer backends
-		if (!ImGui_ImplDX11_Init(renderer.GetDevice().Get(), renderer.GetContext().Get()))
+		if (!ImGui_ImplDX11_Init(renderer->GetDevice().Get(), renderer->GetContext().Get()))
 			return false;
+
+		if (!ImGui_ImplWin32_Init(window.hwnd)) {
+			return false;
+		}
+
 		return true;
 	}
+
 	void GuiBase::PreUpdate()
 	{
 		ImGui_ImplDX11_NewFrame();
@@ -62,5 +63,9 @@ namespace DE {
 	{
 		// GUI 렌더링
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+	float GuiBase::GetDeltaTime()
+	{
+		return ImGui::GetIO().DeltaTime;
 	}
 }

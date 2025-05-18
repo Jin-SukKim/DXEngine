@@ -23,12 +23,8 @@ namespace DE {
 		// DepthStencilView Buffer »ý¼º
 		void CreateDepthStencilBuffer(const WindowInfo& window);
 
-		ComPtr<ID3D11Device>& GetDevice() {
-			return m_device;
-		}
-		ComPtr<ID3D11DeviceContext>& GetContext() {
-			return m_context;
-		}
+		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
+		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }
 
 	protected:
 		ComPtr<ID3D11Device> m_device;

@@ -28,10 +28,10 @@ namespace DE {
 		triangle->Initialize(m_device);
 	}
 
-	void Scene::Update() {
+	void Scene::Update(const float& deltaTime) {
 		D3D11Utils::UpdateBuffer(m_context, m_globalConstsCPU, m_globalConstsGPU);
 
-		triangle->Update(m_context, 0.01f);
+		triangle->Update(m_context, deltaTime);
 	}
 
 	void Scene::Render() {

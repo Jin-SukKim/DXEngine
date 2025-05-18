@@ -2,12 +2,24 @@
 #include "AppBase.h"
 #include "WindowUtils.h"
 #include "RenderBase.h"
+#include "GuiBase.h"
 #include "Scene.h"
 #include "CameraActor.h"
 
+#include <imgui_impl_win32.h>
+// imgui_impl_win32.cpp에 정의된 메시지 처리 함수에 대한 전방 선언
+// Vcpkg를 통해 IMGUI를 사용할 경우 빨간줄로 경고가 뜰 수 있음
+//extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
+//	HWND hWnd,	UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
+	UINT msg,
+	WPARAM wParam,
+	LPARAM lParam);
+
+
 namespace DE {
 	AppBase::AppBase()
-		: m_window(0, 1080, 720), m_renderer(std::make_unique<RenderBase>()) {
+		: m_window(0, 1080, 720), m_renderer(std::make_unique<RenderBase>()), m_gui(std::make_unique<GuiBase>()) {
 	}
 
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
@@ -19,7 +31,7 @@ namespace DE {
 		if (!m_renderer->Initialize(m_window))
 			return false;
 
-		if (!InitGUI())
+		if (!m_gui->Initialize(m_window, m_renderer.get()))
 			return false;
 
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
@@ -35,7 +47,10 @@ namespace DE {
 
 	int AppBase::Run() { 
 		while (WindowUtils::Tick()) {
+			m_gui->PreUpdate();
 			Update();
+			m_gui->PostUpdate();
+
 			Render();
 		}
 		
@@ -43,13 +58,15 @@ namespace DE {
 	}
 
 	void AppBase::Update() {
+		m_gui->Update();
 		m_renderer->Update();
-		m_scene->Update();
+		m_scene->Update(m_gui->GetDeltaTime());
 	}
 
 	void AppBase::Render() {
 		m_renderer->Render();
 		m_scene->Render();
+		m_gui->Render();
 
 		m_renderer->Present();
 	}
@@ -75,12 +92,13 @@ namespace DE {
 		return true;
 	}
 
-	bool AppBase::InitGUI() { 
-		return true; 
-	}
-
 	LRESULT AppBase::MsgProc(HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam)
 	{
+		// GUI 입력
+		if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+			return true;
+
+		// Window 입력
 		switch (msg) {
 		case WM_SIZE:
 			break;
