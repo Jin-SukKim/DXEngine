@@ -14,7 +14,7 @@ namespace DE {
 		void Present();
 
 		void CreateBackBufferRTV();
-		// 렌더링하고 싶은 화면 설정
+		// 렌더링하고 싶은 화면 크기에 맞는 Viewport 설정
 		void SetViewport(const WindowInfo& window);
 		// Rasterization을 어떻게 할지 설정
 		void InitRS();
@@ -25,7 +25,8 @@ namespace DE {
 
 		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
 		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }
-
+		ComPtr<IDXGISwapChain>& GetSwapChain() { return m_swapChain; }
+		void ResizeSwapChain(const WindowInfo& window);
 	protected:
 		ComPtr<ID3D11Device> m_device;
 		ComPtr<ID3D11DeviceContext> m_context;

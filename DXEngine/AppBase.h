@@ -14,10 +14,11 @@ namespace DE {
 		int Run();
 
 	private:
-		void Update();
-		void Render();
+		void update();
+		void render();
 
-		bool InitWindow();
+		bool initWindow();
+		float getAspectRatio() { return float(m_window.width) / m_window.height; }
 
 		LRESULT CALLBACK MsgProc(HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam);
 

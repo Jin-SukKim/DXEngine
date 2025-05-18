@@ -173,4 +173,21 @@ namespace DE {
 		ThrowIfFailed(m_device->CreateTexture2D(&dsBufferDesc, 0, depthStencilBuffer.GetAddressOf()));
 		ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilBuffer.Get(), NULL, m_defaultDSV.GetAddressOf()));
 	}
+
+	void RenderBase::ResizeSwapChain(const WindowInfo& window)
+	{
+		m_backBufferRTV.Reset();
+		m_swapChain->ResizeBuffers(
+			0, // 현재 개수 유지
+			// 해상도 변경
+			UINT(window.width),
+			UINT(window.height),
+			DXGI_FORMAT_UNKNOWN, // 현재 포맷 유지
+			0);
+		// 해상도가 바뀌며 SwapChain을 다시 만들었기 때문에 다시 RTV와 DepthStencilBuffer 생성
+		CreateBackBufferRTV();
+		CreateDepthStencilBuffer(window);
+		// 해상도에 맞는 Viewport 설정
+		SetViewport(window);
+	}
 }

@@ -16,7 +16,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
 	WPARAM wParam,
 	LPARAM lParam);
 
-
 namespace DE {
 	AppBase::AppBase()
 		: m_window(0, 1080, 720), m_renderer(std::make_unique<RenderBase>()), m_gui(std::make_unique<GuiBase>()) {
@@ -25,7 +24,7 @@ namespace DE {
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
 
 	bool AppBase::Initialize() {
-		if (!InitWindow())
+		if (!initWindow())
 			return false;
 
 		if (!m_renderer->Initialize(m_window))
@@ -39,7 +38,7 @@ namespace DE {
 
 		m_scene = std::make_unique<Scene>(m_renderer->GetDevice(), m_renderer->GetContext());
 		float aspect = float(m_window.width) / m_window.height;
-		m_scene->GetMainCamera()->SetAspectRatio(float(m_window.width) / m_window.height);
+		m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 		m_scene->Initialize();
 		
 		return true;
@@ -48,22 +47,22 @@ namespace DE {
 	int AppBase::Run() { 
 		while (WindowUtils::Tick()) {
 			m_gui->PreUpdate();
-			Update();
+			update();
 			m_gui->PostUpdate();
 
-			Render();
+			render();
 		}
 		
 		return 0; 
 	}
 
-	void AppBase::Update() {
+	void AppBase::update() {
 		m_gui->Update();
 		m_renderer->Update();
 		m_scene->Update(m_gui->GetDeltaTime());
 	}
 
-	void AppBase::Render() {
+	void AppBase::render() {
 		m_renderer->Render();
 		m_scene->Render();
 		m_gui->Render();
@@ -71,7 +70,7 @@ namespace DE {
 		m_renderer->Present();
 	}
 
-	bool AppBase::InitWindow() {
+	bool AppBase::initWindow() {
 		m_window.hwnd = WindowUtils::Create(L"DXEngine", m_window.width, m_window.height, [](HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
 			AppBase* app = reinterpret_cast<AppBase*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			if (app) {
@@ -101,6 +100,21 @@ namespace DE {
 		// Window 입력
 		switch (msg) {
 		case WM_SIZE:
+			// 화면 해상도가 바뀌면 SwapChain을 다시 생성
+			if (m_renderer->GetSwapChain()) {
+				m_window.width = int(LOWORD(lParam));
+				m_window.height= int(HIWORD(lParam));
+
+				// 윈도우가 Minimize 모드에서는 width, height이 0
+				if (m_window.width && m_window.height) {
+					std::cout << "Resize SwapChain to " << m_window.width << " " << m_window.height << std::endl;
+
+					m_renderer->ResizeSwapChain(m_window);
+					if (m_scene && m_scene->GetMainCamera()) {
+						m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
+					}
+				}
+			}
 			break;
 		case WM_CLOSE:
 			WindowUtils::Destroy(hwnd);
