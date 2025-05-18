@@ -1,13 +1,13 @@
-cbuffer MeshConstBuffer : register(b0) {
+#include "Common.hlsli"
+
+cbuffer MeshConstBuffer : register(b1) {
     matrix world;
-    matrix view;
-    matrix proj;
-}
+};
 
 struct VSInput {
     float3 pos : POSITION;
-    float3 normal : NORMAL0;
-    float2 uv : TEXCOORD0;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD;
 };
 
 struct PSOutput {

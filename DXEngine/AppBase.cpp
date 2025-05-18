@@ -3,6 +3,7 @@
 #include "WindowUtils.h"
 #include "RenderBase.h"
 #include "Scene.h"
+#include "CameraActor.h"
 
 namespace DE {
 	AppBase::AppBase()
@@ -25,7 +26,10 @@ namespace DE {
 		::SetForegroundWindow(m_window.hwnd);
 
 		m_scene = std::make_unique<Scene>(m_renderer->GetDevice(), m_renderer->GetContext());
+		float aspect = float(m_window.width) / m_window.height;
+		m_scene->GetMainCamera()->SetAspectRatio(float(m_window.width) / m_window.height);
 		m_scene->Initialize();
+		
 
 		return true;
 	}

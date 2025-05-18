@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Mesh.h"
-#include "ConstantBuffers.h"
-
 namespace DE {
+	class TriangleActor;
+	class CameraActor;
+
 	class Scene
 	{
 	public:
@@ -12,16 +12,17 @@ namespace DE {
 		virtual void Initialize();
 		virtual void Update();
 		virtual void Render();
+		void SetGlobalConsts();
+
+		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
 	private:
 		ComPtr<ID3D11Device> m_device;
 		ComPtr<ID3D11DeviceContext> m_context;
+		
+		std::shared_ptr<CameraActor> m_mainCamera;
+		std::shared_ptr<TriangleActor> triangle;
 
-		Mesh triangle;
-
-		MeshConstants constantData;
-		ComPtr<ID3D11InputLayout> il;
-		ComPtr<ID3D11VertexShader> vs;
-		ComPtr<ID3D11PixelShader> ps;
-
+		GlobalConstants m_globalConstsCPU;
+		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 	};
 }

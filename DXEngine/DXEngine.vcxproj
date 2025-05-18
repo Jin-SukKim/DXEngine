@@ -183,6 +183,7 @@
     <ClInclude Include="RenderBase.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="TriangleActor.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WindowUtils.h" />
   </ItemGroup>
@@ -205,6 +206,7 @@
     <ClCompile Include="RenderBase.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
+    <ClCompile Include="TriangleActor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -227,6 +229,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Common.hlsli">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

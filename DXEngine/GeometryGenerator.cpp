@@ -8,9 +8,9 @@ namespace DE {
         std::vector<Vector3> normals;
         std::vector<Vector2> tex;
 
-        positions.emplace_back(Vector3(-1.f, -1.f, 0.5f));
-        positions.emplace_back(Vector3(0.f, 1.f, 0.5f));
-        positions.emplace_back(Vector3(1.f, -1.f, 0.5f));
+        positions.emplace_back(Vector3(-1.f, -1.f, 0.f));
+        positions.emplace_back(Vector3(0.f, 1.f, 0.f));
+        positions.emplace_back(Vector3(1.f, -1.f, 0.f));
         normals.emplace_back(Vector3(0.f, 0.f, -1.f));
         normals.emplace_back(Vector3(0.f, 0.f, -1.f));
         normals.emplace_back(Vector3(0.f, 0.f, -1.f));

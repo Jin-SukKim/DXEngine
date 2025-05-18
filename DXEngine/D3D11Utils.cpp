@@ -30,8 +30,10 @@ namespace DE {
 #endif
 		ComPtr<ID3DBlob> errorBlob;
 
-		//D3DCompileFromFile(filename.c_str(), 0, 0, "main", "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
-		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, 0, "main", "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
+		// 콘솔에 출력
+		//std::cout << static_cast<const char*>(errorBlob->GetBufferPointer());
+		// D3D_COMPILE_STANDARD_FILE_INCLUDE로 Shader에서 include 사용
+		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
 		device->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &vertexShader);
 		device->CreateInputLayout(inputElements.data(), UINT(inputElements.size()), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), &inputLayout);
@@ -47,7 +49,7 @@ namespace DE {
 
 		ComPtr<ID3DBlob> errorBlob;
 
-		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, 0, "main", "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
+		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
 		device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &pixelShader);
 	}

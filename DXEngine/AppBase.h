@@ -21,6 +21,7 @@ namespace DE {
 		bool InitGUI();
 
 		LRESULT CALLBACK MsgProc(HWND hwnd, UINT32 msg, WPARAM wParam, LPARAM lParam);
+
 	private:
 		WindowInfo m_window;
 

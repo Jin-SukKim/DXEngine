@@ -8,30 +8,30 @@ namespace DE {
 		initTransform();
 	}
 
-	void Actor::Initialize()
+	void Actor::Initialize(ComPtr<ID3D11Device>& device)
 	{
 		for (std::unique_ptr<Component>& component : m_components) {
 			Component* comp = component.get();
 			if (comp)
-				comp->Initialize();
+				comp->Initialize(device);
 		}
 	}
 
-	void Actor::Update(const float& deltaTime)
+	void Actor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
 	{
 		for (std::unique_ptr<Component>& component : m_components) {
 			Component* comp = component.get();
 			if (comp)
-				comp->Update(deltaTime);
+				comp->Update(context, deltaTime);
 		}
 	}
 
-	void Actor::Render()
+	void Actor::Render(ComPtr<ID3D11DeviceContext>& context)
 	{
 		for (std::unique_ptr<Component>& component : m_components) {
 			Component* comp = component.get();
 			if (comp)
-				comp->Render();
+				comp->Render(context);
 		}
 	}
 

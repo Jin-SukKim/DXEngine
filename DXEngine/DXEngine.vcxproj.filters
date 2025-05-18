@@ -113,6 +113,7 @@
     <ClInclude Include="TransformComponent.h">
       <Filter>public\Component</Filter>
     </ClInclude>
+    <ClInclude Include="TriangleActor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -154,6 +155,7 @@
     <ClCompile Include="Component.cpp">
       <Filter>private\Component</Filter>
     </ClCompile>
+    <ClCompile Include="TriangleActor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -162,5 +164,10 @@
     <FxCompile Include="BasicVS.hlsl">
       <Filter>Shaders\Basic</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Common.hlsli">
+      <Filter>Shaders\Basic</Filter>
+    </None>
   </ItemGroup>
 </Project>

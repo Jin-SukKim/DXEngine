@@ -15,6 +15,8 @@
 #include <wrl/client.h>
 #include <directxtk/SimpleMath.h>
 
+#pragma comment(lib, "d3d11.lib")
+
 using Microsoft::WRL::ComPtr;
 
 using DirectX::SimpleMath::Vector2;
@@ -25,5 +27,6 @@ using DirectX::SimpleMath::Quaternion;
 
 #include "Common.h"
 #include "Vertex.h"
+#include "ConstantBuffers.h"
+#include "D3D11Utils.h"
 
-#pragma comment(lib, "d3d11.lib")

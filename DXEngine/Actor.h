@@ -10,15 +10,16 @@ namespace DE {
 		Actor(const std::wstring& name);
 		virtual ~Actor() override {}
 
-		virtual void Initialize() override;
-		virtual void Update(const float& deltaTime) override;
-		virtual void Render() override;
+		virtual void Initialize(ComPtr<ID3D11Device>& device) override;
+		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
+		virtual void Render(ComPtr<ID3D11DeviceContext>& context) override;
 
 		template<typename T_COMPONENT>
 		T_COMPONENT* AddComponent(const std::wstring& name);
 
 		template<typename T_COMPONENT>
 		T_COMPONENT* GetComponent();
+
 	private:
 		std::vector<std::unique_ptr<Component>> m_components;
 
