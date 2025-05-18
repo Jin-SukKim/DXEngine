@@ -2,7 +2,6 @@
 #include "Actor.h"
 
 #include "Mesh.h"
-#include "ConstantBuffers.h"
 
 namespace DE {
 	class TriangleActor : public Actor
@@ -18,7 +17,7 @@ namespace DE {
 	private:
 		Mesh triangle;
 
-		MeshConstants constantData;
+		MeshConstants m_constantCPU;
 		ComPtr<ID3D11InputLayout> il;
 		ComPtr<ID3D11VertexShader> vs;
 		ComPtr<ID3D11PixelShader> ps;

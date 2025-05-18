@@ -22,6 +22,7 @@ namespace DE {
 		std::shared_ptr<CameraActor> m_mainCamera;
 		std::shared_ptr<TriangleActor> triangle;
 
+		// Shader에서 공통으로 사용되는 Constant Buffer Data
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 	};

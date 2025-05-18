@@ -19,8 +19,7 @@ namespace DE {
 		void UsePerspectiveProjection(const bool& use) { m_usePerspectiveProjection = use; }
 	private:
 		// Projection 옵션
-		//float m_projFovAngleY = 90.f * 0.5f; // Luna 교재 기본 설정 (FOV)
-		float m_projFovAngleY = 70.f;
+		float m_projFovAngleY = 90.f * 0.5f; // Luna 교재 기본 설정 (FOV)
 		float m_nearZ = 0.01f;
 		float m_farZ = 100.f;
 		float m_aspect = 16.f / 9.f;

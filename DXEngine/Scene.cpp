@@ -11,7 +11,7 @@ namespace DE {
 		m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");
 		TransformComponent* tr = m_mainCamera->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetPos(Vector3(0.f, 0.f, -1.f));
+			tr->SetPos(Vector3(0.f, 0.f, -10.f));
 		}
 
 		// 공통으로 쓰이는 Constant buffer

@@ -172,7 +172,7 @@
     <ClInclude Include="CameraActor.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Component.h" />
-    <ClInclude Include="ConstantBuffers.h" />
+    <ClInclude Include="ConstantData.h" />
     <ClInclude Include="D3D11Utils.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="GuiBase.h" />

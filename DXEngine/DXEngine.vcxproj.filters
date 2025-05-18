@@ -74,7 +74,7 @@
     <ClInclude Include="GeometryGenerator.h">
       <Filter>public\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ConstantBuffers.h">
+    <ClInclude Include="ConstantData.h">
       <Filter>public\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="GuiBase.h">

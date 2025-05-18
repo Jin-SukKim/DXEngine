@@ -12,7 +12,7 @@ namespace DE {
 		D3D11Utils::CreateVertexBuffer(device, meshData.vertices, triangle.vertexBuffer);
 		D3D11Utils::CreateIndexBuffer(device, meshData.indices, triangle.indexBuffer);
 
-		D3D11Utils::CreateConstantBuffer(device, constantData, triangle.meshConstBuffer);
+		D3D11Utils::CreateConstantBuffer(device, m_constantCPU, triangle.meshConstGPU);
 
 		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -27,16 +27,16 @@ namespace DE {
 		// constant buffer data °»½Å
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			constantData.world = tr->GetTransformMatrix().Transpose();
+			m_constantCPU.world = tr->GetTransformMatrix().Transpose();
 		}
 
 		// Constant Data¸¦ CPU -> GPU
-		D3D11Utils::UpdateBuffer(context, constantData, triangle.meshConstBuffer);
+		D3D11Utils::UpdateBuffer(context, m_constantCPU, triangle.meshConstGPU);
 	}
 
 	void TriangleActor::Render(ComPtr<ID3D11DeviceContext>& context) {
 		context->VSSetShader(vs.Get(), 0, 0);
-		context->VSSetConstantBuffers(1, 1, triangle.meshConstBuffer.GetAddressOf());
+		context->VSSetConstantBuffers(1, 1, triangle.meshConstGPU.GetAddressOf());
 		context->PSSetShader(ps.Get(), 0, 0);
 
 

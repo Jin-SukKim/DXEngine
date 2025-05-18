@@ -6,7 +6,7 @@ namespace DE {
 		ComPtr<ID3D11Buffer> vertexBuffer;
 		ComPtr<ID3D11Buffer> indexBuffer;
 
-		ComPtr<ID3D11Buffer> meshConstBuffer;
+		ComPtr<ID3D11Buffer> meshConstGPU;
 
 		UINT indexCount = 0;
 	};

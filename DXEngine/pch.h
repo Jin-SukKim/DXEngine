@@ -27,6 +27,6 @@ using DirectX::SimpleMath::Quaternion;
 
 #include "Common.h"
 #include "Vertex.h"
-#include "ConstantBuffers.h"
+#include "ConstantData.h"
 #include "D3D11Utils.h"
 

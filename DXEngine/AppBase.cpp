@@ -30,7 +30,6 @@ namespace DE {
 		m_scene->GetMainCamera()->SetAspectRatio(float(m_window.width) / m_window.height);
 		m_scene->Initialize();
 		
-
 		return true;
 	}
 
