@@ -1,9 +1,12 @@
 #pragma once
 
+#include "RenderBase.h"
+#include "GuiBase.h"
+#include "InputManager.h"
+
 namespace DE {
-	class RenderBase;
-	class GuiBase;
 	class Scene;
+
 	class AppBase
 	{
 	public:
@@ -13,6 +16,8 @@ namespace DE {
 		bool Initialize();
 		int Run();
 
+		static float GetDeltaTime();
+		static InputManager& GetInputManager();
 	private:
 		void preUpdtea();
 		void update();
@@ -27,8 +32,9 @@ namespace DE {
 		WindowInfo m_window;
 
 	protected:
-		std::unique_ptr<RenderBase> m_renderer;
-		std::unique_ptr<GuiBase> m_gui;
+		RenderBase m_renderer;
+		GuiBase m_gui;
 		std::unique_ptr<Scene> m_scene;
+		static InputManager m_inputManager;
 	};
 }

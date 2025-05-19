@@ -6,9 +6,11 @@
 //#pragma comment(lib, "libFolder\\Release\\libName.lib")
 #endif
 
+#include <array>
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <functional>
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -29,4 +31,5 @@ using DirectX::SimpleMath::Quaternion;
 #include "Vertex.h"
 #include "ConstantData.h"
 #include "D3D11Utils.h"
+#include "InputTypes.h"
 

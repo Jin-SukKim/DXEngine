@@ -57,6 +57,12 @@
     <Filter Include="public\Component">
       <UniqueIdentifier>{3a236955-12ee-4376-a15b-738240c3a00d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\Manager">
+      <UniqueIdentifier>{733586bd-0221-437c-b862-ad84e889142f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Manager">
+      <UniqueIdentifier>{4779d6c3-f936-4111-bf47-2f24fe8a25c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -114,6 +120,15 @@
       <Filter>public\Component</Filter>
     </ClInclude>
     <ClInclude Include="TriangleActor.h" />
+    <ClInclude Include="InputManager.h">
+      <Filter>public\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="InputTypes.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="InputAction.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -156,6 +171,9 @@
       <Filter>private\Component</Filter>
     </ClCompile>
     <ClCompile Include="TriangleActor.cpp" />
+    <ClCompile Include="InputManager.cpp">
+      <Filter>private\Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">

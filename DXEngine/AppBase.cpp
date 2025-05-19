@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "AppBase.h"
 #include "WindowUtils.h"
-#include "RenderBase.h"
-#include "GuiBase.h"
 #include "Scene.h"
 #include "CameraActor.h"
 
@@ -17,8 +15,10 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
 	LPARAM lParam);
 
 namespace DE {
+	InputManager AppBase::m_inputManager;
+
 	AppBase::AppBase()
-		: m_window(0, 1920, 1080), m_renderer(std::make_unique<RenderBase>()), m_gui(std::make_unique<GuiBase>()) {
+		: m_window(0, 1920, 1080) {
 	}
 
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
@@ -26,17 +26,17 @@ namespace DE {
 	bool AppBase::Initialize() {
 		if (!initWindow())
 			return false;
-
-		if (!m_renderer->Initialize(m_window))
+		
+		if (!m_renderer.Initialize(m_window))
 			return false;
 
-		if (!m_gui->Initialize(m_window, m_renderer.get()))
+		if (!m_gui.Initialize(m_window, m_renderer))
 			return false;
 
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.hwnd);
 
-		m_scene = std::make_unique<Scene>(m_renderer->GetDevice(), m_renderer->GetContext());
+		m_scene = std::make_unique<Scene>(m_renderer.GetDevice(), m_renderer.GetContext());
 		float aspect = float(m_window.width) / m_window.height;
 		m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 		m_scene->Initialize();
@@ -48,7 +48,7 @@ namespace DE {
 		while (WindowUtils::Tick()) {
 			preUpdtea();
 			update();
-			m_gui->PostUpdate();
+			m_gui.PostUpdate();
 
 			render();
 		}
@@ -58,7 +58,7 @@ namespace DE {
 
 	void AppBase::preUpdtea()
 	{
-		m_gui->PreUpdate();
+		m_gui.PreUpdate();
 		// 오른쪽 GUI 창 크기에 맞춰 viewport 크기 변환
 		// TODO: 매 프레임마다 하지 않고 GUI 창 크기가 변경되면 설정 변경해주기
 		//if (m_gui->IsSizeChanged()) {
@@ -70,17 +70,27 @@ namespace DE {
 	}
 
 	void AppBase::update() {
-		m_gui->Update();
-		m_renderer->Update();
-		m_scene->Update(m_gui->GetDeltaTime());
+		m_gui.Update();
+		m_inputManager.Update();
+		m_renderer.Update();
+		m_scene->Update(GetDeltaTime());
 	}
 
 	void AppBase::render() {
-		m_renderer->Render();
+		m_renderer.Render();
 		m_scene->Render();
-		m_gui->Render();
+		m_gui.Render();
 
-		m_renderer->Present();
+		m_renderer.Present();
+	}
+
+	float AppBase::GetDeltaTime() {
+		return GuiBase::GetDeltaTime();
+	}
+
+	InputManager& AppBase::GetInputManager()
+	{
+		return m_inputManager;
 	}
 
 	bool AppBase::initWindow() {
@@ -114,7 +124,7 @@ namespace DE {
 		switch (msg) {
 		case WM_SIZE:
 			// 화면 해상도가 바뀌면 SwapChain을 다시 생성
-			if (m_renderer->GetSwapChain()) {
+			if (m_renderer.GetSwapChain()) {
 				m_window.width = int(LOWORD(lParam));
 				m_window.height= int(HIWORD(lParam));
 
@@ -122,7 +132,7 @@ namespace DE {
 				if (m_window.width && m_window.height) {
 					//std::cout << "Resize SwapChain to " << m_window.width << " " << m_window.height << std::endl;
 
-					m_renderer->ResizeSwapChain(m_window);
+					m_renderer.ResizeSwapChain(m_window);
 
 					if (m_scene && m_scene->GetMainCamera()) {
 						m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());

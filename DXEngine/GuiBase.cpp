@@ -16,7 +16,7 @@ namespace DE {
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
-	bool GuiBase::Initialize(const WindowInfo& window, RenderBase* renderer)
+	bool GuiBase::Initialize(const WindowInfo& window, RenderBase& renderer)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -26,7 +26,7 @@ namespace DE {
 		ImGui::StyleColorsDark();
 
 		// Setup Playform/Renderer backends
-		if (!ImGui_ImplDX11_Init(renderer->GetDevice().Get(), renderer->GetContext().Get()))
+		if (!ImGui_ImplDX11_Init(renderer.GetDevice().Get(), renderer.GetContext().Get()))
 			return false;
 
 		if (!ImGui_ImplWin32_Init(window.hwnd)) {

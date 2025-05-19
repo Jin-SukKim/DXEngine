@@ -1,4 +1,8 @@
 #pragma once
+//
+//#include "InputTypes.h"
+//#include "InputAction.h"
+#include "InputManager.h"
 
 namespace DE {
 	class TriangleActor;
@@ -15,6 +19,8 @@ namespace DE {
 		void SetGlobalConsts();
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
+
+		void MoveForward(float axis);
 	private:
 		ComPtr<ID3D11Device> m_device;
 		ComPtr<ID3D11DeviceContext> m_context;
@@ -25,5 +31,9 @@ namespace DE {
 		// Shader에서 공통으로 사용되는 Constant Buffer Data
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
+
+		InputAxis axis = InputAxis::ZAxis;
+		InputButton w = InputButton::W, s = InputButton::S;
+		InputAxisAction action;
 	};
 }
