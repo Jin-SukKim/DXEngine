@@ -71,7 +71,7 @@ namespace DE {
 
 	void AppBase::update() {
 		m_gui.Update();
-		m_inputManager.Update();
+		m_inputManager.Update(m_mouseX, m_mouseY, true);
 		m_renderer.Update();
 		m_scene->Update(GetDeltaTime());
 	}
@@ -150,6 +150,16 @@ namespace DE {
 			if (wParam == VK_ESCAPE) // esc 버튼
 				WindowUtils::Destroy(hwnd);
 			return 0;
+		case WM_MOUSEMOVE:
+			m_mouseX = float(LOWORD(lParam));
+			m_mouseY = float(HIWORD(lParam));
+
+			// 마우스 커서의 위치를 NDC로 변환
+			// 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)
+			//		이때 내려갈수록 y값이 커지므로 - 를 곱해서 방향 반전
+			// NDC는 좌측 하단이 (-1, -1), 우측 상단(1, 1)
+			m_mouseX = m_mouseX * 2.0f / m_window.width - 1.0f;
+			m_mouseY = -m_mouseY * 2.0f / m_window.height + 1.0f;
 		}
 
 		return ::DefWindowProc(hwnd, msg, wParam, lParam);

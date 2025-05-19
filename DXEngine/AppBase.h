@@ -30,7 +30,8 @@ namespace DE {
 
 	private:
 		WindowInfo m_window;
-
+		float m_mouseX = 0.f;
+		float m_mouseY = 0.f;
 	protected:
 		RenderBase m_renderer;
 		GuiBase m_gui;

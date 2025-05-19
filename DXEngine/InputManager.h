@@ -17,7 +17,8 @@ namespace DE {
 		InputManager() {}
 		~InputManager() {}
 
-		void Update();
+		// 마우스 커서 좌표를 받고 ndcClamp가 true면 커서가 화면 밖으로 나가면 clamp
+		void Update(float mouseX, float mouseY, bool ndcClamp = true);
 
 		// Input와 함수를 연결
 		template<typename T> 
@@ -25,9 +26,15 @@ namespace DE {
 
 		template<typename T>
 		void BindInputAction(InputAction action, InputState state, T* object, void(T::* func)());
+
+		template<typename T>
+		void BindMouseMove(T* object, void(T::* func)(float, float));
 	private:
 		std::array<InputAxisAction, static_cast<size_t>(InputAxis::MaxAxis)> m_axisMap;
 		std::array<InputAction, static_cast<size_t>(InputButton::MaxButtons)> m_buttonMap;
+		std::function<void(float, float)> m_mouseMove = nullptr;
+		float m_mouseNdcX = 0.f;
+		float m_mouseNdcY = 0.f;
 	};
 
 	template<typename T>
@@ -42,5 +49,11 @@ namespace DE {
 	{
 		action.BindAction(object, func);
 		m_buttonMap[static_cast<size_t>(action.GetButton())] = action;
+	}
+
+	template<typename T>
+	inline void InputManager::BindMouseMove(T* object, void(T::* func)(float, float))
+	{
+		m_mouseMove = std::bind(func, object, std::placeholders::_1, std::placeholders::_2);
 	}
 }

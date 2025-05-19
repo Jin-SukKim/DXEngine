@@ -11,6 +11,7 @@
 #include <memory>
 #include <iostream>
 #include <functional>
+#include <algorithm>
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
