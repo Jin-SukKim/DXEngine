@@ -14,6 +14,7 @@ namespace DE {
 		int Run();
 
 	private:
+		void preUpdtea();
 		void update();
 		void render();
 

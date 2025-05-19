@@ -16,6 +16,7 @@ namespace DE {
 		void CreateBackBufferRTV();
 		// 렌더링하고 싶은 화면 크기에 맞는 Viewport 설정
 		void SetViewport(const WindowInfo& window);
+		void SetViewport(const float& width, const float& height);
 		// Rasterization을 어떻게 할지 설정
 		void InitRS();
 		// DepthStencilState 초기화

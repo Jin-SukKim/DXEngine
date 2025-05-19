@@ -18,7 +18,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
 
 namespace DE {
 	AppBase::AppBase()
-		: m_window(0, 1080, 720), m_renderer(std::make_unique<RenderBase>()), m_gui(std::make_unique<GuiBase>()) {
+		: m_window(0, 1920, 1080), m_renderer(std::make_unique<RenderBase>()), m_gui(std::make_unique<GuiBase>()) {
 	}
 
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
@@ -46,7 +46,7 @@ namespace DE {
 
 	int AppBase::Run() { 
 		while (WindowUtils::Tick()) {
-			m_gui->PreUpdate();
+			preUpdtea();
 			update();
 			m_gui->PostUpdate();
 
@@ -54,6 +54,19 @@ namespace DE {
 		}
 		
 		return 0; 
+	}
+
+	void AppBase::preUpdtea()
+	{
+		m_gui->PreUpdate();
+		// 오른쪽 GUI 창 크기에 맞춰 viewport 크기 변환
+		// TODO: 매 프레임마다 하지 않고 GUI 창 크기가 변경되면 설정 변경해주기
+		//if (m_gui->IsSizeChanged()) {
+		//	float width = m_window.width - m_gui->GetSize().x;
+		//	m_gui->SetPos({ width, 0.f });
+		//	m_renderer->SetViewport(width, float(m_window.height));
+		//	m_scene->GetMainCamera()->SetAspectRatio(width / m_window.height);
+		//}
 	}
 
 	void AppBase::update() {
@@ -107,9 +120,10 @@ namespace DE {
 
 				// 윈도우가 Minimize 모드에서는 width, height이 0
 				if (m_window.width && m_window.height) {
-					std::cout << "Resize SwapChain to " << m_window.width << " " << m_window.height << std::endl;
+					//std::cout << "Resize SwapChain to " << m_window.width << " " << m_window.height << std::endl;
 
 					m_renderer->ResizeSwapChain(m_window);
+
 					if (m_scene && m_scene->GetMainCamera()) {
 						m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 					}

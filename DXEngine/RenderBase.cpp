@@ -126,6 +126,19 @@ namespace DE {
 
 		m_context->RSSetViewports(1, &m_screenViewport);
 	}
+	void RenderBase::SetViewport(const float& width, const float& height)
+	{		
+		// Viewport 설정
+		ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
+		m_screenViewport.TopLeftX = 0;
+		m_screenViewport.TopLeftY = 0;
+		m_screenViewport.Width = width;
+		m_screenViewport.Height = height;
+		m_screenViewport.MinDepth = 0.f;
+		m_screenViewport.MaxDepth = 1.f;
+
+		m_context->RSSetViewports(1, &m_screenViewport);
+	}
 	void RenderBase::InitRS()
 	{
 		D3D11_RASTERIZER_DESC rastDesc;
@@ -177,6 +190,7 @@ namespace DE {
 	void RenderBase::ResizeSwapChain(const WindowInfo& window)
 	{
 		m_backBufferRTV.Reset();
+		// Swap Chain의 해상도를 변경하고 버퍼 개수를 유지/변경, Pixel Format 유지/변경, Flag 설정들을 해줄 수 있음
 		m_swapChain->ResizeBuffers(
 			0, // 현재 개수 유지
 			// 해상도 변경
@@ -185,6 +199,7 @@ namespace DE {
 			DXGI_FORMAT_UNKNOWN, // 현재 포맷 유지
 			0);
 		// 해상도가 바뀌며 SwapChain을 다시 만들었기 때문에 다시 RTV와 DepthStencilBuffer 생성
+		// 렌더링될 화면의 해상도가 바뀌면  Pixel의 개수 자체가 바뀌는 것이기 때문
 		CreateBackBufferRTV();
 		CreateDepthStencilBuffer(window);
 		// 해상도에 맞는 Viewport 설정
