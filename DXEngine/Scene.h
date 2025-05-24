@@ -19,6 +19,7 @@ namespace DE {
 		void SetGlobalConsts();
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
+		void UpdateLight(const float& deltaTime);
 
 		void MoveForward(float axis);
 	private:
@@ -35,5 +36,7 @@ namespace DE {
 		InputAxis axis = InputAxis::ZAxis;
 		InputButton w = InputButton::W, s = InputButton::S;
 		InputAxisAction action;
+
+
 	};
 }

@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "D3D11Utils.h"
+#include "Image.h"
+#include "Texture2D.h"
 
 namespace DE {
 	void D3D11Utils::CreateIndexBuffer(ComPtr<ID3D11Device>& device, const std::vector<uint32_t>& indices, ComPtr<ID3D11Buffer>& indexBuffer)
@@ -52,5 +54,34 @@ namespace DE {
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
 		device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &pixelShader);
+	}
+
+	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const std::string& filename, Texture2D& texture)
+	{
+		Image img(L"Image");
+		if (!img.Load(filename))
+			throw std::exception();
+
+		// Texture 설정
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = img.GetWidth();
+		desc.Height = img.GetHeight();
+		desc.MipLevels = 1;
+		desc.ArraySize = 1;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_IMMUTABLE; 
+		// Shader Resource View로 사용
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0; // No CPU Access
+
+		// 어떤 데이터로 초기화할지 설정
+		D3D11_SUBRESOURCE_DATA initData;
+		initData.pSysMem = img.GetImage().data();
+		initData.SysMemPitch = desc.Width * sizeof(uint8_t) * img.GetChannels();
+		initData.SysMemSlicePitch = 0; // 데이터가 배열인 경우 사용
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, &initData, texture.GetAddressOfTexture()));
+		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 	}
 }

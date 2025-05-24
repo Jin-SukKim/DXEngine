@@ -22,4 +22,12 @@ namespace DE {
             : DirectX::XMMatrixOrthographicOffCenterLH(-m_aspect, m_aspect, -1.0f,
                 1.0f, m_nearZ, m_farZ);
     }
+
+    Vector3 CameraActor::GetPos() {
+        TransformComponent* tr = GetComponent<TransformComponent>();
+        if (tr)
+            return tr->GetPos();
+
+        return Vector3::Zero;
+    }
 }

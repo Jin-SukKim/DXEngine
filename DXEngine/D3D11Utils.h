@@ -1,6 +1,8 @@
 #pragma once
+//#include "Texture2D.h"
 
 namespace DE {
+	class Texture2D;
 	inline void ThrowIfFailed(HRESULT hr) {
 		if (FAILED(hr)) {
 			// 디버깅할 때 여기에 breakpoint를 설정
@@ -69,5 +71,8 @@ namespace DE {
 			context->Unmap(buffer.Get(), NULL);
 			
 		}
+
+		// Texture2D 생성
+		static void CreateTexture(ComPtr<ID3D11Device>& device, const std::string& filename, Texture2D& texture);
 	};
 }

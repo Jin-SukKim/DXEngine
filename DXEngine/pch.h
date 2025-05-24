@@ -5,6 +5,7 @@
 #else
 //#pragma comment(lib, "libFolder\\Release\\libName.lib")
 #endif
+//#define _CRT_SECURE_NO_WARNINGS
 
 #include <array>
 #include <vector>

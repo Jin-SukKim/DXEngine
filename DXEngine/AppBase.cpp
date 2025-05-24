@@ -18,7 +18,8 @@ namespace DE {
 	InputManager AppBase::m_inputManager;
 
 	AppBase::AppBase()
-		: m_window(0, 1920, 1080) {
+		//: m_window(0, 1920, 1080) {
+		: m_window(0, 1280, 960) {
 	}
 
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
@@ -139,6 +140,10 @@ namespace DE {
 					}
 				}
 			}
+			break;
+		case WM_SYSCOMMAND:
+			if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+				return 0;
 			break;
 		case WM_CLOSE:
 			WindowUtils::Destroy(hwnd);

@@ -18,8 +18,12 @@ namespace DE {
 		Mesh triangle;
 
 		MeshConstants m_constantCPU;
+		BasicMaterialConstants m_basicMaterialCPU;
+
 		ComPtr<ID3D11InputLayout> il;
 		ComPtr<ID3D11VertexShader> vs;
 		ComPtr<ID3D11PixelShader> ps;
+
+		ComPtr<ID3D11SamplerState> m_samplerState;
 	};
 }
