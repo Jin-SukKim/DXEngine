@@ -186,6 +186,7 @@
     <ClInclude Include="InputTypes.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />
+    <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RenderBase.h" />
@@ -208,6 +209,7 @@
     <ClCompile Include="GuiBase.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

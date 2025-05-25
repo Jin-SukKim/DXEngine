@@ -25,6 +25,7 @@ struct Light {
 cbuffer GlobalConsts : register(b0) {
     matrix view;
     matrix proj;
+    matrix viewProj;
     
     float3 eyeWorld;
     float dummy;

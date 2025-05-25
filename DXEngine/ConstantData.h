@@ -45,6 +45,7 @@ namespace DE {
 	__declspec(align(256)) struct GlobalConstants {
 		Matrix view;
 		Matrix proj;
+		Matrix viewProj;
 
 		Vector3 eyeWorld; // Camera À§Ä¡
 		float dummy; 

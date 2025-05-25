@@ -7,8 +7,9 @@ PSInput main(VSInput input) {
     
     output.posWorld = pos.xyz;
     
-    pos = mul(pos, view);
-    pos = mul(pos, proj);
+    //pos = mul(pos, view);
+    //pos = mul(pos, proj);
+    pos = mul(pos, viewProj);
     
     output.posProj = pos;
     //output.color = input.color

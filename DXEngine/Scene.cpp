@@ -77,6 +77,7 @@ namespace DE {
 		// DirectX는 Row-Major인데 HLSL는 Column-Major이므로 Transpose
 		m_globalConstsCPU.view = m_mainCamera->GetViewMatrix().Transpose();
 		m_globalConstsCPU.proj = m_mainCamera->GetProjMatrix().Transpose();
+		m_globalConstsCPU.viewProj = m_globalConstsCPU.proj * m_globalConstsCPU.view; // Transpose 시켰으므로 곱셈 순서 주의
 		m_globalConstsCPU.eyeWorld = m_mainCamera->GetPos();
 		D3D11Utils::UpdateBuffer(m_context, m_globalConstsCPU, m_globalConstsGPU);
 

@@ -137,6 +137,9 @@
     <ClInclude Include="Texture2D.h">
       <Filter>public\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -187,6 +190,9 @@
     </ClCompile>
     <ClCompile Include="Texture2D.cpp">
       <Filter>private\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>private\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -7,13 +7,41 @@
 
 namespace DE {
 	void TriangleActor::Initialize(ComPtr<ID3D11Device>& device) {
-		MeshData meshData = GeometryGenerator::MakeBox();
-		triangle.indexCount = UINT(meshData.indices.size());
-		D3D11Utils::CreateVertexBuffer(device, meshData.vertices, triangle.vertexBuffer);
-		D3D11Utils::CreateIndexBuffer(device, meshData.indices, triangle.indexBuffer);
+		//MeshData meshData = GeometryGenerator::MakeBox();
+		//triangle.indexCount = UINT(meshData.indices.size());
 
-		D3D11Utils::CreateConstantBuffer(device, m_constantCPU, triangle.meshConstGPU);
-		D3D11Utils::CreateConstantBuffer(device, m_basicMaterialCPU, triangle.basicMaterialConstGPU);
+		//// Texture 
+		//D3D11Utils::CreateTexture(device, "../Assets/Textures/crate2_diffuse.png", triangle.albedoTexture);
+
+		// Main Object
+		{
+			std::vector<MeshData> meshDataset = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
+
+			// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
+			ComPtr<ID3D11Buffer> meshConstGPU;
+			ComPtr<ID3D11Buffer> basicMaterialConstGPU;
+			D3D11Utils::CreateConstantBuffer(device, m_constantCPU, meshConstGPU);
+			D3D11Utils::CreateConstantBuffer(device, m_basicMaterialCPU, basicMaterialConstGPU);
+
+			for (const auto& meshData : meshDataset) {
+				Mesh newMesh;
+				D3D11Utils::CreateVertexBuffer(device, meshData.vertices, newMesh.vertexBuffer);
+				D3D11Utils::CreateIndexBuffer(device, meshData.indices, newMesh.indexBuffer);
+				newMesh.indexCount = UINT(meshData.indices.size());
+
+				if (!meshData.albedoTextureFilename.empty()) {
+					std::cout << meshData.albedoTextureFilename << std::endl;
+					D3D11Utils::CreateTexture(device, meshData.albedoTextureFilename, newMesh.albedoTexture);
+				}
+
+				// 모델의 모든 Mesh가 같은 Buffer를 사용
+				newMesh.meshConstGPU = meshConstGPU;
+				newMesh.basicMaterialConstGPU = basicMaterialConstGPU;
+
+				m_meshes.emplace_back(newMesh);
+			}
+		}
+
 
 		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -22,9 +50,6 @@ namespace DE {
 		};
 		D3D11Utils::CreateVSAndIL(device, L"BasicVS.hlsl", inputElements, vs, il);
 		D3D11Utils::CreatePS(device, L"BasicPS.hlsl", ps);
-
-		// Texture 
-		D3D11Utils::CreateTexture(device, "../Assets/Textures/crate2_diffuse.png", triangle.albedoTexture);
 
 		// Texture sampler 만들기
 		D3D11_SAMPLER_DESC sampDesc;
@@ -53,27 +78,32 @@ namespace DE {
 		}
 
 		// Constant Data를 CPU -> GPU
-		D3D11Utils::UpdateBuffer(context, m_constantCPU, triangle.meshConstGPU);
-		D3D11Utils::UpdateBuffer(context, m_basicMaterialCPU, triangle.basicMaterialConstGPU);
+		if (!m_meshes.empty()) {
+			// 현재 모델의 모든 Mesh가 buffer를 공유하기 때문에 하나만 복사
+			D3D11Utils::UpdateBuffer(context, m_constantCPU, m_meshes[0].meshConstGPU);
+			D3D11Utils::UpdateBuffer(context, m_basicMaterialCPU, m_meshes[0].basicMaterialConstGPU);
+		}
 	}
 
 	void TriangleActor::Render(ComPtr<ID3D11DeviceContext>& context) {
-		context->VSSetShader(vs.Get(), 0, 0);
-		context->VSSetConstantBuffers(2, 1, triangle.meshConstGPU.GetAddressOf());
-
-		ID3D11ShaderResourceView* pixelResources[1] = { triangle.albedoTexture.GetSRV() };
-		context->PSSetShaderResources(0, 1, pixelResources);
-		context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-		context->PSSetConstantBuffers(1, 1, triangle.basicMaterialConstGPU.GetAddressOf());
-		context->PSSetShader(ps.Get(), 0, 0);
-
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 
-		context->IASetInputLayout(il.Get());
-		context->IASetVertexBuffers(0, 1, triangle.vertexBuffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(triangle.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		context->DrawIndexed(triangle.indexCount, 0, 0);
+		for (const auto& mesh : m_meshes) {
+			context->VSSetShader(vs.Get(), 0, 0);
+			context->VSSetConstantBuffers(2, 1, mesh.meshConstGPU.GetAddressOf());
+
+			ID3D11ShaderResourceView* resViews[1] = { mesh.albedoTexture.GetSRV() };
+			context->PSSetShaderResources(0, 1, resViews);
+			context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+			context->PSSetConstantBuffers(1, 1, mesh.basicMaterialConstGPU.GetAddressOf());
+			context->PSSetShader(ps.Get(), 0, 0);
+
+			context->IASetInputLayout(il.Get());
+			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+			context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			context->DrawIndexed(mesh.indexCount, 0, 0);
+		}
 	}
 }

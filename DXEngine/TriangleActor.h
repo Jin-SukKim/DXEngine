@@ -15,7 +15,8 @@ namespace DE {
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
 		void Render(ComPtr<ID3D11DeviceContext>& context) override;
 	private:
-		Mesh triangle;
+		//Mesh triangle;
+		std::vector<Mesh> m_meshes; // 하나의 모델이 내부적으로는 여러개의 메쉬로 구성
 
 		MeshConstants m_constantCPU;
 		BasicMaterialConstants m_basicMaterialCPU;

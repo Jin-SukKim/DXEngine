@@ -30,6 +30,12 @@ public:
     static MeshData MakeWireSphere(const Vector3 center, const float radius);
     // 기본적인 풀잎 1개의 Mesh
     static MeshData MakeGrass();
+
+    // fbx, gltf 등 파일로부터 모델과 Texture 파일들 읽어오기
+    static std::vector<MeshData> ReadFromFile(std::string basePath, std::string filename, bool revertNormals = false, bool calculateNormals = false);
+    // 파일로부터 읽은 모델의 크기가 전부 제각각이기 때문에 정규화를 거쳐서 일정한 규격을 유지할 수 있도록 하기
+    // 기본적으로 center = Vector3(0.f) 모델 좌표계의 중심점, longestLength = 1.f를 사용하는걸 추천
+    static void Normalize(const Vector3 center, const float longestLength, std::vector<MeshData>& meshes);
 };
 
 }

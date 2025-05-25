@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GeometryGenerator.h"
+#include "ModelLoader.h"
 
 namespace DE {
     MeshData GeometryGenerator::MakeTriangle(const float scale, const Vector2 texScale)
@@ -704,5 +705,43 @@ namespace DE {
         grid.vertices[0].texcoord.x = 0.5f;
 
         return grid;
+    }
+
+    std::vector<MeshData> GeometryGenerator::ReadFromFile(std::string basePath, std::string filename, bool revertNormals, bool calculateNormals)
+    {
+        ModelLoader modelLoader;
+        modelLoader.Load(basePath, filename, revertNormals, calculateNormals);
+
+        // 읽어온 모델의 크기는 제각각 이므로 정규화
+        GeometryGenerator::Normalize(Vector3(0.f), 1.f, modelLoader.GetMeshes());
+
+        return modelLoader.GetMeshes();
+    }
+
+    void GeometryGenerator::Normalize(const Vector3 center, const float longestLength, std::vector<MeshData>& meshes)
+    {
+        // Normalize Vertices
+        Vector3 vmin(1000, 1000, 1000); // 임의의 큰 숫자
+        Vector3 vmax(-1000, -1000, -1000);
+
+        for (auto& mesh : meshes) {
+            for (auto& v : mesh.vertices) {
+                vmin.x = DirectX::XMMin(vmin.x, v.position.x);
+                vmin.y = DirectX::XMMin(vmin.y, v.position.y);
+                vmin.z = DirectX::XMMin(vmin.z, v.position.z);
+                vmax.x = DirectX::XMMax(vmax.x, v.position.x);
+                vmax.y = DirectX::XMMax(vmax.y, v.position.y);
+                vmax.z = DirectX::XMMax(vmax.z, v.position.z);
+            }
+        }
+
+        float dx = vmax.x - vmin.x, dy = vmax.y - vmin.y, dz = vmax.z - vmin.z;
+        float scale = longestLength / DirectX::XMMax(DirectX::XMMax(dx, dy), dz); // dx, dy, dz 중 가장 큰 값을 기준으로 scaling
+        Vector3 translation = -(vmin + vmax) * 0.5f + center; // 모델의 중심이 center에 오도록 translate(vertex를 이동)
+
+        for (auto& mesh : meshes) {
+            for (auto& v : mesh.vertices)
+                v.position = (v.position + translation) * scale;
+        }
     }
 }
