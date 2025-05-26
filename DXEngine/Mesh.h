@@ -20,5 +20,6 @@ namespace DE {
 		Texture2D metallicroughnessTexture;
 
 		UINT indexCount = 0;
+		UINT vertexCount = 0; // Normal Vector ·»´õ¸µ¿ë
 	};
 }

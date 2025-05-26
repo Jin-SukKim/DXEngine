@@ -94,6 +94,7 @@ namespace DE {
 	void Scene::SetGlobalConsts()
 	{
 		m_context->VSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
+		m_context->GSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
 		m_context->PSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
 	}
 

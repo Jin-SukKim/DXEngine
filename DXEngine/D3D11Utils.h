@@ -58,6 +58,9 @@ namespace DE {
 		static void CreateVSAndIL(ComPtr<ID3D11Device>& device, const std::wstring& filename, const std::vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout);
 		// Pixel Shader 생성
 		static void CreatePS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader);
+		// Geometry Shader 생성
+		static void CreateGS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11GeometryShader>& geometryShader);
+
 
 		// Usage를 Dynamic으로 설정한 Buffer를 GPU에서 GPU 메모리로 데이터 복사
 		template<typename T_DATA>

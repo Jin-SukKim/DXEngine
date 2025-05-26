@@ -16,6 +16,7 @@ namespace DE {
 		// Main Object
 		{
 			std::vector<MeshData> meshDataset = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
+			//std::vector<MeshData> meshDataset = { GeometryGenerator::MakeBox() };
 
 			// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
 			ComPtr<ID3D11Buffer> meshConstGPU;
@@ -28,6 +29,7 @@ namespace DE {
 				D3D11Utils::CreateVertexBuffer(device, meshData.vertices, newMesh.vertexBuffer);
 				D3D11Utils::CreateIndexBuffer(device, meshData.indices, newMesh.indexBuffer);
 				newMesh.indexCount = UINT(meshData.indices.size());
+				newMesh.vertexCount = UINT(meshData.vertices.size());
 
 				if (!meshData.albedoTextureFilename.empty()) {
 					std::cout << meshData.albedoTextureFilename << std::endl;
@@ -65,16 +67,26 @@ namespace DE {
 
 		// Create the Sample State
 		device->CreateSamplerState(&sampDesc, m_samplerState.GetAddressOf());
+
+		// Normal Vector 렌더링용
+		{
+			D3D11Utils::CreateVSAndIL(device, L"NormalVS.hlsl", inputElements, normalVS, il);
+			D3D11Utils::CreateGS(device, L"NormalGS.hlsl", normalGS);
+			D3D11Utils::CreatePS(device, L"NormalPS.hlsl", normalPS);
+		}
 	}
 
 	void TriangleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
 		// constant buffer data 갱신
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
+			tr->RotateYaw(0.05);
+			tr->RotatePitch(0.05);
 			Matrix world = tr->GetTransformMatrix();
 			m_constantCPU.world = world.Transpose();
 			world.Translation(Vector3(0.f));
-			m_constantCPU.worldIT = world.Invert().Transpose();
+			world = world.Invert().Transpose();
+			m_constantCPU.worldIT = world.Transpose();
 		}
 
 		// Constant Data를 CPU -> GPU
@@ -88,15 +100,18 @@ namespace DE {
 	void TriangleActor::Render(ComPtr<ID3D11DeviceContext>& context) {
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-
 		for (const auto& mesh : m_meshes) {
+			ID3D11Buffer* constBuffers[2] = {
+				mesh.basicMaterialConstGPU.Get(),
+				mesh.meshConstGPU.Get()
+			};
 			context->VSSetShader(vs.Get(), 0, 0);
-			context->VSSetConstantBuffers(2, 1, mesh.meshConstGPU.GetAddressOf());
+			context->VSSetConstantBuffers(1, 2, constBuffers);
 
 			ID3D11ShaderResourceView* resViews[1] = { mesh.albedoTexture.GetSRV() };
 			context->PSSetShaderResources(0, 1, resViews);
 			context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-			context->PSSetConstantBuffers(1, 1, mesh.basicMaterialConstGPU.GetAddressOf());
+			context->PSSetConstantBuffers(1, 2, constBuffers);
 			context->PSSetShader(ps.Get(), 0, 0);
 
 			context->IASetInputLayout(il.Get());
@@ -104,6 +119,18 @@ namespace DE {
 			context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			context->DrawIndexed(mesh.indexCount, 0, 0);
+
+			// Normal Vector 그리기
+			if (m_drawNormal) {
+				context->VSSetShader(normalVS.Get(), 0, 0);
+				context->PSSetShader(normalPS.Get(), 0, 0);
+				context->GSSetConstantBuffers(1, 2, constBuffers);
+				context->GSSetShader(normalGS.Get(), 0, 0);
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+				context->Draw(mesh.vertexCount, 0);
+
+				context->GSSetShader(nullptr, 0, 0);
+			}
 		}
 	}
 }

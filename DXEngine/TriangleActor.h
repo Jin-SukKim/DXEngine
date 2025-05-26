@@ -26,5 +26,11 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> ps;
 
 		ComPtr<ID3D11SamplerState> m_samplerState;
+
+		// Normal Vector
+		ComPtr<ID3D11VertexShader> normalVS;
+		ComPtr<ID3D11GeometryShader> normalGS;
+		ComPtr<ID3D11PixelShader> normalPS;
+		bool m_drawNormal = true;
 	};
 }

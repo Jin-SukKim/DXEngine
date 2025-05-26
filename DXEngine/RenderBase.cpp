@@ -150,6 +150,10 @@ namespace DE {
 		rastDesc.MultisampleEnable = true;
 
 		ThrowIfFailed(m_device->CreateRasterizerState(&rastDesc, m_solidRS.GetAddressOf()));
+
+		// wireframe
+		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
+		ThrowIfFailed(m_device->CreateRasterizerState(&rastDesc, m_wireRS.GetAddressOf()));
 	}
 
 	void RenderBase::InitDepthStencilState()

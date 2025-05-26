@@ -39,6 +39,9 @@ namespace DE {
 
 		D3D11_VIEWPORT m_screenViewport;
 		ComPtr<ID3D11RasterizerState> m_solidRS;
+		ComPtr<ID3D11RasterizerState> m_wireRS;
+		bool m_drawAsWire = false;
+
 		ComPtr<ID3D11DepthStencilState> m_defaultDSS;
 		ComPtr<ID3D11DepthStencilView> m_defaultDSV;
 	};

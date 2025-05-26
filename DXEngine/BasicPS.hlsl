@@ -23,5 +23,6 @@ float4 main(PSInput input) : SV_TARGET {
             continue;
     }
     
+    return float4(1.0, 1.0, 1.0, 1.0);
     return float4(color, 1.0) * g_texture0.Sample(g_sampler, input.texcoord);
 }

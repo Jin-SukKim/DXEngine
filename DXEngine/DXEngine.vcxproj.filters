@@ -62,6 +62,9 @@
     <Filter Include="private\Resource">
       <UniqueIdentifier>{8bd709a1-c5bd-41cc-8563-8cb126ee5976}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Utils">
+      <UniqueIdentifier>{f9ed7de0-f09c-4f85-a598-4c354a0b90b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -201,6 +204,15 @@
     </FxCompile>
     <FxCompile Include="BasicVS.hlsl">
       <Filter>Shaders\Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="NormalVS.hlsl">
+      <Filter>Shaders\Utils</Filter>
+    </FxCompile>
+    <FxCompile Include="NormalPS.hlsl">
+      <Filter>Shaders\Utils</Filter>
+    </FxCompile>
+    <FxCompile Include="NormalGS.hlsl">
+      <Filter>Shaders\Utils</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
