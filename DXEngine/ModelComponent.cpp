@@ -14,10 +14,8 @@ namespace DE {
 	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes)
 	{
 		// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
-		ComPtr<ID3D11Buffer> meshConstGPU;
-		ComPtr<ID3D11Buffer> basicMaterialConstGPU;
-		D3D11Utils::CreateConstantBuffer(device, m_constantCPU, meshConstGPU);
-		D3D11Utils::CreateConstantBuffer(device, m_basicMaterialCPU, basicMaterialConstGPU);
+		m_constant.Initialize(device);
+		m_basicMaterial.Initialize(device);
 
 		for (const auto& meshData : meshes) {
 			Mesh newMesh;
@@ -34,8 +32,8 @@ namespace DE {
 			}
 
 			// 모델의 모든 Mesh가 같은 Buffer를 사용
-			newMesh.meshConstGPU = meshConstGPU;
-			newMesh.basicMaterialConstGPU = basicMaterialConstGPU;
+			newMesh.meshConstGPU = m_constant.Get();
+			newMesh.basicMaterialConstGPU = m_basicMaterial.Get();
 
 			m_meshes.emplace_back(newMesh);
 		}
@@ -51,14 +49,14 @@ namespace DE {
 		if (m_meshes.empty())
 			return;
 
-		if (updateWorldCPU()) {
+		if (updateWorldCpu()) {
 			// 현재 모델의 모든 Mesh가 buffer를 공유하기 때문에 하나만 복사
-			D3D11Utils::UpdateBuffer(context, m_constantCPU, m_meshes[0].meshConstGPU);
-			D3D11Utils::UpdateBuffer(context, m_basicMaterialCPU, m_meshes[0].basicMaterialConstGPU);
+			m_constant.Upload(context);
+			m_basicMaterial.Upload(context);
 		}
 	}
 
-	bool ModelComponent::updateWorldCPU()
+	bool ModelComponent::updateWorldCpu()
 	{
 		Actor* owner = dynamic_cast<Actor*>(GetOwner());
 		if (!owner)
@@ -67,10 +65,10 @@ namespace DE {
 		TransformComponent* tr = owner->GetComponent<TransformComponent>();
 		if (tr) {
 			Matrix world = tr->GetTransformMatrix();
-			m_constantCPU.world = world.Transpose();
+			m_constant.GetCpu().world = world.Transpose();
 			world.Translation(Vector3(0.f));
 			world = world.Invert().Transpose();
-			m_constantCPU.worldIT = world.Transpose();
+			m_constant.GetCpu().worldIT = world.Transpose();
 		}
 
 		return true;

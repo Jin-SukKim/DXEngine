@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "Mesh.h"
+
 namespace DE {
 	struct MeshData;
 
@@ -21,13 +22,13 @@ namespace DE {
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
 	private:
-		bool updateWorldCPU();
+		bool updateWorldCpu();
 	private:
 		//Mesh triangle;
 		std::vector<Mesh> m_meshes; // 하나의 모델이 내부적으로는 여러개의 메쉬로 구성
 
-		MeshConstants m_constantCPU;
-		BasicMaterialConstants m_basicMaterialCPU;
+		ConstantBuffer<MeshConstants> m_constant;
+		ConstantBuffer<BasicMaterialConstants> m_basicMaterial;
 
 		bool m_drawNormal = true;
 	};

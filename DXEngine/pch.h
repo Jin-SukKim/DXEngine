@@ -31,7 +31,7 @@ using DirectX::SimpleMath::Quaternion;
 
 #include "Common.h"
 #include "Vertex.h"
-#include "ConstantData.h"
 #include "D3D11Utils.h"
+#include "ConstantData.h"
 #include "InputTypes.h"
 
