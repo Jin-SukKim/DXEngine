@@ -6,10 +6,10 @@ namespace DE {
 	{
 		using Super = Object;
 	public:
-		Component(const std::wstring& name) : Super(name) {}
+		Component(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name) {}
 		~Component() override {}
 
-		virtual void Initialize(ComPtr<ID3D11Device>& device) override {}
+		virtual void Initialize() override {}
 		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override {}
 		virtual void Render(ComPtr<ID3D11DeviceContext>& context) override  { if (m_show) return; }
 

@@ -4,11 +4,11 @@ namespace DE {
 	class Object
 	{
 	public:
-		Object() {}
-		Object(const std::wstring& name) : m_name(name) {}
+		Object() = delete;
+		Object(ComPtr<ID3D11Device>& device, const std::wstring& name) : m_name(name) {}
 		virtual ~Object() {}
 
-		virtual void Initialize(ComPtr<ID3D11Device>& device) = 0;
+		virtual void Initialize() = 0;
 		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) = 0;
 		virtual void Render(ComPtr<ID3D11DeviceContext>& context) = 0;
 

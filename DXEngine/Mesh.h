@@ -21,5 +21,7 @@ namespace DE {
 
 		UINT indexCount = 0;
 		UINT vertexCount = 0; // Normal Vector ·»´õ¸µ¿ë
+		UINT stride = 0;
+		UINT offset = 0;
 	};
 }

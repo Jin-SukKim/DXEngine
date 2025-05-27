@@ -27,7 +27,6 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext> m_context;
 		
 		std::shared_ptr<CameraActor> m_mainCamera;
-		std::shared_ptr<TriangleActor> triangle;
 
 		// Shader에서 공통으로 사용되는 Constant Buffer Data
 		GlobalConstants m_globalConstsCPU;
@@ -37,6 +36,17 @@ namespace DE {
 		InputButton w = InputButton::W, s = InputButton::S;
 		InputAxisAction action;
 
+		ComPtr<ID3D11InputLayout> il;
+		ComPtr<ID3D11VertexShader> vs;
+		ComPtr<ID3D11PixelShader> ps;
 
+		ComPtr<ID3D11SamplerState> m_samplerState;
+
+		// Normal Vector
+		ComPtr<ID3D11VertexShader> normalVS;
+		ComPtr<ID3D11GeometryShader> normalGS;
+		ComPtr<ID3D11PixelShader> normalPS;
+
+		std::shared_ptr<TriangleActor> triangle;
 	};
 }

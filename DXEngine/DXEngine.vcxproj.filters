@@ -143,6 +143,9 @@
     <ClInclude Include="ModelLoader.h">
       <Filter>public\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="ModelComponent.h">
+      <Filter>public\Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -196,6 +199,9 @@
     </ClCompile>
     <ClCompile Include="ModelLoader.cpp">
       <Filter>private\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelComponent.cpp">
+      <Filter>private\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

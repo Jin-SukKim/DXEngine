@@ -6,7 +6,7 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		CameraActor(const std::wstring& name) : Super(name) {}
+		CameraActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name) {}
 		virtual ~CameraActor() {}
 
 		Matrix GetViewMatrix();

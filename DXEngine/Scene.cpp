@@ -11,14 +11,44 @@
 namespace DE {
 	Scene::Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context) : m_device(device), m_context(context)
 	{
+		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 6, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		};
+		D3D11Utils::CreateVSAndIL(device, L"BasicVS.hlsl", inputElements, vs, il);
+		D3D11Utils::CreatePS(device, L"BasicPS.hlsl", ps);
+
+		// Texture sampler 만들기
+		D3D11_SAMPLER_DESC sampDesc;
+		ZeroMemory(&sampDesc, sizeof(sampDesc));
+		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // Linear Interpolation
+		// Wrap
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		sampDesc.MinLOD = 0;
+		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		// Create the Sample State
+		device->CreateSamplerState(&sampDesc, m_samplerState.GetAddressOf());
+
+		// Normal Vector 렌더링용
+		{
+			D3D11Utils::CreateVSAndIL(device, L"NormalVS.hlsl", inputElements, normalVS, il);
+			D3D11Utils::CreateGS(device, L"NormalGS.hlsl", normalGS);
+			D3D11Utils::CreatePS(device, L"NormalPS.hlsl", normalPS);
+		}
+
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(m_device, m_globalConstsCPU, m_globalConstsGPU);
 
-		m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");
+		m_mainCamera = std::make_shared<CameraActor>(m_device, L"MainCamera");
 
 		action = InputAxisAction(w, s);
 
-		triangle = std::make_shared<TriangleActor>(L"Temp");
+		triangle = std::make_shared<TriangleActor>(m_device, L"Temp");
 	}
 
 	void Scene::Initialize() {
@@ -61,12 +91,11 @@ namespace DE {
 			AppBase::GetInputManager().BindInputAxis(axis, action, this, &Scene::MoveForward);
 		}
 
-		triangle->Initialize(m_device);
+		triangle->Initialize();
 		TransformComponent* tr = triangle->GetComponent<TransformComponent>();
 		if (tr) {
 			tr->SetScale(Vector3(0.5f));
 		}
-
 	}
 
 	void Scene::Update(const float& deltaTime) {
@@ -88,7 +117,24 @@ namespace DE {
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
 		SetGlobalConsts();
 
+		m_context->VSSetShader(vs.Get(), 0, 0);
+		m_context->PSSetShader(ps.Get(), 0, 0);
+		m_context->IASetInputLayout(il.Get());
+		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 		triangle->Render(m_context);
+
+		if (triangle->IsDrawNormal()) {
+			// Normal Vector 그리기
+			m_context->VSSetShader(normalVS.Get(), 0, 0);
+			m_context->PSSetShader(normalPS.Get(), 0, 0);
+			m_context->GSSetShader(normalGS.Get(), 0, 0);
+			m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+			triangle->RenderNormal(m_context);
+
+			m_context->GSSetShader(nullptr, 0, 0);
+		}
 	}
 
 	void Scene::SetGlobalConsts()
