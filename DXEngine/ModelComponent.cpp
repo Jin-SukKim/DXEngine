@@ -11,6 +11,11 @@ namespace DE {
 		SetModel(device, meshes);
 	}
 
+	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, const MeshData& mesh)
+	{
+		SetModel(device, std::vector<MeshData>{mesh});
+	}
+
 	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes)
 	{
 		// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유

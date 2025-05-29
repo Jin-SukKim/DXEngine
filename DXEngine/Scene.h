@@ -5,8 +5,9 @@
 #include "InputManager.h"
 
 namespace DE {
-	class TriangleActor;
+	class SampleActor;
 	class CameraActor;
+	class SkyboxActor;
 
 	class Scene
 	{
@@ -40,13 +41,20 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> vs;
 		ComPtr<ID3D11PixelShader> ps;
 
-		ComPtr<ID3D11SamplerState> m_samplerState;
+		ComPtr<ID3D11SamplerState> m_linearWrap;
 
 		// Normal Vector
 		ComPtr<ID3D11VertexShader> normalVS;
 		ComPtr<ID3D11GeometryShader> normalGS;
 		ComPtr<ID3D11PixelShader> normalPS;
 
-		std::shared_ptr<TriangleActor> triangle;
+		std::shared_ptr<SampleActor> triangle;
+
+		// IBL
+		ComPtr<ID3D11VertexShader> m_skyboxVS;
+		ComPtr<ID3D11PixelShader> m_skyboxPS;
+
+		std::shared_ptr<SkyboxActor> m_skybox;
+
 	};
 }

@@ -2,7 +2,6 @@
 #include "BlinnPhong.hlsli"
 
 Texture2D g_texture0 : register(t0);
-SamplerState g_sampler : register(s0);
 
 float4 main(PSInput input) : SV_TARGET {
     float3 toEye = normalize(eyeWorld - input.posWorld);
@@ -23,5 +22,5 @@ float4 main(PSInput input) : SV_TARGET {
             continue;
     }
     
-    return float4(color, 1.0) * g_texture0.Sample(g_sampler, input.texcoord);
+    return float4(color, 1.0) * g_texture0.Sample(linearWrapSampler, input.texcoord);
 }

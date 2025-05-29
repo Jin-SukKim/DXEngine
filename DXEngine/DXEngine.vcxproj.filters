@@ -121,7 +121,7 @@
     <ClInclude Include="TransformComponent.h">
       <Filter>public\Component</Filter>
     </ClInclude>
-    <ClInclude Include="TriangleActor.h" />
+    <ClInclude Include="SampleActor.h" />
     <ClInclude Include="InputManager.h">
       <Filter>public\Manager</Filter>
     </ClInclude>
@@ -145,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="ModelComponent.h">
       <Filter>public\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxActor.h">
+      <Filter>public\Actor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -187,7 +190,7 @@
     <ClCompile Include="Component.cpp">
       <Filter>private\Component</Filter>
     </ClCompile>
-    <ClCompile Include="TriangleActor.cpp" />
+    <ClCompile Include="SampleActor.cpp" />
     <ClCompile Include="InputManager.cpp">
       <Filter>private\Manager</Filter>
     </ClCompile>
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="ModelComponent.cpp">
       <Filter>private\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxActor.cpp">
+      <Filter>private\Actor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +225,12 @@
     </FxCompile>
     <FxCompile Include="NormalGS.hlsl">
       <Filter>Shaders\Utils</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVS.hlsl">
+      <Filter>Shaders\Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxPS.hlsl">
+      <Filter>Shaders\Basic</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

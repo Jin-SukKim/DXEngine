@@ -77,5 +77,7 @@ namespace DE {
 
 		// Texture2D 积己
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const std::string& filename, Texture2D& texture);
+		// DDS 颇老肺何磐 Texture 积己 (isCubemap捞 true搁 Cubemap Texture, false搁 Texture2D 积己)
+		static void CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView);
 	};
 }

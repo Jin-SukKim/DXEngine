@@ -3,6 +3,7 @@
 #include "Image.h"
 #include "Texture2D.h"
 
+#include <directxtk/DDSTextureLoader.h>
 namespace DE {
 	void D3D11Utils::CreateIndexBuffer(ComPtr<ID3D11Device>& device, const std::vector<uint32_t>& indices, ComPtr<ID3D11Buffer>& indexBuffer)
 	{
@@ -98,5 +99,21 @@ namespace DE {
 
 		ThrowIfFailed(device->CreateTexture2D(&desc, &initData, texture.GetAddressOfTexture()));
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
+	}
+
+	void D3D11Utils::CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView)
+	{
+		ComPtr<ID3D11Texture2D> texture;
+
+		UINT miscFlags = 0;
+		if (isCubeMap)
+			miscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE; // Cubemap¿ë Texture
+
+		// https://github.com/microsoft/DirectXTK/wiki/DDSTextureLoader
+		ThrowIfFailed(DirectX::CreateDDSTextureFromFileEx(
+			device.Get(), filename.c_str(), 0, D3D11_USAGE_DEFAULT,
+			D3D11_BIND_SHADER_RESOURCE, 0, miscFlags, DirectX::DDS_LOADER_FLAGS(false),
+			(ID3D11Resource**)texture.GetAddressOf(), 
+			textureResourceView.GetAddressOf(), nullptr));
 	}
 }

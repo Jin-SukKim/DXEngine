@@ -8,6 +8,15 @@
 #define LIGHT_SPOT 0x04
 #define LIGHT_SHADOW 0x10
 
+// Sampler들은 모든 Shader에서 공통으로 사용
+SamplerState linearWrapSampler : register(s0);
+
+// 공용 Texture들 t10부터 시작 (IBL용 Texture 등)
+TextureCube envIBLTex : register(t10);
+TextureCube specularIBLTex : register(t11);
+TextureCube irradianceIBLTex : register(t12);
+Texture2D brdfTex : register(t13);
+
 struct Light {
     float3 radiance; // 빛의 세기 (Strength)
     float fallOffStart; // 빛의 강도가 약해지기 시작하는 거리 (point/spot light only)

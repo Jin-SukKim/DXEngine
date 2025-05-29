@@ -56,6 +56,7 @@ namespace DE {
 	template <typename T_CONST>
 	class ConstantBuffer {
 	public:
+		// GPU¿¡ Constant Buffer »ý¼º
 		void Initialize(ComPtr<ID3D11Device>& device) {
 			D3D11Utils::CreateConstantBuffer(device, m_cpu, m_gpu);
 		}

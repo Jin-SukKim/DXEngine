@@ -4,12 +4,12 @@
 namespace DE {
 	class ModelComponent;
 
-	class TriangleActor : public Actor
+	class SampleActor : public Actor
 	{
 		using Super = Actor;
 	public:
-		TriangleActor(ComPtr<ID3D11Device>& device, const std::wstring& name);
-		virtual ~TriangleActor() override {}
+		SampleActor(ComPtr<ID3D11Device>& device, const std::wstring& name);
+		virtual ~SampleActor() override {}
 
 		void Initialize() override;
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;

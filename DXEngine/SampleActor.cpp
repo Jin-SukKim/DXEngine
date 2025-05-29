@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "TriangleActor.h"
+#include "SampleActor.h"
 
 #include "GeometryGenerator.h"
 #include "D3D11Utils.h"
@@ -7,7 +7,7 @@
 #include "ModelComponent.h"
 
 namespace DE {
-	TriangleActor::TriangleActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
+	SampleActor::SampleActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
 	{
 		// main object
 		{
@@ -16,32 +16,32 @@ namespace DE {
 			m_gelda->SetModel(device, meshes);
 		}
 	}
-	void TriangleActor::Initialize() {
+	void SampleActor::Initialize() {
 		Super::Initialize();
 
 		m_gelda->SetDrawNormal(true);
 	}
 
-	void TriangleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
+	void SampleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
 		Super::Update(context, deltaTime);
 		// constant buffer data °»½Å
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->RotateYaw(0.05);
-			tr->RotatePitch(0.05);
+			tr->RotateYaw(0.05f);
+			tr->RotatePitch(0.05f);
 		}
 	}
 
-	void TriangleActor::Render(ComPtr<ID3D11DeviceContext>& context) {
+	void SampleActor::Render(ComPtr<ID3D11DeviceContext>& context) {
 		Super::Render(context);
 	}
 
-	void TriangleActor::RenderNormal(ComPtr<ID3D11DeviceContext>& context)
+	void SampleActor::RenderNormal(ComPtr<ID3D11DeviceContext>& context)
 	{
 		m_gelda->RenderNormal(context);
 	}
 
-	bool TriangleActor::IsDrawNormal()
+	bool SampleActor::IsDrawNormal()
 	{
 		return m_gelda->IsDrawNormal();
 	}

@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "Scene.h"
 #include "CameraActor.h"
+#include "SkyboxActor.h"
 #include "TransformComponent.h"
 
 #include "AppBase.h"
 #include "InputManager.h"
 
-#include "TriangleActor.h"
+#include "SampleActor.h"
 
 namespace DE {
 	Scene::Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context) : m_device(device), m_context(context)
@@ -32,7 +33,7 @@ namespace DE {
 		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 		// Create the Sample State
-		device->CreateSamplerState(&sampDesc, m_samplerState.GetAddressOf());
+		device->CreateSamplerState(&sampDesc, m_linearWrap.GetAddressOf());
 
 		// Normal Vector 렌더링용
 		{
@@ -44,11 +45,20 @@ namespace DE {
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(m_device, m_globalConstsCPU, m_globalConstsGPU);
 
-		m_mainCamera = std::make_shared<CameraActor>(m_device, L"MainCamera");
+		// IBL
+		{
+			D3D11Utils::CreateVSAndIL(device, L"SkyboxVS.hlsl", inputElements, m_skyboxVS, il);
+			D3D11Utils::CreatePS(device, L"SkyboxPS.hlsl", m_skyboxPS);
+		}
 
+		// Scene 공통 Actor
+		{
+			m_mainCamera = std::make_shared<CameraActor>(m_device, L"MainCamera");
+			m_skybox = std::make_shared<SkyboxActor>(m_device, L"Skybox");
+		}
 		action = InputAxisAction(w, s);
 
-		triangle = std::make_shared<TriangleActor>(m_device, L"Temp");
+		triangle = std::make_shared<SampleActor>(m_device, L"Temp");
 	}
 
 	void Scene::Initialize() {
@@ -80,10 +90,16 @@ namespace DE {
 
 		// 카메라 위치 표시
 		{
+			m_mainCamera->Initialize();
 			TransformComponent* tr = m_mainCamera->GetComponent<TransformComponent>();
 			if (tr) {
 				tr->SetPos(Vector3(0.f, 0.f, -2.f));
 			}
+		}
+
+		// Skybox
+		{
+			m_skybox->Initialize();
 		}
 
 		// 입력 Bind
@@ -117,7 +133,11 @@ namespace DE {
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
 		SetGlobalConsts();
 
+		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
+		m_skybox->SetCommonSRVs(m_context);
+
 		m_context->VSSetShader(vs.Get(), 0, 0);
+		m_context->PSSetSamplers(0, 1, m_linearWrap.GetAddressOf());
 		m_context->PSSetShader(ps.Get(), 0, 0);
 		m_context->IASetInputLayout(il.Get());
 		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -135,6 +155,11 @@ namespace DE {
 
 			m_context->GSSetShader(nullptr, 0, 0);
 		}
+
+		m_context->VSSetShader(m_skyboxVS.Get(), 0, 0);
+		m_context->PSSetShader(m_skyboxPS.Get(), 0, 0);
+		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_skybox->Render(m_context);
 	}
 
 	void Scene::SetGlobalConsts()

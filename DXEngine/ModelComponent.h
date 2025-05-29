@@ -19,6 +19,7 @@ namespace DE {
 		
 		void SetModel(ComPtr<ID3D11Device>& device, const std::wstring& name, const std::string& basePath, const std::string& filename);
 		void SetModel(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes);
+		void SetModel(ComPtr<ID3D11Device>& device, const MeshData& mesh);
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
 	private:
