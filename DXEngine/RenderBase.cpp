@@ -139,6 +139,7 @@ namespace DE {
 
 		m_context->RSSetViewports(1, &m_screenViewport);
 	}
+
 	void RenderBase::InitRS()
 	{
 		D3D11_RASTERIZER_DESC rastDesc;

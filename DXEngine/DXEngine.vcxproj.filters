@@ -149,6 +149,10 @@
     <ClInclude Include="SkyboxActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
+    <ClInclude Include="GraphicsPSO.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -208,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="SkyboxActor.cpp">
       <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsPSO.cpp">
+      <Filter>private\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsCommon.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

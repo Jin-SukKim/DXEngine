@@ -158,6 +158,7 @@ namespace DE {
 
 		m_context->VSSetShader(m_skyboxVS.Get(), 0, 0);
 		m_context->PSSetShader(m_skyboxPS.Get(), 0, 0);
+
 		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_skybox->Render(m_context);
 	}
