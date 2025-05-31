@@ -65,6 +65,12 @@
     <Filter Include="Shaders\Utils">
       <UniqueIdentifier>{f9ed7de0-f09c-4f85-a598-4c354a0b90b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\PostProcess">
+      <UniqueIdentifier>{ebca0db6-9411-4fac-b961-0bc9ff2237b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\PostProcess">
+      <UniqueIdentifier>{704dc767-c72f-4e76-8354-9d9e349660d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -152,7 +158,10 @@
     <ClInclude Include="GraphicsPSO.h">
       <Filter>public\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsCommon.h" />
+    <ClInclude Include="GraphicsCommon.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageFilter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -217,6 +226,9 @@
       <Filter>private\Utils</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsCommon.cpp">
+      <Filter>private\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

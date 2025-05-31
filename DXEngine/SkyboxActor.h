@@ -23,9 +23,9 @@ namespace DE {
 		ModelComponent* m_sky;
 
 		// Cubemap은 Shader에서 읽어서 사용만 하면 되므로 SRV만 있으면 됨
-		ComPtr<ID3D11ShaderResourceView> m_envSRV;
-		ComPtr<ID3D11ShaderResourceView> m_specularSRV;
-		ComPtr<ID3D11ShaderResourceView> m_irradianceSRV;
+		ComPtr<ID3D11ShaderResourceView> m_envSRV; // Cubemap
+		ComPtr<ID3D11ShaderResourceView> m_specularSRV; // Specular (아주 선명한 Texture)
+		ComPtr<ID3D11ShaderResourceView> m_irradianceSRV; // Diffuse (부드럽게 전처리한 Texture)
 		ComPtr<ID3D11ShaderResourceView> m_brdfSRV;
 	};
 }

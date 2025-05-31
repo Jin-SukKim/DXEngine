@@ -29,6 +29,7 @@ namespace DE {
 	{
 		Super::Update(context, deltaTime);
 	}
+
 	void SkyboxActor::Render(ComPtr<ID3D11DeviceContext>& context)
 	{
 		Super::Render(context);
