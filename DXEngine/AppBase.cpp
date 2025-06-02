@@ -74,12 +74,12 @@ namespace DE {
 		m_gui.Update();
 		m_inputManager.Update(m_mouseX, m_mouseY, true);
 		m_renderer.Update();
-		m_scene->Update(GetDeltaTime());
+		m_scene->Update(m_renderer.GetContext(), GetDeltaTime());
 	}
 
 	void AppBase::render() {
 		m_renderer.Render();
-		m_scene->Render();
+		m_scene->Render(&m_renderer);
 		m_gui.Render();
 
 		m_renderer.Present();

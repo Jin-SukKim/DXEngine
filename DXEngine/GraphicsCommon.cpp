@@ -2,7 +2,7 @@
 #include "GraphicsCommon.h"
 
 namespace DE {
-	void Graphics::InitCommonStates(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::InitCommonStates(ComPtr<ID3D11Device>& device)
 	{
 		initRasterizerStates(device);
 		initDepthStencilStates(device);
@@ -13,7 +13,7 @@ namespace DE {
 		initPipelineStates(device);
 	}
 
-	void Graphics::initRasterizerStates(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::initRasterizerStates(ComPtr<ID3D11Device>& device)
 	{
 		// SolidRS
 		D3D11_RASTERIZER_DESC rastDesc;
@@ -31,7 +31,7 @@ namespace DE {
 		ThrowIfFailed(device->CreateRasterizerState(&rastDesc, wireRS.GetAddressOf()));
 	}
 	
-	void Graphics::initDepthStencilStates(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::initDepthStencilStates(ComPtr<ID3D11Device>& device)
 	{
 		// D3D11_DEPTH_STENCIL_DESC 옵션 정리
 		// https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_depth_stencil_desc
@@ -69,7 +69,7 @@ namespace DE {
 		ThrowIfFailed(device->CreateDepthStencilState(&dsDesc, drawDDS.GetAddressOf()));
 	}
 	
-	void Graphics::initShaders(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::initShaders(ComPtr<ID3D11Device>& device)
 	{
 		// InputLayouts
 
@@ -95,7 +95,7 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"SkyboxPS.hlsl", skyboxPS);
 	}
 	
-	void Graphics::initSamplers(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
 	{
 		// Texture sampler 만들기
 		// 기본 Default
@@ -113,21 +113,27 @@ namespace DE {
 		// Create the Sample State
 		device->CreateSamplerState(&sampDesc, linearWrapSS.GetAddressOf());
 
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		device->CreateSamplerState(&sampDesc, linearClampSS.GetAddressOf());
+
 		sampleStates.emplace_back(linearWrapSS.Get()); // register(s0)
+		sampleStates.emplace_back(linearClampSS.Get()); // register(s1)
 	}
 	
-	void Graphics::initBlendStates(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::initBlendStates(ComPtr<ID3D11Device>& device)
 	{
 	}
 	
-	void Graphics::initPipelineStates(ComPtr<ID3D11Device>& device)
+	void GraphicsCommon::initPipelineStates(ComPtr<ID3D11Device>& device)
 	{
 		// Basic (Default Solid)
 		basic.solidPSO.inputLayout = basicIL;
 		basic.solidPSO.vertexShader = basicVS;
 		basic.solidPSO.pixelShader = basicPS;
 		basic.solidPSO.rasterizerState = solidRS;
-		basic.solidPSO.pritivieTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		basic.solidPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 		// Basic Wire
 		basic.wirePSO.rasterizerState = wireRS; // Solid에서 RS만 바뀜
@@ -135,8 +141,9 @@ namespace DE {
 		// Normal
 		normal.solidPSO = basic.solidPSO;
 		normal.solidPSO.vertexShader = normalVS;
+		normal.solidPSO.geometryShader = normalGS;
 		normal.solidPSO.pixelShader = normalPS;
-		normal.solidPSO.pritivieTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+		normal.solidPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 
 		// Skybox
 		skybox.solidPSO = basic.solidPSO;

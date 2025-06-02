@@ -29,8 +29,7 @@ namespace DE {
 			float option4;
 		};
 
-	protected:
-		
+	protected:	
 		ComPtr<ID3D11PixelShader> m_pixelShader;
 		ConstantBuffer<ImageFilterConstData> m_const;
 		D3D11_VIEWPORT m_viewport = {};

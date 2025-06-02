@@ -11,13 +11,13 @@ namespace DE {
 		domainShader		= pso.domainShader;
 		geometryShader		= pso.geometryShader;
 		blendState			= pso.blendState;
-		depthStencilStates	= pso.depthStencilStates;
+		depthStencilState = pso.depthStencilState;
 		rasterizerState		= pso.rasterizerState;
 		for (int i = 0; i < 4; ++i)
 			blendFactor[i]	= pso.blendFactor[i];
 		stencilRef			= pso.stencilRef;
 
-		pritivieTopology	= pso.pritivieTopology;
+		primitiveTopology = pso.primitiveTopology;
 	}
 	void GraphicsPSO::SetBlendFactor(const float blendFactor[4])
 	{

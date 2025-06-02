@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "RenderBase.h"
-
-
 #include "GeometryGenerator.h"
 #include "D3D11Utils.h"
 #include "MeshData.h"
 
 namespace DE {
+	GraphicsCommon RenderBase::graphicsCommon;
+
 	RenderBase::RenderBase() : m_screenViewport(D3D11_VIEWPORT())
 	{
 	}
@@ -75,6 +75,8 @@ namespace DE {
 		InitDepthStencilState();
 		// DepthStencilView 생성
 		CreateDepthStencilBuffer(window);
+
+		graphicsCommon.InitCommonStates(m_device);
 
 		return true;
 	}
@@ -209,5 +211,20 @@ namespace DE {
 		CreateDepthStencilBuffer(window);
 		// 해상도에 맞는 Viewport 설정
 		SetViewport(window);
+	}
+
+	void RenderBase::SetPipelineState(const GraphicsPSO& pso)
+	{
+		m_context->VSSetShader(pso.vertexShader.Get(), 0, 0);
+		m_context->PSSetShader(pso.pixelShader.Get(), 0, 0);
+		m_context->HSSetShader(pso.hullShader.Get(), 0, 0);
+		m_context->DSSetShader(pso.domainShader.Get(), 0, 0);
+		m_context->GSSetShader(pso.geometryShader.Get(), 0, 0);
+		m_context->CSSetShader(NULL, 0, 0);
+		m_context->IASetInputLayout(pso.inputLayout.Get());
+		m_context->RSSetState(pso.rasterizerState.Get());
+		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff);
+		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
+		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
 	}
 }

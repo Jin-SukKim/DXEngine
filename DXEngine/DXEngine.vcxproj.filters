@@ -162,6 +162,7 @@
       <Filter>public\Utils</Filter>
     </ClInclude>
     <ClInclude Include="ImageFilter.h" />
+    <ClInclude Include="PostProcess.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -229,6 +230,9 @@
       <Filter>private\Utils</Filter>
     </ClCompile>
     <ClCompile Include="ImageFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

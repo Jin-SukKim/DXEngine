@@ -25,12 +25,12 @@ namespace DE {
 		ComPtr<ID3D11GeometryShader> geometryShader;
 
 		ComPtr<ID3D11BlendState> blendState;
-		ComPtr<ID3D11DepthStencilState> depthStencilStates;
+		ComPtr<ID3D11DepthStencilState> depthStencilState;
 		ComPtr<ID3D11RasterizerState> rasterizerState;
 
 		float blendFactor[4] = { 1.f, 1.f, 1.f, 1.f };
 		UINT stencilRef = 0;
 
-		D3D11_PRIMITIVE_TOPOLOGY pritivieTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		D3D11_PRIMITIVE_TOPOLOGY primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	};
 }

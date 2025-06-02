@@ -101,6 +101,29 @@ namespace DE {
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 	}
 
+	void D3D11Utils::CreateImageFilterTexture(ComPtr<ID3D11Device>& device, int width, int height, Texture2D& texture)
+	{
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = desc.ArraySize = 1;
+		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; // 이미지 처리 용도
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_DEFAULT; // GPU read/write
+		// SRV와 RTV 용으로 사용
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		desc.MiscFlags = 0;
+		desc.CPUAccessFlags = 0;
+
+		// 데이터 없이 Texture 공간만 설정 및 생성
+		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+		// Shader Resource View 생성
+		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
+		// Render Target View 생성
+		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
+	}
+
 	void D3D11Utils::CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView)
 	{
 		ComPtr<ID3D11Texture2D> texture;

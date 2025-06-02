@@ -8,57 +8,22 @@
 #include "InputManager.h"
 
 #include "SampleActor.h"
+#include "RenderBase.h"
 
 namespace DE {
-	Scene::Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context) : m_device(device), m_context(context)
+	Scene::Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
 	{
-		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements = {
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 6, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		};
-		D3D11Utils::CreateVSAndIL(device, L"BasicVS.hlsl", inputElements, vs, il);
-		D3D11Utils::CreatePS(device, L"BasicPS.hlsl", ps);
-
-		// Texture sampler 만들기
-		D3D11_SAMPLER_DESC sampDesc;
-		ZeroMemory(&sampDesc, sizeof(sampDesc));
-		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // Linear Interpolation
-		// Wrap
-		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		sampDesc.MinLOD = 0;
-		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-		// Create the Sample State
-		device->CreateSamplerState(&sampDesc, m_linearWrap.GetAddressOf());
-
-		// Normal Vector 렌더링용
-		{
-			D3D11Utils::CreateVSAndIL(device, L"NormalVS.hlsl", inputElements, normalVS, il);
-			D3D11Utils::CreateGS(device, L"NormalGS.hlsl", normalGS);
-			D3D11Utils::CreatePS(device, L"NormalPS.hlsl", normalPS);
-		}
-
 		// 공통으로 쓰이는 Constant buffer
-		D3D11Utils::CreateConstantBuffer(m_device, m_globalConstsCPU, m_globalConstsGPU);
-
-		// IBL
-		{
-			D3D11Utils::CreateVSAndIL(device, L"SkyboxVS.hlsl", inputElements, m_skyboxVS, il);
-			D3D11Utils::CreatePS(device, L"SkyboxPS.hlsl", m_skyboxPS);
-		}
+		D3D11Utils::CreateConstantBuffer(device, m_globalConstsCPU, m_globalConstsGPU);
 
 		// Scene 공통 Actor
 		{
-			m_mainCamera = std::make_shared<CameraActor>(m_device, L"MainCamera");
-			m_skybox = std::make_shared<SkyboxActor>(m_device, L"Skybox");
+			m_mainCamera = std::make_shared<CameraActor>(device, L"MainCamera");
+			m_skybox = std::make_shared<SkyboxActor>(device, L"Skybox");
 		}
 		action = InputAxisAction(w, s);
 
-		triangle = std::make_shared<SampleActor>(m_device, L"Temp");
+		triangle = std::make_shared<SampleActor>(device, L"Temp");
 	}
 
 	void Scene::Initialize() {
@@ -114,7 +79,7 @@ namespace DE {
 		}
 	}
 
-	void Scene::Update(const float& deltaTime) {
+	void Scene::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
 		// 조명 업데이트
 		UpdateLight(deltaTime);
 
@@ -124,50 +89,30 @@ namespace DE {
 		m_globalConstsCPU.proj = m_mainCamera->GetProjMatrix().Transpose();
 		m_globalConstsCPU.viewProj = m_globalConstsCPU.proj * m_globalConstsCPU.view; // Transpose 시켰으므로 곱셈 순서 주의
 		m_globalConstsCPU.eyeWorld = m_mainCamera->GetPos();
-		D3D11Utils::UpdateBuffer(m_context, m_globalConstsCPU, m_globalConstsGPU);
+		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
 
-		triangle->Update(m_context, deltaTime);
+		triangle->Update(context, deltaTime);
 	}
 
-	void Scene::Render() {
-		// Global Constants을 Shader에서 사용할 수 있도록 설정
-		SetGlobalConsts();
+	void Scene::Render(RenderBase* renderer) {
+		ComPtr<ID3D11DeviceContext>& context = renderer->GetContext();
 
-		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
-		m_skybox->SetCommonSRVs(m_context);
+		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State, SRV 등을 설정
+		setGlobals(context);
 
-		m_context->VSSetShader(vs.Get(), 0, 0);
-		m_context->PSSetSamplers(0, 1, m_linearWrap.GetAddressOf());
-		m_context->PSSetShader(ps.Get(), 0, 0);
-		m_context->IASetInputLayout(il.Get());
-		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		renderer->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
-		triangle->Render(m_context);
+		triangle->Render(context);
 
 		if (triangle->IsDrawNormal()) {
 			// Normal Vector 그리기
-			m_context->VSSetShader(normalVS.Get(), 0, 0);
-			m_context->PSSetShader(normalPS.Get(), 0, 0);
-			m_context->GSSetShader(normalGS.Get(), 0, 0);
-			m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+			renderer->SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
 
-			triangle->RenderNormal(m_context);
-
-			m_context->GSSetShader(nullptr, 0, 0);
+			triangle->RenderNormal(context);
 		}
 
-		m_context->VSSetShader(m_skyboxVS.Get(), 0, 0);
-		m_context->PSSetShader(m_skyboxPS.Get(), 0, 0);
-
-		m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_skybox->Render(m_context);
-	}
-
-	void Scene::SetGlobalConsts()
-	{
-		m_context->VSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
-		m_context->GSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
-		m_context->PSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
+		renderer->SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		m_skybox->Render(context);
 	}
 
 	void Scene::UpdateLight(const float& deltaTime)
@@ -192,5 +137,21 @@ namespace DE {
 		}
 
 		tempPos = triangle->GetComponent<TransformComponent>()->GetPos();
+	}
+	void Scene::setGlobals(ComPtr<ID3D11DeviceContext>& context)
+	{
+		// Global Constants을 Shader에서 사용할 수 있도록 설정
+		context->VSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
+		context->GSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
+		context->PSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
+
+		// Shader들에서 공통으로 사용하는 Sampler States
+		context->VSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
+			RenderBase::graphicsCommon.sampleStates.data());
+		context->PSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
+			RenderBase::graphicsCommon.sampleStates.data());
+
+		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
+		m_skybox->SetCommonSRVs(context);
 	}
 }

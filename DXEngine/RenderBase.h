@@ -1,7 +1,11 @@
 #pragma once
 #include "D3D11Utils.h"
+#include "GraphicsCommon.h"
 
 namespace DE {
+	class GraphicsCommon;
+	class GraphicsPSO;
+
 	class RenderBase
 	{
 	public:
@@ -28,6 +32,11 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }
 		ComPtr<IDXGISwapChain>& GetSwapChain() { return m_swapChain; }
 		void ResizeSwapChain(const WindowInfo& window);
+
+		void SetPipelineState(const GraphicsPSO& pso);
+
+		// 미리 설정해둔 Setting들
+		static GraphicsCommon graphicsCommon;
 	protected:
 		ComPtr<ID3D11Device> m_device;
 		ComPtr<ID3D11DeviceContext> m_context;

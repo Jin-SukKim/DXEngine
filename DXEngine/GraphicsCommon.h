@@ -2,10 +2,11 @@
 #include "GraphicsPSO.h"
 
 namespace DE {
-	class Graphics {
+	class GraphicsCommon {
 	public:
 		void InitCommonStates(ComPtr<ID3D11Device>& device);
 
+		const ComPtr<ID3D11SamplerState>& GetPostProcessSamlper() const { return linearClampSS; }
 	private:
 		// 내부적으로 InitCommonStates()에서 사용
 
@@ -21,6 +22,7 @@ namespace DE {
 		void initBlendStates(ComPtr<ID3D11Device>& device);
 		// GraphcisPSO 설정
 		void initPipelineStates(ComPtr<ID3D11Device>& device);
+
 	public:
 		struct {
 			// Graphcis Pipeline States
@@ -39,6 +41,7 @@ namespace DE {
 
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
+
 	private:
 		// Rasterizer State (CCW : Counter-Clockwise)
 		ComPtr<ID3D11RasterizerState> solidRS;
@@ -64,6 +67,7 @@ namespace DE {
 
 		// Sampler
 		ComPtr<ID3D11SamplerState> linearWrapSS;
+		ComPtr<ID3D11SamplerState> linearClampSS;
 
 		// Blend States
 	};
