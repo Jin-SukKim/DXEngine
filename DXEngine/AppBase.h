@@ -22,6 +22,7 @@ namespace DE {
 		void preUpdtea();
 		void update();
 		void render();
+		void postRender();
 
 		bool initWindow();
 		float getAspectRatio() { return float(m_window.width) / m_window.height; }

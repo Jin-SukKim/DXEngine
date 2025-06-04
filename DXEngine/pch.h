@@ -34,4 +34,5 @@ using DirectX::SimpleMath::Quaternion;
 #include "D3D11Utils.h"
 #include "ConstantData.h"
 #include "InputTypes.h"
+#include "Texture2D.h"
 

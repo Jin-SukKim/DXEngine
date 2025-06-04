@@ -71,6 +71,12 @@
     <Filter Include="private\PostProcess">
       <UniqueIdentifier>{704dc767-c72f-4e76-8354-9d9e349660d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\PostProcess">
+      <UniqueIdentifier>{1dcb1abd-9d00-47bd-8f73-b70a191c72fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\PostProcess\Bloom">
+      <UniqueIdentifier>{640f767d-d833-4e09-973f-29ba5171a3b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -161,8 +167,15 @@
     <ClInclude Include="GraphicsCommon.h">
       <Filter>public\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ImageFilter.h" />
-    <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="PostProcess.h">
+      <Filter>public\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageFilter.h">
+      <Filter>public\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="BloomEffect.h">
+      <Filter>public\PostProcess</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -229,11 +242,14 @@
     <ClCompile Include="GraphicsCommon.cpp">
       <Filter>private\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="ImageFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PostProcess.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageFilter.cpp">
+      <Filter>private\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="BloomEffect.cpp">
+      <Filter>private\PostProcess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -257,6 +273,18 @@
     </FxCompile>
     <FxCompile Include="SkyboxPS.hlsl">
       <Filter>Shaders\Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BloomDownPS.hlsl">
+      <Filter>Shaders\PostProcess\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="SamplingVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BloomUpPS.hlsl">
+      <Filter>Shaders\PostProcess\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="CombinePS.hlsl">
+      <Filter>Shaders\PostProcess\Bloom</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

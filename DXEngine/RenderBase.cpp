@@ -3,6 +3,7 @@
 #include "GeometryGenerator.h"
 #include "D3D11Utils.h"
 #include "MeshData.h"
+#include "PostProcess.h"
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
@@ -39,7 +40,8 @@ namespace DE {
 		sd.BufferCount = 2; // double-buffering
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
-		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering용
+		sd.BufferUsage = DXGI_USAGE_SHADER_INPUT | // TODO: 임시로 PostProcessing을 위해 추가
+			DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering용
 			// Compute Shader 용(CS에서 Back-Buffer를 사용할게 아니라면 필요없지만 후처리때 사용할 수 있으므로 설정)
 			DXGI_USAGE_UNORDERED_ACCESS; 
 		sd.OutputWindow = window.hwnd; // 렌더링할 윈도우
@@ -83,7 +85,7 @@ namespace DE {
 
 	void RenderBase::Update()
 	{
-		
+		m_postProcess->Update(m_context);
 	}
 
 	void RenderBase::Render()
@@ -100,6 +102,24 @@ namespace DE {
 		m_context->RSSetState(m_solidRS.Get());
 	}
 
+	void RenderBase::PostRender()
+	{
+		// 후처리 필터 시작하기 전에 Texture2DMS에 렌더링 된 결과를 Texture2D로 복사
+		ComPtr<ID3D11Texture2D> backBuffer;
+		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
+		m_context->CopyResource(m_tempTexture.Get(), backBuffer.Get());
+
+		// Set PostProcessing GraphcisPSO
+		SetPipelineState(m_postProcessPSO);
+		if (m_postProcess)
+			m_postProcess->Render(*this);
+
+		// 현재 프레임 결과 복사
+		//ComPtr<ID3D11Texture2D> backBuffer;
+		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
+		m_context->CopyResource(m_prevFrame.GetTexture(), backBuffer.Get()); // 모션 블러 효과를 위해 렌더링 결과 보관
+	}
+
 	void RenderBase::Present()
 	{
 		m_swapChain->Present(1, 0);
@@ -113,6 +133,17 @@ namespace DE {
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), NULL, m_backBufferRTV.GetAddressOf()));
+
+		D3D11_TEXTURE2D_DESC desc;
+		backBuffer->GetDesc(&desc);
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.MiscFlags = 0;
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_tempTexture.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateShaderResourceView(m_tempTexture.Get(), NULL, m_backBufferSRV.GetAddressOf()));
+
+		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
 	}
 
 	void RenderBase::SetViewport(const WindowInfo& window)
@@ -226,5 +257,11 @@ namespace DE {
 		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff);
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
+	}
+	void RenderBase::SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso)
+	{
+		postProcess.Initialize(*this, { m_backBufferSRV, m_prevFrame.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
+		m_postProcess = &postProcess;
+		m_postProcessPSO = pso;
 	}
 }

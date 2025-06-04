@@ -77,6 +77,8 @@ namespace DE {
 
 		// Texture2D 생성
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const std::string& filename, Texture2D& texture);
+		// Resource Texture의 설정을 가져와서 Texture, SRV, RTV 생성
+		static void CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture);
 		static void CreateImageFilterTexture(ComPtr<ID3D11Device>& device, int width, int height, Texture2D& texture);
 		// DDS 파일로부터 Texture 생성 (isCubemap이 true면 Cubemap Texture, false면 Texture2D 생성)
 		static void CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView);

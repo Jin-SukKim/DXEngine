@@ -5,6 +5,7 @@
 namespace DE {
 	class GraphicsCommon;
 	class GraphicsPSO;
+	class PostProcess;
 
 	class RenderBase
 	{
@@ -15,6 +16,7 @@ namespace DE {
 		virtual bool Initialize(WindowInfo& window);
 		virtual void Update();
 		virtual void Render();
+		virtual void PostRender();
 		void Present();
 
 		void CreateBackBufferRTV();
@@ -34,6 +36,8 @@ namespace DE {
 		void ResizeSwapChain(const WindowInfo& window);
 
 		void SetPipelineState(const GraphicsPSO& pso);
+		
+		void SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso);
 
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
@@ -42,6 +46,11 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext> m_context;
 		ComPtr<IDXGISwapChain> m_swapChain;
 		ComPtr<ID3D11RenderTargetView> m_backBufferRTV;
+		
+		// TODO
+		ComPtr<ID3D11Texture2D> m_tempTexture;
+		ComPtr<ID3D11ShaderResourceView> m_backBufferSRV; // 임시로 PostProcessing을 위해 SRV 생성
+		Texture2D m_prevFrame;
 
 		// Swap-Buffer의 Back Buffer 포맷은 변경해서 사용할 수 있음
 		DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 32-bit color
@@ -53,5 +62,9 @@ namespace DE {
 
 		ComPtr<ID3D11DepthStencilState> m_defaultDSS;
 		ComPtr<ID3D11DepthStencilView> m_defaultDSV;
+
+		// TODO: 여러 개의 PostProcess를 사용하려면 Vector를 사용하는게 좋지 않을까?
+		PostProcess* m_postProcess;
+		GraphicsPSO m_postProcessPSO;
 	};
 }

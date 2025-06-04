@@ -9,15 +9,16 @@ namespace DE {
 	class CameraActor;
 	class SkyboxActor;
 	class RenderBase;
+	class BloomEffect;
 
 	class Scene
 	{
 	public:
-		Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context);
+		Scene(RenderBase& renderer);
 		virtual ~Scene() {}
 		virtual void Initialize();
 		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime);
-		virtual void Render(RenderBase* renderer);
+		virtual void Render(RenderBase& renderer);
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
 
@@ -44,6 +45,8 @@ namespace DE {
 		std::shared_ptr<SampleActor> triangle;
 
 		std::shared_ptr<SkyboxActor> m_skybox;
+
+		std::shared_ptr<BloomEffect> m_blommPostProcess;
 
 	};
 }

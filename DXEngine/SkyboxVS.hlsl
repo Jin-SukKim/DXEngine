@@ -1,11 +1,15 @@
 #include "Common.hlsli"
 
+struct SkybosVSInput {
+    float3 posModel : POSITION;
+};
+
 struct SkyboxPSInput {
     float4 posProj : SV_POSITION;
     float3 posModel : POSITION;
 };
 
-SkyboxPSInput main(VSInput input) {
+SkyboxPSInput main(SkybosVSInput input) {
     SkyboxPSInput output;
     output.posModel = input.posModel;
     // 모델을 이동, 회전시키면 세상은 움직이면 안되지만 뷰가 변환하면 세상도 같이 움직여야 함

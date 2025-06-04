@@ -29,6 +29,7 @@ namespace DE {
 			float option4;
 		};
 
+		ImageFilterConstData& GetConstData() { return m_const.GetCpu(); }
 	protected:	
 		ComPtr<ID3D11PixelShader> m_pixelShader;
 		ConstantBuffer<ImageFilterConstData> m_const;

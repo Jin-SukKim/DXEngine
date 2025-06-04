@@ -29,6 +29,13 @@ namespace DE {
 		// WireRS
 		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
 		ThrowIfFailed(device->CreateRasterizerState(&rastDesc, wireRS.GetAddressOf()));
+
+		ZeroMemory(&rastDesc, sizeof(D3D11_RASTERIZER_DESC));
+		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+		rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
+		rastDesc.FrontCounterClockwise = false;
+		rastDesc.DepthClipEnable = false;
+		ThrowIfFailed(device->CreateRasterizerState(&rastDesc, postProcessRS.GetAddressOf()));
 	}
 	
 	void GraphicsCommon::initDepthStencilStates(ComPtr<ID3D11Device>& device)
@@ -89,10 +96,23 @@ namespace DE {
 
 		// Skybox
 		std::vector<D3D11_INPUT_ELEMENT_DESC> skyboxIEs = {
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
 		};
 		D3D11Utils::CreateVSAndIL(device, L"SkyboxVS.hlsl", skyboxIEs, skyboxVS, skyboxIL);
 		D3D11Utils::CreatePS(device, L"SkyboxPS.hlsl", skyboxPS);
+
+		// PostProcessing
+		std::vector<D3D11_INPUT_ELEMENT_DESC> postProcessIEs = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 6, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		};
+
+		D3D11Utils::CreateVSAndIL(device, L"SamplingVS.hlsl", postProcessIEs, samplingVS, samplingIL);
+		// Bloom Filter
+		D3D11Utils::CreatePS(device, L"BloomDownPS.hlsl", bloomDownPS);
+		D3D11Utils::CreatePS(device, L"BloomUpPS.hlsl", bloomUpPS);
+		D3D11Utils::CreatePS(device, L"CombinePS.hlsl", combinePS);
 	}
 	
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
@@ -113,9 +133,9 @@ namespace DE {
 		// Create the Sample State
 		device->CreateSamplerState(&sampDesc, linearWrapSS.GetAddressOf());
 
-		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 		device->CreateSamplerState(&sampDesc, linearClampSS.GetAddressOf());
 
 		sampleStates.emplace_back(linearWrapSS.Get()); // register(s0)
@@ -153,5 +173,12 @@ namespace DE {
 
 		skybox.wirePSO = skybox.solidPSO;
 		skybox.wirePSO.rasterizerState = wireRS;
+
+		// PostProcessing
+		postProcess.bloomPSO = basic.solidPSO;
+		postProcess.bloomPSO.inputLayout = samplingIL;
+		postProcess.bloomPSO.vertexShader = samplingVS;
+		postProcess.bloomPSO.rasterizerState = postProcessRS;
+
 	}
 }

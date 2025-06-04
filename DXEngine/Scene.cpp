@@ -10,9 +10,14 @@
 #include "SampleActor.h"
 #include "RenderBase.h"
 
+#include "BloomEffect.h"
+
 namespace DE {
-	Scene::Scene(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
+	Scene::Scene(RenderBase& renderer)
 	{
+		ComPtr<ID3D11Device>& device = renderer.GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(device, m_globalConstsCPU, m_globalConstsGPU);
 
@@ -24,6 +29,10 @@ namespace DE {
 		action = InputAxisAction(w, s);
 
 		triangle = std::make_shared<SampleActor>(device, L"Temp");
+
+		m_blommPostProcess = std::make_shared<BloomEffect>();
+		m_blommPostProcess->SetFilterLevel(4);
+		renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
 	}
 
 	void Scene::Initialize() {
@@ -94,24 +103,24 @@ namespace DE {
 		triangle->Update(context, deltaTime);
 	}
 
-	void Scene::Render(RenderBase* renderer) {
-		ComPtr<ID3D11DeviceContext>& context = renderer->GetContext();
+	void Scene::Render(RenderBase& renderer) {
+		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
 		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State, SRV 등을 설정
 		setGlobals(context);
 
-		renderer->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
+		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
 		triangle->Render(context);
 
 		if (triangle->IsDrawNormal()) {
 			// Normal Vector 그리기
-			renderer->SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
+			renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
 
 			triangle->RenderNormal(context);
 		}
 
-		renderer->SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
 		m_skybox->Render(context);
 	}
 

@@ -6,7 +6,6 @@ namespace DE {
 	public:
 		void InitCommonStates(ComPtr<ID3D11Device>& device);
 
-		const ComPtr<ID3D11SamplerState>& GetPostProcessSamlper() const { return linearClampSS; }
 	private:
 		// 내부적으로 InitCommonStates()에서 사용
 
@@ -39,13 +38,17 @@ namespace DE {
 			GraphicsPSO wirePSO;
 		} skybox;
 
+		struct {
+			GraphicsPSO bloomPSO;
+		} postProcess;
+
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
-	private:
 		// Rasterizer State (CCW : Counter-Clockwise)
 		ComPtr<ID3D11RasterizerState> solidRS;
 		ComPtr<ID3D11RasterizerState> wireRS;
+		ComPtr<ID3D11RasterizerState> postProcessRS;
 
 		// Depth Stencil State
 		ComPtr<ID3D11DepthStencilState> drawDDS; // 일반적(Default)
@@ -53,6 +56,7 @@ namespace DE {
 		// InputLayouts
 		ComPtr<ID3D11InputLayout> basicIL;
 		ComPtr<ID3D11InputLayout> skyboxIL;
+		ComPtr<ID3D11InputLayout> samplingIL;
 
 		// Shaders
 		ComPtr<ID3D11VertexShader> basicVS;
@@ -64,6 +68,11 @@ namespace DE {
 
 		ComPtr<ID3D11VertexShader> skyboxVS;
 		ComPtr<ID3D11PixelShader> skyboxPS;
+
+		ComPtr<ID3D11VertexShader> samplingVS;
+		ComPtr<ID3D11PixelShader> bloomDownPS;
+		ComPtr<ID3D11PixelShader> bloomUpPS;
+		ComPtr<ID3D11PixelShader> combinePS;
 
 		// Sampler
 		ComPtr<ID3D11SamplerState> linearWrapSS;
