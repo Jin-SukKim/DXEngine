@@ -4,6 +4,7 @@
 #include "MeshData.h"
 #include "GeometryGenerator.h"
 #include "ModelComponent.h"
+#include "RenderBase.h"
 
 namespace DE {
 	SkyboxActor::SkyboxActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
@@ -30,9 +31,10 @@ namespace DE {
 		Super::Update(context, deltaTime);
 	}
 
-	void SkyboxActor::Render(ComPtr<ID3D11DeviceContext>& context)
+	void SkyboxActor::Render(RenderBase& renderer)
 	{
-		Super::Render(context);
+		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		RenderComponent(renderer.GetContext(), ComponentType::Model);
 	}
 
 	void SkyboxActor::SetCubeMaps(ComPtr<ID3D11Device>& device, std::wstring basePath, std::wstring envFilename, std::wstring specularFilename, std::wstring irradianceFilename, std::wstring brdfFilename)

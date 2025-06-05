@@ -88,6 +88,8 @@ namespace DE {
 		};
 		D3D11Utils::CreateVSAndIL(device, L"BasicVS.hlsl", basicIEs, basicVS, basicIL);
 		D3D11Utils::CreatePS(device, L"BasicPS.hlsl", basicPS);
+		// Bounding Volume
+		D3D11Utils::CreatePS(device, L"ColorPS.hlsl", colorPS);
 
 		// Normal Vector
 		D3D11Utils::CreateVSAndIL(device, L"NormalVS.hlsl", basicIEs, normalVS, basicIL);
@@ -156,7 +158,13 @@ namespace DE {
 		basic.solidPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 		// Basic Wire
+		basic.wirePSO = basic.solidPSO;
 		basic.wirePSO.rasterizerState = wireRS; // Solid에서 RS만 바뀜
+
+		// Bounding Volume
+		basic.boundPSO = basic.wirePSO; // Wire PSO 사용
+		basic.boundPSO.pixelShader = colorPS; // Pixel Shader을 단색을 렌더링하는 Shader로 변경
+		basic.boundPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 
 		// Normal
 		normal.solidPSO = basic.solidPSO;

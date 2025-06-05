@@ -93,7 +93,6 @@ namespace DE {
 			context->PSSetConstantBuffers(1, 2, constBuffers);
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			context->DrawIndexed(mesh.indexCount, 0, 0);
 		}
 	}

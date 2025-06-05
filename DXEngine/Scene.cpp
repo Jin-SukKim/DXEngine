@@ -109,19 +109,9 @@ namespace DE {
 		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State, SRV 등을 설정
 		setGlobals(context);
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
+		triangle->Render(renderer);
 
-		triangle->Render(context);
-
-		if (triangle->IsDrawNormal()) {
-			// Normal Vector 그리기
-			renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
-
-			triangle->RenderNormal(context);
-		}
-
-		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		m_skybox->Render(context);
+		m_skybox->Render(renderer);
 	}
 
 	void Scene::UpdateLight(const float& deltaTime)

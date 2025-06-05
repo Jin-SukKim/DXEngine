@@ -11,7 +11,6 @@ namespace DE {
 
 		void Initialize() override {}
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override {}
-		void Render(ComPtr<ID3D11DeviceContext>& context) override {}
 
 		Matrix GetViewMatrix();
 		Matrix GetProjMatrix();

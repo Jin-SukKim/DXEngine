@@ -3,6 +3,7 @@
 #include "Component.h"
 
 namespace DE {
+	class RenderBase;
 	class Actor : public Object
 	{
 		using Super = Object;
@@ -12,7 +13,7 @@ namespace DE {
 
 		virtual void Initialize() override;
 		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		virtual void Render(ComPtr<ID3D11DeviceContext>& context) override;
+		virtual void Render(RenderBase& renderer) override;
 
 		template<typename T_COMPONENT>
 		T_COMPONENT* AddComponent(ComPtr<ID3D11Device>& device, const std::wstring& name);
@@ -20,6 +21,8 @@ namespace DE {
 		template<typename T_COMPONENT>
 		T_COMPONENT* GetComponent();
 
+	protected:
+		void RenderComponent(ComPtr<ID3D11DeviceContext>& context, const ComponentType& type);
 	private:
 		std::vector<std::unique_ptr<Component>> m_components;
 
@@ -32,9 +35,11 @@ namespace DE {
 	{
 		std::unique_ptr<T_COMPONENT> comp = std::make_unique<T_COMPONENT>(device, name);
 		comp->SetOwner(this);
-		m_components.emplace_back(std::move(comp));
-		return dynamic_cast<T_COMPONENT*>(m_components.back().get());
+		size_t idx = static_cast<size_t>(comp->GetType());
+		m_components[idx] = std::move(comp);
+		return dynamic_cast<T_COMPONENT*>(m_components[idx].get());
 	}
+
 	template<typename T_COMPONENT>
 	inline T_COMPONENT* Actor::GetComponent()
 	{

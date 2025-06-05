@@ -9,7 +9,7 @@ namespace DE {
 	{
 		using Super = Component;
 	public:
-		ModelComponent(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name) {}
+		ModelComponent(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name, ComponentType::Model) {}
 		~ModelComponent() override {}
 
 		void Initialize() override;
@@ -22,6 +22,9 @@ namespace DE {
 		void SetModel(ComPtr<ID3D11Device>& device, const MeshData& mesh);
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
+		
+		const ComPtr<ID3D11Buffer> GetConsts() { return m_constant.Get(); }
+		const ComPtr<ID3D11Buffer> GetBasicMaterial() { return m_basicMaterial.Get(); }
 	private:
 		bool updateWorldCpu();
 	private:

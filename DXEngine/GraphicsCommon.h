@@ -27,6 +27,7 @@ namespace DE {
 			// Graphcis Pipeline States
 			GraphicsPSO solidPSO;
 			GraphicsPSO wirePSO;
+			GraphicsPSO boundPSO;
 		} basic;
 
 		struct {
@@ -61,6 +62,7 @@ namespace DE {
 		// Shaders
 		ComPtr<ID3D11VertexShader> basicVS;
 		ComPtr<ID3D11PixelShader> basicPS;
+		ComPtr<ID3D11PixelShader> colorPS;
 
 		ComPtr<ID3D11VertexShader> normalVS;
 		ComPtr<ID3D11GeometryShader> normalGS;

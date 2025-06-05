@@ -133,7 +133,6 @@
     <ClInclude Include="TransformComponent.h">
       <Filter>public\Component</Filter>
     </ClInclude>
-    <ClInclude Include="SampleActor.h" />
     <ClInclude Include="InputManager.h">
       <Filter>public\Manager</Filter>
     </ClInclude>
@@ -176,6 +175,12 @@
     <ClInclude Include="BloomEffect.h">
       <Filter>public\PostProcess</Filter>
     </ClInclude>
+    <ClInclude Include="SampleActor.h">
+      <Filter>public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundComponent.h">
+      <Filter>public\Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -217,7 +222,6 @@
     <ClCompile Include="Component.cpp">
       <Filter>private\Component</Filter>
     </ClCompile>
-    <ClCompile Include="SampleActor.cpp" />
     <ClCompile Include="InputManager.cpp">
       <Filter>private\Manager</Filter>
     </ClCompile>
@@ -250,6 +254,12 @@
     </ClCompile>
     <ClCompile Include="BloomEffect.cpp">
       <Filter>private\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="SampleActor.cpp">
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundComponent.cpp">
+      <Filter>private\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -285,6 +295,9 @@
     </FxCompile>
     <FxCompile Include="CombinePS.hlsl">
       <Filter>Shaders\PostProcess\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="ColorPS.hlsl">
+      <Filter>Shaders\Basic</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

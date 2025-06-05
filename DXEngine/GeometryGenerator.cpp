@@ -590,7 +590,7 @@ namespace DE {
             meshData.vertices.push_back(v);
         }
 
-        // Line list (선분으로 Box를 그리기)
+        // Line list
         meshData.indices = {
             0, 1, 1, 2, 2, 3, 3, 0, // 앞면
             4, 5, 5, 6, 6, 7, 7, 4, // 뒷면

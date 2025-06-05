@@ -5,6 +5,8 @@
 #include "D3D11Utils.h"
 #include "TransformComponent.h"
 #include "ModelComponent.h"
+#include "BoundComponent.h"
+#include "RenderBase.h"
 
 namespace DE {
 	SampleActor::SampleActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
@@ -14,12 +16,15 @@ namespace DE {
 			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
 			m_gelda = AddComponent<ModelComponent>(device, L"Model");
 			m_gelda->SetModel(device, meshes);
+
+			m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
+			m_boundVolume->SetBoundingVolume(device, meshes);
 		}
 	}
 	void SampleActor::Initialize() {
 		Super::Initialize();
 
-		m_gelda->SetDrawNormal(false);
+		m_gelda->SetDrawNormal(true);
 	}
 
 	void SampleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
@@ -32,8 +37,14 @@ namespace DE {
 		}
 	}
 
-	void SampleActor::Render(ComPtr<ID3D11DeviceContext>& context) {
-		Super::Render(context);
+	void SampleActor::Render(RenderBase& renderer) {
+		Super::Render(renderer);
+
+		if (IsDrawNormal()) {
+			// Normal Vector ±×¸®±â
+			renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
+			RenderNormal(renderer.GetContext());
+		}
 	}
 
 	void SampleActor::RenderNormal(ComPtr<ID3D11DeviceContext>& context)

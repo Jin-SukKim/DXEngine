@@ -3,6 +3,7 @@
 
 namespace DE {
 	class ModelComponent;
+	class BoundComponent;
 
 	class SampleActor : public Actor
 	{
@@ -13,11 +14,12 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(ComPtr<ID3D11DeviceContext>& context) override;
+		void Render(RenderBase& renderer) override;
 		void RenderNormal(ComPtr<ID3D11DeviceContext>& context);
 		
 		bool IsDrawNormal();
 	private:
 		ModelComponent* m_gelda;
+		BoundComponent* m_boundVolume;
 	};
 }
