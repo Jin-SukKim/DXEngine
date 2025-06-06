@@ -16,6 +16,7 @@ namespace DE {
 		Vector3& GetScale() { return m_scale; }
 
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
+		void Rotation(const float& yaw, const float& pitch, const float roll);
 		void RotateRoll(const float& degree);
 		void RotatePitch(const float& degree);
 		void RotateYaw(const float& degree);

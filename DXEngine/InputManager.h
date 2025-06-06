@@ -29,9 +29,10 @@ namespace DE {
 
 		template<typename T>
 		void BindMouseMove(T* object, void(T::* func)(float, float));
+		Vector2 GetMouseNDC() const { return { m_mouseNdcX, m_mouseNdcY }; }
 	private:
 		std::array<InputAxisAction, static_cast<size_t>(InputAxis::MaxAxis)> m_axisMap;
-		std::array<InputAction, static_cast<size_t>(InputButton::MaxButtons)> m_buttonMap;
+		std::unordered_map<size_t, InputAction> m_buttonMap;
 		std::function<void(float, float)> m_mouseMove = nullptr;
 		float m_mouseNdcX = 0.f;
 		float m_mouseNdcY = 0.f;
@@ -47,8 +48,8 @@ namespace DE {
 	template<typename T>
 	inline void InputManager::BindInputAction(InputAction action, InputState state, T* object, void(T::* func)())
 	{
-		action.BindAction(object, func);
-		m_buttonMap[static_cast<size_t>(action.GetButton())] = action;
+		action.BindAction(object, func, state);
+		m_buttonMap[static_cast<size_t>(action.button)] = action;
 	}
 
 	template<typename T>

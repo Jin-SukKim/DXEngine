@@ -9,6 +9,12 @@ namespace DE {
 		m_rotation = createRotationQuaternion(yaw, pitch, roll);
 	}
 
+	void TransformComponent::Rotation(const float& yaw, const float& pitch, const float roll)
+	{
+		m_rotation *= createRotationQuaternion(yaw, pitch, roll);
+		m_rotation.Normalize();
+	}
+
 	void TransformComponent::RotateRoll(const float& degree)
 	{
 		m_rotation *= createRotationQuaternion(0, 0, degree);

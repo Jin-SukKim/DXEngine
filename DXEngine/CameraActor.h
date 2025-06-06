@@ -1,5 +1,6 @@
 #pragma once
 #include "Actor.h"
+#include "InputAction.h"
 
 namespace DE {
 	class CameraActor : public Actor
@@ -9,8 +10,8 @@ namespace DE {
 		CameraActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name) {}
 		virtual ~CameraActor() {}
 
-		void Initialize() override {}
-		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override {}
+		void Initialize() override;
+		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
 
 		Matrix GetViewMatrix();
 		Matrix GetProjMatrix();
@@ -21,6 +22,8 @@ namespace DE {
 		void SetFarZ(const float& z) { m_farZ = z; }
 		void SetAspectRatio(float aspect) { m_aspect = aspect; };
 		void UsePerspectiveProjection(const bool& use) { m_usePerspectiveProjection = use; }
+		void SetFPV(const bool& fpv) { m_fpv = fpv; }
+		void EnableFPV() { m_fpv = !m_fpv; }
 	private:
 		// Projection 옵션
 		//float m_projFovAngleY = 90.f * 0.5f; // Luna 교재 기본 설정 (FOV)
@@ -29,5 +32,18 @@ namespace DE {
 		float m_farZ = 100.f;
 		float m_aspect = 16.f / 9.f;
 		bool m_usePerspectiveProjection = true; // 원근 투영
+
+		bool m_fpv = true;
+		float m_speed = 5.f;
+		float m_rotateSpeed = 35.f;
+		InputAxis zAxis = InputAxis::ZAxis;
+		InputAxis xAxis = InputAxis::XAxis;
+		InputAxis yAxis = InputAxis::YAxis;
+		InputButton w = InputButton::W, s = InputButton::S;
+		InputButton a = InputButton::A, d = InputButton::D;
+		InputButton q = InputButton::Q, e = InputButton::E;
+		InputAxisAction m_forward;
+		InputAxisAction m_right;
+		InputAxisAction m_up;
 	};
 }

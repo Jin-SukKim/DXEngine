@@ -27,19 +27,16 @@ namespace DE {
 		virtual void setGlobals(ComPtr<ID3D11DeviceContext>& context);
 
 	private:
-		void MoveForward(float axis);
+		void enableCamFpv();
 
 	protected:
-		std::shared_ptr<CameraActor> m_mainCamera;
-
 		// Shader에서 공통으로 사용되는 Constant Buffer Data
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
-		
-		// Main Camera 용 Input
-		InputAxis axis = InputAxis::ZAxis;
-		InputButton w = InputButton::W, s = InputButton::S;
-		InputAxisAction action;
+
+		std::shared_ptr<CameraActor> m_mainCamera;
+		InputButton f = InputButton::F;
+		InputAction m_fpv;
 
 	private:
 		std::shared_ptr<SampleActor> triangle;

@@ -44,7 +44,7 @@ namespace DE {
 		void BindAction(T* object, void(T::* func)(), InputState state) {
 			bindFunc = std::bind(func, object);
 
-			state = state;
+			this->state = state;
 		}
 
 		const InputButton GetButton() const { return button; }

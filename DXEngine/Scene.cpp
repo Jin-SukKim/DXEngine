@@ -24,9 +24,10 @@ namespace DE {
 		// Scene 공통 Actor
 		{
 			m_mainCamera = std::make_shared<CameraActor>(device, L"MainCamera");
+			m_fpv = InputAction(f);
+
 			m_skybox = std::make_shared<SkyboxActor>(device, L"Skybox");
 		}
-		action = InputAxisAction(w, s);
 
 		triangle = std::make_shared<SampleActor>(device, L"Temp");
 
@@ -78,7 +79,7 @@ namespace DE {
 
 		// 입력 Bind
 		{
-			AppBase::GetInputManager().BindInputAxis(axis, action, this, &Scene::MoveForward);
+			AppBase::GetInputManager().BindInputAction(m_fpv, InputState::Pressed, this, &Scene::enableCamFpv);
 		}
 
 		triangle->Initialize();
@@ -91,6 +92,9 @@ namespace DE {
 	void Scene::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
 		// 조명 업데이트
 		UpdateLight(deltaTime);
+
+		// Camera Update
+		m_mainCamera->Update(context, deltaTime);
 
 		// 공용 Constant buffer 업데이트
 		// DirectX는 Row-Major인데 HLSL는 Column-Major이므로 Transpose
@@ -119,24 +123,6 @@ namespace DE {
 
 	}
 
-	void Scene::MoveForward(float axis)
-	{
-		TransformComponent* tr = m_mainCamera->GetComponent<TransformComponent>();
-		Vector3 camPos, tempPos;
-		if (tr) {
-			if (axis) {
-				static float speed = 10.f;
-				Vector3 pos = tr->GetPos();
-				pos += speed * axis * tr->GetForwardDir() * AppBase::GetDeltaTime();
-				tr->SetPos(pos);
-
-				camPos = tr->GetPos();
-			}
-			
-		}
-
-		tempPos = triangle->GetComponent<TransformComponent>()->GetPos();
-	}
 	void Scene::setGlobals(ComPtr<ID3D11DeviceContext>& context)
 	{
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
@@ -152,5 +138,10 @@ namespace DE {
 
 		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
 		m_skybox->SetCommonSRVs(context);
+	}
+
+	void Scene::enableCamFpv()
+	{
+		m_mainCamera->EnableFPV();
 	}
 }

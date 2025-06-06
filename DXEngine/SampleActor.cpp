@@ -24,7 +24,7 @@ namespace DE {
 	void SampleActor::Initialize() {
 		Super::Initialize();
 
-		m_gelda->SetDrawNormal(true);
+		m_gelda->SetDrawNormal(false);
 	}
 
 	void SampleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
