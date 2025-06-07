@@ -6,6 +6,7 @@
 
 #include "Actor.h"
 #include "ModelComponent.h"
+#include "TransformComponent.h"
 
 namespace DE {
 	void BoundComponent::SetBoundingVolume(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes)
@@ -25,6 +26,7 @@ namespace DE {
 
 	void BoundComponent::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
 	{
+
 	}
 
 	void BoundComponent::Render(ComPtr<ID3D11DeviceContext>& context)
@@ -48,6 +50,12 @@ namespace DE {
 		context->IASetVertexBuffers(0, 1, m_boundingSphereMesh->vertexBuffer.GetAddressOf(), &m_boundingSphereMesh->stride, &m_boundingSphereMesh->offset);
 		context->IASetIndexBuffer(m_boundingSphereMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 		context->DrawIndexed(m_boundingSphereMesh->indexCount, 0, 0);
+	}
+
+	void BoundComponent::SetScale(const Vector3& scale)
+	{
+		m_boundingBox.Extents = m_boundingBox.Extents * scale;
+		m_boundingSphere.Radius *= std::max({ scale.x, scale.y, scale.z });
 	}
 
 	void BoundComponent::setBoundingBox(const std::vector<DE::MeshData>& meshes, Microsoft::WRL::ComPtr<ID3D11Device>& device)

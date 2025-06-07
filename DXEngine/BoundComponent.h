@@ -23,6 +23,7 @@ namespace DE {
 		const DirectX::BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
 		
 		void SetVisibility(const bool& visible) { m_drawBound = visible; }
+		void SetScale(const Vector3& scale);
 	private:
 		// Model 크기에 맞는 Bounding Box 설정
 		void setBoundingBox(const std::vector<DE::MeshData>& meshes, Microsoft::WRL::ComPtr<ID3D11Device>& device);

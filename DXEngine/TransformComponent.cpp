@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "TransformComponent.h"
+#include "Actor.h"
+#include "BoundComponent.h"
 
 namespace DE {
 	using namespace DirectX;
@@ -98,5 +100,13 @@ namespace DE {
 			XMConvertToRadians(pitch),
 			XMConvertToRadians(roll)
 		);
+	}
+
+	void TransformComponent::SetBoundingVolumeScale()
+	{
+		BoundComponent* bound = static_cast<Actor*>(GetOwner())->GetComponent<BoundComponent>();
+		if (bound) {
+			bound->SetScale(m_scale);
+		}
 	}
 }

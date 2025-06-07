@@ -13,7 +13,7 @@ namespace DE {
 		Vector3& GetPos() { return m_pos; }
 		void Translate(const Vector3& pos) { m_pos += pos; }
 
-		void SetScale(const Vector3& scale) { m_scale = scale; }
+		void SetScale(const Vector3& scale) { m_scale = scale; SetBoundingVolumeScale(); }
 		Vector3& GetScale() { return m_scale; }
 
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
@@ -36,7 +36,7 @@ namespace DE {
 
 	private:
 		Quaternion createRotationQuaternion(const float& yaw, const float& pitch, const float roll);
-
+		void SetBoundingVolumeScale();
 	private:
 		Vector3 m_pos = Vector3::Zero;
 		Vector3 m_scale = Vector3::One;
