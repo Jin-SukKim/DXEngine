@@ -8,89 +8,67 @@ namespace DE {
 
 	void TransformComponent::SetRotation(const float& yaw, const float& pitch, const float roll)
 	{
-		m_rotation = createRotationQuaternion(yaw, pitch, roll);
+		m_localRotation = createRotationQuaternion(yaw, pitch, roll);
 	}
 
 	void TransformComponent::SetRotation(const Quaternion& q)
 	{
-		m_rotation = q;
+		m_localRotation = q;
+		m_localRotation.Normalize();
 	}
 
-	Vector3 TransformComponent::GetEulerRotation()
+	void TransformComponent::LocalRotate(const float& yaw, const float& pitch, const float roll)
 	{
-		return m_rotation.ToEuler();
+		m_localRotation *= createRotationQuaternion(yaw, pitch, roll);
+		m_localRotation.Normalize();
 	}
 
-	Quaternion TransformComponent::GetRotation()
+	void TransformComponent::LocalRotate(const Quaternion& q)
 	{
-		return m_rotation;
+		m_localRotation *= q;
+		m_localRotation.Normalize();
 	}
 
 	void TransformComponent::Rotate(const float& yaw, const float& pitch, const float roll)
 	{
-		m_rotation *= createRotationQuaternion(yaw, pitch, roll);
-		m_rotation.Normalize();
-	}
-
-	void TransformComponent::Rotate(const Quaternion& q)
-	{
-		m_rotation *= q;
-		m_rotation.Normalize();
-	}
-
-	void TransformComponent::RotateRoll(const float& degree)
-	{
-		m_rotation *= createRotationQuaternion(0, 0, degree);
-		m_rotation.Normalize();
-	}
-
-	void TransformComponent::RotatePitch(const float& degree)
-	{
-		m_rotation *= createRotationQuaternion(0, degree, 0);
-		m_rotation.Normalize();
-	}
-
-	void TransformComponent::RotateYaw(const float& degree)
-	{
-		m_rotation *= createRotationQuaternion(degree, 0, 0);
-		m_rotation.Normalize();
+		m_worldRotation += Vector3(yaw, pitch, roll);
+		m_worldRotation.x = fmod(m_worldRotation.x, 360.f); // yaw (x)
+		m_worldRotation.y = fmod(m_worldRotation.y, 360.f); // pitch (y)
+		m_worldRotation.z = fmod(m_worldRotation.z, 360.f); // roll (z)	
 	}
 
 	Vector3 TransformComponent::GetForwardDir()
 	{
-		return Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(m_rotation));
+		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
+		return Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(worldRotate * m_localRotation));
 	}
 
 	Vector3 TransformComponent::GetRightDir()
 	{
-		return Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(m_rotation));
+		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
+		return Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(worldRotate * m_localRotation));
 	}
 
 	Vector3 TransformComponent::GetUpDir()
 	{
-		return Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(m_rotation));
+		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
+		return Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(worldRotate * m_localRotation));
 	}
 
 	Matrix TransformComponent::GetTransformMatrix()
 	{
+		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
+		Quaternion finalRotation = worldRotate * m_localRotation;
+
 		return Matrix::CreateScale(m_scale) *
-			Matrix::CreateFromQuaternion(m_rotation) *
+			Matrix::CreateFromQuaternion(finalRotation) *
 			Matrix::CreateTranslation(m_pos);
 	}
 
 	Matrix TransformComponent::GetInvTransformMatrix()
 	{
-		Quaternion invRotation = m_rotation;
-		invRotation.Conjugate();
-
-		Vector3 invScale(
-			m_scale.x != 0.0f ? 1.0f / m_scale.x : 0.0f,
-			m_scale.y != 0.0f ? 1.0f / m_scale.y : 0.0f,
-			m_scale.z != 0.0f ? 1.0f / m_scale.z : 0.0f
-		);
-		return Matrix::CreateTranslation(-m_pos) * 
-			Matrix::CreateFromQuaternion(invRotation) *
-			Matrix::CreateScale(invScale);
+		Matrix invMat = GetTransformMatrix();
+		return invMat.Invert();
 	}
 
 	Quaternion TransformComponent::createRotationQuaternion(const float& yaw, const float& pitch, const float roll)
@@ -108,5 +86,15 @@ namespace DE {
 		if (bound) {
 			bound->SetScale(m_scale);
 		}
+	}
+
+	void TransformComponent::updateLocalAxes()
+	{
+		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
+		Quaternion finalRotation = worldRotate * m_localRotation;
+
+		m_localForward = Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(finalRotation));
+		m_localRight = Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(finalRotation));
+		m_localUp = Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(finalRotation));
 	}
 }

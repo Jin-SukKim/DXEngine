@@ -268,11 +268,11 @@ namespace DE {
 		}
 
 		if (activeActor) {
-			TransformComponent* tr = activeActor->GetComponent<TransformComponent>();
-			if (tr) {
-				tr->Rotate(q);
-				tr->Translate(dragTranslation);
-			}
+			//TransformComponent* tr = activeActor->GetComponent<TransformComponent>();
+			//if (tr) {
+			//	tr->Rotate(q);
+			//	tr->Translate(dragTranslation);
+			//}
 		}
 	}
 	Actor* Scene::pickClosest(const DirectX::SimpleMath::Ray& pickingRay, float& minDist)

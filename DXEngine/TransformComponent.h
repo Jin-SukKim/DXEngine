@@ -18,14 +18,9 @@ namespace DE {
 
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
 		void SetRotation(const Quaternion& q);
-		// 오일러 각도로 회전값 받기
-		Vector3 GetEulerRotation();
-		Quaternion GetRotation();
+		void LocalRotate(const float& yaw, const float& pitch, const float roll);
+		void LocalRotate(const Quaternion& q);
 		void Rotate(const float& yaw, const float& pitch, const float roll);
-		void Rotate(const Quaternion& q);
-		void RotateRoll(const float& degree);
-		void RotatePitch(const float& degree);
-		void RotateYaw(const float& degree);
 		
 		Vector3 GetForwardDir();
 		Vector3 GetRightDir();
@@ -37,10 +32,12 @@ namespace DE {
 	private:
 		Quaternion createRotationQuaternion(const float& yaw, const float& pitch, const float roll);
 		void SetBoundingVolumeScale();
+		void updateLocalAxes();
 	private:
 		Vector3 m_pos = Vector3::Zero;
 		Vector3 m_scale = Vector3::One;
-		Quaternion m_rotation;
+		Quaternion m_localRotation;
+		Vector3 m_worldRotation = Vector3::Zero; // yaw, pitch, roll
 
 		Vector3 m_localForward = Vector3::UnitZ;
 		Vector3 m_localRight = Vector3::UnitX;

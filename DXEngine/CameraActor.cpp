@@ -7,7 +7,9 @@ namespace DE {
     {
         m_forward = InputAxisAction(w, s);
         m_right = InputAxisAction(d, a);
-        m_up = InputAxisAction(q, e);
+        m_up = InputAxisAction(e, q);
+
+        m_mouseClick = InputAxisAction(lButton, rButton);
     }
 
     void CameraActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
@@ -28,19 +30,15 @@ namespace DE {
             tr->SetPos(pos);
 
             Vector2 currentMousePos = AppBase::GetInputManager().GetMouseNDC();
-            // 좌우 360도, 위 아래 90도
-            currentMousePos *= Vector2(DirectX::XM_2PI, -DirectX::XM_PIDIV2) * m_rotateSpeed;
-            tr->SetRotation(currentMousePos.x, currentMousePos.y, 0.f);
+            currentMousePos.y = -currentMousePos.y;
 
-            //Vector2 mouseDelta = currentMousePos - m_prevMousePos;
-            //// 좌우 360도, 위 아래 90도
-            //Vector2 rotationDelta = mouseDelta * Vector2(DirectX::XM_2PI, -DirectX::XM_PIDIV2) * m_rotateSpeed;
+            if (m_mouseClick.GetAxisInput() > 0.f) {
+                Vector2 mouseDelta = currentMousePos - m_prevMousePos;
+                mouseDelta *= m_rotateSpeed;
+                tr->Rotate(mouseDelta.x, mouseDelta.y, 0.f);
+            }
 
-            //Vector3 euler = tr->GetRotation();
-            //euler += Vector3(rotationDelta);
-            //tr->SetRotation(euler.x, euler.y, euler.z);
-
-            //m_prevMousePos = currentMousePos;
+            m_prevMousePos = currentMousePos;
         }
     }
 

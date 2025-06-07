@@ -36,6 +36,8 @@ namespace DE {
 		bool m_fpv = false;
 		float m_speed = 5.f;
 		float m_rotateSpeed = 35.f;
+
+
 		Vector2 m_prevMousePos = Vector2(0.f, 0.f);
 		InputAxis zAxis = InputAxis::ZAxis;
 		InputAxis xAxis = InputAxis::XAxis;
@@ -46,5 +48,8 @@ namespace DE {
 		InputAxisAction m_forward;
 		InputAxisAction m_right;
 		InputAxisAction m_up;
+		InputButton lButton = InputButton::LButton;
+		InputButton rButton = InputButton::RButton;
+		InputAxisAction m_mouseClick;
 	};
 }
