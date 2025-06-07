@@ -27,10 +27,20 @@ namespace DE {
             pos += m_speed * dir * AppBase::GetDeltaTime();
             tr->SetPos(pos);
 
-            Vector2 mousePos = AppBase::GetInputManager().GetMouseNDC();
+            Vector2 currentMousePos = AppBase::GetInputManager().GetMouseNDC();
             // 좌우 360도, 위 아래 90도
-            mousePos *= Vector2(DirectX::XM_2PI, -DirectX::XM_PIDIV2) * m_rotateSpeed;
-            tr->SetRotation(mousePos.x, mousePos.y, 0.f);
+            currentMousePos *= Vector2(DirectX::XM_2PI, -DirectX::XM_PIDIV2) * m_rotateSpeed;
+            tr->SetRotation(currentMousePos.x, currentMousePos.y, 0.f);
+
+            //Vector2 mouseDelta = currentMousePos - m_prevMousePos;
+            //// 좌우 360도, 위 아래 90도
+            //Vector2 rotationDelta = mouseDelta * Vector2(DirectX::XM_2PI, -DirectX::XM_PIDIV2) * m_rotateSpeed;
+
+            //Vector3 euler = tr->GetRotation();
+            //euler += Vector3(rotationDelta);
+            //tr->SetRotation(euler.x, euler.y, euler.z);
+
+            //m_prevMousePos = currentMousePos;
         }
     }
 

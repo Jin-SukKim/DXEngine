@@ -9,9 +9,30 @@ namespace DE {
 		m_rotation = createRotationQuaternion(yaw, pitch, roll);
 	}
 
-	void TransformComponent::Rotation(const float& yaw, const float& pitch, const float roll)
+	void TransformComponent::SetRotation(const Quaternion& q)
+	{
+		m_rotation = q;
+	}
+
+	Vector3 TransformComponent::GetEulerRotation()
+	{
+		return m_rotation.ToEuler();
+	}
+
+	Quaternion TransformComponent::GetRotation()
+	{
+		return m_rotation;
+	}
+
+	void TransformComponent::Rotate(const float& yaw, const float& pitch, const float roll)
 	{
 		m_rotation *= createRotationQuaternion(yaw, pitch, roll);
+		m_rotation.Normalize();
+	}
+
+	void TransformComponent::Rotate(const Quaternion& q)
+	{
+		m_rotation *= q;
 		m_rotation.Normalize();
 	}
 
@@ -35,17 +56,17 @@ namespace DE {
 
 	Vector3 TransformComponent::GetForwardDir()
 	{
-		return Vector3::Transform(m_forward, Matrix::CreateFromQuaternion(m_rotation));
+		return Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(m_rotation));
 	}
 
 	Vector3 TransformComponent::GetRightDir()
 	{
-		return Vector3::Transform(m_right, Matrix::CreateFromQuaternion(m_rotation));
+		return Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(m_rotation));
 	}
 
 	Vector3 TransformComponent::GetUpDir()
 	{
-		return Vector3::Transform(m_up, Matrix::CreateFromQuaternion(m_rotation));
+		return Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(m_rotation));
 	}
 
 	Matrix TransformComponent::GetTransformMatrix()

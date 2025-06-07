@@ -10,6 +10,7 @@ namespace DE {
 	class SkyboxActor;
 	class RenderBase;
 	class BloomEffect;
+	class Actor;
 
 	class Scene
 	{
@@ -28,6 +29,9 @@ namespace DE {
 
 	private:
 		void enableCamFpv();
+		void pickingRay(float click);
+		// Ray와 충돌한 가장 가까운 Actor
+		Actor* pickClosest(const DirectX::SimpleMath::Ray& pickingRay, float& minDist);
 
 	protected:
 		// Shader에서 공통으로 사용되는 Constant Buffer Data
@@ -37,13 +41,18 @@ namespace DE {
 		std::shared_ptr<CameraActor> m_mainCamera;
 		InputButton f = InputButton::F;
 		InputAction m_fpv;
+		InputButton lButton = InputButton::LButton;
+		InputButton rButton = InputButton::RButton;
+		InputAxis xAxis;
+		InputAxisAction m_mouseClick;
 
 	private:
 		std::shared_ptr<SampleActor> triangle;
-
 		std::shared_ptr<SkyboxActor> m_skybox;
 
 		std::shared_ptr<BloomEffect> m_blommPostProcess;
 
+		std::vector<std::shared_ptr<Actor>> m_actorList;
+		Actor* m_pickedActor = nullptr;
 	};
 }

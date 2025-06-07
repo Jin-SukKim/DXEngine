@@ -19,7 +19,10 @@ namespace DE {
 		void Render(ComPtr<ID3D11DeviceContext>& context) override;
 
 		bool IsPickable() { return m_isPickable; }
-	
+		const DirectX::BoundingBox& GetBoundingBox() const { return m_boundingBox; }
+		const DirectX::BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
+		
+		void SetVisibility(const bool& visible) { m_drawBound = visible; }
 	private:
 		// Model 크기에 맞는 Bounding Box 설정
 		void setBoundingBox(const std::vector<DE::MeshData>& meshes, Microsoft::WRL::ComPtr<ID3D11Device>& device);
@@ -39,6 +42,6 @@ namespace DE {
 		std::shared_ptr<Mesh> m_boundingSphereMesh;
 
 		bool m_drawBound = false;
-		bool m_isPickable = false;
+		bool m_isPickable = true;
 	};
 }

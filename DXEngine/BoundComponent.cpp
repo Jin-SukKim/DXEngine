@@ -15,6 +15,8 @@ namespace DE {
 
 		// Model 크기에 맞는 Bounding Sphere 설정
 		setBoundingSphere(meshes, device);
+
+		SetVisibility(true);
 	}
 
 	void BoundComponent::Initialize()
@@ -27,7 +29,9 @@ namespace DE {
 
 	void BoundComponent::Render(ComPtr<ID3D11DeviceContext>& context)
 	{
-		Super::Render(context);
+		if (!m_drawBound)
+			return;
+
 		ID3D11Buffer* constBuffers[2] = {
 			// Bounding Box와 Bounding Sphere의 Constant Data는 같음
 			m_boundingBoxMesh->basicMaterialConstGPU.Get(),

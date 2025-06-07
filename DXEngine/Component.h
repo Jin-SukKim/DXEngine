@@ -11,7 +11,7 @@ namespace DE {
 
 		virtual void Initialize() override {}
 		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override {}
-		virtual void Render(ComPtr<ID3D11DeviceContext>& context) override  { if (m_show) return; }
+		virtual void Render(ComPtr<ID3D11DeviceContext>& context) override  { if (!m_show) return; }
 
 		void SetOwner(Object* owner) { m_owner = owner; }
 		Object* GetOwner() const { return m_owner; }

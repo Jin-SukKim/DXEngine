@@ -11,12 +11,18 @@ namespace DE {
 
 		void SetPos(const Vector3& pos) { m_pos = pos; }
 		Vector3& GetPos() { return m_pos; }
+		void Translate(const Vector3& pos) { m_pos += pos; }
 
 		void SetScale(const Vector3& scale) { m_scale = scale; }
 		Vector3& GetScale() { return m_scale; }
 
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
-		void Rotation(const float& yaw, const float& pitch, const float roll);
+		void SetRotation(const Quaternion& q);
+		// 오일러 각도로 회전값 받기
+		Vector3 GetEulerRotation();
+		Quaternion GetRotation();
+		void Rotate(const float& yaw, const float& pitch, const float roll);
+		void Rotate(const Quaternion& q);
 		void RotateRoll(const float& degree);
 		void RotatePitch(const float& degree);
 		void RotateYaw(const float& degree);
@@ -36,8 +42,8 @@ namespace DE {
 		Vector3 m_scale = Vector3::One;
 		Quaternion m_rotation;
 
-		Vector3 m_forward = Vector3::UnitZ;
-		Vector3 m_right = Vector3::UnitX;
-		Vector3 m_up = Vector3::UnitY;
+		Vector3 m_localForward = Vector3::UnitZ;
+		Vector3 m_localRight = Vector3::UnitX;
+		Vector3 m_localUp = Vector3::UnitY;
 	};
 }

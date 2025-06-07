@@ -32,8 +32,9 @@ namespace DE {
 		// constant buffer data °»½Å
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->RotateYaw(0.05f);
-			tr->RotatePitch(0.05f);
+			//tr->Rotate(0.1f, 0.1f, 0.1f);
+			//tr->RotateYaw(0.05f);
+			//tr->RotatePitch(0.05f);
 		}
 	}
 
