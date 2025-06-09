@@ -42,6 +42,8 @@ namespace DE {
 
 			m_meshes.emplace_back(newMesh);
 		}
+
+		m_basicMaterial.GetCpu().hashID = static_cast<Actor*>(GetOwner())->GetHashID();
 	}
 
 	void ModelComponent::Initialize() {

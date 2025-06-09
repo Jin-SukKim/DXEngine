@@ -94,9 +94,12 @@ namespace DE {
 
 		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 		m_context->ClearRenderTargetView(m_backBufferRTV.Get(), clearColor);
+		m_context->ClearRenderTargetView(m_indexRTV.Get(), clearColor); // Mouse Picking
 		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
-		m_context->OMSetRenderTargets(1, m_backBufferRTV.GetAddressOf(), m_defaultDSV.Get());
+		// Multiple Render Targets
+		ID3D11RenderTargetView* targets[] = { m_backBufferRTV.Get(), m_indexRTV.Get() };
+		m_context->OMSetRenderTargets(2, targets, m_defaultDSV.Get());
 		m_context->OMSetDepthStencilState(m_defaultDSS.Get(), 0);
 
 		m_context->RSSetState(m_solidRS.Get());
@@ -134,13 +137,25 @@ namespace DE {
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), NULL, m_backBufferRTV.GetAddressOf()));
 
+		// Mouse Picking
+		// 1x1 작은 Staging Texture 생성 (Pixel의 값을 GPU에서 CPU로 복사할 수 있도록 설정한 Texture)
+		D3D11Utils::CreateStagingTexture(m_device, 1, 1, m_indexStagingTexture, m_backBufferFormat);
+
+		// Mouse Picking에 사용할 Index 색을 렌더링할 Texture와 RenderTargetVeiw 생성
 		D3D11_TEXTURE2D_DESC desc;
+		backBuffer->GetDesc(&desc);
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTexture.GetAddressOf())); 
+		ThrowIfFailed(m_device->CreateRenderTargetView(m_indexTexture.Get(), NULL, m_indexRTV.GetAddressOf()));
+		
+
+		// Post Process에 넣기 위한 Shader Resource View
 		backBuffer->GetDesc(&desc);
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.MiscFlags = 0;
-		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_tempTexture.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_tempTexture.GetAddressOf())); // Back-Buffer 결과를 복사해서 임시 저장
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Back-Buffer 결과를 복사해서 임시 저장
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_tempTexture.Get(), NULL, m_backBufferSRV.GetAddressOf()));
 
 		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
@@ -263,5 +278,35 @@ namespace DE {
 		postProcess.Initialize(*this, { m_backBufferSRV, m_prevFrame.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
 		m_postProcess = &postProcess;
 		m_postProcessPSO = pso;
+	}
+
+	void RenderBase::CopyIndexForPicking(int mouseX, int mouseY, uint8_t* dest)
+	{
+		// Mouse Picking Text (TODO)
+		{
+			m_context->CopyResource(m_indexTempTexture.Get(), m_indexTexture.Get());
+
+			// 마우스 커서의 픽셀 한개만 복사 Staging Texture로 복사
+			D3D11_BOX box;
+			box.left = mouseX;
+			box.right = mouseX + 1;
+			box.top = mouseY;
+			box.bottom = mouseY + 1;
+			box.front = 0;
+			box.back = 1;
+			m_context->CopySubresourceRegion(m_indexStagingTexture.Get(), 0, 0, 0, 0,
+				m_indexTempTexture.Get(), 0, &box);
+
+
+			// GPU에서 CPU로 데이터 복사
+			D3D11_MAPPED_SUBRESOURCE ms;
+			m_context->Map(m_indexStagingTexture.Get(), NULL, D3D11_MAP_READ, NULL,
+				&ms);
+			// 픽셀 하나의 값만 복사
+			memcpy(dest, ms.pData, sizeof(uint8_t) * 4);
+			m_context->Unmap(m_indexStagingTexture.Get(), NULL);
+
+			//D3D11Utils::CopyFromStagingTexture(m_context, m_indexTexture, sizeof(uint8_t) * 4, dest);
+		}
 	}
 }

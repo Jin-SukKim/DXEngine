@@ -49,6 +49,7 @@ cbuffer BasicMaterialConstants : register(b1) {
     float dummy1;
     float3 specular;
     float dummy2;
+    int hashID;
 };
 
 cbuffer MeshConstants : register(b2) {
@@ -67,6 +68,11 @@ struct PSInput {
     float3 posWorld : POSITION; // World 좌표계의 위치 (조명 계산에 사용)
     float3 normalWorld : NORMAL;
     float2 texcoord : TEXCOORD;
+};
+
+struct PSOutput {
+    float4 pixelColor : SV_Target0; // Default
+    float4 indexColor : SV_Target1; // Mouse Picking
 };
 
 // Schlick approximation: Eq. 9.17 in "Real-Time Rendering 4th Ed."
@@ -91,6 +97,17 @@ float3 SchlickFresnel(float3 fresnelR0, float3 normal, float3 toEye) {
     // 90도 -> f0 = 1.0 -> float3(1.0) 반환
     // 0도에 가까운 가장자리는 Specular 색상, 90도에 가까운 안쪽은 고유 색상(fresnelR0)
     return fresnelR0 + (1.0f - fresnelR0) * pow(f0, 5.0);
+}
+
+float4 HashIdToColor(int hashId) {
+    float4 color;
+    // 0xff = 255 (8 bit)
+    color[0] = ((hashID >> 16) & 0xff) / 255.0; // r
+    color[1] = ((hashID >> 8) & 0xff) / 255.0; // g
+    color[2] = (hashID & 0xff) / 255.0; // b
+    color[3] = 1.0; // a
+    
+    return color;
 }
 
 #endif // __COMMON_HLSLI__

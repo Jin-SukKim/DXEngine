@@ -39,6 +39,8 @@ namespace DE {
 		
 		void SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso);
 
+		void CopyIndexForPicking(int mouseX, int mouseY, uint8_t* dest);
+
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
 	protected:
@@ -47,6 +49,12 @@ namespace DE {
 		ComPtr<IDXGISwapChain> m_swapChain;
 		ComPtr<ID3D11RenderTargetView> m_backBufferRTV;
 		
+		// Picking
+		ComPtr<ID3D11Texture2D> m_indexTempTexture;
+		ComPtr<ID3D11Texture2D> m_indexTexture; // Picking을 위한 Index를 저장할 Texture
+		ComPtr<ID3D11RenderTargetView> m_indexRTV; 
+		ComPtr<ID3D11Texture2D> m_indexStagingTexture; // Picking을 하면 가져올 1x1 pixel data
+
 		// TODO
 		ComPtr<ID3D11Texture2D> m_tempTexture;
 		ComPtr<ID3D11ShaderResourceView> m_backBufferSRV; // 임시로 PostProcessing을 위해 SRV 생성

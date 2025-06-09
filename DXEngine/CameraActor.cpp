@@ -32,7 +32,7 @@ namespace DE {
             Vector2 currentMousePos = AppBase::GetInputManager().GetMouseNDC();
             currentMousePos.y = -currentMousePos.y;
 
-            if (m_mouseClick.GetAxisInput() > 0.f) {
+            if (m_mouseClick.GetAxisInput() < 0.f) {
                 Vector2 mouseDelta = currentMousePos - m_prevMousePos;
                 mouseDelta *= m_rotateSpeed;
                 tr->Rotate(mouseDelta.x, mouseDelta.y, 0.f);

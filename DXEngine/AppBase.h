@@ -33,6 +33,8 @@ namespace DE {
 		WindowInfo m_window;
 		float m_mouseX = 0.f;
 		float m_mouseY = 0.f;
+		int m_winMouseX = 0;
+		int m_winMouseY = 0;
 	protected:
 		RenderBase m_renderer;
 		GuiBase m_gui;

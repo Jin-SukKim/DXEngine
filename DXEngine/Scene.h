@@ -23,6 +23,7 @@ namespace DE {
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
 
+		uint8_t* GetPickColor() { return m_pickColor; }
 	protected:
 		virtual void UpdateLight(const float& deltaTime);
 		virtual void setGlobals(ComPtr<ID3D11DeviceContext>& context);
@@ -32,7 +33,7 @@ namespace DE {
 		void pickingRay(float click);
 		// Ray와 충돌한 가장 가까운 Actor
 		Actor* pickClosest(const DirectX::SimpleMath::Ray& pickingRay, float& minDist);
-
+		void pickingGpu(float click);
 	protected:
 		// Shader에서 공통으로 사용되는 Constant Buffer Data
 		GlobalConstants m_globalConstsCPU;
@@ -54,5 +55,7 @@ namespace DE {
 
 		std::vector<std::shared_ptr<Actor>> m_actorList;
 		Actor* m_pickedActor = nullptr;
+
+		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
 	};
 }

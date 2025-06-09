@@ -3,7 +3,7 @@
 
 Texture2D g_texture0 : register(t0);
 
-float4 main(PSInput input) : SV_TARGET {
+PSOutput main(PSInput input) {
     float3 toEye = normalize(eyeWorld - input.posWorld);
     float3 color = float3(0.0, 0.0, 0.0);
     
@@ -22,5 +22,9 @@ float4 main(PSInput input) : SV_TARGET {
             continue;
     }
     
-    return float4(color, 1.0) * g_texture0.Sample(linearWrapSampler, input.texcoord);
+    PSOutput output;
+    output.pixelColor = float4(color, 1.0) * g_texture0.Sample(linearWrapSampler, input.texcoord);
+    output.indexColor = HashIdToColor(hashID);
+    
+    return output;
 }

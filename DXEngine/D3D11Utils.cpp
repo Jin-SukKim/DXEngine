@@ -153,4 +153,31 @@ namespace DE {
 			(ID3D11Resource**)texture.GetAddressOf(), 
 			textureResourceView.GetAddressOf(), nullptr));
 	}
+
+	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT pixelFormat)
+	{
+		// Staginge Texture 생성
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.BindFlags = 0;
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = desc.ArraySize = 1;
+		desc.Format = pixelFormat;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_STAGING; // GPU->CPU로 데이터를 보낼 용도
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE; // CPU에서 접근
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
+	}
+
+
+	void D3D11Utils::CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms;
+		context->Map(texture.Get(), NULL, D3D11_MAP_READ, NULL, &ms);
+		memcpy(dest, ms.pData, size);
+		context->Unmap(texture.Get(), NULL);
+	}
+
 }

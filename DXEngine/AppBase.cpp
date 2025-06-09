@@ -164,6 +164,9 @@ namespace DE {
 			m_mouseX = float(LOWORD(lParam));
 			m_mouseY = float(HIWORD(lParam));
 
+			// TODO: Mouse Pick Test
+			//m_renderer.CopyIndexForPicking(LOWORD(lParam), HIWORD(lParam), m_scene->GetPickColor());
+
 			// 마우스 커서의 위치를 NDC로 변환
 			// 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)
 			//		이때 내려갈수록 y값이 커지므로 - 를 곱해서 방향 반전

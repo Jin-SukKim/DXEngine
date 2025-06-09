@@ -123,6 +123,7 @@ namespace DE {
 		triangle->Render(renderer);
 
 		m_skybox->Render(renderer);
+
 	}
 
 	void Scene::UpdateLight(const float& deltaTime)
@@ -295,5 +296,18 @@ namespace DE {
 		}
 
 		return minActor;
+	}
+
+	void Scene::pickingGpu(float click)
+	{
+		// GPU -> CPU로 화면의 Pixel 캡쳐
+
+		// TODO: Mouse Picking Test
+		//for (auto a : m_actorList) {
+		//	Actor* actor = a.get();
+		//	if (actor && memcmp(actor->GetHashColor(), m_pickColor, 4) == 0) {
+		//		std::wcout << actor->GetName() << std::endl;
+		//	}
+		//}
 	}
 }

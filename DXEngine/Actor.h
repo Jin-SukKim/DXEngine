@@ -21,13 +21,21 @@ namespace DE {
 		template<typename T_COMPONENT>
 		T_COMPONENT* GetComponent();
 
+		int GetHashID();
+		const uint8_t* GetHashColor() const { return m_hashColor; }
+
 	protected:
 		void RenderComponent(ComPtr<ID3D11DeviceContext>& context, const ComponentType& type);
 	private:
+		static UINT nextID;
+
+		const UINT m_id;
+		uint8_t m_hashColor[4];
 		std::vector<std::unique_ptr<Component>> m_components;
 
 		// TransformComponent Ãß°¡
 		void initTransform(ComPtr<ID3D11Device>& device);
+		void setHashIdToColor(const int& hashID);
 	};
 
 	template<typename T_COMPONENT>

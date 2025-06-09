@@ -287,9 +287,6 @@
     <FxCompile Include="BloomDownPS.hlsl">
       <Filter>Shaders\PostProcess\Bloom</Filter>
     </FxCompile>
-    <FxCompile Include="SamplingVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="BloomUpPS.hlsl">
       <Filter>Shaders\PostProcess\Bloom</Filter>
     </FxCompile>
@@ -297,6 +294,9 @@
       <Filter>Shaders\PostProcess\Bloom</Filter>
     </FxCompile>
     <FxCompile Include="ColorPS.hlsl">
+      <Filter>Shaders\Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="SamplingVS.hlsl">
       <Filter>Shaders\Basic</Filter>
     </FxCompile>
   </ItemGroup>

@@ -25,6 +25,7 @@ namespace DE {
 		float dummy1;
 		Vector3 specular = Vector3(1.f);
 		float dummy2;
+		int hashID = 0;
 	};
 
 	struct Light {
