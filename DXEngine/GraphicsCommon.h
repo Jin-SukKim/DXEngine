@@ -43,6 +43,10 @@ namespace DE {
 			GraphicsPSO bloomPSO;
 		} postProcess;
 
+		struct {
+			GraphicsPSO solidPSO;
+		} billboard;
+
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
@@ -58,6 +62,7 @@ namespace DE {
 		ComPtr<ID3D11InputLayout> basicIL;
 		ComPtr<ID3D11InputLayout> skyboxIL;
 		ComPtr<ID3D11InputLayout> samplingIL;
+		ComPtr<ID3D11InputLayout> billboardIL;;
 
 		// Shaders
 		ComPtr<ID3D11VertexShader> basicVS;
@@ -75,6 +80,10 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> bloomDownPS;
 		ComPtr<ID3D11PixelShader> bloomUpPS;
 		ComPtr<ID3D11PixelShader> combinePS;
+
+		ComPtr<ID3D11VertexShader> billboardVS;
+		ComPtr<ID3D11GeometryShader> billboardGS;
+		ComPtr<ID3D11PixelShader> billboardPS;
 
 		// Sampler
 		ComPtr<ID3D11SamplerState> linearWrapSS;

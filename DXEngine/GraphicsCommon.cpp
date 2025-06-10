@@ -115,6 +115,14 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"BloomDownPS.hlsl", bloomDownPS);
 		D3D11Utils::CreatePS(device, L"BloomUpPS.hlsl", bloomUpPS);
 		D3D11Utils::CreatePS(device, L"CombinePS.hlsl", combinePS);
+
+		// Billboard
+		std::vector<D3D11_INPUT_ELEMENT_DESC> billboardIEs = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		};
+		D3D11Utils::CreateVSAndIL(device, L"BillboardVS.hlsl", billboardIEs, billboardVS, billboardIL);
+		D3D11Utils::CreateGS(device, L"BillboardGS.hlsl", billboardGS);
+		D3D11Utils::CreatePS(device, L"BillboardPS.hlsl", billboardPS);
 	}
 	
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
@@ -187,6 +195,13 @@ namespace DE {
 		postProcess.bloomPSO.inputLayout = samplingIL;
 		postProcess.bloomPSO.vertexShader = samplingVS;
 		postProcess.bloomPSO.rasterizerState = postProcessRS;
+
+		// Billboard
+		billboard.solidPSO = normal.solidPSO;
+		billboard.solidPSO.vertexShader = billboardVS;
+		billboard.solidPSO.geometryShader = billboardGS;
+		billboard.solidPSO.pixelShader = billboardPS;
+
 
 	}
 }

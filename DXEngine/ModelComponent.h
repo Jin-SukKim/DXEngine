@@ -16,6 +16,7 @@ namespace DE {
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
 		void Render(ComPtr<ID3D11DeviceContext>& context) override;
 		void RenderNormal(ComPtr<ID3D11DeviceContext>& context);
+		void RenderPoints(ComPtr<ID3D11DeviceContext>& context);
 		
 		void SetModel(ComPtr<ID3D11Device>& device, const std::wstring& name, const std::string& basePath, const std::string& filename);
 		void SetModel(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes);

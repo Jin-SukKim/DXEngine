@@ -113,4 +113,20 @@ namespace DE {
 		}
 	}
 
+	void ModelComponent::RenderPoints(ComPtr<ID3D11DeviceContext>& context)
+	{
+		for (const auto& mesh : m_meshes) {
+			ID3D11Buffer* constBuffers[2] = {
+				mesh.basicMaterialConstGPU.Get(),
+				mesh.meshConstGPU.Get()
+			};
+			context->VSSetConstantBuffers(1, 2, constBuffers);
+
+			ID3D11ShaderResourceView* resViews[1] = { mesh.albedoTexture.GetSRV() };
+			context->PSSetShaderResources(0, 1, resViews);
+			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
+			context->Draw(mesh.indexCount, 0);
+		}
+	}
+
 }

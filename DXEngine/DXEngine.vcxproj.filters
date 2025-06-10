@@ -77,6 +77,15 @@
     <Filter Include="Shaders\PostProcess\Bloom">
       <UniqueIdentifier>{640f767d-d833-4e09-973f-29ba5171a3b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Skybox">
+      <UniqueIdentifier>{776878ca-ce78-48b9-8bfa-db08a0be5d6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Shading">
+      <UniqueIdentifier>{0a68cc2e-3f35-4ff5-99f1-d8ae64902e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Billboard">
+      <UniqueIdentifier>{5f829d3d-91d5-4bf6-9ddd-e1bee2dcb91b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -181,6 +190,7 @@
     <ClInclude Include="BoundComponent.h">
       <Filter>public\Component</Filter>
     </ClInclude>
+    <ClInclude Include="BillboardActor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -261,6 +271,9 @@
     <ClCompile Include="BoundComponent.cpp">
       <Filter>private\Component</Filter>
     </ClCompile>
+    <ClCompile Include="BillboardActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -278,12 +291,6 @@
     <FxCompile Include="NormalGS.hlsl">
       <Filter>Shaders\Utils</Filter>
     </FxCompile>
-    <FxCompile Include="SkyboxVS.hlsl">
-      <Filter>Shaders\Basic</Filter>
-    </FxCompile>
-    <FxCompile Include="SkyboxPS.hlsl">
-      <Filter>Shaders\Basic</Filter>
-    </FxCompile>
     <FxCompile Include="BloomDownPS.hlsl">
       <Filter>Shaders\PostProcess\Bloom</Filter>
     </FxCompile>
@@ -296,8 +303,23 @@
     <FxCompile Include="ColorPS.hlsl">
       <Filter>Shaders\Basic</Filter>
     </FxCompile>
+    <FxCompile Include="SkyboxPS.hlsl">
+      <Filter>Shaders\Skybox</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVS.hlsl">
+      <Filter>Shaders\Skybox</Filter>
+    </FxCompile>
     <FxCompile Include="SamplingVS.hlsl">
-      <Filter>Shaders\Basic</Filter>
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="BillboardVS.hlsl">
+      <Filter>Shaders\Billboard</Filter>
+    </FxCompile>
+    <FxCompile Include="BillboardPS.hlsl">
+      <Filter>Shaders\Billboard</Filter>
+    </FxCompile>
+    <FxCompile Include="BillboardGS.hlsl">
+      <Filter>Shaders\Billboard</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -305,7 +327,7 @@
       <Filter>Shaders\Basic</Filter>
     </None>
     <None Include="BlinnPhong.hlsli">
-      <Filter>Shaders\Basic</Filter>
+      <Filter>Shaders\Shading</Filter>
     </None>
   </ItemGroup>
 </Project>
