@@ -60,6 +60,10 @@ namespace DE {
 		static void CreatePS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader);
 		// Geometry Shader 생성
 		static void CreateGS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11GeometryShader>& geometryShader);
+		// Hull Shader 생성 (Control Points로 이루어진 Patch를 다루는 Shader)
+		static void CreateHS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11HullShader>& hullShader);
+		// Domain Shader 생성
+		static void CreateDS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11DomainShader>& domainShader);
 
 
 		// Usage를 Dynamic으로 설정한 Buffer를 GPU에서 GPU 메모리로 데이터 복사
