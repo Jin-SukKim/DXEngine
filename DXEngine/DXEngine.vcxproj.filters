@@ -86,6 +86,12 @@
     <Filter Include="Shaders\Billboard">
       <UniqueIdentifier>{5f829d3d-91d5-4bf6-9ddd-e1bee2dcb91b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\TessellationQuad">
+      <UniqueIdentifier>{2f600788-5799-47ce-ace8-0ef265260af4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\TessellationTri">
+      <UniqueIdentifier>{49589ac9-5f78-4f21-aa08-230a766261fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -169,12 +175,6 @@
     <ClInclude Include="SkyboxActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsPSO.h">
-      <Filter>public\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsCommon.h">
-      <Filter>public\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="PostProcess.h">
       <Filter>public\PostProcess</Filter>
     </ClInclude>
@@ -194,6 +194,12 @@
       <Filter>public\Actor</Filter>
     </ClInclude>
     <ClInclude Include="TreeBillboard.h" />
+    <ClInclude Include="GraphicsCommon.h">
+      <Filter>public\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsPSO.h">
+      <Filter>public\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -253,12 +259,6 @@
     <ClCompile Include="SkyboxActor.cpp">
       <Filter>private\Actor</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsPSO.cpp">
-      <Filter>private\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsCommon.cpp">
-      <Filter>private\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="PostProcess.cpp">
       <Filter>private\PostProcess</Filter>
     </ClCompile>
@@ -279,6 +279,12 @@
     </ClCompile>
     <ClCompile Include="TreeBillboard.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsCommon.cpp">
+      <Filter>private\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsPSO.cpp">
+      <Filter>private\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -329,6 +335,18 @@
     </FxCompile>
     <FxCompile Include="TreeBillboardPS.hlsl">
       <Filter>Shaders\Billboard</Filter>
+    </FxCompile>
+    <FxCompile Include="TessellationQuadVS.hlsl">
+      <Filter>Shaders\TessellationQuad</Filter>
+    </FxCompile>
+    <FxCompile Include="TessellationQuadHS.hlsl">
+      <Filter>Shaders\TessellationQuad</Filter>
+    </FxCompile>
+    <FxCompile Include="TessellationQuadDS.hlsl">
+      <Filter>Shaders\TessellationQuad</Filter>
+    </FxCompile>
+    <FxCompile Include="TessellationQuadPS.hlsl">
+      <Filter>Shaders\TessellationQuad</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -28,6 +28,7 @@ namespace DE {
 			GraphicsPSO solidPSO;
 			GraphicsPSO wirePSO;
 			GraphicsPSO boundPSO;
+			GraphicsPSO tessellationQuadPSO;
 		} basic;
 
 		struct {
@@ -46,6 +47,7 @@ namespace DE {
 		struct {
 			GraphicsPSO solidPSO;
 		} billboard;
+
 
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
@@ -85,6 +87,12 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> billboardVS;
 		ComPtr<ID3D11GeometryShader> billboardGS;
 		ComPtr<ID3D11PixelShader> billboardPS;
+
+		// Tessellation Sample
+		ComPtr<ID3D11VertexShader> tessellationQuadVS;
+		ComPtr<ID3D11HullShader> tessellationQuadHS;
+		ComPtr<ID3D11DomainShader> tessellationQuadDS;
+		ComPtr<ID3D11PixelShader> tessellationQuadPS;
 
 		// Sampler
 		ComPtr<ID3D11SamplerState> linearWrapSS;

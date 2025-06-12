@@ -136,6 +136,12 @@ namespace DE {
 		D3D11Utils::CreateGS(device, L"BillboardGS.hlsl", billboardGS);
 		D3D11Utils::CreatePS(device, L"BillboardPS.hlsl", billboardPS);
 		D3D11Utils::CreatePS(device, L"TreeBillboardPS.hlsl", TreeBillboardPS);
+
+		// Tessellation Quad
+		D3D11Utils::CreateVSAndIL(device, L"tessellationQuadVS.hlsl", billboardIEs, tessellationQuadVS, billboardIL);
+		D3D11Utils::CreateHS(device, L"tessellationQuadHS.hlsl", tessellationQuadHS);
+		D3D11Utils::CreateDS(device, L"tessellationQuadDS.hlsl", tessellationQuadDS);
+		D3D11Utils::CreatePS(device, L"tessellationQuadPS.hlsl", tessellationQuadPS);
 	}
 	
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
@@ -217,5 +223,13 @@ namespace DE {
 		billboard.solidPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		billboard.solidPSO.rasterizerState = solidBothRS;
 
+		// Tessellation Quad
+		basic.tessellationQuadPSO = basic.solidPSO;
+		basic.tessellationQuadPSO.vertexShader = tessellationQuadVS;
+		basic.tessellationQuadPSO.hullShader = tessellationQuadHS;
+		basic.tessellationQuadPSO.domainShader = tessellationQuadDS;
+		basic.tessellationQuadPSO.pixelShader = tessellationQuadPS;
+		// 약간 다른 Topology를 사용 (POINTLIST이므로 렌더링시 Draw()를 사용)
+		basic.tessellationQuadPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;;
 	}
 }
