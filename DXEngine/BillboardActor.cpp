@@ -22,23 +22,30 @@ namespace DE {
 	void BillboardActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
 	{
 		Super::Update(context, deltaTime);
+		m_billboardConsts.Upload(context);
 	}
 
 	void BillboardActor::Render(RenderBase& renderer) {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
+		if (m_pixelShader)
+			context->PSSetShader(m_pixelShader.Get(), 0, 0);
 		context->VSSetConstantBuffers(3, 1, m_billboardConsts.GetAddressOf());
 		context->GSSetConstantBuffers(3, 1, m_billboardConsts.GetAddressOf());
 		context->PSSetConstantBuffers(3, 1, m_billboardConsts.GetAddressOf());
+		
+		// Texture Array도 Texture2D와 동일하게 사용
+		context->PSSetShaderResources(0, 1, m_texArraySRV.GetAddressOf());
+
 		m_billboardModel->RenderPoints(context);
 		context->GSSetShader(nullptr, 0, 0);
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
-		RenderComponent(context, ComponentType::BoundingVolume);
+		//renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
+		//RenderComponent(context, ComponentType::BoundingVolume);
 	}
 
-	void BillboardActor::SetBillboard(ComPtr<ID3D11Device>& device, const std::vector<Vector3>& points, const float& width, const ComPtr<ID3D11PixelShader>& pixelShader)
+	void BillboardActor::SetBillboard(ComPtr<ID3D11Device>& device, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader)
 	{
 		MeshData meshData;
 		uint32_t indexCount = 0;
@@ -55,6 +62,11 @@ namespace DE {
 		m_pixelShader = pixelShader;
 
 		m_billboardBounds->SetBoundingVolume(device, { meshData });
+
+		if (filenames.size()) {
+			D3D11Utils::CreateTextureArray(device, filenames, m_texArray, m_texArraySRV);
+			m_billboardConsts.GetCpu().arraySize = UINT(filenames.size());
+		}
 
 		m_billboardConsts.GetCpu().widthWorld = width;
 		m_billboardConsts.Initialize(device);

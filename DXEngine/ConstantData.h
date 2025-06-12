@@ -49,7 +49,7 @@ namespace DE {
 		Matrix viewProj;
 
 		Vector3 eyeWorld; // Camera À§Ä¡
-		float dummy; 
+		float dummy3; 
 
 		Light lights[MAX_LIGHTS];
 	};

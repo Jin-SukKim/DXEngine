@@ -190,7 +190,10 @@
     <ClInclude Include="BoundComponent.h">
       <Filter>public\Component</Filter>
     </ClInclude>
-    <ClInclude Include="BillboardActor.h" />
+    <ClInclude Include="BillboardActor.h">
+      <Filter>public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeBillboard.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -272,6 +275,9 @@
       <Filter>private\Component</Filter>
     </ClCompile>
     <ClCompile Include="BillboardActor.cpp">
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeBillboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -319,6 +325,9 @@
       <Filter>Shaders\Billboard</Filter>
     </FxCompile>
     <FxCompile Include="BillboardGS.hlsl">
+      <Filter>Shaders\Billboard</Filter>
+    </FxCompile>
+    <FxCompile Include="TreeBillboardPS.hlsl">
       <Filter>Shaders\Billboard</Filter>
     </FxCompile>
   </ItemGroup>

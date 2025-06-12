@@ -2,6 +2,8 @@
 #include "GraphicsCommon.h"
 
 namespace DE {
+	ComPtr<ID3D11PixelShader>  GraphicsCommon::TreeBillboardPS = nullptr;
+
 	void GraphicsCommon::InitCommonStates(ComPtr<ID3D11Device>& device)
 	{
 		initRasterizerStates(device);
@@ -30,12 +32,22 @@ namespace DE {
 		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
 		ThrowIfFailed(device->CreateRasterizerState(&rastDesc, wireRS.GetAddressOf()));
 
+		// post-process
 		ZeroMemory(&rastDesc, sizeof(D3D11_RASTERIZER_DESC));
 		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
 		rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
 		rastDesc.FrontCounterClockwise = false;
 		rastDesc.DepthClipEnable = false;
 		ThrowIfFailed(device->CreateRasterizerState(&rastDesc, postProcessRS.GetAddressOf()));
+
+		// Both RS
+		ZeroMemory(&rastDesc, sizeof(D3D11_RASTERIZER_DESC));
+		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+		rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE; // ¾ç¸é
+		rastDesc.FrontCounterClockwise = false;
+		rastDesc.DepthClipEnable = true;
+		rastDesc.MultisampleEnable = true;
+		ThrowIfFailed(device->CreateRasterizerState(&rastDesc, solidBothRS.GetAddressOf()));
 	}
 	
 	void GraphicsCommon::initDepthStencilStates(ComPtr<ID3D11Device>& device)
@@ -123,6 +135,7 @@ namespace DE {
 		D3D11Utils::CreateVSAndIL(device, L"BillboardVS.hlsl", billboardIEs, billboardVS, billboardIL);
 		D3D11Utils::CreateGS(device, L"BillboardGS.hlsl", billboardGS);
 		D3D11Utils::CreatePS(device, L"BillboardPS.hlsl", billboardPS);
+		D3D11Utils::CreatePS(device, L"TreeBillboardPS.hlsl", TreeBillboardPS);
 	}
 	
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
@@ -197,11 +210,12 @@ namespace DE {
 		postProcess.bloomPSO.rasterizerState = postProcessRS;
 
 		// Billboard
-		billboard.solidPSO = normal.solidPSO;
+		billboard.solidPSO = basic.solidPSO;
 		billboard.solidPSO.vertexShader = billboardVS;
 		billboard.solidPSO.geometryShader = billboardGS;
 		billboard.solidPSO.pixelShader = billboardPS;
-
+		billboard.solidPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+		billboard.solidPSO.rasterizerState = solidBothRS;
 
 	}
 }

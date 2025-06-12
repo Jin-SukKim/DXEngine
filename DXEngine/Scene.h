@@ -10,6 +10,7 @@ namespace DE {
 	class SkyboxActor;
 	class RenderBase;
 	class BloomEffect;
+	class TreeBillboard;
 	class Actor;
 
 	class Scene
@@ -50,6 +51,7 @@ namespace DE {
 	private:
 		std::shared_ptr<SampleActor> triangle;
 		std::shared_ptr<SkyboxActor> m_skybox;
+		std::shared_ptr<TreeBillboard> m_billboard;
 
 		std::shared_ptr<BloomEffect> m_blommPostProcess;
 

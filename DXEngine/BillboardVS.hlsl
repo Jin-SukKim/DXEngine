@@ -1,7 +1,7 @@
 #include "Common.hlsli"
 
 struct BillboardVSInput {
-    float3 pos : POSITIONT; // 모델 좌표계의 위치
+    float3 pos : POSITION; // 모델 좌표계의 위치
 };
 
 struct GSInput {

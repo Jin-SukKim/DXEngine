@@ -12,6 +12,8 @@
 
 #include "BloomEffect.h"
 #include "BoundComponent.h"
+#include "TreeBillboard.h"
+
 namespace DE {
 	Scene::Scene(RenderBase& renderer)
 	{
@@ -39,6 +41,9 @@ namespace DE {
 		m_blommPostProcess = std::make_shared<BloomEffect>();
 		m_blommPostProcess->SetFilterLevel(4);
 		renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
+
+		m_billboard = std::make_shared<TreeBillboard>(device, L"trees");
+		m_actorList.emplace_back(m_billboard);
 
 	}
 
@@ -93,7 +98,10 @@ namespace DE {
 		TransformComponent* tr = triangle->GetComponent<TransformComponent>();
 		if (tr) {
 			tr->SetScale(Vector3(0.5f));
+			tr->SetPos(Vector3(5.f, 0.f, 5.f));
 		}
+
+		m_billboard->Initialize();
 	}
 
 	void Scene::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
@@ -112,6 +120,7 @@ namespace DE {
 		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
 
 		triangle->Update(context, deltaTime);
+		m_billboard->Update(context, deltaTime);
 	}
 
 	void Scene::Render(RenderBase& renderer) {
@@ -121,6 +130,7 @@ namespace DE {
 		setGlobals(context);
 
 		triangle->Render(renderer);
+		m_billboard->Render(renderer);
 
 		m_skybox->Render(renderer);
 

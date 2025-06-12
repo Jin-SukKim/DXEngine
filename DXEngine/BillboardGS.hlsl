@@ -2,15 +2,18 @@
 
 cbuffer BillboardConsts : register(b3) {
     float widthWorld; // world width
+    float3 dummy4;
+    uint arraySize;
+    float3 dummy5;
 };
 
 struct GSInput {
-    float4 pos : SV_Position; // ScreenPoint;
+    float4 pos : SV_POSITION; // ScreenPoint;
 };
 
 struct BillboardPSInput
 {
-	float4 pos : SV_POSITION;
+    float4 pos : SV_POSITION;
     float4 posWorld : POSITION0;
     float4 center : POSITION1;
     float2 texcoord : TEXCOORD;
@@ -20,11 +23,16 @@ struct BillboardPSInput
 // billboard는 vertex를 4개로 만들어 사각형을 생성
 [maxvertexcount(4)]
 void main(point GSInput input[1] : SV_POSITION, uint primID : SV_PrimitiveID,
-	inout PointStream<BillboardPSInput> outputStream)
+	inout TriangleStream<BillboardPSInput> outputStream)
 {
     float hw = 0.5 * widthWorld;
 	
+    // 월드 좌표계의 up 축
     float4 up = float4(0.0, 1.0, 0.0, 0.0);
+    
+    // (0, 1, 0, 0)가 뷰 좌표계의 Up 축의 값으로 생각하고 invView로 월드 좌표계로 역변환해 월드 좌표계에서의 View 좌표계의 Up Vector를 계산
+    //float4 up = mul(float4(0, 1, 0, 0), invView); // <- 뷰의 업벡터를 월드로 변환 (파이어볼을 위에서 보는 경우)
+    //up.xyz = normalize(up.xyz);
     float4 front = float4(eyeWorld, 1.0) - input[0].pos;
     front.w = 0.0; // 벡터
     
@@ -34,14 +42,14 @@ void main(point GSInput input[1] : SV_POSITION, uint primID : SV_PrimitiveID,
 	
     BillboardPSInput output;
 	
-    output.center = input[0].pos;
+    output.center = input[0].pos; // 빌보드의 중심
 	
     // 왼쪽 아래 Point
     output.posWorld = input[0].pos - hw * right - hw * up;
     output.pos = output.posWorld;
     output.pos = mul(output.pos, view);
     output.pos = mul(output.pos, proj);
-    output.texcoord = float2(0.0, 1.0);
+    output.texcoord = float2(1.0, 1.0);
     output.primID = primID;
     
     outputStream.Append(output);
@@ -51,7 +59,7 @@ void main(point GSInput input[1] : SV_POSITION, uint primID : SV_PrimitiveID,
     output.pos = output.posWorld;
     output.pos = mul(output.pos, view);
     output.pos = mul(output.pos, proj);
-    output.texcoord = float2(0.0, 0.0);
+    output.texcoord = float2(1.0, 0.0);
     output.primID = primID;
 	
     outputStream.Append(output);
@@ -61,7 +69,7 @@ void main(point GSInput input[1] : SV_POSITION, uint primID : SV_PrimitiveID,
     output.pos = output.posWorld;
     output.pos = mul(output.pos, view);
     output.pos = mul(output.pos, proj);
-    output.texcoord = float2(1.0, 1.0);
+    output.texcoord = float2(0.0, 1.0);
     output.primID = primID;
     
     outputStream.Append(output);
@@ -71,7 +79,7 @@ void main(point GSInput input[1] : SV_POSITION, uint primID : SV_PrimitiveID,
     output.pos = output.posWorld;
     output.pos = mul(output.pos, view);
     output.pos = mul(output.pos, proj);
-    output.texcoord = float2(1.0, 0.0);
+    output.texcoord = float2(0.0, 0.0);
     output.primID = primID;
     
     outputStream.Append(output);

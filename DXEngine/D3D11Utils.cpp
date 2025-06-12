@@ -4,6 +4,9 @@
 #include "Texture2D.h"
 
 #include <directxtk/DDSTextureLoader.h>
+#include "stb_image.h"
+#include "stb_image_write.h"
+
 namespace DE {
 	void D3D11Utils::CreateIndexBuffer(ComPtr<ID3D11Device>& device, const std::vector<uint32_t>& indices, ComPtr<ID3D11Buffer>& indexBuffer)
 	{
@@ -86,9 +89,9 @@ namespace DE {
 		desc.ArraySize = 1;
 		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
 		desc.SampleDesc.Count = 1;
-		desc.Usage = D3D11_USAGE_IMMUTABLE; 
+		desc.Usage = D3D11_USAGE_DEFAULT; 
 		// Shader Resource View로 사용
-		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = 0; // No CPU Access
 
 		// 어떤 데이터로 초기화할지 설정
@@ -171,6 +174,71 @@ namespace DE {
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
 	}
 
+	void D3D11Utils::CreateTextureArray(ComPtr<ID3D11Device>& device, const std::vector<std::string>& filenames, ComPtr<ID3D11Texture2D>& texture, ComPtr<ID3D11ShaderResourceView>& textureSRV)
+	{
+		if (filenames.empty())
+			return;
+
+		// TODO: 모든 이미지의 width와 height이 같다고 가정
+		
+		// 파일로부터 이미지 여러 개를 읽어들임
+		int width = 0, height = 0;
+		std::vector<std::vector<uint8_t>> imageArray;
+		for (const std::string &f : filenames) {
+			std::cout << f << std::endl;
+
+			std::vector<uint8_t> image;
+			ReadImage(f, image, width, height);
+			imageArray.emplace_back(image);
+		}
+
+		UINT size = UINT(filenames.size());
+
+		// Texture2DArray를 생성 (이때 데이터를 CPU로부터 복사하지 않음)
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width = UINT(width);
+		desc.Height = UINT(height);
+		desc.MipLevels = 1; // Mipmap Level 최대
+		desc.ArraySize = size; // Texture Array이므로 사용할 Texture 개수
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture로부터 복사 가능
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		//desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap 사용
+
+		// SUBRESOURCE_DATA의 배열
+		std::vector<D3D11_SUBRESOURCE_DATA> initData(size);
+		size_t offset = 0;
+		for (auto& i : initData) {
+			// 각각의 이미지가 시작하는 시작점
+			//i.pSysMem = imageArray.data() + offset;
+			i.pSysMem = imageArray[offset++].data();
+			// 가로줄 하나의 데이터 크기
+			i.SysMemPitch = desc.Width * sizeof(uint8_t) * 4;
+			// 2D에선 사용하지 않으나 3D부터는 사용되는 한 면의 크기
+			i.SysMemSlicePitch = desc.Width * desc.Height * sizeof(uint8_t) * 4; // 이미지 하나의 데이터 크기
+			//offset += i.SysMemSlicePitch; // 다음 이미지의 시작점을 알기 위한 offset
+		}
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, initData.data(), texture.GetAddressOf()));
+		
+		// 일반적인 Texture2D는 srv desc를 설정 안해도 되나 Texture2D를 Array처럼 상6ㅛㅇ하기 위해선 설정
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		ZeroMemory(&srvDesc, sizeof(srvDesc));
+		srvDesc.Format = desc.Format;
+		// Array로 사용하겠다는 설정 핵심
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.MostDetailedMip = 0;
+		srvDesc.Texture2DArray.MipLevels = desc.MipLevels;
+		srvDesc.Texture2DArray.FirstArraySlice = 0;
+		// 얼만큼 큰 Array를 사용할건지 설정해주는 핵심
+		srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
+
+		ThrowIfFailed(device->CreateShaderResourceView(texture.Get(), &srvDesc, textureSRV.GetAddressOf()));
+	}
+
 
 	void D3D11Utils::CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest)
 	{
@@ -178,6 +246,29 @@ namespace DE {
 		context->Map(texture.Get(), NULL, D3D11_MAP_READ, NULL, &ms);
 		memcpy(dest, ms.pData, size);
 		context->Unmap(texture.Get(), NULL);
+	}
+
+	void D3D11Utils::ReadImage(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height)
+	{
+		int channels;
+		unsigned char* img = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+
+		std::cout << "ReadImage() " << filename << " " << width << " " << height << " " << channels << std::endl;
+
+		// 4채널로 만들어서 복사
+		image.resize(width * height * 4);
+
+		if (channels == 0) {
+			std::cout << "Cannot read " << channels << " channels" << std::endl;
+			stbi_image_free(img);
+		}
+
+		for (size_t i = 0; i < width * height; ++i) {
+			for (size_t c = 0; c < channels; ++c)
+				image[4 * i + c] = img[i * channels + c];
+			for (size_t c = channels; c < 4; ++c)
+				image[4 * i + c] = 255;
+		}
 	}
 
 }

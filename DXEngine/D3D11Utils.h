@@ -84,7 +84,10 @@ namespace DE {
 		static void CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView);
 		// GPU에서 CPU로 데이터를 복사해올 용도인 Staging Texture 생성
 		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
+		// Texture Array 생성
+		static void CreateTextureArray(ComPtr<ID3D11Device>& device, const std::vector<std::string>& filenames, ComPtr<ID3D11Texture2D>& texture, ComPtr<ID3D11ShaderResourceView>& textureSRV);
 
 		static void CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest);
+		static void ReadImage(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height);
 	};
 }

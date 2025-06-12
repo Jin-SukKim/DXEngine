@@ -54,6 +54,7 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> solidRS;
 		ComPtr<ID3D11RasterizerState> wireRS;
 		ComPtr<ID3D11RasterizerState> postProcessRS;
+		ComPtr<ID3D11RasterizerState> solidBothRS; // front and back (cull-none)
 
 		// Depth Stencil State
 		ComPtr<ID3D11DepthStencilState> drawDDS; // ÀÏ¹ÝÀû(Default)
@@ -90,5 +91,7 @@ namespace DE {
 		ComPtr<ID3D11SamplerState> linearClampSS;
 
 		// Blend States
+		static ComPtr<ID3D11PixelShader> TreeBillboardPS;
 	};
+
 }
