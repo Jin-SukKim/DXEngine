@@ -8,7 +8,7 @@ namespace DE {
 	{
 		using Super = Object;
 	public:
-		Actor(ComPtr<ID3D11Device>& device, const std::wstring& name);
+		Actor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
 		virtual ~Actor() override {}
 
 		virtual void Initialize() override;

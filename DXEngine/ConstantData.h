@@ -40,7 +40,7 @@ namespace DE {
 		// ex) LIGHT_SPOT | LIGHT_SHADOW
 		uint32_t type = LIGHT_OFF;
 		float radius = 0.f; // 반지름 (Volume Light 용)
-		float dummy[2];
+		float dummy[2] = { 0.f, 0.f };
 	};
 
 	__declspec(align(256)) struct GlobalConstants {
@@ -49,7 +49,7 @@ namespace DE {
 		Matrix viewProj;
 
 		Vector3 eyeWorld; // Camera 위치
-		float dummy3; 
+		float dummy3 = 0.f; 
 
 		Light lights[MAX_LIGHTS];
 	};

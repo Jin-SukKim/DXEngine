@@ -8,7 +8,7 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		SkyboxActor(ComPtr<ID3D11Device>& device, const std::wstring& name);
+		SkyboxActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
 		~SkyboxActor() override {}
 
 		void Initialize() override;

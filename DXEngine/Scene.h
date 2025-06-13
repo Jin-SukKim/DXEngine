@@ -45,7 +45,7 @@ namespace DE {
 		InputAction m_fpv;
 		InputButton lButton = InputButton::LButton;
 		InputButton rButton = InputButton::RButton;
-		InputAxis xAxis;
+		InputAxis xAxis = InputAxis::XAxis;
 		InputAxisAction m_mouseClick;
 
 	private:

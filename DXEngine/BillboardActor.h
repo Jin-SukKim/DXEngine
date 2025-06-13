@@ -6,17 +6,17 @@ namespace DE {
     class BoundComponent;
 
     struct BillboardConsts {
-        float widthWorld; // Billboard의 width
+        float widthWorld = 1.f; // Billboard의 width
         Vector3 directionWorld; // Billboard가 이동해야하는 경우 사용 (ex: Firball 표현 등)
         UINT arraySize = 0;
-        float dummy[3];
+        float dummy[3] = { 0.f, 0.f, 0.f };
     };
 
     class BillboardActor : public Actor
     {
         using Super = Actor;
     public:
-        BillboardActor(ComPtr<ID3D11Device>& device, const std::wstring& name);
+        BillboardActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
         ~BillboardActor() override {}
 
         void Initialize() override;
@@ -24,7 +24,7 @@ namespace DE {
         void Render(RenderBase& renderer) override;
 
         // Billboard를 여러개 만드는 경우도 있고 PixelShader만 다른걸 사용하는 경우가 많음
-        void SetBillboard(ComPtr<ID3D11Device>& device, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader = nullptr);
+        void SetBillboard(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader = nullptr);
     private:
         ModelComponent* m_billboardModel;
         ConstantBuffer<BillboardConsts> m_billboardConsts;
@@ -32,8 +32,6 @@ namespace DE {
         ComPtr<ID3D11PixelShader> m_pixelShader;
         
         // Texture Array
-        ComPtr<ID3D11Texture2D> m_texArray; // C++에서는 Texture2D이지만 HLSL에선 TextureArray를 사용
-        ComPtr<ID3D11ShaderResourceView> m_texArraySRV;
-
+        Texture2D m_texArray;  // C++에서는 Texture2D이지만 HLSL에선 TextureArray를 사용
     };
 }

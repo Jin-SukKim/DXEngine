@@ -22,8 +22,14 @@ PSOutput main(PSInput input) {
             continue;
     }
     
+    float maxDist = 7.0f;
+    float minDist = 3.0;
+    
+    float dist = length(eyeWorld - input.posWorld);
+    float lod = 10.0 * saturate((dist - minDist) / (maxDist - minDist));
+    
     PSOutput output;
-    output.pixelColor = float4(color, 1.0) * g_texture0.Sample(linearWrapSampler, input.texcoord);
+    output.pixelColor = float4(color, 1.0) * g_texture0.SampleLevel(linearWrapSampler, input.texcoord, lod);
     output.indexColor = HashIdToColor(hashID);
     
     return output;

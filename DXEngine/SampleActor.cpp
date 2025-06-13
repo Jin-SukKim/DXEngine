@@ -9,13 +9,13 @@
 #include "RenderBase.h"
 
 namespace DE {
-	SampleActor::SampleActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
+	SampleActor::SampleActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
 	{
 		// main object
 		{
 			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
 			m_gelda = AddComponent<ModelComponent>(device, L"Model");
-			m_gelda->SetModel(device, meshes);
+			m_gelda->SetModel(device, context, meshes);
 
 			m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
 			m_boundVolume->SetBoundingVolume(device, meshes);

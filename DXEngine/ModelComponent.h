@@ -18,9 +18,9 @@ namespace DE {
 		void RenderNormal(ComPtr<ID3D11DeviceContext>& context);
 		void RenderPoints(ComPtr<ID3D11DeviceContext>& context);
 		
-		void SetModel(ComPtr<ID3D11Device>& device, const std::wstring& name, const std::string& basePath, const std::string& filename);
-		void SetModel(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes);
-		void SetModel(ComPtr<ID3D11Device>& device, const MeshData& mesh);
+		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name, const std::string& basePath, const std::string& filename);
+		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<MeshData>& meshes);
+		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const MeshData& mesh);
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
 		

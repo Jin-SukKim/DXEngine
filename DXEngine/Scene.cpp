@@ -15,7 +15,7 @@
 #include "TreeBillboard.h"
 
 namespace DE {
-	Scene::Scene(RenderBase& renderer)
+	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
 	{
 		ComPtr<ID3D11Device>& device = renderer.GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
@@ -25,24 +25,24 @@ namespace DE {
 
 		// Scene °øÅë Actor
 		{
-			m_mainCamera = std::make_shared<CameraActor>(device, L"MainCamera");
+			m_mainCamera = std::make_shared<CameraActor>(device, context, L"MainCamera");
 			m_actorList.emplace_back(m_mainCamera);
 			m_fpv = InputAction(f);
 
-			m_skybox = std::make_shared<SkyboxActor>(device, L"Skybox");
+			m_skybox = std::make_shared<SkyboxActor>(device, context, L"Skybox");
 			m_actorList.emplace_back(m_skybox);
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
 		}
 
-		triangle = std::make_shared<SampleActor>(device, L"Temp");
+		triangle = std::make_shared<SampleActor>(device, context, L"Temp");
 		m_actorList.emplace_back(triangle);
 
 		m_blommPostProcess = std::make_shared<BloomEffect>();
 		m_blommPostProcess->SetFilterLevel(4);
 		renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
 
-		m_billboard = std::make_shared<TreeBillboard>(device, L"trees");
+		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList.emplace_back(m_billboard);
 
 	}

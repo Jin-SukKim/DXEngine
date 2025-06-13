@@ -17,7 +17,7 @@ void DE::BloomEffect::Initialize(RenderBase& renderer, const std::vector<ComPtr<
 		this->CreateBuffer(device, width / div, height / div, m_bloomTextures[i]);
 	}
 
-	// Down-Sampling
+	// Down-Sampling - 해상도를 낮춰서(Down Sampling) Blur 효과 적용할 때 훨씬 부드러운 결과를 낼 수 있게 함
 	m_bloomDownFilters.resize(m_bloomLevels - 1);
 	for (int i = 0; i < m_bloomLevels - 1; ++i) {
 		int div = int(pow(2, i + 1));
@@ -34,9 +34,9 @@ void DE::BloomEffect::Initialize(RenderBase& renderer, const std::vector<ComPtr<
 		m_bloomDownFilters[i].UpdateConstantBuffer(context);
 	}
 
-	// Up-Sampling
+	// Up-Sampling - Gaussian Blur를 2배씩 Up Sampling해 원래 해상도까지 순차적으로 적용
 	m_bloomUpFilters.resize(m_bloomLevels - 1);
-	for (int i = 0; i < m_bloomLevels - 1; i++) {
+	for (int i = 0; i < m_bloomLevels - 1; ++i) {
 		int level = m_bloomLevels - 2 - i;
 		int div = int(pow(2, level));
 		m_bloomUpFilters[i].Initialize(device, context, RenderBase::graphicsCommon.bloomUpPS, width / div, height / div);

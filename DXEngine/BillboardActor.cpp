@@ -7,7 +7,7 @@
 #include "RenderBase.h"
 
 namespace DE {
-	BillboardActor::BillboardActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
+	BillboardActor::BillboardActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
 	{	
 		m_billboardModel = AddComponent<ModelComponent>(device, L"BillboardModel");
 		m_billboardBounds = AddComponent<BoundComponent>(device, L"BillboardBound");
@@ -36,7 +36,7 @@ namespace DE {
 		context->PSSetConstantBuffers(3, 1, m_billboardConsts.GetAddressOf());
 		
 		// Texture Array도 Texture2D와 동일하게 사용
-		context->PSSetShaderResources(0, 1, m_texArraySRV.GetAddressOf());
+		context->PSSetShaderResources(0, 1, m_texArray.GetAddressOfSRV());
 
 		m_billboardModel->RenderPoints(context);
 		context->GSSetShader(nullptr, 0, 0);
@@ -45,7 +45,7 @@ namespace DE {
 		//RenderComponent(context, ComponentType::BoundingVolume);
 	}
 
-	void BillboardActor::SetBillboard(ComPtr<ID3D11Device>& device, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader)
+	void BillboardActor::SetBillboard(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader)
 	{
 		MeshData meshData;
 		uint32_t indexCount = 0;
@@ -58,13 +58,13 @@ namespace DE {
 			meshData.indices.emplace_back(indexCount++);
 		}
 
-		m_billboardModel->SetModel(device, meshData);
+		m_billboardModel->SetModel(device, context, meshData);
 		m_pixelShader = pixelShader;
 
 		m_billboardBounds->SetBoundingVolume(device, { meshData });
 
 		if (filenames.size()) {
-			D3D11Utils::CreateTextureArray(device, filenames, m_texArray, m_texArraySRV);
+			D3D11Utils::CreateTextureArray(device, context, filenames, m_texArray);
 			m_billboardConsts.GetCpu().arraySize = UINT(filenames.size());
 		}
 

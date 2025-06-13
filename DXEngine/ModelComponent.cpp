@@ -5,18 +5,18 @@
 #include "Actor.h"
 
 namespace DE {
-	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, const std::wstring& name, const std::string& basePath, const std::string& filename)
+	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name, const std::string& basePath, const std::string& filename)
 	{
 		std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
-		SetModel(device, meshes);
+		SetModel(device, context, meshes);
 	}
 
-	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, const MeshData& mesh)
+	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const MeshData& mesh)
 	{
-		SetModel(device, std::vector<MeshData>{mesh});
+		SetModel(device, context, std::vector<MeshData>{mesh});
 	}
 
-	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes)
+	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<MeshData>& meshes)
 	{
 		// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
 		m_constant.Initialize(device);
@@ -33,7 +33,7 @@ namespace DE {
 			
 			if (!meshData.albedoTextureFilename.empty()) {
 				std::cout << meshData.albedoTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, meshData.albedoTextureFilename, newMesh.albedoTexture);
+				D3D11Utils::CreateTexture(device, context, meshData.albedoTextureFilename, newMesh.albedoTexture);
 			}
 
 			// 모델의 모든 Mesh가 같은 Buffer를 사용

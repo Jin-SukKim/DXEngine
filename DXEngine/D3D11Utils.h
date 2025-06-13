@@ -80,18 +80,20 @@ namespace DE {
 		}
 
 		// Texture2D 생성
-		static void CreateTexture(ComPtr<ID3D11Device>& device, const std::string& filename, Texture2D& texture);
+		static void CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, Texture2D& texture);
 		// Resource Texture의 설정을 가져와서 Texture, SRV, RTV 생성
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture);
+		// Post-Process 용 Texture 생성
 		static void CreateImageFilterTexture(ComPtr<ID3D11Device>& device, int width, int height, Texture2D& texture);
 		// DDS 파일로부터 Texture 생성 (isCubemap이 true면 Cubemap Texture, false면 Texture2D 생성)
 		static void CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView);
 		// GPU에서 CPU로 데이터를 복사해올 용도인 Staging Texture 생성
 		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
+		// Mipmap을 위한 Staging Texture 생성
+		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const int& mipLevels = 1, const int& arraySize = 1, const DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
 		// Texture Array 생성
-		static void CreateTextureArray(ComPtr<ID3D11Device>& device, const std::vector<std::string>& filenames, ComPtr<ID3D11Texture2D>& texture, ComPtr<ID3D11ShaderResourceView>& textureSRV);
+		static void CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture);
 
 		static void CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest);
-		static void ReadImage(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height);
 	};
 }

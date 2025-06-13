@@ -7,13 +7,13 @@
 #include "RenderBase.h"
 
 namespace DE {
-	SkyboxActor::SkyboxActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name)
+	SkyboxActor::SkyboxActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
 	{
 		MeshData cubeMap = GeometryGenerator::MakeBox(40.f);
 		// IBL용 Cube는 박스 안에서 바라보기 때문에 Index 순서를 뒤집어주기
 		std::reverse(cubeMap.indices.begin(), cubeMap.indices.end());
 		m_sky = AddComponent<ModelComponent>(device, name);
-		m_sky->SetModel(device, cubeMap);
+		m_sky->SetModel(device, context, cubeMap);
 
 		// 기본으로 적용할 Cubemap
 		SetCubeMaps(device, L"../Assets/Textures/Cubemaps/HDRI/", 

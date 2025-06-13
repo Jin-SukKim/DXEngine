@@ -7,7 +7,7 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		CameraActor(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name) {}
+		CameraActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name) {}
 		virtual ~CameraActor() {}
 
 		void Initialize() override;
