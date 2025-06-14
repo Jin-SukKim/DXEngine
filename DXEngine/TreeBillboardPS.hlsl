@@ -5,9 +5,9 @@ Texture2DArray g_texArray : register(t0);
 
 cbuffer BillboardConsts : register(b3) {
     float widthWorld; // world width
-    float3 dummy4;
+    float3 bDummy1;
     uint arraySize;
-    float3 dummy5;
+    float3 bDummy2;
 };
 
 struct BillboardPSInput {

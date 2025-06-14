@@ -40,7 +40,7 @@ namespace DE {
 
 		m_blommPostProcess = std::make_shared<BloomEffect>();
 		m_blommPostProcess->SetFilterLevel(4);
-		renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
+		//renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList.emplace_back(m_billboard);
@@ -59,7 +59,7 @@ namespace DE {
 			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
 			m_globalConstsCPU.lights[0].fallOffEnd = 10.0f;
 			m_globalConstsCPU.lights[0].radius = 0.f;
-			m_globalConstsCPU.lights[0].type = LIGHT_SPOT;
+			m_globalConstsCPU.lights[0].type = LIGHT_OFF;
 
 			// 조명 1개만 사용하고 나머지는 사용하지 않음
 			m_globalConstsCPU.lights[1].type = LIGHT_OFF;
@@ -98,10 +98,16 @@ namespace DE {
 		TransformComponent* tr = triangle->GetComponent<TransformComponent>();
 		if (tr) {
 			tr->SetScale(Vector3(0.5f));
-			tr->SetPos(Vector3(5.f, 0.f, 5.f));
+			tr->SetPos(Vector3(0.f, 0.f, 0.f));
 		}
 
 		m_billboard->Initialize();
+
+		tr = m_billboard->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetPos(Vector3(0.f, 0.f, 5.f));
+		}
+
 	}
 
 	void Scene::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {

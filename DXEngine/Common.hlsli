@@ -10,6 +10,7 @@
 
 // Sampler들은 모든 Shader에서 공통으로 사용
 SamplerState linearWrapSampler : register(s0);
+SamplerState linearClampSampler : register(s1);
 
 // 공용 Texture들 t10부터 시작 (IBL용 Texture 등)
 TextureCube envIBLTex : register(t10);
@@ -49,18 +50,40 @@ cbuffer BasicMaterialConstants : register(b1) {
     float dummy1;
     float3 specular;
     float dummy2;
+    float3 fresnelR0;
     int hashID;
 };
 
 cbuffer MeshConstants : register(b2) {
     matrix world;
     matrix worldIT; // Normal 변환용 inverse Transpose
+    int useHeightMap;
+    float heightScale;
+    float2 dummy4;
 };
+
+cbuffer MaterialConstants : register(b3) {
+    float3 albedoFactor; 
+    float roughnessFactor;
+    float metallicFactor;
+    float3 emissionFactor;
+    
+    // 여러 옵션들에 uint32를 flag로 하나만 사용할 수도 있음
+    int useAlbedoMap = 0;
+    int useNormalMap = 0;
+    int useAOMap = 0;
+    int invertNormalMapY = 0;
+    int useMetallicMap = 0;
+    int useRoughnessMap = 0;
+    int useEmissiveMap = 0;
+    float dummy3 = 0.f;
+}
 
 struct VSInput {
     float3 posModel : POSITION; // 모델 좌표계의 위치
     float3 normalModel : NORMAL; // 모델 좌표계의 normal
     float2 texcoord : TEXCOORD;
+    float3 tangentModel : TANGENT;
 };
 
 struct PSInput {
@@ -68,6 +91,7 @@ struct PSInput {
     float3 posWorld : POSITION; // World 좌표계의 위치 (조명 계산에 사용)
     float3 normalWorld : NORMAL;
     float2 texcoord : TEXCOORD;
+    float3 tangentWorld : TANGENT;
 };
 
 struct PSOutput {

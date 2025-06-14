@@ -85,7 +85,8 @@ namespace DE {
 
 	void RenderBase::Update()
 	{
-		m_postProcess->Update(m_context);
+		if (m_postProcess)
+			m_postProcess->Update(m_context);
 	}
 
 	void RenderBase::Render()
@@ -225,7 +226,7 @@ namespace DE {
 		D3D11_TEXTURE2D_DESC dsBufferDesc;
 		dsBufferDesc.Width = window.width;
 		dsBufferDesc.Height = window.height;
-		dsBufferDesc.MipLevels = 1;
+		dsBufferDesc.MipLevels = 1; // Depth Stencil Buffer는 Mipmap 불필요
 		dsBufferDesc.ArraySize = 1;
 		dsBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		dsBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;

@@ -3,15 +3,15 @@
 
 #include "Common.hlsli"
 
-float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 toEye, float3 diffuseColor, float3 specularColor) {
+float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 toEye) {
     // Diffuse 계산
     float ndotl = max(dot(lightVec, normal), 0.0f);
-    float3 diffuseTerm = diffuseColor * ndotl;
+    float3 diffuseTerm = diffuse * ndotl;
     
     // Specular 계산
     float3 halfway = normalize(toEye + lightVec);
     float hdotn = dot(halfway, normal);
-    float3 specularTerm = specularColor * pow(max(hdotn, 0.0f), shininess);
+    float3 specularTerm = specular * pow(max(hdotn, 0.0f), shininess);
     
     // 최종 조합
     return ambient + (diffuseTerm + specularTerm) * lightStrength;
@@ -24,12 +24,8 @@ float3 ComputeDirectionalLight(Light L, float3 normal, float3 toEye) {
     float ndotl = max(dot(lightVec, normal), 0.0);
     float3 lightStrength = L.radiance * ndotl;
     
-    // IBL
-    float3 diffuseColor = diffuse * irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normal)).xyz;
-    float3 specularColor = specular * specularIBLTex.Sample(linearWrapSampler, reflect(-toEye, normal)).xyz;
-        
-        // Blinn-Phong
-    return BlinnPhong(lightStrength, lightVec, normal, toEye, diffuseColor, specularColor);
+    // Blinn-Phong
+    return BlinnPhong(lightStrength, lightVec, normal, toEye);
 }
 
 // 조명과 거리에 따라 빛의 강도를 조절
@@ -59,13 +55,9 @@ float3 ComputePointLight(Light L, float3 pos, float3 normal, float3 toEye) {
         // 거리에 따른 빛의 강도 가중치
         float att = CalcAttenuation(d, L.fallOffStart, L.fallOffEnd);
         lightStrength *= att;
-    
-        // IBL
-        float3 diffuseColor = diffuse * irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normal)).xyz;
-        float3 specularColor = specular * specularIBLTex.Sample(linearWrapSampler, reflect(-toEye, normal)).xyz;
-        
+ 
         // Blinn-Phong
-        return BlinnPhong(lightStrength, lightVec, normal, toEye, diffuseColor, specularColor);
+        return BlinnPhong(lightStrength, lightVec, normal, toEye);
     }
 
 }
@@ -95,16 +87,9 @@ float3 ComputeSpotLight(Light L, float3 pos, float3 normal, float3 toEye) {
         // 빛이 향하는 방향으로 빛을 모아주는 강도
         float spotFactor = pow(max(dot(L.direction, -lightVec), 0.0), L.spotPower);
         lightStrength *= spotFactor;
-        
-        // IBL
-        float3 diffuseColor = diffuse * irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normal)).xyz;
-        float3 specularColor = specular * specularIBLTex.Sample(linearWrapSampler, reflect(-toEye, normal)).xyz;
-        
-        // Schlick-Fresnel Effect (specular에 곱해줘서 물체의 안쪽은 물체의 색을 가장자리에 가까울수록 specular의 강도가 세지도록 계산)
-        //specularColor *= SchlickFresnel(float3(0.05, 0.05, 0.05), normal, toEye);
-        
+
         // Blinn-Phong
-        return BlinnPhong(lightStrength, lightVec, normal, toEye, diffuseColor, specularColor);
+        return BlinnPhong(lightStrength, lightVec, normal, toEye);
     }
 }
 

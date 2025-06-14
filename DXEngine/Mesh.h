@@ -9,12 +9,14 @@ namespace DE {
 
 		ComPtr<ID3D11Buffer> meshConstGPU;
 		ComPtr<ID3D11Buffer> basicMaterialConstGPU;
+		ComPtr<ID3D11Buffer> materialConstGPU;
 
 		Texture2D albedoTexture;
 		Texture2D diffuseTexture;
 		Texture2D specularTexture;
 
 		Texture2D emissiveTexture;
+		Texture2D heightTexture;
 		Texture2D normalTexture;
 		Texture2D aoTexture;
 		Texture2D metallicroughnessTexture;

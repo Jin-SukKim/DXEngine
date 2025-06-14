@@ -163,7 +163,7 @@ namespace DE {
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = desc.ArraySize = 1;
+		desc.MipLevels = desc.ArraySize = 1; // Post-Processing에는 Mipmap이 불필요
 		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; // 이미지 처리 용도
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_DEFAULT; // GPU read/write
@@ -204,7 +204,7 @@ namespace DE {
 		desc.BindFlags = 0;
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = desc.ArraySize = 1;
+		desc.MipLevels = desc.ArraySize = 1; // GPU의 데이터를 가져올 용도의 Staging Texture이기에 mipmap 불필요
 		desc.Format = pixelFormat;
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_STAGING; // GPU->CPU로 데이터를 보낼 용도

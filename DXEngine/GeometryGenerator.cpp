@@ -25,7 +25,8 @@ namespace DE {
             Vertex v;
             v.position = positions[i];
             v.normalModel = normals[i];
-            v.texcoord = tex[i];
+            v.texcoord = tex[i] * texScale;
+            v.tangentModel = Vector3(1.0f, 0.0f, 0.0f);
 
             meshData.vertices.emplace_back(v);
         }
@@ -72,7 +73,7 @@ namespace DE {
             v.position = positions[i];
             v.normalModel = normals[i];
             v.texcoord = texcoords[i] * texScale;
-            //v.tangentModel = Vector3(1.0f, 0.0f, 0.0f);
+            v.tangentModel = Vector3(1.0f, 0.0f, 0.0f);
 
             // v.color = colors[i];
 
@@ -101,7 +102,7 @@ namespace DE {
                 v.position = Vector3(x, y, 0.0f) * scale;
                 v.normalModel = Vector3(0.0f, 0.0f, -1.0f);
                 v.texcoord = Vector2(x + 1.0f, y + 1.0f) * 0.5f * texScale;
-                //v.tangentModel = Vector3(1.0f, 0.0f, 0.0f);
+                v.tangentModel = Vector3(1.0f, 0.0f, 0.0f);
 
                 meshData.vertices.push_back(v);
 
@@ -348,14 +349,14 @@ namespace DE {
                     texScale;
 
                 // texcoord가 위로 갈수록 증가
-                //Vector3 biTangent = Vector3(0.0f, 1.0f, 0.0f);
+                Vector3 biTangent = Vector3(0.0f, 1.0f, 0.0f);
 
-                //Vector3 normalOrth =
-                //    v.normalModel - biTangent.Dot(v.normalModel) * v.normalModel;
-                //normalOrth.Normalize();
+                Vector3 normalOrth =
+                    v.normalModel - biTangent.Dot(v.normalModel) * v.normalModel;
+                normalOrth.Normalize();
 
-                //v.tangentModel = biTangent.Cross(normalOrth);
-                //v.tangentModel.Normalize();
+                v.tangentModel = biTangent.Cross(normalOrth);
+                v.tangentModel.Normalize();
 
                 /*    Vector3::Transform(Vector3(0.0f, 0.0f, 1.0f),
                                        Matrix::CreateRotationY(dTheta *

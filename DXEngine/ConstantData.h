@@ -16,16 +16,37 @@ namespace DE {
 	__declspec(align(256)) struct MeshConstants {
 		Matrix world;
 		Matrix worldIT; // World Inverse Transpose (Normal 변환에 사용)
+		int useHeightMap = 0; 
+		float heightScale = 1.f;
+		float dummy[2];
 	};
 	
 	__declspec(align(256)) struct BasicMaterialConstants {
-		Vector3 ambient = Vector3(0.1f);
-		float shininess = 1.0f;
-		Vector3 diffuse = Vector3(1.f);
+		Vector3 ambient = Vector3(0.0f);
+		float shininess = 0.01f;
+		Vector3 diffuse = Vector3(1.0f);
 		float dummy1;
-		Vector3 specular = Vector3(1.f);
+		Vector3 specular = Vector3(1.0f);
 		float dummy2;
+		Vector3 fresnelR0 = Vector3(0.05f, 0.05f, 0.05f);
 		int hashID = 0;
+	};
+
+	__declspec(align(256)) struct MaterialConstants {
+		Vector3 albedoFactor = Vector3(1.f); // 기본 색이라 생각할 수 있음
+		float roughnessFactor = 1.f;
+		float metallicFactor = 1.f;
+		Vector3 emissionFactor = Vector3(0.f);
+
+		// 여러 옵션들에 uint32를 flag로 하나만 사용할 수도 있음
+		int useAlbedoMap = 0;
+		int useNormalMap = 0;
+		int useAOMap = 0;
+		int invertNormalMapY = 0;
+		int useMetallicMap = 0;
+		int useRoughnessMap = 0;
+		int useEmissiveMap = 0;
+		float dummy = 0.f;
 	};
 
 	struct Light {
