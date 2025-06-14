@@ -41,7 +41,7 @@ namespace DE {
 		// 여러 옵션들에 uint32를 flag로 하나만 사용할 수도 있음
 		int useAlbedoMap = 0;
 		int useNormalMap = 0;
-		int useAOMap = 0;
+		int useAOMap = 0; // 간접광(Ambient LIghting)으로 사용
 		int invertNormalMapY = 0;
 		int useMetallicMap = 0;
 		int useRoughnessMap = 0;

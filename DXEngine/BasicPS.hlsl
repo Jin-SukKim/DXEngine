@@ -16,7 +16,6 @@ PSOutput main(PSInput input) {
     float dist = length(eyeWorld - input.posWorld);
     float lod = 10.0 * saturate((dist - minDist) / (maxDist - minDist));
     
-    float3 color = float3(0.0, 0.0, 0.0);
     // https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-for
     // https://forum.unity.com/threads/what-are-unroll-and-loop-when-to-use-them.1283096/
     float3 normalWorld = input.normalWorld;
@@ -44,23 +43,24 @@ PSOutput main(PSInput input) {
     float ao = useAOMap ?
         g_aoTex.SampleLevel(linearWrapSampler, input.texcoord, lod) * metallicFactor
         : metallicFactor;
-
+    
+    float3 ambientLight = float3(0.0, 0.0, 0.0); // °£Á¢±¤
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
         if (lights[i].type == LIGHT_DIRECTIONAL)
-            color += ComputeDirectionalLight(lights[i], normalWorld, toEye);
+            ambientLight += ComputeDirectionalLight(lights[i], normalWorld, toEye);
         else if (lights[i].type == LIGHT_POINT)
-            color += ComputePointLight(lights[i], input.posWorld, normalWorld, toEye);
+            ambientLight += ComputePointLight(lights[i], input.posWorld, normalWorld, toEye);
         else if (lights[i].type == LIGHT_SPOT)
-            color += ComputeSpotLight(lights[i], input.posWorld, normalWorld, toEye);
+            ambientLight += ComputeSpotLight(lights[i], input.posWorld, normalWorld, toEye);
         else
             continue;
     }
     
     // IBL
-    float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld)) + float4(color, 1.0);
+    float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld)) + float4(ambientLight, 1.0);
     diffuseColor *= float4(diffuse, 1.0);
-    diffuseColor *= albedo;
+    diffuseColor *= albedo * ao;
     
     float4 specularColor = specularIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld));
     specularColor *= pow(abs(specular.r + specular.g + specular.b) / 3.0, shininess);

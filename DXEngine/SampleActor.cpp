@@ -14,6 +14,11 @@ namespace DE {
 		// main object
 		{
 			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
+			/*auto meshes = GeometryGenerator::MakeSquare();
+			std::string basePath = "../Assets/Textures/PBR/Bricks075A_1K-PNG/";
+			meshes.albedoTextureFilename = basePath + "Bricks075A_1K-PNG_Color.png";
+			meshes.normalTextureFilename = basePath + "Bricks075A_1K-PNG_NormalDX.png";
+			meshes.aoTextureFilename = basePath + "Bricks075A_1K-PNG_AmbientOcclusion.png";*/
 			m_gelda = AddComponent<ModelComponent>(device, L"Model");
 			m_gelda->SetModel(device, context, meshes);
 
