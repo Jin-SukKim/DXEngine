@@ -25,7 +25,7 @@ PSInput main(VSInput input) {
         // Heightmap은 보통 흑백이라서 마지막에 .r로 float 하나만 사용
         float height = g_heightTexture.SampleLevel(linearClampSampler, input.texcoord, 0).r;
         height = height * 2.0 - 1.0; // 범위를 [-1.0, 1.0]으로 변환
-        output.posWorld += output.normalWorld * height * heightScale;
+        output.posWorld += output.normalWorld * height * heightScale; // Normal Vector방향으로 이동
     }
     
     // Tangent Vector

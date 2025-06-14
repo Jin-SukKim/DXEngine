@@ -10,7 +10,10 @@ namespace DE {
 		~Image() override {}
 
 		bool Load(const std::string& filename) override;
+		bool LoadExr(const std::string& filename, DXGI_FORMAT& pixelFormat);
 		static void ReadImage(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height);
+		// HDRI 이미지 읽어오기 (HDRI는 보통 IBL할때 주로 사용)
+		static void ReadImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat);
 
 		const std::vector<uint8_t>& GetImage() { return m_image; }
 		const int& GetWidth() { return m_width; }

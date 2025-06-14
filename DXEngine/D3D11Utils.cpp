@@ -104,9 +104,18 @@ namespace DE {
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, Texture2D& texture)
 	{
 		Image img(L"Image");
-		if (!img.Load(filename))
-			throw std::exception();
 
+		std::string ext(filename.end() - 3, filename.end());
+		std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
+
+		DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
+		// image의 확장자가 exr이라면 HDRI란 의미
+		if (ext == "exr") {
+			if (!img.LoadExr(filename, pixelFormat)) throw std::exception();
+		}
+		else 
+			if (!img.Load(filename)) throw std::exception();
+		
 		// Staging Texture 만들고 CPU에서 이미지를 복사
 		ComPtr<ID3D11Texture2D> stagingTexture;
 		CreateStagingTexture(device, context, img.GetWidth(), img.GetHeight(), stagingTexture, img.GetImage());
@@ -117,7 +126,7 @@ namespace DE {
 		desc.Height = img.GetHeight();
 		desc.MipLevels = 0; // MipMap Level 최대
 		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
+		desc.Format = pixelFormat; 
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_DEFAULT; 
 		// Shader Resource View로 사용

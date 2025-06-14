@@ -80,9 +80,6 @@
     <Filter Include="Shaders\Skybox">
       <UniqueIdentifier>{776878ca-ce78-48b9-8bfa-db08a0be5d6d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Shading">
-      <UniqueIdentifier>{0a68cc2e-3f35-4ff5-99f1-d8ae64902e2e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\Billboard">
       <UniqueIdentifier>{5f829d3d-91d5-4bf6-9ddd-e1bee2dcb91b}</UniqueIdentifier>
     </Filter>
@@ -91,6 +88,15 @@
     </Filter>
     <Filter Include="Shaders\TessellationTri">
       <UniqueIdentifier>{49589ac9-5f78-4f21-aa08-230a766261fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Phong">
+      <UniqueIdentifier>{0a68cc2e-3f35-4ff5-99f1-d8ae64902e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\PBR">
+      <UniqueIdentifier>{7fca8bbd-79bd-42f1-8fb6-4cdfcb504036}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ToneMapping">
+      <UniqueIdentifier>{feb21421-3802-4d3b-a399-5bdf6efd3535}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -354,7 +360,10 @@
       <Filter>Shaders\Basic</Filter>
     </None>
     <None Include="BlinnPhong.hlsli">
-      <Filter>Shaders\Shading</Filter>
+      <Filter>Shaders\Phong</Filter>
+    </None>
+    <None Include="ToneMapping.hlsli">
+      <Filter>Shaders\ToneMapping</Filter>
     </None>
   </ItemGroup>
 </Project>

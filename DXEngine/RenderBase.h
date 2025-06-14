@@ -61,7 +61,9 @@ namespace DE {
 		Texture2D m_prevFrame;
 
 		// Swap-Buffer의 Back Buffer 포맷은 변경해서 사용할 수 있음
-		DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 32-bit color
+		//DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 32-bit color (Low Dynamic Range Image)
+		// [0.0, 1.0]으로 정해진 범위가 아닌 float으로 더 넓은 범위에 대해서 렌더링을 할 수 있음
+		DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT; // 64-bit color
 
 		D3D11_VIEWPORT m_screenViewport;
 		ComPtr<ID3D11RasterizerState> m_solidRS;
