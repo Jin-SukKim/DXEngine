@@ -88,12 +88,15 @@ namespace DE {
 		// DDS 파일로부터 Texture 생성 (isCubemap이 true면 Cubemap Texture, false면 Texture2D 생성)
 		static void CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView);
 		// GPU에서 CPU로 데이터를 복사해올 용도인 Staging Texture 생성
-		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
+		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT& pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
 		// Mipmap을 위한 Staging Texture 생성
-		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const int& mipLevels = 1, const int& arraySize = 1, const DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
+		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM, const int& mipLevels = 1, const int& arraySize = 1);
 		// Texture Array 생성
 		static void CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture);
 
 		static void CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest);
+
+		// Pixel Format에 따라 Pixel 색상의 범위가 다르기 때문에 같은 uint8_t를 쓰지만 대신 데이터 범위가 다름
+		static size_t GetPixelSize(const DXGI_FORMAT& pixelFormat);
 	};
 }

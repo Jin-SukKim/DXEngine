@@ -7,6 +7,14 @@ Texture2D g_aoTex : register(t2);
 Texture2D g_metallicRoughnessTex : register(t3);
 Texture2D emissiveTex : register(t4);
 
+float3 LinearToneMapping(float3 color) {
+    float3 invGamma = float3(1, 1, 1) / 1.0; // Gamma Correction
+
+    color = clamp(1.0 * color, 0., 1.);
+    color = pow(color, invGamma);
+    return color;
+}
+
 PSOutput main(PSInput input) {
     float3 toEye = normalize(eyeWorld - input.posWorld);
     
@@ -70,7 +78,8 @@ PSOutput main(PSInput input) {
     specularColor.xyz *= SchlickFresnel(fresnelR0, normalWorld, toEye);
     
     PSOutput output;
-    output.pixelColor = diffuseColor + specularColor;
+    //output.pixelColor = diffuseColor + specularColor;
+    output.pixelColor = float4(LinearToneMapping(albedo.xyz), 1.0);
     output.indexColor = HashIdToColor(hashID);
     
     return output;

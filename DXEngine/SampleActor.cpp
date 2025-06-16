@@ -13,18 +13,18 @@ namespace DE {
 	{
 		// main object
 		{
-			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
-			//auto meshes = GeometryGenerator::MakeSquare();
-			//std::string basePath = "../Assets/Textures/PBR/Bricks075A_1K-PNG/";
-			//meshes.albedoTextureFilename = basePath + "Bricks075A_1K-PNG_Color.png";
+			//std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
+			auto meshes = GeometryGenerator::MakeSquare();
+			std::string basePath = "../Assets/Textures/Cubemaps/HDRI/";
+			meshes.albedoTextureFilename = basePath + "DaySkyHDRI015A_4K-HDR.exr";
 			//meshes.normalTextureFilename = basePath + "Bricks075A_1K-PNG_NormalDX.png";
 			//meshes.aoTextureFilename = basePath + "Bricks075A_1K-PNG_AmbientOcclusion.png";
 			//meshes.heightTextureFilename = basePath + "Bricks075A_1K-PNG_Displacement.png";
 			m_gelda = AddComponent<ModelComponent>(device, L"Model");
 			m_gelda->SetModel(device, context, meshes);
 
-			m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
-			m_boundVolume->SetBoundingVolume(device, meshes);
+			//m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
+			//m_boundVolume->SetBoundingVolume(device, meshes);
 		}
 	}
 	void SampleActor::Initialize() {

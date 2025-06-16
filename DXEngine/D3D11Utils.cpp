@@ -111,6 +111,7 @@ namespace DE {
 		DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
 		// image의 확장자가 exr이라면 HDRI란 의미
 		if (ext == "exr") {
+			// HDRI는 RGBA각 16bit float을 사용하므로 uint16_t * 4의 pixel 크기를 가짐
 			if (!img.LoadExr(filename, pixelFormat)) throw std::exception();
 		}
 		else 
@@ -118,7 +119,7 @@ namespace DE {
 		
 		// Staging Texture 만들고 CPU에서 이미지를 복사
 		ComPtr<ID3D11Texture2D> stagingTexture;
-		CreateStagingTexture(device, context, img.GetWidth(), img.GetHeight(), stagingTexture, img.GetImage());
+		CreateStagingTexture(device, context, img.GetWidth(), img.GetHeight(), stagingTexture, img.GetImage(), pixelFormat);
 
 		// Texture 설정
 		D3D11_TEXTURE2D_DESC desc = {};
@@ -205,7 +206,7 @@ namespace DE {
 			textureResourceView.GetAddressOf(), nullptr));
 	}
 
-	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT pixelFormat)
+	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT& pixelFormat)
 	{
 		// Staginge Texture 생성
 		D3D11_TEXTURE2D_DESC desc;
@@ -222,7 +223,7 @@ namespace DE {
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
 	}
 
-	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const int& mipLevels, const int& arraySize, const DXGI_FORMAT pixelFormat)
+	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat, const int& mipLevels, const int& arraySize)
 	{
 		// Staging Texture 생성
 		D3D11_TEXTURE2D_DESC desc;
@@ -239,12 +240,14 @@ namespace DE {
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
 
 		// CPU에서 이미지 데이터 복사
+		size_t pixelSize = GetPixelSize(pixelFormat);
+
 		D3D11_MAPPED_SUBRESOURCE ms;
 		context->Map(texture.Get(), NULL, D3D11_MAP_WRITE, NULL, &ms);
 		uint8_t* pData = (uint8_t*)ms.pData; // uint8_t는 색깔 1개 값 (ex: R값 1개)
 		for (UINT h = 0; h < UINT(height); ++h) { 
 			// GPU 메모리와 CPU 메모리가 1대1로 대응되지 않기에 가로줄 한 줄씩 복사
-			memcpy(&pData[h * ms.RowPitch], &image[h * width * 4], width * sizeof(uint8_t) * 4);
+			memcpy(&pData[h * ms.RowPitch], &image[h * width * pixelSize], width * pixelSize);
 		}
 		context->Unmap(texture.Get(), NULL);
 	}
@@ -278,14 +281,15 @@ namespace DE {
 		// SUBRESOURCE_DATA의 배열
 		//std::vector<D3D11_SUBRESOURCE_DATA> initData(size);
 		//size_t offset = 0;
+		//size_t pixelSize = GetPixelSize(desc.Format);
 		//for (auto& i : initData) {
 		//	// 각각의 이미지가 시작하는 시작점
 		//	//i.pSysMem = imageArray.data() + offset;
 		//	i.pSysMem = img[offset++].GetImage().data();
 		//	// 가로줄 하나의 데이터 크기
-		//	i.SysMemPitch = desc.Width * sizeof(uint8_t) * 4;
+		//	i.SysMemPitch = desc.Width * pixelSize;
 		//	// 2D에선 사용하지 않으나 3D부터는 사용되는 한 면의 크기
-		//	i.SysMemSlicePitch = desc.Width * desc.Height * sizeof(uint8_t) * 4; // 이미지 하나의 데이터 크기
+		//	i.SysMemSlicePitch = desc.Width * desc.Height * pixelSize; // 이미지 하나의 데이터 크기
 		//	//offset += i.SysMemSlicePitch; // 다음 이미지의 시작점을 알기 위한 offset
 		//}
 		//ThrowIfFailed(device->CreateTexture2D(&desc, initData.data(), texture.GetAddressOf()));
@@ -329,5 +333,29 @@ namespace DE {
 		context->Map(texture.Get(), NULL, D3D11_MAP_READ, NULL, &ms);
 		memcpy(dest, ms.pData, size);
 		context->Unmap(texture.Get(), NULL);
+	}
+
+	size_t D3D11Utils::GetPixelSize(const DXGI_FORMAT& pixelFormat)
+	{
+		switch (pixelFormat) {
+		case DXGI_FORMAT_R16G16B16A16_FLOAT:
+			return sizeof(uint16_t) * 4;
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+			return sizeof(uint32_t) * 4;
+		case DXGI_FORMAT_R32_FLOAT:
+			return sizeof(uint32_t) * 1;
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+			return sizeof(uint8_t) * 4;
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			return sizeof(uint8_t) * 4;
+		case DXGI_FORMAT_R32_SINT:
+			return sizeof(int32_t) * 1;
+		case DXGI_FORMAT_R16_FLOAT:
+			return sizeof(uint16_t) * 1;
+		}
+
+		std::cout << "PixelFormat not implemented " << pixelFormat << std::endl;
+
+		return sizeof(uint8_t) * 4;
 	}
 }
