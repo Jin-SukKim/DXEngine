@@ -40,7 +40,7 @@ namespace DE {
 
 		m_blommPostProcess = std::make_shared<BloomEffect>();
 		m_blommPostProcess->SetFilterLevel(4);
-		//renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
+		renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList.emplace_back(m_billboard);
@@ -127,6 +127,9 @@ namespace DE {
 
 		triangle->Update(context, deltaTime);
 		m_billboard->Update(context, deltaTime);
+		
+		// TODO: Picking Test
+		//pickingGpu(0);
 	}
 
 	void Scene::Render(RenderBase& renderer) {
@@ -319,11 +322,11 @@ namespace DE {
 		// GPU -> CPU로 화면의 Pixel 캡쳐
 
 		// TODO: Mouse Picking Test
-		//for (auto a : m_actorList) {
-		//	Actor* actor = a.get();
-		//	if (actor && memcmp(actor->GetHashColor(), m_pickColor, 4) == 0) {
-		//		std::wcout << actor->GetName() << std::endl;
-		//	}
-		//}
+		for (auto a : m_actorList) {
+			Actor* actor = a.get();
+			if (actor && memcmp(actor->GetHashColor(), m_pickColor, 4) == 0) {
+				std::wcout << actor->GetName() << std::endl;
+			}
+		}
 	}
 }

@@ -79,11 +79,14 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> skyboxVS;
 		ComPtr<ID3D11PixelShader> skyboxPS;
 
+		// Post-Process
 		ComPtr<ID3D11VertexShader> samplingVS;
 		ComPtr<ID3D11PixelShader> bloomDownPS;
 		ComPtr<ID3D11PixelShader> bloomUpPS;
 		ComPtr<ID3D11PixelShader> combinePS;
+		ComPtr<ID3D11PixelShader> toneMappingPS;
 
+		// Billboard
 		ComPtr<ID3D11VertexShader> billboardVS;
 		ComPtr<ID3D11GeometryShader> billboardGS;
 		ComPtr<ID3D11PixelShader> billboardPS;

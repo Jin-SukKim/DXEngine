@@ -167,6 +167,16 @@ namespace DE {
 		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
 	}
 
+	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const D3D11_TEXTURE2D_DESC& desc, Texture2D& texture)
+	{
+		// Texture2D 생성
+		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+		// Shader Resource View 생성
+		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
+		// Render Target View 생성
+		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
+	}
+
 	void D3D11Utils::CreateImageFilterTexture(ComPtr<ID3D11Device>& device, int width, int height, Texture2D& texture)
 	{
 		D3D11_TEXTURE2D_DESC desc;
@@ -239,9 +249,11 @@ namespace DE {
 
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
 
-		// CPU에서 이미지 데이터 복사
+		// Pixel Format에 맞는 한 픽셀 색의 크기 
+		// RGBA 각 8bit씩 사용하면 uint8_t * 4(일반적인 이미지), 각 16bit라면 uint16_t * 4(HDRI) 
 		size_t pixelSize = GetPixelSize(pixelFormat);
 
+		// CPU에서 이미지 데이터 복사
 		D3D11_MAPPED_SUBRESOURCE ms;
 		context->Map(texture.Get(), NULL, D3D11_MAP_WRITE, NULL, &ms);
 		uint8_t* pData = (uint8_t*)ms.pData; // uint8_t는 색깔 1개 값 (ex: R값 1개)

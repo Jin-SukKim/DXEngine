@@ -2,22 +2,23 @@
 #include "PostProcess.h"
 
 namespace DE {
-	class Texture2D;
-	class BloomEffect : public PostProcess
-	{
+    class ToneMappingFilter : public PostProcess
+    {
 		using Super = PostProcess;
 	public:
 		void Initialize(RenderBase& renderer, const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height) override;
 		void Update(ComPtr<ID3D11DeviceContext>& context) override;
 		void Render(RenderBase& renderer) override;
-		void SetFilterLevel(int bloomLevels) { m_bloomLevels = bloomLevels; }
-	private:
-		ImageFilter m_combineFilter;
-		std::vector<ImageFilter> m_bloomDownFilters;
-		std::vector<ImageFilter> m_bloomUpFilters;
-		// ShaderResourceView & RenderTargetView
-		std::vector<Texture2D> m_bloomTextures;
+	public:
+		struct ToneMappingConsts {
+			int useLinear = true;
+			int useFilmic = false;
+			int useUncharted2 = false;
+			int useLumaBasedReinhard = false;
+		};
 
-		int m_bloomLevels = 1;
-	};
+	private:
+		ImageFilter m_toneMapping;
+		ConstantBuffer<ToneMappingConsts> m_const;
+    };
 }

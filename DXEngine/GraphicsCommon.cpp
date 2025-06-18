@@ -128,6 +128,7 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"BloomDownPS.hlsl", bloomDownPS);
 		D3D11Utils::CreatePS(device, L"BloomUpPS.hlsl", bloomUpPS);
 		D3D11Utils::CreatePS(device, L"CombinePS.hlsl", combinePS);
+		D3D11Utils::CreatePS(device, L"ToneMappingPS.hlsl", toneMappingPS);
 
 		// Billboard
 		std::vector<D3D11_INPUT_ELEMENT_DESC> billboardIEs = {
@@ -183,6 +184,7 @@ namespace DE {
 		basic.solidPSO.vertexShader = basicVS;
 		basic.solidPSO.pixelShader = basicPS;
 		basic.solidPSO.rasterizerState = solidRS;
+		basic.solidPSO.depthStencilState = drawDDS;
 		basic.solidPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 		// Basic Wire

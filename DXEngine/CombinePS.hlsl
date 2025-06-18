@@ -16,8 +16,8 @@ float4 main(SamplingPSInput input) : SV_TARGET {
     
     float3 combined = (1.0 - strength) * color0 + strength * color1;
     
-    // Tone Mapping 적용
-    combined = LinearToneMapping(combined);
+    //// Tone Mapping 적용 (TODO: Tone Mapping 전용 후처리 필터 만들어서 사용하기)
+    //combined = LinearToneMapping(combined);
     
     // 모션 블러
     combined = lerp(combined, g_prevFrame.Sample(g_sampler, input.texcoord).rgb, blur);

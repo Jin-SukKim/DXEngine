@@ -95,8 +95,14 @@
     <Filter Include="Shaders\PBR">
       <UniqueIdentifier>{7fca8bbd-79bd-42f1-8fb6-4cdfcb504036}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ToneMapping">
+    <Filter Include="Shaders\PostProcess\ToneMapping">
       <UniqueIdentifier>{feb21421-3802-4d3b-a399-5bdf6efd3535}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Actor\Billboard">
+      <UniqueIdentifier>{20033ab4-4cb0-4f84-a5bc-d6ddebbaadb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Actor\Billboard">
+      <UniqueIdentifier>{75cdb1fb-1085-48b6-8546-dd57f2c36dcb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -196,15 +202,20 @@
     <ClInclude Include="BoundComponent.h">
       <Filter>public\Component</Filter>
     </ClInclude>
-    <ClInclude Include="BillboardActor.h">
-      <Filter>public\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeBillboard.h" />
     <ClInclude Include="GraphicsCommon.h">
       <Filter>public\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsPSO.h">
       <Filter>public\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardActor.h">
+      <Filter>public\Actor\Billboard</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeBillboard.h">
+      <Filter>public\Actor\Billboard</Filter>
+    </ClInclude>
+    <ClInclude Include="ToneMappingFilter.h">
+      <Filter>public\PostProcess</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -280,17 +291,20 @@
     <ClCompile Include="BoundComponent.cpp">
       <Filter>private\Component</Filter>
     </ClCompile>
-    <ClCompile Include="BillboardActor.cpp">
-      <Filter>private\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="TreeBillboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsCommon.cpp">
       <Filter>private\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsPSO.cpp">
       <Filter>private\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ToneMappingFilter.cpp">
+      <Filter>private\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="BillboardActor.cpp">
+      <Filter>private\Actor\Billboard</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeBillboard.cpp">
+      <Filter>private\Actor\Billboard</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -354,6 +368,9 @@
     <FxCompile Include="TessellationQuadPS.hlsl">
       <Filter>Shaders\TessellationQuad</Filter>
     </FxCompile>
+    <FxCompile Include="ToneMappingPS.hlsl">
+      <Filter>Shaders\PostProcess\ToneMapping</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Common.hlsli">
@@ -363,7 +380,7 @@
       <Filter>Shaders\Phong</Filter>
     </None>
     <None Include="ToneMapping.hlsli">
-      <Filter>Shaders\ToneMapping</Filter>
+      <Filter>Shaders\PostProcess\ToneMapping</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@
 #include "D3D11Utils.h"
 #include "MeshData.h"
 #include "PostProcess.h"
+#include "ToneMappingFilter.h"
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
@@ -40,14 +41,14 @@ namespace DE {
 		sd.BufferCount = 2; // double-buffering
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
-		sd.BufferUsage = DXGI_USAGE_SHADER_INPUT | // TODO: 임시로 PostProcessing을 위해 추가
-			DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering용
+		sd.BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering용
 			// Compute Shader 용(CS에서 Back-Buffer를 사용할게 아니라면 필요없지만 후처리때 사용할 수 있으므로 설정)
 			DXGI_USAGE_UNORDERED_ACCESS; 
 		sd.OutputWindow = window.hwnd; // 렌더링할 윈도우
 		sd.Windowed = TRUE; // windowed/full-screen
 		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // full-screen 모드 변경 가능
-		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		//sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		// No MSAA
 		sd.SampleDesc.Count = 1; 
 		sd.SampleDesc.Quality = 0;
@@ -68,17 +69,18 @@ namespace DE {
 		}
 
 		// Back Buffer의 RTV 생성
-		CreateBackBufferRTV();
+		CreateBuffers();
 		// Viewport 설정
 		SetViewport(window);
-		// RasterizationState 생성
-		InitRS();
-		// DepthStencilState 설정
-		InitDepthStencilState();
 		// DepthStencilView 생성
 		CreateDepthStencilBuffer(window);
 
 		graphicsCommon.InitCommonStates(m_device);
+
+		// TODO: 임시
+		D3D11Utils::CreateImageFilterTexture(m_device, int(m_screenViewport.Width), int(m_screenViewport.Height), m_toneMapTexture);
+		m_toneMapping = std::make_shared<ToneMappingFilter>();
+		m_toneMapping->Initialize(*this, { m_toneMapTexture.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
 
 		return true;
 	}
@@ -87,6 +89,9 @@ namespace DE {
 	{
 		if (m_postProcess)
 			m_postProcess->Update(m_context);
+
+		// TODO: 임시
+		m_toneMapping->Update(m_context);
 	}
 
 	void RenderBase::Render()
@@ -94,34 +99,35 @@ namespace DE {
 		m_context->RSSetViewports(1, &m_screenViewport);
 
 		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
-		m_context->ClearRenderTargetView(m_backBufferRTV.Get(), clearColor);
+		m_context->ClearRenderTargetView(m_floatBuffer.GetRTV(), clearColor);
 		m_context->ClearRenderTargetView(m_indexRTV.Get(), clearColor); // Mouse Picking
 		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		// Multiple Render Targets
-		ID3D11RenderTargetView* targets[] = { m_backBufferRTV.Get(), m_indexRTV.Get() };
+		ID3D11RenderTargetView* targets[] = { m_floatBuffer.GetRTV(), m_indexRTV.Get() };
 		m_context->OMSetRenderTargets(2, targets, m_defaultDSV.Get());
-		m_context->OMSetDepthStencilState(m_defaultDSS.Get(), 0);
-
-		m_context->RSSetState(m_solidRS.Get());
 	}
 
 	void RenderBase::PostRender()
 	{
 		// 후처리 필터 시작하기 전에 Texture2DMS에 렌더링 된 결과를 Texture2D로 복사
-		ComPtr<ID3D11Texture2D> backBuffer;
-		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
-		m_context->CopyResource(m_tempTexture.Get(), backBuffer.Get());
+		//ComPtr<ID3D11Texture2D> backBuffer;
+		//ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
+		//m_context->CopyResource(m_tempTexture.Get(), m_floatBuffer.GetTexture());
 
 		// Set PostProcessing GraphcisPSO
 		SetPipelineState(m_postProcessPSO);
 		if (m_postProcess)
 			m_postProcess->Render(*this);
 
+		// TODO: 임시
+		m_toneMapping->Render(*this);
+
 		// 현재 프레임 결과 복사
-		//ComPtr<ID3D11Texture2D> backBuffer;
+		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
 		m_context->CopyResource(m_prevFrame.GetTexture(), backBuffer.Get()); // 모션 블러 효과를 위해 렌더링 결과 보관
+		//m_context->CopyResource(m_prevFrame.GetTexture(), m_floatBuffer.GetTexture()); // 모션 블러 효과를 위해 렌더링 결과 보관
 	}
 
 	void RenderBase::Present()
@@ -129,36 +135,45 @@ namespace DE {
 		m_swapChain->Present(1, 0);
 	}
 
-	void RenderBase::CreateBackBufferRTV()
+	void RenderBase::CreateBuffers()
 	{
 		// Raterization -> float/depthBuffer(MSAA) -> resolved -> backBuffer
+		// 지금은 MSAA를 사용 안하니 Raterization -> float -> backBuffer 흐름 (HDR Pipeline)
 		
 		// BackBuffer는 화면으로 최종 출력 (SRV는 불필요)
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), NULL, m_backBufferRTV.GetAddressOf()));
 
+		// FLOAT MSAA RenderTargetView/ShaderResourceView
+		//ThrowIfFailed(m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R16G16B16A16_FLOAT, 4, &m_numQualityLevels));
+
+		D3D11_TEXTURE2D_DESC desc;
+		backBuffer->GetDesc(&desc);
+		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		desc.MipLevels = desc.ArraySize = 1;
+		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture로부터 복사 가능
+		desc.MiscFlags = 0;
+		desc.CPUAccessFlags = 0;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+
+		D3D11Utils::CreateTexture(m_device, desc, m_floatBuffer);
+
 		// Mouse Picking
 		// 1x1 작은 Staging Texture 생성 (Pixel의 값을 GPU에서 CPU로 복사할 수 있도록 설정한 Texture)
 		D3D11Utils::CreateStagingTexture(m_device, 1, 1, m_indexStagingTexture, m_backBufferFormat);
 
 		// Mouse Picking에 사용할 Index 색을 렌더링할 Texture와 RenderTargetVeiw 생성
-		D3D11_TEXTURE2D_DESC desc;
 		backBuffer->GetDesc(&desc);
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTexture.GetAddressOf())); 
 		ThrowIfFailed(m_device->CreateRenderTargetView(m_indexTexture.Get(), NULL, m_indexRTV.GetAddressOf()));
 		
-
-		// Post Process에 넣기 위한 Shader Resource View
-		backBuffer->GetDesc(&desc);
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		desc.MiscFlags = 0;
-		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_tempTexture.GetAddressOf())); // Back-Buffer 결과를 복사해서 임시 저장
-		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Back-Buffer 결과를 복사해서 임시 저장
-		ThrowIfFailed(m_device->CreateShaderResourceView(m_tempTexture.Get(), NULL, m_backBufferSRV.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Index-Buffer 결과를 복사해서 임시 저장
 
+		// 이전 프레임 저장용
 		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
 	}
 
@@ -187,38 +202,6 @@ namespace DE {
 		m_screenViewport.MaxDepth = 1.f;
 
 		m_context->RSSetViewports(1, &m_screenViewport);
-	}
-
-	void RenderBase::InitRS()
-	{
-		D3D11_RASTERIZER_DESC rastDesc;
-		ZeroMemory(&rastDesc, sizeof(D3D11_RASTERIZER_DESC));
-		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-		rastDesc.FrontCounterClockwise = false;
-		rastDesc.DepthClipEnable = true; // zNear, zFar
-		rastDesc.MultisampleEnable = true;
-
-		ThrowIfFailed(m_device->CreateRasterizerState(&rastDesc, m_solidRS.GetAddressOf()));
-
-		// wireframe
-		rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
-		ThrowIfFailed(m_device->CreateRasterizerState(&rastDesc, m_wireRS.GetAddressOf()));
-	}
-
-	void RenderBase::InitDepthStencilState()
-	{
-		// Default
-		D3D11_DEPTH_STENCIL_DESC dsDesc;
-		ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
-		dsDesc.DepthEnable = true;
-		// 경우에 따라 Depth Buffer를 껏다 켰다할 때 사용할 수 있음
-		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL;
-		// Depth값이 더 작은걸 렌더링
-		dsDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
-		// 기본 DS에선 Stencil 불필요
-		dsDesc.StencilEnable = false;
-		ThrowIfFailed(m_device->CreateDepthStencilState(&dsDesc, m_defaultDSS.GetAddressOf()));
 	}
 
 	void RenderBase::CreateDepthStencilBuffer(const WindowInfo& window)
@@ -254,7 +237,7 @@ namespace DE {
 			0);
 		// 해상도가 바뀌며 SwapChain을 다시 만들었기 때문에 다시 RTV와 DepthStencilBuffer 생성
 		// 렌더링될 화면의 해상도가 바뀌면  Pixel의 개수 자체가 바뀌는 것이기 때문
-		CreateBackBufferRTV();
+		CreateBuffers();
 		CreateDepthStencilBuffer(window);
 		// 해상도에 맞는 Viewport 설정
 		SetViewport(window);
@@ -276,7 +259,7 @@ namespace DE {
 	}
 	void RenderBase::SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso)
 	{
-		postProcess.Initialize(*this, { m_backBufferSRV, m_prevFrame.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
+		postProcess.Initialize(*this, { m_floatBuffer.GetSRV(), m_prevFrame.GetSRV() }, { m_toneMapTexture.GetRTV() }, int(m_screenViewport.Width), int(m_screenViewport.Height));
 		m_postProcess = &postProcess;
 		m_postProcessPSO = pso;
 	}
@@ -307,7 +290,7 @@ namespace DE {
 			memcpy(dest, ms.pData, sizeof(uint8_t) * 4);
 			m_context->Unmap(m_indexStagingTexture.Get(), NULL);
 
-			//D3D11Utils::CopyFromStagingTexture(m_context, m_indexTexture, sizeof(uint8_t) * 4, dest);
+			//D3D11Utils::CopyFromStagingTexture(m_context, m_indexStagingTexture, sizeof(uint8_t) * 4, dest);
 		}
 	}
 }
