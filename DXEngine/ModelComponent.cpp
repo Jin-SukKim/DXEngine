@@ -4,6 +4,8 @@
 #include "TransformComponent.h"
 #include "Actor.h"
 
+#include <filesystem>
+
 namespace DE {
 	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF)
 	{
@@ -34,35 +36,54 @@ namespace DE {
 			
 			if (!meshData.albedoTextureFilename.empty()) {
 				std::cout << meshData.albedoTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.albedoTextureFilename, newMesh.albedoTexture);
+				D3D11Utils::CreateTexture(device, context, meshData.albedoTextureFilename, true, newMesh.albedoTexture);
 				m_material.GetCpu().useAlbedoMap = true;
 			}
 			
 			if (!meshData.emissiveTextureFilename.empty()) {
 				std::cout << meshData.emissiveTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.emissiveTextureFilename, newMesh.emissiveTexture);
+				D3D11Utils::CreateTexture(device, context, meshData.emissiveTextureFilename, true, newMesh.emissiveTexture);
 				m_material.GetCpu().useEmissiveMap = true;
 			}
 			
 			if (!meshData.heightTextureFilename.empty()) {
 				std::cout << meshData.heightTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.heightTextureFilename, newMesh.heightTexture);
+				D3D11Utils::CreateTexture(device, context, meshData.heightTextureFilename, false, newMesh.heightTexture);
 				m_constant.GetCpu().useHeightMap = true;
 			}
 			
 			if (!meshData.normalTextureFilename.empty()) {
 				std::cout << meshData.normalTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.normalTextureFilename, newMesh.normalTexture);
+				D3D11Utils::CreateTexture(device, context, meshData.normalTextureFilename, false, newMesh.normalTexture);
 				m_material.GetCpu().useNormalMap = true;
 				// GLTF는 Y를 뒤집어줘야함
-				m_material.GetCpu().invertNormalMapY = isGLTF ? true : false;
+				m_material.GetCpu().invertNormalMapY = isGLTF;
 			}
 			
 			if (!meshData.aoTextureFilename.empty()) {
 				std::cout << meshData.aoTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.aoTextureFilename, newMesh.aoTexture);
+				D3D11Utils::CreateTexture(device, context, meshData.aoTextureFilename, false, newMesh.aoTexture);
 				m_material.GetCpu().useAOMap = true;
 			}
+
+			// GLTF 방식으로 metallic과 roughness를 한 Texture에 넣은 (MetalRoughness Texture)
+			if (!meshData.metallicTextureFilename.empty() ||
+				!meshData.roughnessTextureFilename.empty()) {
+				std::cout << meshData.metallicTextureFilename << std::endl;
+				std::cout << meshData.roughnessTextureFilename << std::endl;
+
+				D3D11Utils::CreateMetallicRoughnessTexture(
+					device, context, 
+					meshData.metallicTextureFilename, 
+					meshData.roughnessTextureFilename, 
+					newMesh.metallicRoughnessTexture);
+			}
+
+			if (!meshData.metallicTextureFilename.empty())
+				m_material.GetCpu().useMetallicMap = true;
+
+			if (!meshData.roughnessTextureFilename.empty())
+				m_material.GetCpu().useRoughnessMap = true;
 
 			// 모델의 모든 Mesh가 같은 Buffer를 사용
 			newMesh.meshConstGPU = m_constant.Get();
@@ -127,7 +148,7 @@ namespace DE {
 				mesh.albedoTexture.GetSRV(),
 				mesh.normalTexture.GetSRV(),
 				mesh.aoTexture.GetSRV(),
-				mesh.metallicroughnessTexture.GetSRV(),
+				mesh.metallicRoughnessTexture.GetSRV(),
 				mesh.emissiveTexture.GetSRV()
 			};
 			context->PSSetShaderResources(0, UINT(resViews.size()), resViews.data());

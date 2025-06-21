@@ -236,6 +236,7 @@ namespace DE {
 				m.vertices.size(), tangents.data(),
 				bitangents.data());
 
+			// 지금은 bitangent는 shader에서 계싼해주고 있지만 이 값을 가져와 사용해도 됨
 			for (size_t i = 0; i < m.vertices.size(); ++i)
 				m.vertices[i].tangentModel = tangents[i];
 			

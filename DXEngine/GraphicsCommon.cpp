@@ -100,7 +100,9 @@ namespace DE {
 			{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 8, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		};
 		D3D11Utils::CreateVSAndIL(device, L"BasicVS.hlsl", basicIEs, basicVS, basicIL);
-		D3D11Utils::CreatePS(device, L"BasicPS.hlsl", basicPS);
+		//D3D11Utils::CreatePS(device, L"BasicPS.hlsl", basicPS);
+		D3D11Utils::CreatePS(device, L"UnrealPBR.hlsl", basicPS);
+
 		// Bounding Volume
 		D3D11Utils::CreatePS(device, L"ColorPS.hlsl", colorPS);
 
@@ -129,6 +131,7 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"BloomUpPS.hlsl", bloomUpPS);
 		D3D11Utils::CreatePS(device, L"CombinePS.hlsl", combinePS);
 		D3D11Utils::CreatePS(device, L"ToneMappingPS.hlsl", toneMappingPS);
+		D3D11Utils::CreatePS(device, L"CopyFilterPS.hlsl", copyPS);
 
 		// Billboard
 		std::vector<D3D11_INPUT_ELEMENT_DESC> billboardIEs = {

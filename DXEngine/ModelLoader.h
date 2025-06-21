@@ -20,6 +20,7 @@ namespace DE {
 		
 		std::string ReadTextureFilename(const aiScene* scene, aiMaterial* material, aiTextureType type);
 
+		// Normal Mapping을 하기 위핸 Tangent Vector
 		void UpdateTangents();
 
 		std::vector<MeshData>& GetMeshes() { return m_meshes; }

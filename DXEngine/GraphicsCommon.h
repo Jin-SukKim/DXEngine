@@ -85,6 +85,7 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> bloomUpPS;
 		ComPtr<ID3D11PixelShader> combinePS;
 		ComPtr<ID3D11PixelShader> toneMappingPS;
+		ComPtr<ID3D11PixelShader> copyPS;
 
 		// Billboard
 		ComPtr<ID3D11VertexShader> billboardVS;

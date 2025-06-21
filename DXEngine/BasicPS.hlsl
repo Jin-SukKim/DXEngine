@@ -49,24 +49,24 @@ PSOutput main(PSInput input) {
         : float4(albedoFactor, 1.0);
     
     float ao = useAOMap ?
-        g_aoTex.SampleLevel(linearWrapSampler, input.texcoord, lod) * metallicFactor
+        g_aoTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r
         : metallicFactor;
     
-    float3 ambientLight = float3(0.0, 0.0, 0.0); // °£Á¢±¤
+    float3 directLight = float3(0.0, 0.0, 0.0); // °£Á¢±¤
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
         if (lights[i].type == LIGHT_DIRECTIONAL)
-            ambientLight += ComputeDirectionalLight(lights[i], normalWorld, toEye);
+            directLight += ComputeDirectionalLight(lights[i], normalWorld, toEye);
         else if (lights[i].type == LIGHT_POINT)
-            ambientLight += ComputePointLight(lights[i], input.posWorld, normalWorld, toEye);
+            directLight += ComputePointLight(lights[i], input.posWorld, normalWorld, toEye);
         else if (lights[i].type == LIGHT_SPOT)
-            ambientLight += ComputeSpotLight(lights[i], input.posWorld, normalWorld, toEye);
+            directLight += ComputeSpotLight(lights[i], input.posWorld, normalWorld, toEye);
         else
             continue;
     }
     
-    // IBL
-    float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld)) + float4(ambientLight, 1.0);
+    // IBL (°£Á¢±¤)
+    float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld)) + float4(directLight, 1.0);
     diffuseColor *= float4(diffuse, 1.0);
     diffuseColor *= albedo * ao;
     

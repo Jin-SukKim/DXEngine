@@ -9,7 +9,7 @@ namespace DE {
 	class CameraActor;
 	class SkyboxActor;
 	class RenderBase;
-	class BloomEffect;
+	class CopyFilter;
 	class TreeBillboard;
 	class Actor;
 
@@ -53,7 +53,7 @@ namespace DE {
 		std::shared_ptr<SkyboxActor> m_skybox;
 		std::shared_ptr<TreeBillboard> m_billboard;
 
-		std::shared_ptr<BloomEffect> m_blommPostProcess;
+		std::shared_ptr<CopyFilter> m_copyPostProcess;
 
 		std::vector<std::shared_ptr<Actor>> m_actorList;
 		Actor* m_pickedActor = nullptr;

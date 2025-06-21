@@ -10,7 +10,7 @@
 #include "SampleActor.h"
 #include "RenderBase.h"
 
-#include "BloomEffect.h"
+#include "CopyFilter.h"
 #include "BoundComponent.h"
 #include "TreeBillboard.h"
 
@@ -38,13 +38,11 @@ namespace DE {
 		triangle = std::make_shared<SampleActor>(device, context, L"Temp");
 		m_actorList.emplace_back(triangle);
 
-		m_blommPostProcess = std::make_shared<BloomEffect>();
-		m_blommPostProcess->SetFilterLevel(4);
-		renderer.SetPostProcess(*m_blommPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
+		m_copyPostProcess = std::make_shared<CopyFilter>();
+		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList.emplace_back(m_billboard);
-
 	}
 
 	void Scene::Initialize() {
@@ -53,13 +51,13 @@ namespace DE {
 			// 현재 조명은 최대 개수 3개
 			// Spot Light
 			m_globalConstsCPU.lights[0].radiance = Vector3(1.0f);
-			m_globalConstsCPU.lights[0].position = Vector3(0.0f, 0.0f, -2.0f);  // 위에서 비스듬히
+			m_globalConstsCPU.lights[0].position = Vector3(5.0f, 0.0f, 0.0f);  // 위에서 비스듬히
 			m_globalConstsCPU.lights[0].direction = Vector3(0.0f, 0.0f, 1.0f);  // 아래 방향으로
-			m_globalConstsCPU.lights[0].spotPower = 10.0f;                      // 좀 더 집중된 빛
+			m_globalConstsCPU.lights[0].spotPower = 100.0f;                      // 좀 더 집중된 빛
 			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
-			m_globalConstsCPU.lights[0].fallOffEnd = 10.0f;
+			m_globalConstsCPU.lights[0].fallOffEnd = 20.0f;
 			m_globalConstsCPU.lights[0].radius = 0.f;
-			m_globalConstsCPU.lights[0].type = LIGHT_OFF;
+			m_globalConstsCPU.lights[0].type = LIGHT_POINT;
 
 			// 조명 1개만 사용하고 나머지는 사용하지 않음
 			m_globalConstsCPU.lights[1].type = LIGHT_OFF;

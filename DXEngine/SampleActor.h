@@ -19,7 +19,7 @@ namespace DE {
 		
 		bool IsDrawNormal();
 	private:
-		ModelComponent* m_gelda;
+		ModelComponent* m_sample;
 		BoundComponent* m_boundVolume;
 	};
 }

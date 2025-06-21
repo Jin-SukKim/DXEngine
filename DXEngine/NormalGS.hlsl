@@ -10,7 +10,7 @@ struct NormalPSInput {
     float3 color : COLOR;
 };
 
-static const float lineScale = 0.02;
+static const float lineScale = 0.005;
 
 [maxvertexcount(2)]
 void main(

@@ -82,13 +82,13 @@ namespace DE {
 	}
 	bool Image::LoadExr(const std::string& filename, DXGI_FORMAT& pixelFormat)
 	{
-		ReadImageExr(filename, m_image, m_width, m_height, pixelFormat);
+		readImageExr(filename, m_image, m_width, m_height, pixelFormat);
 		if (!m_width || !m_height || m_image.empty())
 			return false;
 		return true;
 	}
 
-	void Image::ReadImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat)
+	void Image::readImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat)
 	{
 		const std::wstring wFilename(filename.begin(), filename.end());
 

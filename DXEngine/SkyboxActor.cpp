@@ -20,8 +20,8 @@ namespace DE {
 		//	L"SampleEnvHDR.dds",	L"SampleSpecularHDR.dds", 
 		//	L"SampleDiffuseHDR.dds",	L"SampleBrdf.dds");
 		SetCubeMaps(device, L"../Assets/Textures/Cubemaps/HDRI/", 
-			L"SampleEnvHDR.dds",	L"SampleSpecularHDR.dds", 
-			L"SampleDiffuseHDR.dds",	L"SampleBrdf.dds");
+			L"MyCubesEnvHDR.dds",	L"MyCubesSpecularHDR.dds", 
+			L"MyCubesDiffuseHDR.dds",	L"MyCubesBrdf.dds");
 	}
 
 	void SkyboxActor::Initialize()

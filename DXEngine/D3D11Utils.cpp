@@ -101,14 +101,16 @@ namespace DE {
 		device->CreateDomainShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &domainShader);
 	}
 
-	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, Texture2D& texture)
+	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, const bool usSRGB, Texture2D& texture)
 	{
 		Image img(L"Image");
 
 		std::string ext(filename.end() - 3, filename.end());
 		std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
 
-		DXGI_FORMAT pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
+		// HDRI pipeline으로 float을 사용하는데 일반적인 이미지는 UNORM이므로 UNORM을 쓰면 일반적인 Texture가 너무 밝아지는 문제가 발생하기 떄문에 SRGB 포맷을 사용
+		// SRGB는 내부적으로 Gamma Correction을 해주기 때문에 HDR하고 같은 공간에서 작업 가능
+		DXGI_FORMAT pixelFormat = usSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
 		// image의 확장자가 exr이라면 HDRI란 의미
 		if (ext == "exr") {
 			// HDRI는 RGBA각 16bit float을 사용하므로 uint16_t * 4의 pixel 크기를 가짐
@@ -117,40 +119,7 @@ namespace DE {
 		else 
 			if (!img.Load(filename)) throw std::exception();
 		
-		// Staging Texture 만들고 CPU에서 이미지를 복사
-		ComPtr<ID3D11Texture2D> stagingTexture;
-		CreateStagingTexture(device, context, img.GetWidth(), img.GetHeight(), stagingTexture, img.GetImage(), pixelFormat);
-
-		// Texture 설정
-		D3D11_TEXTURE2D_DESC desc = {};
-		desc.Width = img.GetWidth();
-		desc.Height = img.GetHeight();
-		desc.MipLevels = 0; // MipMap Level 최대
-		desc.ArraySize = 1;
-		desc.Format = pixelFormat; 
-		desc.SampleDesc.Count = 1;
-		desc.Usage = D3D11_USAGE_DEFAULT; 
-		// Shader Resource View로 사용
-		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap 사용
-		desc.CPUAccessFlags = 0; // No CPU Access
-
-		// 초기 데이터 없이 Texture 생성 (전부 검은색)
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
-
-		// 실제로 생성된 MipLevels를 확인해보고 싶을 경우
-		// texture->GetDesc(&desc);
-		// std::cout << desc.MipLevels << std::endl;
-
-		// Staging Texture로부터 가장 해상도가 높은 이미지 복사
-		context->CopySubresourceRegion(texture.GetTexture(), 0, 0, 0, 0, stagingTexture.Get(), 0, nullptr);
-
-		// ResourceView 만들기
-		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
-
-		// 해상도를 낮춰가며 MipMap 생성
-		context->GenerateMips(texture.GetSRV());
-
+		CreateTextureHelper(device, context, img.GetWidth(), img.GetHeight(), img.GetImage(), pixelFormat, texture);
 	}
 
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture)
@@ -175,6 +144,43 @@ namespace DE {
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 		// Render Target View 생성
 		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
+	}
+
+	void D3D11Utils::CreateTextureHelper(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat, DE::Texture2D& texture)
+	{
+		// Staging Texture 만들고 CPU에서 이미지를 복사
+		ComPtr<ID3D11Texture2D> stagingTexture;
+		CreateStagingTexture(device, context, width, height, stagingTexture, image, pixelFormat);
+
+		// Texture 설정
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = 0; // MipMap Level 최대
+		desc.ArraySize = 1;
+		desc.Format = pixelFormat;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		// Shader Resource View로 사용
+		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap 사용
+		desc.CPUAccessFlags = 0; // No CPU Access
+
+		// 초기 데이터 없이 Texture 생성 (전부 검은색)
+		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+
+		// 실제로 생성된 MipLevels를 확인해보고 싶을 경우
+		// texture->GetDesc(&desc);
+		// std::cout << desc.MipLevels << std::endl;
+
+		// Staging Texture로부터 가장 해상도가 높은 이미지 복사
+		context->CopySubresourceRegion(texture.GetTexture(), 0, 0, 0, 0, stagingTexture.Get(), 0, nullptr);
+
+		// ResourceView 만들기
+		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
+
+		// 해상도를 낮춰가며 MipMap 생성
+		context->GenerateMips(texture.GetSRV());
 	}
 
 	void D3D11Utils::CreateImageFilterTexture(ComPtr<ID3D11Device>& device, int width, int height, Texture2D& texture)
@@ -336,6 +342,61 @@ namespace DE {
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 		
 		context->GenerateMips(texture.GetSRV());
+	}
+
+	void D3D11Utils::CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture)
+	{
+		// GLTF는 Metallic과 Roughness가 이미 합쳐진 Texture를 사용
+		if (!metallicFilename.empty() && (metallicFilename == roughnessFilename))
+			CreateTexture(device, context, metallicFilename, false, texture);
+		// 다른 Format(fbx 등)의 Metallic, Roughness를 따로 가진 경우는 합쳐서 하나의 Texture로 만들어주기
+		else {
+			// 별도의 파일일 경우 따로 읽어서 합쳐주기
+			
+			// Image 클래스를 활용하기 위해서 두 이미지들을 각각 4채널로 변환 후 
+			// 다시 3채널로 합치는 방식으로 구현
+			Image mImage(L"metallic"); // metallic
+			Image rImage(L"roughness"); // Roughness
+
+			int width = 0, height = 0;
+			// 만약에 둘 중 하나만 있을 경우도 고려하기 위해서 각각 파일명 확인
+			if (!metallicFilename.empty()) {
+				if (!mImage.Load(metallicFilename)) throw std::exception();
+				width = mImage.GetWidth();
+				height = mImage.GetHeight();
+			}
+
+			if (!roughnessFilename.empty()) {
+				if (!rImage.Load(roughnessFilename)) throw std::exception();
+				width = mImage.GetWidth();
+				height = mImage.GetHeight();
+			}
+
+			// 두 이미지의 해상도가 같다고 가정
+			if (!metallicFilename.empty() && !roughnessFilename.empty()) {
+				assert(mImage.GetWidth() == rImage.GetWidth());
+				assert(mImage.GetHeight() == rImage.GetHeight());
+			}
+
+			const std::vector<uint8_t>& metallic = mImage.GetImage();
+			const std::vector<uint8_t>& roughness = rImage.GetImage();
+
+			std::vector<uint8_t> combinedImage(mImage.GetSize());
+			std::fill(combinedImage.begin(), combinedImage.end(), 0);
+
+			// GLTF에서 G가 Roughness, B가 Metallic으로 사용되기에 통일시켜주기
+			size_t pixelSize = size_t(width * height);
+			for (size_t i = 0; i < pixelSize; ++i) {
+				// Roughness Texture가 있다면
+				if (rImage.GetSize())
+					combinedImage[4 * i + 1] = roughness[4 * i]; // Green = Roughness
+				// metallic Texture가 있다면
+				if (mImage.GetSize()) 
+					combinedImage[4 * i + 2] = metallic[4 * i]; // Blue = Metalness
+			}
+
+			CreateTextureHelper(device, context, width, height, combinedImage, DXGI_FORMAT_R8G8B8A8_UNORM, texture);
+		}
 	}
 
 

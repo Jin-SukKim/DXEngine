@@ -165,7 +165,7 @@ namespace DE {
 			m_mouseY = float(HIWORD(lParam));
 
 			// TODO: Mouse Pick Test
-			m_renderer.CopyIndexForPicking(LOWORD(lParam), HIWORD(lParam), m_scene->GetPickColor());
+			//m_renderer.CopyIndexForPicking(LOWORD(lParam), HIWORD(lParam), m_scene->GetPickColor());
 
 			// 마우스 커서의 위치를 NDC로 변환
 			// 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)

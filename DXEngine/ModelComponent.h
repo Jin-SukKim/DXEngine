@@ -23,7 +23,7 @@ namespace DE {
 		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const MeshData& mesh, bool isGLTF = false);
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
-		
+
 		const ComPtr<ID3D11Buffer> GetConsts() { return m_constant.Get(); }
 		const ComPtr<ID3D11Buffer> GetBasicMaterial() { return m_basicMaterial.Get(); }
 		const ComPtr<ID3D11Buffer> GetMaterial() { return m_material.Get(); }

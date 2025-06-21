@@ -14,14 +14,20 @@ namespace DE {
 		// main object
 		{
 			//std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
-			auto meshes = GeometryGenerator::MakeSquare();
-			std::string basePath = "../Assets/Textures/Cubemaps/HDRI/";
-			meshes.albedoTextureFilename = basePath + "DaySkyHDRI015A_4K-HDR.exr";
-			//meshes.normalTextureFilename = basePath + "Bricks075A_1K-PNG_NormalDX.png";
-			//meshes.aoTextureFilename = basePath + "Bricks075A_1K-PNG_AmbientOcclusion.png";
-			//meshes.heightTextureFilename = basePath + "Bricks075A_1K-PNG_Displacement.png";
-			m_gelda = AddComponent<ModelComponent>(device, L"Model");
-			m_gelda->SetModel(device, context, meshes);
+			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Models/DamagedHelmet/", "DamagedHelmet.gltf");
+			
+			// HDRI Å×½ºÆ®
+			{
+				//auto meshes = GeometryGenerator::MakeSquare();
+				//std::string basePath = "../Assets/Textures/Cubemaps/HDRI/";
+				//meshes.albedoTextureFilename = basePath + "DaySkyHDRI015A_4K-HDR.exr";
+				//meshes.normalTextureFilename = basePath + "Bricks075A_1K-PNG_NormalDX.png";
+				//meshes.aoTextureFilename = basePath + "Bricks075A_1K-PNG_AmbientOcclusion.png";
+				//meshes.heightTextureFilename = basePath + "Bricks075A_1K-PNG_Displacement.png";
+			}
+
+			m_sample = AddComponent<ModelComponent>(device, L"Model");
+			m_sample->SetModel(device, context, meshes, true);
 
 			//m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
 			//m_boundVolume->SetBoundingVolume(device, meshes);
@@ -30,7 +36,7 @@ namespace DE {
 	void SampleActor::Initialize() {
 		Super::Initialize();
 
-		m_gelda->SetDrawNormal(false);
+		m_sample->SetDrawNormal(false);
 	}
 
 	void SampleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
@@ -56,11 +62,11 @@ namespace DE {
 
 	void SampleActor::RenderNormal(ComPtr<ID3D11DeviceContext>& context)
 	{
-		m_gelda->RenderNormal(context);
+		m_sample->RenderNormal(context);
 	}
 
 	bool SampleActor::IsDrawNormal()
 	{
-		return m_gelda->IsDrawNormal();
+		return m_sample->IsDrawNormal();
 	}
 }

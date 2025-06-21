@@ -217,6 +217,7 @@
     <ClInclude Include="ToneMappingFilter.h">
       <Filter>public\PostProcess</Filter>
     </ClInclude>
+    <ClInclude Include="CopyFilter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -306,6 +307,9 @@
     <ClCompile Include="TreeBillboard.cpp">
       <Filter>private\Actor\Billboard</Filter>
     </ClCompile>
+    <ClCompile Include="CopyFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -371,16 +375,22 @@
     <FxCompile Include="ToneMappingPS.hlsl">
       <Filter>Shaders\PostProcess\ToneMapping</Filter>
     </FxCompile>
+    <FxCompile Include="UnrealPBR.hlsl">
+      <Filter>Shaders\PBR</Filter>
+    </FxCompile>
+    <FxCompile Include="CopyFilterPS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Common.hlsli">
-      <Filter>Shaders\Basic</Filter>
-    </None>
     <None Include="BlinnPhong.hlsli">
       <Filter>Shaders\Phong</Filter>
     </None>
     <None Include="ToneMapping.hlsli">
       <Filter>Shaders\PostProcess\ToneMapping</Filter>
+    </None>
+    <None Include="Common.hlsli">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

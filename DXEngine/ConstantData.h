@@ -34,8 +34,8 @@ namespace DE {
 
 	__declspec(align(256)) struct MaterialConstants {
 		Vector3 albedoFactor = Vector3(1.f); // 기본 색이라 생각할 수 있음
-		float roughnessFactor = 1.f;
-		float metallicFactor = 1.f;
+		float roughnessFactor = 0.0f; // 물체 표면의 거칠기
+		float metallicFactor = 1.0f; // 금속에 가까운지 비금속에 가까운지 결정하는 값
 		Vector3 emissionFactor = Vector3(0.f);
 
 		// 여러 옵션들에 uint32를 flag로 하나만 사용할 수도 있음
@@ -50,12 +50,12 @@ namespace DE {
 	};
 
 	struct Light {
-		Vector3 radiance = Vector3(1.f); // 빛의 세기 (Strength)
+		Vector3 radiance = Vector3(1.f); // 빛의 세기 (Strength) - 빛의 R, G, B 강도
 		float fallOffStart = 0.f; // 빛의 강도가 약해지기 시작하는 거리 (point/spot light only)
 		Vector3 direction = Vector3(0.0f, 0.0f, 1.0f); // 빛의 방향 (spot light only)
 		float fallOffEnd = 10.0f; // 빛이 더이상 닿지 않아 어두워지는 거리 (point/spot light only)
 		Vector3 position = Vector3(0.0f, 0.0f, -2.0f); // 빛의 위치 (point/spot light only)
-		float spotPower = 0.f; // 빛이 한 지점에 모이는 강도 (spot light only)
+		float spotPower = 6.f; // 빛이 한 지점에 모이는 강도 (spot light only)
 
 		// Light type bitmasking
 		// ex) LIGHT_SPOT | LIGHT_SHADOW
