@@ -104,6 +104,9 @@
     <Filter Include="public\Actor\Billboard">
       <UniqueIdentifier>{75cdb1fb-1085-48b6-8546-dd57f2c36dcb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Mirror">
+      <UniqueIdentifier>{84da814c-8161-4de0-80fa-b1e0f368f798}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -218,6 +221,7 @@
       <Filter>public\PostProcess</Filter>
     </ClInclude>
     <ClInclude Include="CopyFilter.h" />
+    <ClInclude Include="MirrorActor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -310,6 +314,9 @@
     <ClCompile Include="CopyFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MirrorActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -380,6 +387,12 @@
     </FxCompile>
     <FxCompile Include="CopyFilterPS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="DepthOnlyVS.hlsl">
+      <Filter>Shaders\Mirror</Filter>
+    </FxCompile>
+    <FxCompile Include="DepthOnlyPS.hlsl">
+      <Filter>Shaders\Mirror</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

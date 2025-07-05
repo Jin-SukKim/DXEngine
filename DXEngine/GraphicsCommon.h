@@ -42,11 +42,26 @@ namespace DE {
 
 		struct {
 			GraphicsPSO bloomPSO;
+			GraphicsPSO copyPSO;
 		} postProcess;
 
 		struct {
 			GraphicsPSO solidPSO;
+			GraphicsPSO reflectSolidPSO;
 		} billboard;
+
+		struct {
+			GraphicsPSO stencilMaskPSO;
+
+			GraphicsPSO reflectSolidPSO;
+			GraphicsPSO reflectWirePSO;
+			GraphicsPSO reflectSkyboxSolidPSO;
+			GraphicsPSO reflectSkyboxWirePSO;
+			GraphicsPSO reflectBillboardSolidPSO;
+
+			GraphicsPSO mirrorBlendSolidPSO;
+			GraphicsPSO mirrorBlendWirePSO;
+		} mirror;
 
 
 		// Shader에서 공통으로 사용할 Sampler
@@ -56,10 +71,20 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> solidRS;
 		ComPtr<ID3D11RasterizerState> wireRS;
 		ComPtr<ID3D11RasterizerState> postProcessRS;
-		ComPtr<ID3D11RasterizerState> solidBothRS; // front and back (cull-none)
+		// front and back (cull-none)
+		ComPtr<ID3D11RasterizerState> solidBothRS; 
+		// Counter-Clockwise가 FrontFace 순서로 되어 있을때 렌더링
+		ComPtr<ID3D11RasterizerState> solidCcwRS; // index가 반시계 방향 순서를 렌더링
+		ComPtr<ID3D11RasterizerState> wireCcwRS; 
 
 		// Depth Stencil State
-		ComPtr<ID3D11DepthStencilState> drawDDS; // 일반적(Default)
+
+		// 일반적(Default)
+		ComPtr<ID3D11DepthStencilState> drawDSS; 
+		// 어디에 그릴지 Masking하는 State
+		ComPtr<ID3D11DepthStencilState> maskDSS;
+		// Stencil Buffer에 Masking된 곳에 렌더링할 수 있는 DSS
+		ComPtr<ID3D11DepthStencilState> drawMaskedDSS; 
 
 		// InputLayouts
 		ComPtr<ID3D11InputLayout> basicIL;
@@ -79,6 +104,10 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> skyboxVS;
 		ComPtr<ID3D11PixelShader> skyboxPS;
 
+		// DepthStencilBuffer만 사용하고 싶을때 사용
+		ComPtr<ID3D11VertexShader> depthOnlyVS; 
+		ComPtr<ID3D11PixelShader> depthOnlyPS;
+
 		// Post-Process
 		ComPtr<ID3D11VertexShader> samplingVS;
 		ComPtr<ID3D11PixelShader> bloomDownPS;
@@ -91,6 +120,7 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> billboardVS;
 		ComPtr<ID3D11GeometryShader> billboardGS;
 		ComPtr<ID3D11PixelShader> billboardPS;
+		ComPtr<ID3D11PixelShader> TreeBillboardPS;
 
 		// Tessellation Sample
 		ComPtr<ID3D11VertexShader> tessellationQuadVS;
@@ -102,8 +132,10 @@ namespace DE {
 		ComPtr<ID3D11SamplerState> linearWrapSS;
 		ComPtr<ID3D11SamplerState> linearClampSS;
 
-		// Blend States
-		static ComPtr<ID3D11PixelShader> TreeBillboardPS;
+		// Blend States (원래 렌더링이 된 색 위에 새로운 색을 섞어서 렌더링할 때 사용하는 방법)
+		 // 2가지 색을 Alpha(비율)로 섞어주는 Alpha Blending
+		ComPtr<ID3D11BlendState> mirrorBS;
+
 	};
 
 }

@@ -27,6 +27,11 @@ namespace DE {
 		const ComPtr<ID3D11Buffer> GetConsts() { return m_constant.Get(); }
 		const ComPtr<ID3D11Buffer> GetBasicMaterial() { return m_basicMaterial.Get(); }
 		const ComPtr<ID3D11Buffer> GetMaterial() { return m_material.Get(); }
+		const MaterialConstants GetMaterialCpu() { return m_material.GetCpu(); }
+
+		const void SetConsts(MeshConstants& consts);
+		const void SetBasicMaterial(const BasicMaterialConstants& consts);
+		const void SetMaterial(const MaterialConstants& consts);
 	private:
 		bool updateWorldCpu();
 	private:

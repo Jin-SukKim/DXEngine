@@ -32,11 +32,14 @@ namespace DE {
 		}
 	}
 
-	void Actor::Render(RenderBase& renderer)
+	void Actor::Render(RenderBase& renderer, bool reflect)
 	{
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
+		if (reflect)
+			renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSolidPSO);
+		else
+			renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 		RenderComponent(context, ComponentType::Model);
 		
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);

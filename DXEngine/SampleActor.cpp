@@ -15,7 +15,8 @@ namespace DE {
 		{
 			//std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
 			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Models/DamagedHelmet/", "DamagedHelmet.gltf");
-			
+			//MeshData mesh = GeometryGenerator::MakeSquare(1.f);
+
 			// HDRI 테스트
 			{
 				//auto meshes = GeometryGenerator::MakeSquare();
@@ -31,6 +32,12 @@ namespace DE {
 
 			//m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
 			//m_boundVolume->SetBoundingVolume(device, meshes);
+
+			//MaterialConstants consts = m_sample->GetMaterialCpu();
+			//consts.albedoFactor = Vector3(0.3f);
+			//consts.emissionFactor = Vector3(0.0f);
+			//consts.metallicFactor = 0.7f;
+			//consts.roughnessFactor = 0.2f;
 		}
 	}
 	void SampleActor::Initialize() {
@@ -50,8 +57,8 @@ namespace DE {
 		}
 	}
 
-	void SampleActor::Render(RenderBase& renderer) {
-		Super::Render(renderer);
+	void SampleActor::Render(RenderBase& renderer, bool reflect) {
+		Super::Render(renderer, reflect);
 
 		if (IsDrawNormal()) {
 			// Normal Vector 그리기

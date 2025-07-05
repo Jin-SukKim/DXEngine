@@ -114,6 +114,21 @@ namespace DE {
 		}
 	}
 
+	const void ModelComponent::SetConsts(MeshConstants& consts)
+	{
+		m_constant.GetCpu() = consts;
+	}
+
+	const void ModelComponent::SetBasicMaterial(const BasicMaterialConstants& consts)
+	{
+		m_basicMaterial.GetCpu() = consts;
+	}
+
+	const void ModelComponent::SetMaterial(const MaterialConstants& consts)
+	{
+		m_material.GetCpu() = consts;
+	}
+
 	bool ModelComponent::updateWorldCpu()
 	{
 		Actor* owner = dynamic_cast<Actor*>(GetOwner());

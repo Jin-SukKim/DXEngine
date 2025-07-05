@@ -25,10 +25,13 @@ namespace DE {
 		m_billboardConsts.Upload(context);
 	}
 
-	void BillboardActor::Render(RenderBase& renderer) {
+	void BillboardActor::Render(RenderBase& renderer, bool reflect) {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
+		if (reflect)
+			renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectBillboardSolidPSO);
+		else
+			renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
 		if (m_pixelShader)
 			context->PSSetShader(m_pixelShader.Get(), 0, 0);
 		context->VSSetConstantBuffers(3, 1, m_billboardConsts.GetAddressOf());

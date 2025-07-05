@@ -28,8 +28,9 @@ namespace DE {
 		ComPtr<ID3D11DepthStencilState> depthStencilState;
 		ComPtr<ID3D11RasterizerState> rasterizerState;
 
+		// 두 색을 얼마나 섞어줄지에 대한 비율값 (비율은 [0.0, 1.0] 범위)
 		float blendFactor[4] = { 1.f, 1.f, 1.f, 1.f };
-		UINT stencilRef = 0;
+		UINT stencilRef = 0; // Stencil Buffer에 값을 Write할때 어떤 값을 쓸지
 
 		D3D11_PRIMITIVE_TOPOLOGY primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	};

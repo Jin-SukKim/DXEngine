@@ -253,7 +253,7 @@ namespace DE {
 		m_context->CSSetShader(NULL, 0, 0);
 		m_context->IASetInputLayout(pso.inputLayout.Get());
 		m_context->RSSetState(pso.rasterizerState.Get());
-		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff);
+		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // 마지막 parameter는 multi-sample을 사용할때 사용
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
 	}
@@ -292,5 +292,16 @@ namespace DE {
 
 			//D3D11Utils::CopyFromStagingTexture(m_context, m_indexStagingTexture, sizeof(uint8_t) * 4, dest);
 		}
+	}
+
+	void RenderBase::ClearDepthBuffer()
+	{
+		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+
+	void RenderBase::ClearStencilBuffer()
+	{
+		// Stencil만 0으로 Clear(초기화)
+		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 }

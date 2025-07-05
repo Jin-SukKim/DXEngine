@@ -34,9 +34,12 @@ namespace DE {
 		Super::Update(context, deltaTime);
 	}
 
-	void SkyboxActor::Render(RenderBase& renderer)
+	void SkyboxActor::Render(RenderBase& renderer, bool reflect)
 	{
-		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		if (reflect)
+			renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSkyboxSolidPSO);
+		else
+			renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
 		RenderComponent(renderer.GetContext(), ComponentType::Model);
 	}
 
@@ -53,6 +56,14 @@ namespace DE {
 	{	
 		std::vector<ID3D11ShaderResourceView*> commonSRVs = {
 			m_envSRV.Get(),	m_specularSRV.Get(), m_irradianceSRV.Get(),	m_brdfSRV.Get()
+		};
+		// 공통으로 사용할 Texture들을 "Common.hlsli"에서 register(t10)부터 시작
+		context->PSSetShaderResources(10, UINT(commonSRVs.size()), commonSRVs.data());
+	}
+	void SkyboxActor::SetCommonSRVToNull(ComPtr<ID3D11DeviceContext>& context)
+	{
+		std::vector<ID3D11ShaderResourceView*> commonSRVs = {
+			NULL, NULL, NULL, NULL
 		};
 		// 공통으로 사용할 Texture들을 "Common.hlsli"에서 register(t10)부터 시작
 		context->PSSetShaderResources(10, UINT(commonSRVs.size()), commonSRVs.data());

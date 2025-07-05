@@ -39,6 +39,11 @@ namespace DE {
 
 		void CopyIndexForPicking(int mouseX, int mouseY, uint8_t* dest);
 
+		// Stencil Buffer만 0으로 초기화
+		void ClearStencilBuffer();
+		// Depth Buffer만 1.0으로 초기화
+		void ClearDepthBuffer();
+
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
 	protected:

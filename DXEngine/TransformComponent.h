@@ -26,13 +26,14 @@ namespace DE {
 		Vector3 GetRightDir();
 		Vector3 GetUpDir();
 
+		Matrix GetTranslateMatrix();
+		Matrix GetRotationMatrix();
 		Matrix GetTransformMatrix(); // 변환 행렬
 		Matrix GetInvTransformMatrix(); // 역변환 행렬
 
 	private:
 		Quaternion createRotationQuaternion(const float& yaw, const float& pitch, const float roll);
 		void SetBoundingVolumeScale();
-		void updateLocalAxes();
 	private:
 		Vector3 m_pos = Vector3::Zero;
 		Vector3 m_scale = Vector3::One;

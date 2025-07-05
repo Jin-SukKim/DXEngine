@@ -12,6 +12,7 @@ namespace DE {
 	class CopyFilter;
 	class TreeBillboard;
 	class Actor;
+	class MirrorActor;
 
 	class Scene
 	{
@@ -27,8 +28,8 @@ namespace DE {
 		uint8_t* GetPickColor() { return m_pickColor; }
 	protected:
 		virtual void UpdateLight(const float& deltaTime);
-		virtual void setGlobals(ComPtr<ID3D11DeviceContext>& context);
-
+		virtual void SetGlobals(ComPtr<ID3D11DeviceContext>& context);
+		virtual void UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
 	private:
 		void enableCamFpv();
 		void pickingRay(float click);
@@ -52,6 +53,8 @@ namespace DE {
 		std::shared_ptr<SampleActor> triangle;
 		std::shared_ptr<SkyboxActor> m_skybox;
 		std::shared_ptr<TreeBillboard> m_billboard;
+		// 거울 반사
+		std::shared_ptr<MirrorActor> m_mirror;
 
 		std::shared_ptr<CopyFilter> m_copyPostProcess;
 

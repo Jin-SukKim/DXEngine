@@ -13,6 +13,7 @@
 #include "CopyFilter.h"
 #include "BoundComponent.h"
 #include "TreeBillboard.h"
+#include "MirrorActor.h"
 
 namespace DE {
 	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
@@ -22,15 +23,15 @@ namespace DE {
 
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(device, m_globalConstsCPU, m_globalConstsGPU);
-
+		
 		// Scene 공통 Actor
 		{
 			m_mainCamera = std::make_shared<CameraActor>(device, context, L"MainCamera");
-			m_actorList.emplace_back(m_mainCamera);
+			//m_actorList.emplace_back(m_mainCamera);
 			m_fpv = InputAction(f);
 
 			m_skybox = std::make_shared<SkyboxActor>(device, context, L"Skybox");
-			m_actorList.emplace_back(m_skybox);
+			//m_actorList.emplace_back(m_skybox);
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
 		}
@@ -43,6 +44,8 @@ namespace DE {
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList.emplace_back(m_billboard);
+
+		m_mirror = std::make_shared<MirrorActor>(device, context, L"Mirror");
 	}
 
 	void Scene::Initialize() {
@@ -51,7 +54,7 @@ namespace DE {
 			// 현재 조명은 최대 개수 3개
 			// Spot Light
 			m_globalConstsCPU.lights[0].radiance = Vector3(1.0f);
-			m_globalConstsCPU.lights[0].position = Vector3(5.0f, 0.0f, 0.0f);  // 위에서 비스듬히
+			m_globalConstsCPU.lights[0].position = Vector3(5.0f, 0.0f, -5.0f);  // 위에서 비스듬히
 			m_globalConstsCPU.lights[0].direction = Vector3(0.0f, 0.0f, 1.0f);  // 아래 방향으로
 			m_globalConstsCPU.lights[0].spotPower = 100.0f;                      // 좀 더 집중된 빛
 			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
@@ -96,7 +99,8 @@ namespace DE {
 		TransformComponent* tr = triangle->GetComponent<TransformComponent>();
 		if (tr) {
 			tr->SetScale(Vector3(0.5f));
-			tr->SetPos(Vector3(0.f, 0.f, 0.f));
+			tr->SetPos(Vector3(0.f, 0.f, -1.f));
+			tr->SetRotation(90.f, 0.f, 0.f);
 		}
 
 		m_billboard->Initialize();
@@ -105,6 +109,8 @@ namespace DE {
 		if (tr) {
 			tr->SetPos(Vector3(0.f, 0.f, 5.f));
 		}
+
+		m_mirror->Initialize();
 
 	}
 
@@ -115,16 +121,18 @@ namespace DE {
 		// Camera Update
 		m_mainCamera->Update(context, deltaTime);
 
+		const Vector3 eyeWorld = m_mainCamera->GetPos();
+		const Matrix view = m_mainCamera->GetViewMatrix();
+		const Matrix proj = m_mainCamera->GetProjMatrix();
+
 		// 공용 Constant buffer 업데이트
-		// DirectX는 Row-Major인데 HLSL는 Column-Major이므로 Transpose
-		m_globalConstsCPU.view = m_mainCamera->GetViewMatrix().Transpose();
-		m_globalConstsCPU.proj = m_mainCamera->GetProjMatrix().Transpose();
-		m_globalConstsCPU.viewProj = m_globalConstsCPU.proj * m_globalConstsCPU.view; // Transpose 시켰으므로 곱셈 순서 주의
-		m_globalConstsCPU.eyeWorld = m_mainCamera->GetPos();
-		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
+		UpdateGlobalConstants(context, deltaTime, eyeWorld, view, proj);
 
 		triangle->Update(context, deltaTime);
 		m_billboard->Update(context, deltaTime);
+		
+		m_mirror->Update(context, deltaTime);
+		m_mirror->UpdateGlobalConstants(context, m_globalConstsCPU, deltaTime, eyeWorld, view, proj);
 		
 		// TODO: Picking Test
 		//pickingGpu(0);
@@ -133,14 +141,20 @@ namespace DE {
 	void Scene::Render(RenderBase& renderer) {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State, SRV 등을 설정
-		setGlobals(context);
+		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State등을 설정
+		SetGlobals(context);
 
-		triangle->Render(renderer);
-		m_billboard->Render(renderer);
+		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
+		m_skybox->SetCommonSRVs(context);
+
+		// 거울 없이 렌더링
+		for (auto& actor : m_actorList)
+			actor->Render(renderer);
 
 		m_skybox->Render(renderer);
 
+		// 거울 렌더링
+		m_mirror->Render(renderer, m_actorList, m_skybox);
 	}
 
 	void Scene::UpdateLight(const float& deltaTime)
@@ -148,7 +162,7 @@ namespace DE {
 
 	}
 
-	void Scene::setGlobals(ComPtr<ID3D11DeviceContext>& context)
+	void Scene::SetGlobals(ComPtr<ID3D11DeviceContext>& context)
 	{
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
 		context->VSSetConstantBuffers(0, 1, m_globalConstsGPU.GetAddressOf());
@@ -160,9 +174,16 @@ namespace DE {
 			RenderBase::graphicsCommon.sampleStates.data());
 		context->PSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
 			RenderBase::graphicsCommon.sampleStates.data());
+	}
 
-		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
-		m_skybox->SetCommonSRVs(context);
+	void Scene::UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj)
+	{
+		// DirectX는 Row-Major인데 HLSL는 Column-Major이므로 Transpose
+		m_globalConstsCPU.view = view.Transpose();
+		m_globalConstsCPU.proj = proj.Transpose();
+		m_globalConstsCPU.viewProj = m_globalConstsCPU.proj * m_globalConstsCPU.view; // Transpose 시켰으므로 곱셈 순서 주의
+		m_globalConstsCPU.eyeWorld = eyeWorld;
+		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
 	}
 
 	void Scene::enableCamFpv()

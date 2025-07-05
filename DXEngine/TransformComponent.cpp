@@ -55,6 +55,19 @@ namespace DE {
 		return Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(worldRotate * m_localRotation));
 	}
 
+	Matrix TransformComponent::GetTranslateMatrix()
+	{
+		return Matrix::CreateTranslation(m_pos);
+	}
+
+	Matrix TransformComponent::GetRotationMatrix()
+	{
+		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
+		Quaternion finalRotation = worldRotate * m_localRotation;
+
+		return Matrix::CreateFromQuaternion(finalRotation);
+	}
+
 	Matrix TransformComponent::GetTransformMatrix()
 	{
 		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
@@ -86,15 +99,5 @@ namespace DE {
 		if (bound) {
 			bound->SetScale(m_scale);
 		}
-	}
-
-	void TransformComponent::updateLocalAxes()
-	{
-		Quaternion worldRotate = createRotationQuaternion(m_worldRotation.x, m_worldRotation.y, m_worldRotation.z);
-		Quaternion finalRotation = worldRotate * m_localRotation;
-
-		m_localForward = Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(finalRotation));
-		m_localRight = Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(finalRotation));
-		m_localUp = Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(finalRotation));
 	}
 }
