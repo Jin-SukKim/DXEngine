@@ -29,6 +29,7 @@ namespace DE {
 		Vector3 specular = Vector3(1.0f);
 		float dummy2;
 		Vector3 fresnelR0 = Vector3(0.05f, 0.05f, 0.05f);
+		float dummy3;
 		int hashID = 0;
 	};
 

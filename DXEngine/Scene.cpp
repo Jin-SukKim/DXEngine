@@ -53,8 +53,8 @@ namespace DE {
 		{
 			// 현재 조명은 최대 개수 3개
 			// Spot Light
-			m_globalConstsCPU.lights[0].radiance = Vector3(1.0f);
-			m_globalConstsCPU.lights[0].position = Vector3(5.0f, 0.0f, -5.0f);  // 위에서 비스듬히
+			m_globalConstsCPU.lights[0].radiance = Vector3(5.0f);
+			m_globalConstsCPU.lights[0].position = Vector3(1.0f, 1.0f, -1.0f);  // 위에서 비스듬히
 			m_globalConstsCPU.lights[0].direction = Vector3(0.0f, 0.0f, 1.0f);  // 아래 방향으로
 			m_globalConstsCPU.lights[0].spotPower = 100.0f;                      // 좀 더 집중된 빛
 			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
@@ -92,7 +92,7 @@ namespace DE {
 		// 입력 Bind
 		{
 			AppBase::GetInputManager().BindInputAction(m_fpv, InputState::Pressed, this, &Scene::enableCamFpv);
-			AppBase::GetInputManager().BindInputAxis(xAxis, m_mouseClick, this, &Scene::pickingRay);
+			//AppBase::GetInputManager().BindInputAxis(xAxis, m_mouseClick, this, &Scene::pickingRay);
 		}
 
 		triangle->Initialize();

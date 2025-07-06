@@ -51,6 +51,7 @@ cbuffer BasicMaterialConstants : register(b1) {
     float3 specular;
     float dummy2;
     float3 fresnelR0;
+    float dummy3;
     int hashID;
 };
 
@@ -76,7 +77,7 @@ cbuffer MaterialConstants : register(b3) {
     int useMetallicMap = 0;
     int useRoughnessMap = 0;
     int useEmissiveMap = 0;
-    float dummy3 = 0.f;
+    float dummy5 = 0.f;
 }
 
 struct VSInput {

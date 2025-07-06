@@ -59,8 +59,9 @@ namespace DE {
 
 	int Actor::GetHashID()
 	{
-		std::hash<std::wstring> hash;
-		return (int)hash(GetName()) + m_id;
+		//std::hash<std::wstring> hash;
+		//return (int)hash(GetName()) + m_id;
+		return m_id;
 	}
 
 	void Actor::setHashIdToColor(const int& hashID)
