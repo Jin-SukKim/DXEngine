@@ -41,7 +41,7 @@ namespace DE {
 		} skybox;
 
 		struct {
-			GraphicsPSO bloomPSO;
+			GraphicsPSO basicPSO;
 			GraphicsPSO copyPSO;
 			GraphicsPSO fogPSO; // Depth Map을 활용
 		} postProcess;
@@ -65,8 +65,9 @@ namespace DE {
 		} mirror;
 
 		struct {
-			GraphicsPSO depthOnlyPSO;
+			GraphicsPSO depthOnlyPSO; // Depth값을 측정하기 위한 PSO
 		} depth;
+
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
@@ -118,6 +119,7 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> combinePS;
 		ComPtr<ID3D11PixelShader> toneMappingPS;
 		ComPtr<ID3D11PixelShader> copyPS;
+		ComPtr<ID3D11PixelShader> depthPS;
 		ComPtr<ID3D11PixelShader> fogPS;
 
 		// Billboard

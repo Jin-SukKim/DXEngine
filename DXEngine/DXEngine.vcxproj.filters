@@ -229,6 +229,7 @@
     <ClInclude Include="MirrorActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
+    <ClInclude Include="DepthFilter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -324,6 +325,9 @@
     <ClCompile Include="CopyFilter.cpp">
       <Filter>private\PostProcess</Filter>
     </ClCompile>
+    <ClCompile Include="DepthFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -401,10 +405,10 @@
     <FxCompile Include="DepthOnlyVS.hlsl">
       <Filter>Shaders\Depth</Filter>
     </FxCompile>
-    <FxCompile Include="DepthPS.hlsl">
-      <Filter>Shaders\Depth</Filter>
-    </FxCompile>
     <FxCompile Include="FogEffectPS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="DepthPS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
   </ItemGroup>

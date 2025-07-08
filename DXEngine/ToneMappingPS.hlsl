@@ -4,7 +4,7 @@ Texture2D g_curFrame : register(t0);
 SamplerState g_sampler : register(s0);
 
 // 어떤 ToneMapping을 사용할지
-cbuffer ToneMappingConsts : register(b1) {
+cbuffer ToneMappingConsts : register(b5) {
     int useLinear; 
     int useFilmic; 
     int useUncharted2;

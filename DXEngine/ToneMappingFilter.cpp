@@ -34,7 +34,7 @@ namespace DE {
 
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		// È­¸é ·»´õ¸µ
-		context->PSSetConstantBuffers(1, 1, m_const.GetAddressOf());
+		context->PSSetConstantBuffers(5, 1, m_const.GetAddressOf());
 		RenderImageFilter(context, m_toneMapping);
 	}
 }

@@ -119,6 +119,7 @@ namespace DE {
 		memcpy(&m_reflectGlobalConsts.GetCpu(), &globalConstsCPU, sizeof(globalConstsCPU));
 		m_reflectGlobalConsts.GetCpu().view = (reflect * view).Transpose();
 		m_reflectGlobalConsts.GetCpu().viewProj = (reflect * view * proj).Transpose();
+		m_reflectGlobalConsts.GetCpu().invProj = proj.Invert().Transpose();
 
 		m_reflectGlobalConsts.Upload(context);
 	}

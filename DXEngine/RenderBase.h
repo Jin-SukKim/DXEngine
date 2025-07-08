@@ -45,6 +45,7 @@ namespace DE {
 		void ClearStencilBuffer();
 		// Depth Buffer만 1.0으로 초기화
 		void ClearDepthBuffer();
+		Texture2D& GetDepthOnlyBuffer() { return m_depthOnlyBuffer; };
 
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
@@ -58,7 +59,7 @@ namespace DE {
 		// 삼각형 레스터화 -> float(MSAA) -> Resolved(No MSAA) -> Post-Process -> BackBuffer(최종 Swap-Chain Present)
 		Texture2D m_floatBuffer;
 		Texture2D m_resolvedBuffer;
-		Texture2D m_postEffectsBuffer;
+		//Texture2D m_postEffectsBuffer;
 		
 		// Picking
 		ComPtr<ID3D11Texture2D> m_indexTempTexture;

@@ -164,8 +164,8 @@ namespace DE {
 
 		D3D11Utils::CreateTexture(m_device, desc, m_floatBuffer);
 
-		// TODO: postEffect Buffer는 float buffer랑 똑같은 설정을 ㅗ생성
-		D3D11Utils::CreateTexture(m_device, desc, m_postEffectsBuffer);
+		// TODO: postEffect Buffer는 float buffer랑 똑같은 설정으로 생성
+		//D3D11Utils::CreateTexture(m_device, desc, m_postEffectsBuffer);
 
 		// Mouse Picking
 		// 1x1 작은 Staging Texture 생성 (Pixel의 값을 GPU에서 CPU로 복사할 수 있도록 설정한 Texture)
@@ -290,6 +290,7 @@ namespace DE {
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
 	}
+
 	void RenderBase::SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso)
 	{
 		postProcess.Initialize(*this, { m_floatBuffer.GetSRV(), m_prevFrame.GetSRV() }, { m_toneMapTexture.GetRTV() }, int(m_screenViewport.Width), int(m_screenViewport.Height));

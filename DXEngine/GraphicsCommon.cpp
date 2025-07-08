@@ -183,6 +183,8 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"ToneMappingPS.hlsl", toneMappingPS);
 		// Copy
 		D3D11Utils::CreatePS(device, L"CopyFilterPS.hlsl", copyPS);
+		// Depth
+		D3D11Utils::CreatePS(device, L"DepthPS.hlsl", depthPS);
 		// Fog
 		D3D11Utils::CreatePS(device, L"FogEffectPS.hlsl", fogPS);
 
@@ -343,10 +345,10 @@ namespace DE {
 		depth.depthOnlyPSO.pixelShader = depthOnlyPS;
 
 		// PostProcessing
-		postProcess.bloomPSO = basic.solidPSO;
-		postProcess.bloomPSO.inputLayout = samplingIL;
-		postProcess.bloomPSO.vertexShader = samplingVS;
-		postProcess.bloomPSO.rasterizerState = postProcessRS;
+		postProcess.basicPSO = basic.solidPSO;
+		postProcess.basicPSO.inputLayout = samplingIL;
+		postProcess.basicPSO.vertexShader = samplingVS;
+		postProcess.basicPSO.rasterizerState = postProcessRS;
 
 		// Billboard
 		billboard.solidPSO = basic.solidPSO;

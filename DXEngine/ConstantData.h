@@ -69,6 +69,7 @@ namespace DE {
 		Matrix view;
 		Matrix proj;
 		Matrix viewProj;
+		Matrix invProj; // Porjection -> View 좌표계 변환용
 
 		Vector3 eyeWorld; // Camera 위치
 		float dummy3 = 0.f; 

@@ -1,7 +1,7 @@
 Texture2D g_texture0 : register(t0);
 SamplerState g_sampler : register(s0);
 
-cbuffer SamplingPSConstantData : register(b0) {
+cbuffer SamplingPSConstantData : register(b4) {
     // Texture의 Pixel 간격 (설정한 해상도에 따라 dx, dy값은 다름)
     float dx;
     float dy;

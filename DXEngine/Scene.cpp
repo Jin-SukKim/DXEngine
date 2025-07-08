@@ -14,6 +14,7 @@
 #include "BoundComponent.h"
 #include "TreeBillboard.h"
 #include "MirrorActor.h"
+#include "DepthFilter.h"
 
 namespace DE {
 	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
@@ -40,7 +41,10 @@ namespace DE {
 		m_actorList[0].emplace_back(triangle);
 
 		m_copyPostProcess = std::make_shared<CopyFilter>();
-		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
+		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
+
+		m_depthPP = std::make_shared<DepthFilter>();
+		renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList[1].emplace_back(m_billboard);
@@ -154,7 +158,9 @@ namespace DE {
 		RenderOpaqueObjects(renderer);
 
 		// °Å¿ï ·»´õ¸µ
-		RenderMirror(renderer);
+		//RenderMirror(renderer);
+
+		SetGlobals(context);
 	}
 
 	void Scene::UpdateLight(const float& deltaTime)
@@ -182,6 +188,7 @@ namespace DE {
 		m_globalConstsCPU.view = view.Transpose();
 		m_globalConstsCPU.proj = proj.Transpose();
 		m_globalConstsCPU.viewProj = m_globalConstsCPU.proj * m_globalConstsCPU.view; // Transpose ½ÃÄ×À¸¹Ç·Î °ö¼À ¼ø¼­ ÁÖÀÇ
+		m_globalConstsCPU.invProj = proj.Invert().Transpose();
 		m_globalConstsCPU.eyeWorld = eyeWorld;
 		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
 	}
@@ -215,6 +222,8 @@ namespace DE {
 
 		for (auto& billboard : m_actorList[1])
 			billboard->RenderNormal(renderer);
+
+
 	}
 
 	void Scene::RenderMirror(RenderBase& renderer)
@@ -232,12 +241,12 @@ namespace DE {
 		for (auto& actor : m_actorList[0])
 			actor->Render(renderer);
 		
+		m_mirror->Render(renderer); // °Å¿ï¸¸ ·»´õ¸µ
+
 		for (auto& billboard : m_actorList[1])
 			billboard->Render(renderer);
 		
 		m_skybox->Render(renderer);
-		
-		m_mirror->Render(renderer); // °Å¿ï¸¸ ·»´õ¸µ
 	}
 
 	void Scene::enableCamFpv()

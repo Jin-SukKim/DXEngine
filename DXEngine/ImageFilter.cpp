@@ -41,7 +41,7 @@ namespace DE {
 		context->OMSetRenderTargets(UINT(m_renderTargets.size()), m_renderTargets.data(), NULL);
 		context->PSSetShader(m_pixelShader.Get(), 0, 0);
 		context->PSSetShaderResources(0, UINT(m_shaderResources.size()), m_shaderResources.data());
-		context->PSSetConstantBuffers(0, 1, m_const.GetAddressOf());
+		context->PSSetConstantBuffers(4, 1, m_const.GetAddressOf());
 	}
 
 	void ImageFilter::SetShaderResources(const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources)

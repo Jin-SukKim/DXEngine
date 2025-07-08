@@ -1,4 +1,4 @@
-cbuffer ImageFilterConstData : register(b0) {
+cbuffer ImageFilterConstData : register(b4) {
     // Texture의 Pixel 간격 (설정한 해상도에 따라 dx, dy값은 다름)
     float dx;
     float dy;
