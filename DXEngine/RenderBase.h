@@ -20,6 +20,7 @@ namespace DE {
 		virtual void PostRender();
 		void Present();
 
+		void SetRender();
 		// HDR Pipeline에 필요한 Buffer들 생성
 		void CreateBuffers();
 		// 렌더링하고 싶은 화면 크기에 맞는 Viewport 설정
@@ -27,6 +28,7 @@ namespace DE {
 		void SetViewport(const float& width, const float& height);
 		// DepthStencilView Buffer 생성
 		void CreateDepthStencilBuffer(const WindowInfo& window);
+		void SetDepthOnlyRender();
 
 		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
 		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }
@@ -56,6 +58,7 @@ namespace DE {
 		// 삼각형 레스터화 -> float(MSAA) -> Resolved(No MSAA) -> Post-Process -> BackBuffer(최종 Swap-Chain Present)
 		Texture2D m_floatBuffer;
 		Texture2D m_resolvedBuffer;
+		Texture2D m_postEffectsBuffer;
 		
 		// Picking
 		ComPtr<ID3D11Texture2D> m_indexTempTexture;
@@ -78,6 +81,9 @@ namespace DE {
 
 		// Depth-Stencil Buffer
 		ComPtr<ID3D11DepthStencilView> m_defaultDSV;
+
+		Texture2D m_depthOnlyBuffer;
+		ComPtr<ID3D11DepthStencilView> m_depthOnlyDSV;
 
 		// TODO: 여러 개의 PostProcess를 사용하려면 Vector를 사용하는게 좋지 않을까?
 		PostProcess* m_postProcess;

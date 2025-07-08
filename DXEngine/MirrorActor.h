@@ -3,6 +3,7 @@
 
 namespace DE {
 	class ModelComponent;
+	class BoundComponent;
 	class SkyboxActor;
 
 	class MirrorActor : public Actor
@@ -14,7 +15,8 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(RenderBase& renderer, std::vector<std::shared_ptr<Actor>>& actorList, std::shared_ptr<SkyboxActor>& cubeMap);
+		void Render(RenderBase& renderer, std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap);
+		void Render(RenderBase& renderer) override;
 
 		void SetGlobals(ComPtr<ID3D11DeviceContext>& context);
 		void UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const GlobalConstants& globalConstsCPU, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
@@ -26,5 +28,8 @@ namespace DE {
 
 		// 거울 반사를 위한 공통 Data
 		ConstantBuffer<GlobalConstants> m_reflectGlobalConsts;
+
+
+		BoundComponent* m_boundVolume;
 	};
 }

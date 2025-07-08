@@ -97,15 +97,6 @@ namespace DE {
 	void RenderBase::Render()
 	{
 		m_context->RSSetViewports(1, &m_screenViewport);
-
-		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
-		m_context->ClearRenderTargetView(m_floatBuffer.GetRTV(), clearColor);
-		m_context->ClearRenderTargetView(m_indexRTV.Get(), clearColor); // Mouse Picking
-		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
-
-		// Multiple Render Targets
-		ID3D11RenderTargetView* targets[] = { m_floatBuffer.GetRTV(), m_indexRTV.Get() };
-		m_context->OMSetRenderTargets(2, targets, m_defaultDSV.Get());
 	}
 
 	void RenderBase::PostRender()
@@ -135,6 +126,18 @@ namespace DE {
 		m_swapChain->Present(1, 0);
 	}
 
+	void RenderBase::SetRender()
+	{
+		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+		m_context->ClearRenderTargetView(m_floatBuffer.GetRTV(), clearColor);
+		m_context->ClearRenderTargetView(m_indexRTV.Get(), clearColor); // Mouse Picking
+		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+
+		// Multiple Render Targets
+		ID3D11RenderTargetView* targets[] = { m_floatBuffer.GetRTV(), m_indexRTV.Get() };
+		m_context->OMSetRenderTargets(2, targets, m_defaultDSV.Get());
+	}
+
 	void RenderBase::CreateBuffers()
 	{
 		// Raterization -> float/depthBuffer(MSAA) -> resolved -> backBuffer
@@ -160,6 +163,9 @@ namespace DE {
 		desc.SampleDesc.Quality = 0;
 
 		D3D11Utils::CreateTexture(m_device, desc, m_floatBuffer);
+
+		// TODO: postEffect Buffer는 float buffer랑 똑같은 설정을 ㅗ생성
+		D3D11Utils::CreateTexture(m_device, desc, m_postEffectsBuffer);
 
 		// Mouse Picking
 		// 1x1 작은 Staging Texture 생성 (Pixel의 값을 GPU에서 CPU로 복사할 수 있도록 설정한 Texture)
@@ -206,22 +212,49 @@ namespace DE {
 
 	void RenderBase::CreateDepthStencilBuffer(const WindowInfo& window)
 	{
-		D3D11_TEXTURE2D_DESC dsBufferDesc;
-		dsBufferDesc.Width = window.width;
-		dsBufferDesc.Height = window.height;
-		dsBufferDesc.MipLevels = 1; // Depth Stencil Buffer는 Mipmap 불필요
-		dsBufferDesc.ArraySize = 1;
-		dsBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		dsBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		dsBufferDesc.CPUAccessFlags = 0;
-		dsBufferDesc.MiscFlags = 0;
-		dsBufferDesc.SampleDesc.Count = 1;
-		dsBufferDesc.SampleDesc.Quality = 0;
-		dsBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		D3D11_TEXTURE2D_DESC dsDesc;
+		dsDesc.Width = window.width;
+		dsDesc.Height = window.height;
+		dsDesc.MipLevels = 1; // Depth Stencil Buffer는 Mipmap 불필요
+		dsDesc.ArraySize = 1;
+		dsDesc.Usage = D3D11_USAGE_DEFAULT;
+		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		dsDesc.CPUAccessFlags = 0;
+		dsDesc.MiscFlags = 0;
+		dsDesc.SampleDesc.Count = 1;
+		dsDesc.SampleDesc.Quality = 0;
+		dsDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 		ComPtr<ID3D11Texture2D> depthStencilBuffer;
-		ThrowIfFailed(m_device->CreateTexture2D(&dsBufferDesc, 0, depthStencilBuffer.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, 0, depthStencilBuffer.GetAddressOf()));
 		ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilBuffer.Get(), NULL, m_defaultDSV.GetAddressOf()));
+	
+		// Depth Only (Stencil이 필요가 없기에 Depth만 32bit 전부 사용)
+		// Typeless로 선언해 DepthStencilView에서는 D32 Format을 사용, ShaderResourceView에서는 R32 Format을 사용
+		// 두 Format이 서로 다르기 때문에 Typeless를 사용
+		dsDesc.Format = DXGI_FORMAT_R32_TYPELESS; 
+		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_depthOnlyBuffer.GetAddressOfTexture()));
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format 사용
+		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		ThrowIfFailed(m_device->CreateDepthStencilView(m_depthOnlyBuffer.GetTexture(), &dsvDesc, m_depthOnlyDSV.GetAddressOf()));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		ZeroMemory(&srvDesc, sizeof(srvDesc));
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV로 사용하기 위해 R32 format 사용
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1;
+		ThrowIfFailed(m_device->CreateShaderResourceView(m_depthOnlyBuffer.GetTexture(), &srvDesc, m_depthOnlyBuffer.GetAddressOfSRV()));
+	}
+
+	void RenderBase::SetDepthOnlyRender()
+	{
+		m_context->ClearDepthStencilView(m_depthOnlyDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+		// DepthOnly라서 RTV 불필요
+		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
 	}
 
 	void RenderBase::ResizeSwapChain(const WindowInfo& window)

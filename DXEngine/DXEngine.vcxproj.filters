@@ -107,6 +107,9 @@
     <Filter Include="Shaders\Mirror">
       <UniqueIdentifier>{84da814c-8161-4de0-80fa-b1e0f368f798}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Depth">
+      <UniqueIdentifier>{fce57525-fd47-4731-9120-3c33b704cce8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -392,11 +395,17 @@
     <FxCompile Include="CopyFilterPS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
-    <FxCompile Include="DepthOnlyVS.hlsl">
-      <Filter>Shaders\Mirror</Filter>
-    </FxCompile>
     <FxCompile Include="DepthOnlyPS.hlsl">
-      <Filter>Shaders\Mirror</Filter>
+      <Filter>Shaders\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="DepthOnlyVS.hlsl">
+      <Filter>Shaders\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="DepthPS.hlsl">
+      <Filter>Shaders\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="FogEffectPS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

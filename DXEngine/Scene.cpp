@@ -37,13 +37,13 @@ namespace DE {
 		}
 
 		triangle = std::make_shared<SampleActor>(device, context, L"Temp");
-		m_actorList.emplace_back(triangle);
+		m_actorList[0].emplace_back(triangle);
 
 		m_copyPostProcess = std::make_shared<CopyFilter>();
 		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.bloomPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
-		m_actorList.emplace_back(m_billboard);
+		m_actorList[1].emplace_back(m_billboard);
 
 		m_mirror = std::make_shared<MirrorActor>(device, context, L"Mirror");
 	}
@@ -140,21 +140,21 @@ namespace DE {
 
 	void Scene::Render(RenderBase& renderer) {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
-
 		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State등을 설정
 		SetGlobals(context);
+
+		RenderDepthOnly(renderer);
+
+		renderer.SetRender();
 
 		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
 		m_skybox->SetCommonSRVs(context);
 
-		// 거울 없이 렌더링
-		for (auto& actor : m_actorList)
-			actor->Render(renderer);
-
-		m_skybox->Render(renderer);
+		// 불투명 물체들 렌더링
+		RenderOpaqueObjects(renderer);
 
 		// 거울 렌더링
-		m_mirror->Render(renderer, m_actorList, m_skybox);
+		RenderMirror(renderer);
 	}
 
 	void Scene::UpdateLight(const float& deltaTime)
@@ -184,6 +184,60 @@ namespace DE {
 		m_globalConstsCPU.viewProj = m_globalConstsCPU.proj * m_globalConstsCPU.view; // Transpose 시켰으므로 곱셈 순서 주의
 		m_globalConstsCPU.eyeWorld = eyeWorld;
 		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
+	}
+
+	void Scene::RenderOpaqueObjects(RenderBase& renderer)
+	{		
+		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+
+		// 거울 없이 렌더링
+		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
+		for (auto& actor : m_actorList[0])
+			actor->Render(renderer);
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
+		for (auto& billboard : m_actorList[1])
+			billboard->Render(renderer);
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		m_skybox->Render(renderer);
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
+		for (auto& actor : m_actorList[0])
+			actor->RenderBoundingVolume(renderer);
+
+		for (auto& billboard : m_actorList[1])
+			billboard->RenderBoundingVolume(renderer);
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
+		for (auto& actor : m_actorList[0])
+			actor->RenderNormal(renderer);
+
+		for (auto& billboard : m_actorList[1])
+			billboard->RenderNormal(renderer);
+	}
+
+	void Scene::RenderMirror(RenderBase& renderer)
+	{
+		// 거울 렌더링
+		m_mirror->Render(renderer, m_actorList, m_skybox);
+	}
+
+	void Scene::RenderDepthOnly(RenderBase& renderer)
+	{
+		renderer.SetDepthOnlyRender();
+		// 전부 렌더링
+		renderer.SetPipelineState(RenderBase::graphicsCommon.depth.depthOnlyPSO);
+
+		for (auto& actor : m_actorList[0])
+			actor->Render(renderer);
+		
+		for (auto& billboard : m_actorList[1])
+			billboard->Render(renderer);
+		
+		m_skybox->Render(renderer);
+		
+		m_mirror->Render(renderer); // 거울만 렌더링
 	}
 
 	void Scene::enableCamFpv()
@@ -318,7 +372,7 @@ namespace DE {
 	{
 		minDist = 1e5f;
 		Actor* minActor = nullptr;
-		for (auto& actor : m_actorList) {
+		for (auto& actor : m_actorList[0]) {
 			BoundComponent* bound = actor->GetComponent<BoundComponent>();
 			// 선택 가능한 Actor인지 확인
 			if (!bound || !bound->IsPickable())
@@ -341,7 +395,7 @@ namespace DE {
 		// GPU -> CPU로 화면의 Pixel 캡쳐
 
 		// TODO: Mouse Picking Test
-		for (auto a : m_actorList) {
+		for (auto a : m_actorList[0]) {
 			Actor* actor = a.get();
 			if (actor && memcmp(actor->GetHashColor(), m_pickColor, 4) == 0) {
 				std::wcout << actor->GetName() << std::endl;

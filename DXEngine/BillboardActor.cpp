@@ -17,6 +17,7 @@ namespace DE {
 	{
 		Super::Initialize();
 
+		m_billboardBounds->SetVisibility(false);
 	}
 
 	void BillboardActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
@@ -25,13 +26,9 @@ namespace DE {
 		m_billboardConsts.Upload(context);
 	}
 
-	void BillboardActor::Render(RenderBase& renderer, bool reflect) {
+	void BillboardActor::Render(RenderBase& renderer) {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-		if (reflect)
-			renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectBillboardSolidPSO);
-		else
-			renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
 		if (m_pixelShader)
 			context->PSSetShader(m_pixelShader.Get(), 0, 0);
 		context->VSSetConstantBuffers(3, 1, m_billboardConsts.GetAddressOf());
@@ -43,9 +40,6 @@ namespace DE {
 
 		m_billboardModel->RenderPoints(context);
 		context->GSSetShader(nullptr, 0, 0);
-
-		//renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
-		//RenderComponent(context, ComponentType::BoundingVolume);
 	}
 
 	void BillboardActor::SetBillboard(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader)

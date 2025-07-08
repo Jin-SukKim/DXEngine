@@ -21,7 +21,7 @@ namespace DE {
 
         void Initialize() override;
         void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-        void Render(RenderBase& renderer, bool reflect = false) override;
+        void Render(RenderBase& renderer) override;
 
         // Billboard를 여러개 만드는 경우도 있고 PixelShader만 다른걸 사용하는 경우가 많음
         void SetBillboard(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader = nullptr);

@@ -30,8 +30,8 @@ namespace DE {
 			m_sample = AddComponent<ModelComponent>(device, L"Model");
 			m_sample->SetModel(device, context, meshes, true);
 
-			//m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
-			//m_boundVolume->SetBoundingVolume(device, meshes);
+			m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
+			m_boundVolume->SetBoundingVolume(device, meshes);
 
 			//MaterialConstants consts = m_sample->GetMaterialCpu();
 			//consts.albedoFactor = Vector3(0.3f);
@@ -44,6 +44,7 @@ namespace DE {
 		Super::Initialize();
 
 		m_sample->SetDrawNormal(false);
+		m_boundVolume->SetVisibility(false);
 	}
 
 	void SampleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
@@ -57,23 +58,8 @@ namespace DE {
 		}
 	}
 
-	void SampleActor::Render(RenderBase& renderer, bool reflect) {
-		Super::Render(renderer, reflect);
-
-		if (IsDrawNormal()) {
-			// Normal Vector ±×¸®±â
-			renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
-			RenderNormal(renderer.GetContext());
-		}
+	void SampleActor::Render(RenderBase& renderer) {
+		Super::Render(renderer);
 	}
 
-	void SampleActor::RenderNormal(ComPtr<ID3D11DeviceContext>& context)
-	{
-		m_sample->RenderNormal(context);
-	}
-
-	bool SampleActor::IsDrawNormal()
-	{
-		return m_sample->IsDrawNormal();
-	}
 }

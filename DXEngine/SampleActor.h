@@ -14,10 +14,7 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(RenderBase& renderer, bool reflect = false) override;
-		void RenderNormal(ComPtr<ID3D11DeviceContext>& context);
-		
-		bool IsDrawNormal();
+		void Render(RenderBase& renderer) override;
 	private:
 		ModelComponent* m_sample;
 		BoundComponent* m_boundVolume;

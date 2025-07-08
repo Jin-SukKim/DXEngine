@@ -179,8 +179,12 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"BloomDownPS.hlsl", bloomDownPS);
 		D3D11Utils::CreatePS(device, L"BloomUpPS.hlsl", bloomUpPS);
 		D3D11Utils::CreatePS(device, L"CombinePS.hlsl", combinePS);
+		// ToneMapping
 		D3D11Utils::CreatePS(device, L"ToneMappingPS.hlsl", toneMappingPS);
+		// Copy
 		D3D11Utils::CreatePS(device, L"CopyFilterPS.hlsl", copyPS);
+		// Fog
+		D3D11Utils::CreatePS(device, L"FogEffectPS.hlsl", fogPS);
 
 		// Billboard
 		std::vector<D3D11_INPUT_ELEMENT_DESC> billboardIEs = {
@@ -331,6 +335,12 @@ namespace DE {
 		mirror.mirrorBlendWirePSO.blendState = mirrorBS;
 		mirror.mirrorBlendWirePSO.depthStencilState = drawMaskedDSS;
 		mirror.mirrorBlendWirePSO.stencilRef = 1;
+
+		// Depth
+		depth.depthOnlyPSO = basic.solidPSO;
+		depth.depthOnlyPSO.inputLayout = skyboxIL; // position¸¸ ÇÊ¿ä
+		depth.depthOnlyPSO.vertexShader = depthOnlyVS;
+		depth.depthOnlyPSO.pixelShader = depthOnlyPS;
 
 		// PostProcessing
 		postProcess.bloomPSO = basic.solidPSO;

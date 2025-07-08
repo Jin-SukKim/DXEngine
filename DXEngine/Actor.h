@@ -13,7 +13,9 @@ namespace DE {
 
 		virtual void Initialize() override;
 		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		virtual void Render(RenderBase& renderer, bool reflect = false) override;
+		virtual void Render(RenderBase& renderer) override;
+		void RenderBoundingVolume(RenderBase& renderer);
+		void RenderNormal(RenderBase& renderer);
 
 		template<typename T_COMPONENT>
 		T_COMPONENT* AddComponent(ComPtr<ID3D11Device>& device, const std::wstring& name);

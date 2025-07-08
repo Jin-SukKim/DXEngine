@@ -312,7 +312,7 @@ namespace DE {
 		//}
 		//ThrowIfFailed(device->CreateTexture2D(&desc, initData.data(), texture.GetAddressOf()));
 
-		// 일반적인 Texture2D는 srv desc를 설정 안해도 되나 Texture2D를 Array처럼 상6ㅛㅇ하기 위해선 설정
+		// 일반적인 Texture2D는 srv desc를 설정 안해도 되나 Texture2D를 Array처럼 사용하기 위해선 설정
 		//D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		//ZeroMemory(&srvDesc, sizeof(srvDesc));
 		//srvDesc.Format = desc.Format;

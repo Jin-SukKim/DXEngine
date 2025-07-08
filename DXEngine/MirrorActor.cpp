@@ -5,6 +5,7 @@
 #include "GeometryGenerator.h"
 #include "TransformComponent.h"
 #include "SkyboxActor.h"
+#include "BoundComponent.h"
 
 namespace DE {
 	MirrorActor::MirrorActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
@@ -12,6 +13,9 @@ namespace DE {
 		MeshData mesh = GeometryGenerator::MakeSquare(1.f);
 		m_mirror = AddComponent<ModelComponent>(device, L"Mirror");
 		m_mirror->SetModel(device, context, mesh);
+
+		m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
+		m_boundVolume->SetBoundingVolume(device, { mesh });
 
 		MaterialConstants consts = m_mirror->GetMaterialCpu();
 		consts.albedoFactor = Vector3(0.3f);
@@ -30,6 +34,8 @@ namespace DE {
 	void MirrorActor::Initialize()
 	{
 		Super::Initialize();
+
+		m_boundVolume->SetVisibility(false);
 	}
 
 	void MirrorActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
@@ -43,7 +49,7 @@ namespace DE {
 		}
 	}
 
-	void MirrorActor::Render(RenderBase& renderer, std::vector<std::shared_ptr<Actor>>& actorList, std::shared_ptr<SkyboxActor>& cubeMap)
+	void MirrorActor::Render(RenderBase& renderer, std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap)
 	{
 		ComPtr<ID3D11DeviceContext> context = renderer.GetContext();
 		
@@ -66,12 +72,18 @@ namespace DE {
 		// 반사된 세상을 그리므로 winding이 바뀜
 		cubeMap->SetCommonSRVs(context);
 		// 반사된 세상을 물체들을 렌더링
-		for (auto& model : actorList)
+		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSolidPSO);
+		for (auto& model : actorList[0])
 			if (model.get() != this)
-				model->Render(renderer, true);
+				model->Render(renderer);
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectBillboardSolidPSO);
+		for (auto& billboard : actorList[1])
+			billboard->Render(renderer);
 			
 		// 반사된 세상의 환경맵 렌더링
-		cubeMap->Render(renderer, true);
+		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSkyboxSolidPSO);
+		cubeMap->Render(renderer);
 
 		// 거울 자체의 재질을 Blend로 렌더링
 		const float t = 1.f - m_mirrorAlpha;
@@ -83,6 +95,11 @@ namespace DE {
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
 		RenderComponent(context, ComponentType::BoundingVolume);
+	}
+
+	void MirrorActor::Render(RenderBase& renderer)
+	{
+		Super::Render(renderer);
 	}
 
 	void MirrorActor::SetGlobals(ComPtr<ID3D11DeviceContext>& context)

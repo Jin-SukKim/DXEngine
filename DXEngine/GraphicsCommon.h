@@ -43,6 +43,7 @@ namespace DE {
 		struct {
 			GraphicsPSO bloomPSO;
 			GraphicsPSO copyPSO;
+			GraphicsPSO fogPSO; // Depth Map을 활용
 		} postProcess;
 
 		struct {
@@ -63,7 +64,9 @@ namespace DE {
 			GraphicsPSO mirrorBlendWirePSO;
 		} mirror;
 
-
+		struct {
+			GraphicsPSO depthOnlyPSO;
+		} depth;
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
@@ -115,6 +118,7 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> combinePS;
 		ComPtr<ID3D11PixelShader> toneMappingPS;
 		ComPtr<ID3D11PixelShader> copyPS;
+		ComPtr<ID3D11PixelShader> fogPS;
 
 		// Billboard
 		ComPtr<ID3D11VertexShader> billboardVS;

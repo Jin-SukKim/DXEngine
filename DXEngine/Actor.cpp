@@ -2,6 +2,7 @@
 #include "Actor.h"
 #include "TransformComponent.h"
 #include "RenderBase.h"
+#include "ModelComponent.h"
 
 namespace DE {
 	UINT Actor::nextID = 0;
@@ -32,24 +33,32 @@ namespace DE {
 		}
 	}
 
-	void Actor::Render(RenderBase& renderer, bool reflect)
+	void Actor::Render(RenderBase& renderer)
 	{
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-		if (reflect)
-			renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSolidPSO);
-		else
-			renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 		RenderComponent(context, ComponentType::Model);
 		
-		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
-		RenderComponent(context, ComponentType::BoundingVolume);
 
 		//for (std::unique_ptr<Component>& component : m_components) {
 		//	Component* comp = component.get();
 		//	if (comp)
 		//		comp->Render(context);
 		//}
+	}
+
+	void Actor::RenderBoundingVolume(RenderBase& renderer)
+	{
+		RenderComponent(renderer.GetContext(), ComponentType::BoundingVolume);
+	}
+
+	void Actor::RenderNormal(RenderBase& renderer)
+	{
+		ModelComponent* comp = dynamic_cast<ModelComponent*>(m_components[size_t(ComponentType::Model)].get());
+		if (comp && comp->IsDrawNormal()) {
+			// Normal Vector ±×¸®±â
+			comp->RenderNormal(renderer.GetContext());
+		}
 	}
 
 	void Actor::initTransform(ComPtr<ID3D11Device>& device)

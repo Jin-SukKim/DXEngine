@@ -30,6 +30,11 @@ namespace DE {
 		virtual void UpdateLight(const float& deltaTime);
 		virtual void SetGlobals(ComPtr<ID3D11DeviceContext>& context);
 		virtual void UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
+		// Rendering
+		virtual void RenderOpaqueObjects(RenderBase& renderer); // 불투명한 물체 렌더링
+		virtual void RenderMirror(RenderBase& renderer); // 거울 렌더링
+		// Depth값만 추출하기 위한 Depth Only Pass
+		virtual void RenderDepthOnly(RenderBase& renderer);
 	private:
 		void enableCamFpv();
 		void pickingRay(float click);
@@ -57,8 +62,9 @@ namespace DE {
 		std::shared_ptr<MirrorActor> m_mirror;
 
 		std::shared_ptr<CopyFilter> m_copyPostProcess;
-
-		std::vector<std::shared_ptr<Actor>> m_actorList;
+		
+		// 0 row는 일반 actor, 1 row는 billboard
+		std::vector<std::shared_ptr<Actor>> m_actorList[2];
 		Actor* m_pickedActor = nullptr;
 
 		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };

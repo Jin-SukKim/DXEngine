@@ -13,7 +13,7 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(RenderBase& renderer, bool reflect = false) override;
+		void Render(RenderBase& renderer) override;
 
 		void SetCubeMaps(ComPtr<ID3D11Device>& device, std::wstring basePath, std::wstring envFilename, std::wstring specularFilename, std::wstring irradianceFilename, std::wstring brdfFilename);
 		

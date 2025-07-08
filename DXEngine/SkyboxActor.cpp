@@ -34,13 +34,9 @@ namespace DE {
 		Super::Update(context, deltaTime);
 	}
 
-	void SkyboxActor::Render(RenderBase& renderer, bool reflect)
+	void SkyboxActor::Render(RenderBase& renderer)
 	{
-		if (reflect)
-			renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSkyboxSolidPSO);
-		else
-			renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		RenderComponent(renderer.GetContext(), ComponentType::Model);
+		Super::Render(renderer);
 	}
 
 	void SkyboxActor::SetCubeMaps(ComPtr<ID3D11Device>& device, std::wstring basePath, std::wstring envFilename, std::wstring specularFilename, std::wstring irradianceFilename, std::wstring brdfFilename)
