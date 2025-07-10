@@ -230,6 +230,7 @@
       <Filter>public\Actor</Filter>
     </ClInclude>
     <ClInclude Include="DepthFilter.h" />
+    <ClInclude Include="FogEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -326,6 +327,9 @@
       <Filter>private\PostProcess</Filter>
     </ClCompile>
     <ClCompile Include="DepthFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FogEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

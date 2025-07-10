@@ -14,7 +14,7 @@
 #include "BoundComponent.h"
 #include "TreeBillboard.h"
 #include "MirrorActor.h"
-#include "DepthFilter.h"
+#include "FogEffect.h"
 
 namespace DE {
 	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
@@ -43,7 +43,7 @@ namespace DE {
 		m_copyPostProcess = std::make_shared<CopyFilter>();
 		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
-		m_depthPP = std::make_shared<DepthFilter>();
+		m_depthPP = std::make_shared<FogEffect>();
 		renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
@@ -115,6 +115,11 @@ namespace DE {
 		}
 
 		m_mirror->Initialize();
+		tr = m_mirror->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetPos({ 0.f, -0.5f, 0.f });
+			tr->SetRotation(0.f, 90.f, 0.f);
+		}
 
 	}
 

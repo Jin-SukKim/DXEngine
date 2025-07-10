@@ -43,7 +43,6 @@ namespace DE {
 		struct {
 			GraphicsPSO basicPSO;
 			GraphicsPSO copyPSO;
-			GraphicsPSO fogPSO; // Depth MapÀ» È°¿ë
 		} postProcess;
 
 		struct {

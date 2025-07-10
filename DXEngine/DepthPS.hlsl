@@ -2,7 +2,7 @@
 #include "Common.hlsli"
 
 Texture2D curFrame : register(t0);
-Texture2D depthOnly : register(t1);
+Texture2D depthOnly : register(t1); // NDC ÁÂÇ¥°è¿¡¼­ÀÇ ±íÀÌ°ª
 
 cbuffer DepthConsts : register(b5) {
     float depthScale;
@@ -26,7 +26,7 @@ float4 TexcoordToView(float2 texcoord) {
 
     // Projection -> ViewSpace
     float4 posView = mul(posProj, invProj);
-    posView.xyz /= posView.w;
+    posView.xyz /= posView.w; // Homogenization
     
     return posView;
 }

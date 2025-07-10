@@ -13,7 +13,7 @@ namespace DE {
 	class TreeBillboard;
 	class Actor;
 	class MirrorActor;
-	class DepthFilter;
+	class FogEffect;
 
 	class Scene
 	{
@@ -63,7 +63,7 @@ namespace DE {
 		std::shared_ptr<MirrorActor> m_mirror;
 
 		std::shared_ptr<CopyFilter> m_copyPostProcess;
-		std::shared_ptr<DepthFilter> m_depthPP;
+		std::shared_ptr<FogEffect> m_depthPP;
 		
 		// 0 row는 일반 actor, 1 row는 billboard
 		std::vector<std::shared_ptr<Actor>> m_actorList[2];
