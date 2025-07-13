@@ -26,6 +26,8 @@ namespace DE {
 		int GetHashID();
 		const uint8_t* GetHashColor() const { return m_hashColor; }
 
+		bool IsVisible() { return m_isVisible; }
+		bool IsCastShadow() { return m_castShadow; }
 	protected:
 		void RenderComponent(ComPtr<ID3D11DeviceContext>& context, const ComponentType& type);
 	private:
@@ -38,6 +40,9 @@ namespace DE {
 		// TransformComponent Ãß°¡
 		void initTransform(ComPtr<ID3D11Device>& device);
 		void setHashIdToColor(const int& hashID);
+
+		bool m_isVisible = true;
+		bool m_castShadow = true;
 	};
 
 	template<typename T_COMPONENT>

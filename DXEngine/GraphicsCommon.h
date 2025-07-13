@@ -136,6 +136,8 @@ namespace DE {
 		// Sampler
 		ComPtr<ID3D11SamplerState> linearWrapSS;
 		ComPtr<ID3D11SamplerState> linearClampSS;
+		ComPtr<ID3D11SamplerState> shadowPointSS;
+		ComPtr<ID3D11SamplerState> shadowCompareSS;
 
 		// Blend States (원래 렌더링이 된 색 위에 새로운 색을 섞어서 렌더링할 때 사용하는 방법)
 		 // 2가지 색을 Alpha(비율)로 섞어주는 Alpha Blending

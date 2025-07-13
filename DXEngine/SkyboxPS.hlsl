@@ -7,5 +7,7 @@ struct SkyboxPSInput {
 
 float4 main(SkyboxPSInput input) : SV_TARGET {
     
-    return envIBLTex.Sample(linearWrapSampler, input.posModel.xyz);
+    float3 color = envIBLTex.Sample(linearWrapSampler, input.posModel.xyz).rgb * strengthIBL;
+    return float4(color, 1.0);
+
 }

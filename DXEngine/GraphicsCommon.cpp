@@ -226,9 +226,32 @@ namespace DE {
 		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 		device->CreateSamplerState(&sampDesc, linearClampSS.GetAddressOf());
+		
+		// shadowPointSS
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER; // 가장자리를 넘어가면 그냥 큰 z값 반환
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		// 가장자리에 어떤 ㄱ밧을 가져올지를 미리 지정
+		// (Shaow Map은 카메라가 만드는 범위가 정해져 있기 때문)
+		sampDesc.BorderColor[0] = 1.0f; // 큰 Z값
+		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		device->CreateSamplerState(&sampDesc, shadowPointSS.GetAddressOf());
+
+		// shadowCompareSS, 쉐이더 안에서는 SamplerComparisonState
+		// Filter = "_COMPARISON_" 주의
+		// https://www.gamedev.net/forums/topic/670575-uploading-samplercomparisonstate-in-hlsl/
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampDesc.BorderColor[0] = 100.0f; // 큰 Z값
+		sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		device->CreateSamplerState(&sampDesc, shadowCompareSS.GetAddressOf());
 
 		sampleStates.emplace_back(linearWrapSS.Get()); // register(s0)
 		sampleStates.emplace_back(linearClampSS.Get()); // register(s1)
+		sampleStates.emplace_back(shadowPointSS.Get()); // register(s2)
+		sampleStates.emplace_back(shadowCompareSS.Get()); // register(s3)
 	}
 	
 	void GraphicsCommon::initBlendStates(ComPtr<ID3D11Device>& device)

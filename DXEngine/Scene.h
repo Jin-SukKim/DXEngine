@@ -14,6 +14,7 @@ namespace DE {
 	class Actor;
 	class MirrorActor;
 	class FogEffect;
+	class SquareActor;
 
 	class Scene
 	{
@@ -28,14 +29,16 @@ namespace DE {
 
 		uint8_t* GetPickColor() { return m_pickColor; }
 	protected:
-		virtual void UpdateLight(const float& deltaTime);
-		virtual void SetGlobals(ComPtr<ID3D11DeviceContext>& context);
+		virtual void UpdateLight(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime);
+		virtual void SetGlobals(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Buffer>& globalConstsGPU);
 		virtual void UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
 		// Rendering
 		virtual void RenderOpaqueObjects(RenderBase& renderer); // 불투명한 물체 렌더링
 		virtual void RenderMirror(RenderBase& renderer); // 거울 렌더링
 		// Depth값만 추출하기 위한 Depth Only Pass
 		virtual void RenderDepthOnly(RenderBase& renderer);
+		// 그림자를 위한 그림자 맵
+		virtual void RenderShadowMap(RenderBase& renderer);
 	private:
 		void enableCamFpv();
 		void pickingRay(float click);
@@ -47,6 +50,9 @@ namespace DE {
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 
+		// Shadow맵을 렌더링할때 사용할 GlobalConsts
+		ConstantBuffer<GlobalConstants> m_shadowGlobalConsts[MAX_LIGHTS];
+
 		std::shared_ptr<CameraActor> m_mainCamera;
 		InputButton f = InputButton::F;
 		InputAction m_fpv;
@@ -57,6 +63,7 @@ namespace DE {
 
 	private:
 		std::shared_ptr<SampleActor> triangle;
+		std::shared_ptr<SquareActor> ground;
 		std::shared_ptr<SkyboxActor> m_skybox;
 		std::shared_ptr<TreeBillboard> m_billboard;
 		// 거울 반사

@@ -11,12 +11,17 @@
 // Sampler들은 모든 Shader에서 공통으로 사용
 SamplerState linearWrapSampler : register(s0);
 SamplerState linearClampSampler : register(s1);
+SamplerState shadowPointSampler : register(s2);
+SamplerComparisonState shadowCompare : register(s3);
 
 // 공용 Texture들 t10부터 시작 (IBL용 Texture 등)
 TextureCube envIBLTex : register(t10);
 TextureCube specularIBLTex : register(t11);
 TextureCube irradianceIBLTex : register(t12);
 Texture2D brdfTex : register(t13);
+
+// TODO: Texture2D로 사용중인데 Texture2DArray를 사용하는 것을 생각해보기
+Texture2D shadowMaps[MAX_LIGHTS] : register(t15);
 
 struct Light {
     float3 radiance; // 빛의 세기 (Strength)
@@ -30,6 +35,9 @@ struct Light {
     uint type;
     float radius; // 반지름 (Volume Light 용)
     float2 dummy;
+    
+    Matrix viewProj;
+    Matrix invProj;
 };
 
 cbuffer GlobalConsts : register(b0) {
@@ -37,9 +45,10 @@ cbuffer GlobalConsts : register(b0) {
     matrix proj;
     matrix viewProj;
     matrix invProj;
+    matrix invViewProj;
     
     float3 eyeWorld;
-    float dummy;
+    float strengthIBL;
     
     Light lights[MAX_LIGHTS];
 };

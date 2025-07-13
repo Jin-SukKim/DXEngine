@@ -24,10 +24,9 @@ namespace DE {
 		// HDR Pipeline에 필요한 Buffer들 생성
 		void CreateBuffers();
 		// 렌더링하고 싶은 화면 크기에 맞는 Viewport 설정
-		void SetViewport(const WindowInfo& window);
-		void SetViewport(const float& width, const float& height);
+		void SetViewport();
 		// DepthStencilView Buffer 생성
-		void CreateDepthStencilBuffer(const WindowInfo& window);
+		void CreateDepthStencilBuffer();
 		void SetDepthOnlyRender();
 
 		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
@@ -46,11 +45,19 @@ namespace DE {
 		// Depth Buffer만 1.0으로 초기화
 		void ClearDepthBuffer();
 		Texture2D& GetDepthOnlyBuffer() { return m_depthOnlyBuffer; };
+		// Shadow Map용 viewport 설정
+		void SetShadowViewport();
+		// ShadowMap Rendering 준비
+		void SetShadowMapRender(int idx);
+		// 그림자맵들도 공요 Texture들 이후에 추가하고 있는 중으로 PS의 t15부터 추가
+		void SetShadowSRVs();
 
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
 	protected:
 		UINT m_numQualityLevels = 0;
+		int m_screenWidth = 1280;
+		int m_screenHeight = 720;
 		ComPtr<ID3D11Device> m_device;
 		ComPtr<ID3D11DeviceContext> m_context;
 		ComPtr<IDXGISwapChain> m_swapChain;
@@ -92,5 +99,14 @@ namespace DE {
 		// TODO: 임시로 여기서 Tone Mapping 사용, Scene이나 AppBase에서 하는게 좋아보임
 		std::shared_ptr<ToneMappingFilter> m_toneMapping;
 		Texture2D m_toneMapTexture;
+
+		// Shadow
+		// Shadow Map은 해상도가 다른데 화면 해상도와 같을 필요가 없음
+		// 보통 Texture가 정사각형이기 때문에 ratio가 1:1인 해상도로 설정
+		int m_shadowWidth = 1280;
+		int m_shadowHeight = 1280; 
+		// 설정한 그림자 맵 해상도에 맞춰서 그림자맵용 viewport 설정
+		Texture2D m_shadowBuffers[MAX_LIGHTS]; // light 개수만큼 shadow 맵 생성
+		ComPtr<ID3D11DepthStencilView> m_shadowDSVs[MAX_LIGHTS];
 	};
 }

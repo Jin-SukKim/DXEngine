@@ -102,9 +102,93 @@ float SchlickGGX(float NdotI, float NdotO, float roughness) {
     return SchlickG1(NdotI, k) * SchlickG1(NdotO, k);
 }
 
+// Light Type별로 빛의 세기 (조명 자체의 강도만 계산)
+float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld) {
+    // Directional Light
+    float3 lightVec = light.type & LIGHT_DIRECTIONAL ?
+                        // Directional Light라면 빛의 방향을 그대로 사용 (ex: 태양)
+                        -light.direction :
+                        light.position - posWorld;
+    
+    float lightDist = length(lightVec); // Dirctional Light은 1.0이 되어야함
+    lightVec /= lightDist; // Normalize
+    
+    // Spot Light
+    float spotFactor = light.type & LIGHT_SPOT ?
+                        // 빛이 향하는 방향으로 빛을 모아주는 강도
+                        pow(max(-dot(lightVec, light.direction), 0.0), light.spotPower) :
+                        1.0; // Directional Light이나 Point Light인 경우
+
+    // Distance attenuation (거리에 따른 빛의 강도 가중치)
+    float att = saturate((light.fallOffEnd - lightDist) / (light.fallOffEnd - light.fallOffStart));
+
+    // Shadow Map
+    float shadowFactor = 1.0;
+    
+    // 빛의 강도
+    float3 radiance = light.radiance * spotFactor * att * shadowFactor;
+    
+    return radiance;
+}
+
+// Shadow Map까지 고려한 조명의 밝기
+float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld, Texture2D shadowMap) {
+    // Directional Light
+    float3 lightVec = light.type & LIGHT_DIRECTIONAL ?
+                        // Directional Light라면 빛의 방향을 그대로 사용 (ex: 태양)
+                        -light.direction :
+                        light.position - posWorld;
+    
+    float lightDist = length(lightVec); // Dirctional Light은 1.0이 되어야함
+    lightVec /= lightDist; // Normalize
+    
+    // Spot Light
+    float spotFactor = light.type & LIGHT_SPOT ?
+                        // 빛이 향하는 방향으로 빛을 모아주는 강도
+                        pow(max(-dot(lightVec, light.direction), 0.0), light.spotPower) :
+                        1.0; // Directional Light이나 Point Light인 경우
+
+    // Distance attenuation (거리에 따른 빛의 강도 가중치)
+    float att = saturate((light.fallOffEnd - lightDist) / (light.fallOffEnd - light.fallOffStart));
+
+    // Shadow Map
+    float shadowFactor = 1.0; // 그림자가 없다면 ShadowFactor가 1.0
+    
+    if (light.type & LIGHT_SHADOW) {
+        const float nearZ = 0.01; // 카메라 설정과 동일 (TODO: Camara Constant Buffer를 만들어서 넘겨주기)
+        
+        // Project posWorld to light screen
+        // 조명을 시점처럼 생각해서 Projection
+        float4 lightScreen = mul(float4(posWorld, 1.0), light.viewProj);
+        // NDC 좌표계
+        lightScreen.xyz /= lightScreen.w; // Homogenization
+        
+        // 광원에서 볼 때의 Texture 좌표 계산 (Shadow Map은 Texture이기 때문에 변환)
+        // [-1.0, 1.0] x [-1.0, 1.0] -> [0.0, 1.0] x [0.0, 1.0]
+        // 주의: Texture 좌표와 NDC는 y가 반대 (중요)
+        float2 lightTexcoord = float2(lightScreen.x, -lightScreen.y);
+        lightTexcoord = (lightTexcoord + 1.0) * 0.5;
+
+        // Shadow Map에서 값 가져오기 (광원으로부터 가장 가까이 있는 물체의 거리)
+        float depth = shadowMap.Sample(shadowPointSampler, lightTexcoord).r; // Depth Only Buffer는 R32를 사용중
+        
+        // 가려져 있다면 그림자로 표시
+        // (작은 bias = 0.001 정도가 필요, 수치오류를 방지하기 위함이고 bias가 없으면 그림자에 noise가 발생)
+        if (depth + 0.001 < lightScreen.z) // lightScreen의 z는 제일 먼 1.0일텐데 더 가까운게 있다는 의미
+            shadowFactor = 0.0; // 0.0은 그림자가 있다는 의미로 빛의 강도를 0으로 만들어버림
+    }
+    
+    // 빛의 강도
+    float3 radiance = light.radiance * spotFactor * att * shadowFactor;
+    
+    return radiance;
+}
+
 // 직접광 (point light, spot light 등으로 직접 빛을 비추는 광원)
-float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 normalWorld, float3 albedo, float metallic, float roughness) {
+float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 normalWorld, float3 albedo, float metallic, float roughness, Texture2D shadowMap) {
     float3 lightVec = light.position - posWorld;
+    float lightDist = length(lightVec);
+    lightVec /= lightDist;
     float3 halfway = normalize(pixelToEye + lightVec);
         
     float NdotI = max(0.0, dot(normalWorld, lightVec));
@@ -126,11 +210,9 @@ float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 no
     // 0으로 나누기 방지
     float3 specularBRDF = (F * D * G) / max(1e-5, 4.0 * NdotI * NdotO);
     
+    // 빛의 강도
     float3 radiance = float3(0.0, 0.0, 0.0);
-    if (light.type == LIGHT_POINT) {
-            // Point Light는 빛의 중심으로부터의 거리에 따라 빛의 강도가 점점 약해짐
-        radiance = light.radiance * saturate((light.fallOffEnd - length(lightVec)) / (light.fallOffEnd - light.fallOffStart));
-    }
+    radiance = LightRadiance(light, posWorld, normalWorld, shadowMap);
     
     // 마지막으로 빛의 강도와 조명을 향하는 방향과 시점 방향의 각도를 곱해 표면과 수평하면 빛이 안들어오도록 계산
     return (diffuseBRDF + specularBRDF) * radiance * NdotI;
@@ -165,7 +247,7 @@ PSOutput main(PSInput input)
                                      : emissionFactor;
 
     // 간접광 (환경맵으로부터 받는 빛)
-    float3 ambientLighting = AmbientLightingByIBL(albedo.rgb, normalWorld, pixelToEye, ao, metallic, roughness);
+    float3 ambientLighting = AmbientLightingByIBL(albedo.rgb, normalWorld, pixelToEye, ao, metallic, roughness) * strengthIBL;
     
     // 직접광 (Direct Light) - Directional, Point, Spot Light, Sphere Light 등
     float3 directLighting = float3(0.0, 0.0, 0.0);
@@ -174,7 +256,10 @@ PSOutput main(PSInput input)
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
         if (lights[i].type)
-            directLighting += DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness);
+            // DirectX 11에선 배열의 Indexing을 마음대로 할 수 없음
+            // 그래서 Loop에 임시로 unroll을 사용함 (내부적으로 For loop를 풀어서 3번 반복하는 것으로 만들어줌)
+            // TODO: Texture2D가 아닌 Texture2DArray로 만들어서 구현하는 방법이 제일 깔끔
+            directLighting += DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness, shadowMaps[i]);
     }
     
     PSOutput output;

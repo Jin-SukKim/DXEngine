@@ -32,11 +32,14 @@ namespace DE {
 		};
 		D3D_FEATURE_LEVEL featureLevel;
 
+		m_screenWidth = window.width;
+		m_screenHeight = window.height;
+
 		// Swap-Chain 설정
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd)); // 메모리 초기화
-		sd.BufferDesc.Width = window.width;
-		sd.BufferDesc.Height = window.height;
+		sd.BufferDesc.Width = m_screenWidth;
+		sd.BufferDesc.Height = m_screenHeight;
 		sd.BufferDesc.Format = m_backBufferFormat;
 		sd.BufferCount = 2; // double-buffering
 		sd.BufferDesc.RefreshRate.Numerator = 60;
@@ -71,9 +74,9 @@ namespace DE {
 		// Back Buffer의 RTV 생성
 		CreateBuffers();
 		// Viewport 설정
-		SetViewport(window);
+		SetViewport();
 		// DepthStencilView 생성
-		CreateDepthStencilBuffer(window);
+		CreateDepthStencilBuffer();
 
 		graphicsCommon.InitCommonStates(m_device);
 
@@ -183,38 +186,25 @@ namespace DE {
 		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
 	}
 
-	void RenderBase::SetViewport(const WindowInfo& window)
+	void RenderBase::SetViewport()
 	{
 		// Viewport 설정
 		ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
 		m_screenViewport.TopLeftX = 0;
 		m_screenViewport.TopLeftY = 0;
-		m_screenViewport.Width = float(window.width);
-		m_screenViewport.Height = float(window.height);
-		m_screenViewport.MinDepth = 0.f;
-		m_screenViewport.MaxDepth = 1.f;
-
-		m_context->RSSetViewports(1, &m_screenViewport);
-	}
-	void RenderBase::SetViewport(const float& width, const float& height)
-	{		
-		// Viewport 설정
-		ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
-		m_screenViewport.TopLeftX = 0;
-		m_screenViewport.TopLeftY = 0;
-		m_screenViewport.Width = width;
-		m_screenViewport.Height = height;
+		m_screenViewport.Width = float(m_screenWidth);
+		m_screenViewport.Height = float(m_screenHeight);
 		m_screenViewport.MinDepth = 0.f;
 		m_screenViewport.MaxDepth = 1.f;
 
 		m_context->RSSetViewports(1, &m_screenViewport);
 	}
 
-	void RenderBase::CreateDepthStencilBuffer(const WindowInfo& window)
+	void RenderBase::CreateDepthStencilBuffer()
 	{
 		D3D11_TEXTURE2D_DESC dsDesc;
-		dsDesc.Width = window.width;
-		dsDesc.Height = window.height;
+		dsDesc.Width = m_screenWidth;
+		dsDesc.Height = m_screenHeight;
 		dsDesc.MipLevels = 1; // Depth Stencil Buffer는 Mipmap 불필요
 		dsDesc.ArraySize = 1;
 		dsDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -248,7 +238,19 @@ namespace DE {
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_depthOnlyBuffer.GetTexture(), &srvDesc, m_depthOnlyBuffer.GetAddressOfSRV()));
+		
+		// Shadow Map용 Texture 생성
+		dsDesc.Width = m_shadowWidth;
+		dsDesc.Height = m_shadowHeight;
+		for (int i = 0; i < MAX_LIGHTS; ++i) {
+			ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_shadowBuffers[i].GetAddressOfTexture()));
+			// Shadow Map용 DSV 생성 (dsvDesc는 위에서 DepthOnlyDSV만들떄 사용한 걸 그대로 사용)
+			ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowBuffers[i].GetTexture(), &dsvDesc, m_shadowDSVs[i].GetAddressOf()));
+			// Shadow Map용 SRV 생성 (위에서 만든 srvDesc 그대로 사용)
+			ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowBuffers[i].GetTexture(), &srvDesc, m_shadowBuffers[i].GetAddressOfSRV()));
+		}
 	}
+
 
 	void RenderBase::SetDepthOnlyRender()
 	{
@@ -259,21 +261,24 @@ namespace DE {
 
 	void RenderBase::ResizeSwapChain(const WindowInfo& window)
 	{
+		m_screenWidth = window.width;
+		m_screenHeight = window.height;
+
 		m_backBufferRTV.Reset();
 		// Swap Chain의 해상도를 변경하고 버퍼 개수를 유지/변경, Pixel Format 유지/변경, Flag 설정들을 해줄 수 있음
 		m_swapChain->ResizeBuffers(
 			0, // 현재 개수 유지
 			// 해상도 변경
-			UINT(window.width),
-			UINT(window.height),
+			UINT(m_screenWidth),
+			UINT(m_screenHeight),
 			DXGI_FORMAT_UNKNOWN, // 현재 포맷 유지
 			0);
 		// 해상도가 바뀌며 SwapChain을 다시 만들었기 때문에 다시 RTV와 DepthStencilBuffer 생성
 		// 렌더링될 화면의 해상도가 바뀌면  Pixel의 개수 자체가 바뀌는 것이기 때문
 		CreateBuffers();
-		CreateDepthStencilBuffer(window);
+		CreateDepthStencilBuffer();
 		// 해상도에 맞는 Viewport 설정
-		SetViewport(window);
+		SetViewport();
 	}
 
 	void RenderBase::SetPipelineState(const GraphicsPSO& pso)
@@ -331,6 +336,39 @@ namespace DE {
 	void RenderBase::ClearDepthBuffer()
 	{
 		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+
+	void RenderBase::SetShadowViewport()
+	{
+		// Shadow Mapping에 맞는 Viewport를 설정
+		D3D11_VIEWPORT shadowViewport;
+		ZeroMemory(&shadowViewport, sizeof(shadowViewport));
+		shadowViewport.TopLeftX = 0;
+		shadowViewport.TopLeftY = 0;
+		// Shadow Map으로 사용할 Depth Buffer의 해상도를 따로 설정해줬음
+		shadowViewport.Width = float(m_shadowWidth);
+		shadowViewport.Height = float(m_shadowHeight);
+		shadowViewport.MinDepth = 0.f;
+		shadowViewport.MaxDepth = 1.f;
+
+		m_context->RSSetViewports(1, &shadowViewport);
+	}
+
+	void RenderBase::SetShadowMapRender(int idx)
+	{
+		// RTS 생략 가능
+		m_context->OMSetRenderTargets(0, NULL, m_shadowDSVs[idx].Get());
+		m_context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
+			D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+
+	void RenderBase::SetShadowSRVs()
+	{
+		std::vector<ID3D11ShaderResourceView*> shadowSRVs;
+		for (int i = 0; i < MAX_LIGHTS; ++i)
+			shadowSRVs.emplace_back(m_shadowBuffers[i].GetSRV());
+
+		m_context->PSSetShaderResources(15, UINT(shadowSRVs.size()), shadowSRVs.data());
 	}
 
 	void RenderBase::ClearStencilBuffer()
