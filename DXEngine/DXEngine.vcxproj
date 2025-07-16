@@ -488,6 +488,8 @@
     <None Include="Common.hlsli">
       <FileType>Document</FileType>
     </None>
+    <None Include="DiskSamples.hlsli" />
+    <None Include="Shadow.hlsli" />
     <None Include="ToneMapping.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

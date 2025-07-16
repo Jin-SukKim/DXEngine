@@ -110,6 +110,9 @@
     <Filter Include="Shaders\Depth">
       <UniqueIdentifier>{fce57525-fd47-4731-9120-3c33b704cce8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Shadow">
+      <UniqueIdentifier>{f67ab29c-3913-420c-a5eb-3cf52902551d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -429,6 +432,12 @@
     </None>
     <None Include="Common.hlsli">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shadow.hlsli">
+      <Filter>Shaders\Shadow</Filter>
+    </None>
+    <None Include="DiskSamples.hlsli">
+      <Filter>Shaders\Shadow</Filter>
     </None>
   </ItemGroup>
 </Project>

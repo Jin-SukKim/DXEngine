@@ -1,4 +1,5 @@
 #include "Common.hlsli"
+#include "Shadow.hlsli"
 // https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
 
 Texture2D albedoTex : register(t0);
@@ -155,8 +156,6 @@ float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld, Texture2D
     float shadowFactor = 1.0; // 그림자가 없다면 ShadowFactor가 1.0
     
     if (light.type & LIGHT_SHADOW) {
-        const float nearZ = 0.01; // 카메라 설정과 동일 (TODO: Camara Constant Buffer를 만들어서 넘겨주기)
-        
         // Project posWorld to light screen
         // 조명을 시점처럼 생각해서 Projection
         float4 lightScreen = mul(float4(posWorld, 1.0), light.viewProj);
@@ -169,13 +168,48 @@ float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld, Texture2D
         float2 lightTexcoord = float2(lightScreen.x, -lightScreen.y);
         lightTexcoord = (lightTexcoord + 1.0) * 0.5;
 
-        // Shadow Map에서 값 가져오기 (광원으로부터 가장 가까이 있는 물체의 거리)
-        float depth = shadowMap.Sample(shadowPointSampler, lightTexcoord).r; // Depth Only Buffer는 R32를 사용중
+        // 1번 방식 : 가장 간단한 방법
+        //// Shadow Map에서 값 가져오기 (광원으로부터 가장 가까이 있는 물체의 거리)
+        //float depth = shadowMap.Sample(shadowPointSampler, lightTexcoord).r; // Depth Only Buffer는 R32를 사용중
         
-        // 가려져 있다면 그림자로 표시
-        // (작은 bias = 0.001 정도가 필요, 수치오류를 방지하기 위함이고 bias가 없으면 그림자에 noise가 발생)
-        if (depth + 0.001 < lightScreen.z) // lightScreen의 z는 제일 먼 1.0일텐데 더 가까운게 있다는 의미
-            shadowFactor = 0.0; // 0.0은 그림자가 있다는 의미로 빛의 강도를 0으로 만들어버림
+        //// 가려져 있다면 그림자로 표시
+        //// (작은 bias = 0.001 정도가 필요, 수치오류를 방지하기 위함이고 bias가 없으면 그림자에 noise가 발생)
+        //if (depth + 0.001 < lightScreen.z) // lightScreen의 z는 제일 먼 1.0일텐데 더 가까운게 있다는 의미
+        //    shadowFactor = 0.0; // 0.0은 그림자가 있다는 의미로 빛의 강도를 0으로 만들어버림
+        
+        // 2번 방식 : ComparePointSampler를 사용해 주변의 값을 비교하고 결과를 만들어내기 때문에 더 부드러운 그림자 생성 (PCF 4 Sample 방식으로도 볼 수 있음)
+        //shadowFactor = shadowMap.SampleCmpLevelZero(shadowCompare, lightTexcoord.xy, lightScreen.z - 0.001).r; // bias를 depth + bias가 아닌 lightScreen.z - bias하는 방식
+        
+        // 3번 방식 : Sampling을 여러번 해주면 더 부드럽게 그림자 렌더링을 할 수 있음
+        //uint width, height, numMips;
+        //// Texture의 정보를 가져오기 (Image Filter에서는 dx, dy 값을 계산해서 Constant Buffer로 넘겨줬지만 여기선 또 다른 방법인 GetDimensions()를 사용)
+        //shadowMap.GetDimensions(0, width, height, numMips); // 해상도와 Mipmap의 개수 가져오기
+        //// 그림자에 결이 생기는 걸 줄이고 쉽다면 가장 쉬운 방법은 dx값을 줄여주는 것 (ex: dx = 2.0 / (float)width;)
+        //float dx = 5.0 / (float) width; // dx는 radius라고 생각하면 됨
+        //// PCF 방식은 Depth Map을 Sampling했을떄 더 가까이에 있는 비율을 계산
+        //float percentLit = 0.0; // 각 픽셀의 PCF 합
+        //// 더 부드러운 결과를 위해 9번 Sampling
+        //const float2 offsets[9] = {
+        //    float2(-1, -1), float2(0, -1), float2(1, -1),
+        //    float2(-1, 0), float2(0, 0), float2(1, 0),
+        //    float2(-1, +1), float2(0, +1), float2(1, +1)
+        //};
+        
+        //// Sampling한 수 중 몇개가 더 멀고 몇개가 더 가까운지 계산 (Sample 수가 늘어날수록 퀄리티가 올라가지만 연산량 증가)
+        //[unroll]
+        //for (int i = 0; i < 9; ++i) 
+        //    percentLit += shadowMap.SampleCmpLevelZero(shadowCompare, lightTexcoord.xy + offsets[i] * dx, lightScreen.z - 0.001).r;
+
+        //shadowFactor = percentLit / 9.0; // 평균
+        
+        // 4번 방식 PCSS
+        uint width, height, numMips;
+        shadowMap.GetDimensions(0, width, height, numMips);
+        
+        // Texel Size
+        float dx = 5.0 / (float) width;
+        //shadowFactor = PCF_Filter(lightTexcoord.xy, lightScreen.z - 0.001, dx, shadowMap);
+        shadowFactor = PCSS(lightTexcoord, lightScreen.z - 0.01, shadowMap, light.invProj, light.radius);
     }
     
     // 빛의 강도

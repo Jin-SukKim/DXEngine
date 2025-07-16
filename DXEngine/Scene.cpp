@@ -73,15 +73,15 @@ namespace DE {
 			m_globalConstsCPU.lights[0].spotPower = 10.0f;                      // 좀 더 집중된 빛
 			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
 			m_globalConstsCPU.lights[0].fallOffEnd = 100.0f;
-			m_globalConstsCPU.lights[0].radius = 0.f;
+			m_globalConstsCPU.lights[0].radius = 0.02f;
 			m_globalConstsCPU.lights[0].type = LIGHT_POINT | LIGHT_SHADOW; // Point width shadow
 
 			// 1번 Light는 Update()에서 갱신해 계속 이동할 예정
 			m_globalConstsCPU.lights[1].radiance = Vector3(5.0f);
-			m_globalConstsCPU.lights[0].spotPower = 6.0f;                      // 좀 더 집중된 빛
-			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
-			m_globalConstsCPU.lights[0].fallOffEnd = 20.0f;
-			m_globalConstsCPU.lights[0].radius = 0.f;
+			m_globalConstsCPU.lights[1].spotPower = 6.0f;                      // 좀 더 집중된 빛
+			m_globalConstsCPU.lights[1].fallOffStart = 0.0f;
+			m_globalConstsCPU.lights[1].fallOffEnd = 20.0f;
+			m_globalConstsCPU.lights[1].radius = 0.01f;
 			m_globalConstsCPU.lights[1].type =
 				LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
 
@@ -217,8 +217,21 @@ namespace DE {
 				// Light를 시점으로 바다보는 깊이맵을 만들기 위해 사용
 				float lightFOV = 120.f;
 				Matrix lightViewRow = DirectX::XMMatrixLookAtLH(light.position, light.position + light.direction, up);
-				Matrix lightProjRow = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(lightFOV), 1.f, 0.01f, 100.f);
-			
+				
+				Matrix lightProjRow;
+				if (light.type & LIGHT_DIRECTIONAL)
+					// TODO: 확인 필요, Directional Light는 정투영을 사용
+					lightProjRow = DirectX::XMMatrixOrthographicOffCenterLH(-1.f, 1.f, -1.f, 1.f, 0.01f, 100.f);
+				else
+					// Light의 FOV는 빛이 어디까지 비출지를 결정 (빛이 비추는 범위로 그림자 생성에 영향을 줌)
+					lightProjRow = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(lightFOV), 1.0f, 0.1f, 10.0f);
+				// TODO: Point Light의 경우 모든 방향으로 빛을 쏘므로 Omnidirectional Shadowing이란 걸 사용
+				//	정육면체의 각 면 방향으로 6번 렌더링
+				//	1. fov가 90도인 원근 투영을 사용
+				//	2. 빛의 위치는 고정한 채, 6개의 방향을 각각 바라보는 뷰 행렬을 매번 다르게 사용
+				//	3. 렌더링 결과를 cubeMap Texture에 저장
+				//		cubeMap은 IBL과는 약간 다르게 
+
 				m_shadowGlobalConsts[i].GetCpu().eyeWorld = light.position;
 				m_shadowGlobalConsts[i].GetCpu().view = lightViewRow.Transpose();
 				m_shadowGlobalConsts[i].GetCpu().proj = lightProjRow.Transpose();

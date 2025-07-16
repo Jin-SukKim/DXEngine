@@ -61,8 +61,12 @@ namespace DE {
 		// Light type bitmasking
 		// ex) LIGHT_SPOT | LIGHT_SHADOW
 		uint32_t type = LIGHT_OFF;
-		float radius = 0.f; // 반지름 (Volume Light 용)
+		float radius = 0.02f; // 반지름 (Volume Light 용)
+		
+		// TODO: Shader에도 똑같이 추가 (Light 클래스를 하나 만들어서 사용)
 		Vector2 dummy;
+		//float nearPlane;
+		//float frustumWidth;
 
 		Matrix viewProj; // 그림자 렌더링에 필요
 		Matrix invProj; // 그림자 렌더링 디버깅용
