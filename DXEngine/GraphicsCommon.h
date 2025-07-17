@@ -120,6 +120,7 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> copyPS;
 		ComPtr<ID3D11PixelShader> depthPS;
 		ComPtr<ID3D11PixelShader> fogPS;
+		ComPtr<ID3D11PixelShader> haloPS;
 
 		// Billboard
 		ComPtr<ID3D11VertexShader> billboardVS;

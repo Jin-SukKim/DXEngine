@@ -14,7 +14,7 @@ namespace DE {
 		struct FogConsts {
 			float depthScale = 1.0f;
 			float fogColor[3] = { 1.f, 1.f, 1.f };
-			float fogStrength = 4.0f;
+			float fogStrength = 0.0f;
 			float fogMin = 1.f;
 			float fogMax = 5.f;
 			float dummy;
@@ -22,6 +22,9 @@ namespace DE {
 
 	protected:
 		ImageFilter m_fogFilter;
+		ImageFilter m_haloFilter;
 		ConstantBuffer<FogConsts> m_const;
+
+		Texture2D m_haloTexture;
 	};
 }

@@ -187,6 +187,8 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"DepthPS.hlsl", depthPS);
 		// Fog
 		D3D11Utils::CreatePS(device, L"FogEffectPS.hlsl", fogPS);
+		// Halo
+		D3D11Utils::CreatePS(device, L"HaloPS.hlsl", haloPS);
 
 		// Billboard
 		std::vector<D3D11_INPUT_ELEMENT_DESC> billboardIEs = {

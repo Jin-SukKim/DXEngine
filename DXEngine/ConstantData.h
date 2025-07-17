@@ -64,7 +64,9 @@ namespace DE {
 		float radius = 0.02f; // 반지름 (Volume Light 용)
 		
 		// TODO: Shader에도 똑같이 추가 (Light 클래스를 하나 만들어서 사용)
-		Vector2 dummy;
+		//Vector2 dummy;
+		float haloRadius = 0.5f;
+		float haloStrength = 0.5f;
 		//float nearPlane;
 		//float frustumWidth;
 

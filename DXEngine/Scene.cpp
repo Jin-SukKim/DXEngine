@@ -52,7 +52,7 @@ namespace DE {
 		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
 		m_depthPP = std::make_shared<FogEffect>();
-		//renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
+		renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
 		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
 		m_actorList[1].emplace_back(m_billboard);
@@ -180,7 +180,7 @@ namespace DE {
 		RenderShadowMap(renderer);
 
 		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
-		m_skybox->SetCommonSRVs(context);
+		//m_skybox->SetCommonSRVs(context);
 
 		// 불투명 물체들 렌더링
 		RenderOpaqueObjects(renderer);
