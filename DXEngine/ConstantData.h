@@ -66,7 +66,7 @@ namespace DE {
 		// TODO: Shader에도 똑같이 추가 (Light 클래스를 하나 만들어서 사용)
 		//Vector2 dummy;
 		float haloRadius = 0.5f;
-		float haloStrength = 0.5f;
+		float haloStrength = 1.0f;
 		//float nearPlane;
 		//float frustumWidth;
 

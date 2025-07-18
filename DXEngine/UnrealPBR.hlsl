@@ -83,12 +83,12 @@ float3 AmbientLightingByIBL(float3 albedo, float3 normalWorld, float3 pixelToEye
 
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2.
-float NdfGGX(float NdotH, float roughness) {
+float NdfGGX(float NdotH, float roughness, float alphaPrime) {
     float alpha = roughness * roughness;
     float alphaSq = alpha * alpha;
     float denom = (NdotH * NdotH) * (alphaSq - 1.0) + 1.0;
 
-    return alphaSq / (3.141592 * denom * denom);
+    return alphaPrime * alphaPrime / (3.141592 * denom * denom);
 }
 
 // Single term for separable Schlick-GGX below.
@@ -104,12 +104,12 @@ float SchlickGGX(float NdotI, float NdotO, float roughness) {
 }
 
 // Light Type별로 빛의 세기 (조명 자체의 강도만 계산)
-float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld) {
+float3 LightRadiance(Light light, float3 representativePoint, float3 posWorld, float3 normalWorld) {
     // Directional Light
     float3 lightVec = light.type & LIGHT_DIRECTIONAL ?
                         // Directional Light라면 빛의 방향을 그대로 사용 (ex: 태양)
                         -light.direction :
-                        light.position - posWorld;
+                        representativePoint - posWorld; // (Area Light를 사용 안한다면 : light.position - posWorld;)
     
     float lightDist = length(lightVec); // Dirctional Light은 1.0이 되어야함
     lightVec /= lightDist; // Normalize
@@ -133,12 +133,12 @@ float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld) {
 }
 
 // Shadow Map까지 고려한 조명의 밝기
-float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld, Texture2D shadowMap) {
+float3 LightRadiance(Light light, float3 representativePoint, float3 posWorld, float3 normalWorld, Texture2D shadowMap) {
     // Directional Light
     float3 lightVec = light.type & LIGHT_DIRECTIONAL ?
                         // Directional Light라면 빛의 방향을 그대로 사용 (ex: 태양)
                         -light.direction :
-                        light.position - posWorld;
+                        representativePoint - posWorld; // (Area Light를 사용 안한다면 : light.position - posWorld;)
     
     float lightDist = length(lightVec); // Dirctional Light은 1.0이 되어야함
     lightVec /= lightDist; // Normalize
@@ -207,7 +207,7 @@ float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld, Texture2D
         shadowMap.GetDimensions(0, width, height, numMips);
         
         // Texel Size
-        float dx = 5.0 / (float) width;
+        //float dx = 5.0 / (float) width;
         //shadowFactor = PCF_Filter(lightTexcoord.xy, lightScreen.z - 0.001, dx, shadowMap);
         shadowFactor = PCSS(lightTexcoord, lightScreen.z - 0.01, shadowMap, light.invProj, light.radius);
     }
@@ -220,7 +220,18 @@ float3 LightRadiance(Light light, float3 posWorld, float3 normalWorld, Texture2D
 
 // 직접광 (point light, spot light 등으로 직접 빛을 비추는 광원)
 float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 normalWorld, float3 albedo, float metallic, float roughness, Texture2D shadowMap) {
-    float3 lightVec = light.position - posWorld;
+    // Sphere Light 구현
+    float3 L = light.position - posWorld;
+    float3 r = normalize(reflect(-pixelToEye, normalWorld));
+    float3 centerToRay = dot(L, r) * r - L; // Sphere Light 중심에서 r까지 수직인 벡터
+    // RepresentativePoint는 World 좌표계에서 Shading할 Pixel 지점이 원점으로 계산해서 찾음
+    float3 representativePoint = L + centerToRay * saturate(light.radius / length(centerToRay)); // Area Light를 대표하는 조명 지점
+    // posWorld를 더해서 World 좌표계의 (0, 0, 0)이 원점이 되도록 변환
+    representativePoint += posWorld;
+    
+    float3 lightVec = representativePoint - posWorld; // Area Light 사용
+    //float3 lightVec = light.position - posWorld; // 일반 Light를 사용한 경우
+    
     float lightDist = length(lightVec);
     lightVec /= lightDist;
     float3 halfway = normalize(pixelToEye + lightVec);
@@ -238,7 +249,11 @@ float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 no
       
     float3 diffuseBRDF = kd * albedo;
         
-    float D = NdfGGX(NdotH, roughness);
+    // Sphere Normalization (Sphere Light) - Area Light는 Specular 범위가 넓어지므로 SphereNormalization으로 보정
+    float alpha = roughness * roughness;
+    float alphaPrime = saturate(alpha + light.radius / (2.0 * lightDist));
+    
+    float D = NdfGGX(NdotH, roughness, alphaPrime);
     float3 G = SchlickGGX(NdotI, NdotO, roughness);
     
     // 0으로 나누기 방지
@@ -246,7 +261,7 @@ float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 no
     
     // 빛의 강도
     float3 radiance = float3(0.0, 0.0, 0.0);
-    radiance = LightRadiance(light, posWorld, normalWorld, shadowMap);
+    radiance = LightRadiance(light, representativePoint, posWorld, normalWorld, shadowMap);
     
     // 마지막으로 빛의 강도와 조명을 향하는 방향과 시점 방향의 각도를 곱해 표면과 수평하면 빛이 안들어오도록 계산
     return (diffuseBRDF + specularBRDF) * radiance * NdotI;
@@ -289,11 +304,15 @@ PSOutput main(PSInput input)
     // 임시로 unroll 사용
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
-        if (lights[i].type)
-            // DirectX 11에선 배열의 Indexing을 마음대로 할 수 없음
-            // 그래서 Loop에 임시로 unroll을 사용함 (내부적으로 For loop를 풀어서 3번 반복하는 것으로 만들어줌)
-            // TODO: Texture2D가 아닌 Texture2DArray로 만들어서 구현하는 방법이 제일 깔끔
-            directLighting += DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness, shadowMaps[i]);
+        if (lights[i].type) {
+            float3 radiance = DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness, shadowMaps[i]);
+            // TODO: radiance가 (0, 0, 0)인 경우 DirectLighting += ... 인데도 direfctLight이 (0, 0, 0)이 되어 버리는 오류 임시 수정
+            if (abs(dot(float3(1, 1, 1), radiance)) > 1e-5) // radiance가 (0, 0, 0)일 경우 더하지 않음
+                // DirectX 11에선 배열의 Indexing을 마음대로 할 수 없음
+                // 그래서 Loop에 임시로 unroll을 사용함 (내부적으로 For loop를 풀어서 3번 반복하는 것으로 만들어줌)
+                // TODO: Texture2D가 아닌 Texture2DArray로 만들어서 구현하는 방법이 제일 깔끔
+                directLighting += radiance;
+        }
     }
     
     PSOutput output;

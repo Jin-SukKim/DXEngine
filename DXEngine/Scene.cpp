@@ -81,9 +81,9 @@ namespace DE {
 			m_globalConstsCPU.lights[1].spotPower = 6.0f;                      // 좀 더 집중된 빛
 			m_globalConstsCPU.lights[1].fallOffStart = 0.0f;
 			m_globalConstsCPU.lights[1].fallOffEnd = 20.0f;
-			m_globalConstsCPU.lights[1].radius = 0.01f;
+			m_globalConstsCPU.lights[1].radius = 0.0f;
 			m_globalConstsCPU.lights[1].type =
-				LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
+				LIGHT_POINT | LIGHT_SHADOW; // Point with shadow
 
 			m_globalConstsCPU.lights[2].type = LIGHT_OFF;
 		}
