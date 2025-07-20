@@ -16,10 +16,10 @@ namespace DE {
 		void SetScale(const Vector3& scale) { m_scale = scale; SetBoundingVolumeScale(); }
 		Vector3& GetScale() { return m_scale; }
 
+		void SetLocalRotation(const float& yaw, const float& pitch, const float roll);
+		void SetLocalRotation(const Quaternion& q);
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
 		void SetRotation(const Quaternion& q);
-		void LocalRotate(const float& yaw, const float& pitch, const float roll);
-		void LocalRotate(const Quaternion& q);
 		void Rotate(const float& yaw, const float& pitch, const float roll);
 		
 		Vector3 GetForwardDir();
@@ -37,8 +37,10 @@ namespace DE {
 	private:
 		Vector3 m_pos = Vector3::Zero;
 		Vector3 m_scale = Vector3::One;
-		Quaternion m_localRotation;
+		Vector3 m_localRotation = Vector3::Zero;
+		Quaternion m_localQuaternion;
 		Vector3 m_worldRotation = Vector3::Zero; // yaw, pitch, roll
+		Quaternion m_worldQuaternion;
 
 		Vector3 m_localForward = Vector3::UnitZ;
 		Vector3 m_localRight = Vector3::UnitX;

@@ -35,7 +35,7 @@ namespace DE {
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
 			tr->SetPos({ 0.f, -1.f, 0.f });
-			tr->SetRotation(0.f, 90.f, 0.f);
+			tr->SetLocalRotation(0.f, 90.f, 0.f);
 		}
 	}
 

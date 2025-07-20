@@ -72,11 +72,13 @@ float HaloEmission(float3 posView, float radius) {
     float t2 = 0.0; // 충돌 끝점
     
     // 광선이 구와 충돌하면 빛을 얼마나 모을지 계산
+    //      z값을 사용해 비교하지 않고 length()를 사용한 이유 : view space가 회전된 경우, dir의 방향이 z축이라고 장담할 수 없기 떄문
     if (RaySphereIntersection(rayStart, dir, center, radius, t1, t2) && t1 < length(posView)) // length(posView) < t1 : 물체가 Halo보다 앞에 있는 경우 Halo계산이 필요없음
     {
         // Halo를 가리는 물체가 없더라도 Halo안에 있을 수도 있으니 min으로 t2 결정
         t2 = min(length(posView), t2);
         
+        // Halo 영역의 빛의 합
         float3 p = rayStart - center;
         float p2 = dot(p, p);
         float pDotv = dot(p, dir);
@@ -87,12 +89,15 @@ float HaloEmission(float3 posView, float radius) {
                         - pDotv * invR2 * (t2 * t2 - t1 * t1)
                         - v2 / (3.0 * r2) * (t2 * t2 * t2 - t1 * t1 * t1);
 
-        // Normalize
+        // Normalize - 빛을 가장 많이 모을 수 있는 경로는 Halo의 중간을 관통하는 경우인데
+        // 빛을 모으는 수식을 계산하면 (4 * radius / 3.0)이 나옴
+        // 그래서 반지름을 조절할 때 좀 더 편하도록 빛을 가장 많이 모으는 경우의 값으로 정규화
         haloEmission /= (4 * radius / 3.0);
         
         return haloEmission;
 
     }
+    // 물체가 Halo를 가리는 경우
     else {
         return 0.0;
     }

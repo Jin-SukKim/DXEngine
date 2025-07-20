@@ -113,6 +113,9 @@
     <Filter Include="Shaders\Shadow">
       <UniqueIdentifier>{f67ab29c-3913-420c-a5eb-3cf52902551d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\Actor\Light">
+      <UniqueIdentifier>{b6e0038e-3113-42d1-adb2-799212ed0cbf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -232,9 +235,17 @@
     <ClInclude Include="MirrorActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="DepthFilter.h" />
-    <ClInclude Include="FogEffect.h" />
-    <ClInclude Include="SquareActor.h" />
+    <ClInclude Include="DepthFilter.h">
+      <Filter>public\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="FogEffect.h">
+      <Filter>public\PostProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="SquareActor.h">
+      <Filter>public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="resource1.h" />
+    <ClInclude Include="LightActor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -330,14 +341,17 @@
     <ClCompile Include="CopyFilter.cpp">
       <Filter>private\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="DepthFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FogEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\PostProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthFilter.cpp">
+      <Filter>private\PostProcess</Filter>
     </ClCompile>
     <ClCompile Include="SquareActor.cpp">
-      <Filter>public\Actor</Filter>
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="LightActor.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -442,5 +456,8 @@
     <None Include="DiskSamples.hlsli">
       <Filter>Shaders\Shadow</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DXEngine.rc" />
   </ItemGroup>
 </Project>

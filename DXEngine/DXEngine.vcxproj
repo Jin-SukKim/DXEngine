@@ -186,8 +186,10 @@
     <ClInclude Include="GraphicsCommon.h" />
     <ClInclude Include="GraphicsPSO.h" />
     <ClInclude Include="ImageFilter.h" />
+    <ClInclude Include="LightActor.h" />
     <ClInclude Include="MirrorActor.h" />
     <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="SkyboxActor.h" />
     <ClInclude Include="D3D11Utils.h" />
     <ClInclude Include="GeometryGenerator.h" />
@@ -228,6 +230,7 @@
     <ClCompile Include="GraphicsCommon.cpp" />
     <ClCompile Include="GraphicsPSO.cpp" />
     <ClCompile Include="ImageFilter.cpp" />
+    <ClCompile Include="LightActor.cpp" />
     <ClCompile Include="MirrorActor.cpp" />
     <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="SkyboxActor.cpp" />
@@ -499,6 +502,9 @@
     <None Include="DiskSamples.hlsli" />
     <None Include="Shadow.hlsli" />
     <None Include="ToneMapping.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DXEngine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

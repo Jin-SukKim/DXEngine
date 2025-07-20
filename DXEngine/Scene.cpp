@@ -210,8 +210,9 @@ namespace DE {
 			
 			if (light.type & LIGHT_SHADOW) {
 				Vector3 up = Vector3(0.f, 1.f, 0.f);
+				// Light의 방향이 up과 정반대(수직 아래)를 향하는지 검사
 				if (std::abs(up.Dot(light.direction) + 1.f) < 1e-5)
-					up = Vector3(1.f, 0.f, 0.f);
+					up = Vector3(1.f, 0.f, 0.f); // 만약 Dir이 아래를 향하면 up을 xAxis로 사용
 
 				// 그림자맵을 만들 때 필요
 				// Light를 시점으로 바다보는 깊이맵을 만들기 위해 사용
@@ -237,6 +238,20 @@ namespace DE {
 				m_shadowGlobalConsts[i].GetCpu().proj = lightProjRow.Transpose();
 				m_shadowGlobalConsts[i].GetCpu().invProj = lightProjRow.Invert().Transpose();
 				m_shadowGlobalConsts[i].GetCpu().viewProj = (lightViewRow * lightProjRow).Transpose();
+
+				// LIGHT_FRUSTUM_WIDTH 확인
+				// Screen의 왼쪽 가장자리와 오른쪽 가장자리 좌표를 Projection 행렬에 대해 역변환
+				// 그러면 왼쪽 가장자리와 오른쪽 가장자리의 View 좌표계에서의 좌표를 구할 수 있음
+				// Vector4 eye(0.0f, 0.0f, 0.0f, 1.0f);
+				// Vector4 xLeft(-1.0f, -1.0f, 0.0f, 1.0f);
+				// Vector4 xRight(1.0f, 1.0f, 0.0f, 1.0f);
+				// eye = Vector4::Transform(eye, lightProjRow);
+				// xLeft = Vector4::Transform(xLeft, lightProjRow.Invert());
+				// xRight = Vector4::Transform(xRight, lightProjRow.Invert());
+				// xLeft /= xLeft.w;
+				// xRight /= xRight.w;
+				// 두 좌표값의 x값 차이를 구해 View 좌표계에서 LIght의 ViewFrustum의 Width를 계산
+				// cout << "LIGHT_FRUSTUM_WIDTH = " << xRight.x - xLeft.x << endl;
 
 				m_shadowGlobalConsts[i].Upload(context);
 
