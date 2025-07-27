@@ -1,7 +1,6 @@
 #include "Common.hlsli"
 #include "Shadow.hlsli"
 // https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
-
 Texture2D albedoTex : register(t0);
 Texture2D normalTex : register(t1);
 Texture2D aoTex : register(t2);
@@ -167,7 +166,7 @@ float3 LightRadiance(Light light, float3 representativePoint, float3 posWorld, f
         // 주의: Texture 좌표와 NDC는 y가 반대 (중요)
         float2 lightTexcoord = float2(lightScreen.x, -lightScreen.y);
         lightTexcoord = (lightTexcoord + 1.0) * 0.5;
-
+        
         // 1번 방식 : 가장 간단한 방법
         //// Shadow Map에서 값 가져오기 (광원으로부터 가장 가까이 있는 물체의 거리)
         //float depth = shadowMap.Sample(shadowPointSampler, lightTexcoord).r; // Depth Only Buffer는 R32를 사용중
@@ -209,7 +208,7 @@ float3 LightRadiance(Light light, float3 representativePoint, float3 posWorld, f
         // Texel Size
         //float dx = 5.0 / (float) width;
         //shadowFactor = PCF_Filter(lightTexcoord.xy, lightScreen.z - 0.001, dx, shadowMap);
-        shadowFactor = PCSS(lightTexcoord, lightScreen.z - 0.01, shadowMap, light.invProj, light.radius);
+        shadowFactor = PCSS(lightTexcoord, lightScreen.z - 0.01, shadowMap, light.invProj, light.radius, light.nearPlane, light.frustumWidth);
     }
     
     // 빛의 강도

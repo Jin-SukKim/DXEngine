@@ -244,7 +244,6 @@
     <ClInclude Include="SquareActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="resource1.h" />
     <ClInclude Include="LightActor.h" />
   </ItemGroup>
   <ItemGroup>
@@ -456,8 +455,5 @@
     <None Include="DiskSamples.hlsli">
       <Filter>Shaders\Shadow</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="DXEngine.rc" />
   </ItemGroup>
 </Project>

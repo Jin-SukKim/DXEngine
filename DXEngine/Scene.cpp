@@ -17,6 +17,8 @@
 #include "FogEffect.h"
 #include "SquareActor.h"
 
+#include "LightActor.h"
+
 namespace DE {
 	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
 	{
@@ -39,7 +41,10 @@ namespace DE {
 			m_mouseClick = InputAxisAction(lButton, rButton);
 
 			for (int i = 0; i < MAX_LIGHTS; ++i)
-				m_shadowGlobalConsts[i].Initialize(device);
+				//m_shadowGlobalConsts[i].Initialize(device);
+				m_lights[i] = std::make_shared<LightActor>(device, context, L"Light");
+
+			m_lights[0]->GetLight().type = LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
 		}
 
 		triangle = std::make_shared<SampleActor>(device, context, L"Temp");
@@ -65,35 +70,8 @@ namespace DE {
 		{
 			// IBL은 그림자를 구현하지 않고 AO를 사용해 그림자 효과를 비슷하게 구현함
 			// (TODO: Direct Light으로 자연광 효괄르 구현하는게 좋을듯)
-			// 현재 조명은 최대 개수 3개
-			// Spot Light
-			m_globalConstsCPU.lights[0].radiance = Vector3(5.0f);
-			m_globalConstsCPU.lights[0].position = Vector3(0.0f, 1.f, -1.0f);  // 위에서 비스듬히
-			m_globalConstsCPU.lights[0].direction = Vector3(0.0f, -1.0f, 0.0f);  // 아래 방향으로
-			m_globalConstsCPU.lights[0].spotPower = 10.0f;                      // 좀 더 집중된 빛
-			m_globalConstsCPU.lights[0].fallOffStart = 0.0f;
-			m_globalConstsCPU.lights[0].fallOffEnd = 100.0f;
-			m_globalConstsCPU.lights[0].radius = 0.02f;
-			m_globalConstsCPU.lights[0].type = LIGHT_POINT | LIGHT_SHADOW; // Point width shadow
-
-			// 1번 Light는 Update()에서 갱신해 계속 이동할 예정
-			m_globalConstsCPU.lights[1].radiance = Vector3(5.0f);
-			m_globalConstsCPU.lights[1].spotPower = 6.0f;                      // 좀 더 집중된 빛
-			m_globalConstsCPU.lights[1].fallOffStart = 0.0f;
-			m_globalConstsCPU.lights[1].fallOffEnd = 20.0f;
-			m_globalConstsCPU.lights[1].radius = 0.0f;
-			m_globalConstsCPU.lights[1].type =
-				LIGHT_POINT | LIGHT_SHADOW; // Point with shadow
-
-			m_globalConstsCPU.lights[2].type = LIGHT_OFF;
-		}
-
-		// 조명 위치 표시
-		{
-			// 조명을 원 같은 형태가 있는 것으로 화면에 렌더링할때 사용할 Actor
-			for (int i = 0; i < MAX_LIGHTS; ++i) {
-				
-			}
+			for (int i = 0; i < MAX_LIGHTS; ++i)
+				m_lights[i]->Initialize();
 		}
 
 		// 카메라 위치 표시
@@ -191,75 +169,11 @@ namespace DE {
 
 	void Scene::UpdateLight(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
 	{
-		// TODO: Light 구조체를 변수로 가진 Class를 하나 만들어서 따로 빼주는게 좋을 듯
-		
-		// 회전하는 lights[1] 업데이트
-		static Vector3 lightDev = Vector3(0.0f, 0.0f, 0.0f);
-		lightDev = Vector3::Transform(
-			lightDev, Matrix::CreateRotationY(deltaTime * 3.141592f * 0.5f));
-
-		//m_globalConstsCPU.lights[1].position = Vector3(0.0f, 0.0f, 0.0f) + lightDev;
-		//Vector3 focusPosition = Vector3(0.0f, -0.5f, 1.7f);
-		//m_globalConstsCPU.lights[1].direction =
-		//	focusPosition - m_globalConstsCPU.lights[1].position;
-		//m_globalConstsCPU.lights[1].direction.Normalize();
-
 		// 그림자맵을 만들기 위한 시점
 		for (int i = 0; i < MAX_LIGHTS; ++i) {
-			const auto& light = m_globalConstsCPU.lights[i];
-			
-			if (light.type & LIGHT_SHADOW) {
-				Vector3 up = Vector3(0.f, 1.f, 0.f);
-				// Light의 방향이 up과 정반대(수직 아래)를 향하는지 검사
-				if (std::abs(up.Dot(light.direction) + 1.f) < 1e-5)
-					up = Vector3(1.f, 0.f, 0.f); // 만약 Dir이 아래를 향하면 up을 xAxis로 사용
+			m_lights[i]->Update(context, deltaTime);
 
-				// 그림자맵을 만들 때 필요
-				// Light를 시점으로 바다보는 깊이맵을 만들기 위해 사용
-				float lightFOV = 120.f;
-				Matrix lightViewRow = DirectX::XMMatrixLookAtLH(light.position, light.position + light.direction, up);
-				
-				Matrix lightProjRow;
-				if (light.type & LIGHT_DIRECTIONAL)
-					// TODO: 확인 필요, Directional Light는 정투영을 사용
-					lightProjRow = DirectX::XMMatrixOrthographicOffCenterLH(-1.f, 1.f, -1.f, 1.f, 0.01f, 100.f);
-				else
-					// Light의 FOV는 빛이 어디까지 비출지를 결정 (빛이 비추는 범위로 그림자 생성에 영향을 줌)
-					lightProjRow = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(lightFOV), 1.0f, 0.1f, 10.0f);
-				// TODO: Point Light의 경우 모든 방향으로 빛을 쏘므로 Omnidirectional Shadowing이란 걸 사용
-				//	정육면체의 각 면 방향으로 6번 렌더링
-				//	1. fov가 90도인 원근 투영을 사용
-				//	2. 빛의 위치는 고정한 채, 6개의 방향을 각각 바라보는 뷰 행렬을 매번 다르게 사용
-				//	3. 렌더링 결과를 cubeMap Texture에 저장
-				//		cubeMap은 IBL과는 약간 다르게 
-
-				m_shadowGlobalConsts[i].GetCpu().eyeWorld = light.position;
-				m_shadowGlobalConsts[i].GetCpu().view = lightViewRow.Transpose();
-				m_shadowGlobalConsts[i].GetCpu().proj = lightProjRow.Transpose();
-				m_shadowGlobalConsts[i].GetCpu().invProj = lightProjRow.Invert().Transpose();
-				m_shadowGlobalConsts[i].GetCpu().viewProj = (lightViewRow * lightProjRow).Transpose();
-
-				// LIGHT_FRUSTUM_WIDTH 확인
-				// Screen의 왼쪽 가장자리와 오른쪽 가장자리 좌표를 Projection 행렬에 대해 역변환
-				// 그러면 왼쪽 가장자리와 오른쪽 가장자리의 View 좌표계에서의 좌표를 구할 수 있음
-				// Vector4 eye(0.0f, 0.0f, 0.0f, 1.0f);
-				// Vector4 xLeft(-1.0f, -1.0f, 0.0f, 1.0f);
-				// Vector4 xRight(1.0f, 1.0f, 0.0f, 1.0f);
-				// eye = Vector4::Transform(eye, lightProjRow);
-				// xLeft = Vector4::Transform(xLeft, lightProjRow.Invert());
-				// xRight = Vector4::Transform(xRight, lightProjRow.Invert());
-				// xLeft /= xLeft.w;
-				// xRight /= xRight.w;
-				// 두 좌표값의 x값 차이를 구해 View 좌표계에서 LIght의 ViewFrustum의 Width를 계산
-				// cout << "LIGHT_FRUSTUM_WIDTH = " << xRight.x - xLeft.x << endl;
-
-				m_shadowGlobalConsts[i].Upload(context);
-
-				// 그림자를 실제로 렌더링할 때 필요
-				m_globalConstsCPU.lights[i].viewProj = m_shadowGlobalConsts[i].GetCpu().viewProj;
-				m_globalConstsCPU.lights[i].invProj = m_shadowGlobalConsts[i].GetCpu().invProj;
-
-			}
+			m_globalConstsCPU.lights[i] = m_lights[i]->GetLight();
 		}
 	}
 
@@ -356,22 +270,11 @@ namespace DE {
 
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		for (int i = 0; i < MAX_LIGHTS; i++) {
-			if (m_globalConstsCPU.lights[i].type & LIGHT_SHADOW) {
-				renderer.SetShadowMapRender(i);
+			renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 
-				SetGlobals(context, m_shadowGlobalConsts[i].Get());
-
-				for (auto& actor : m_actorList[0])
-					if (actor->IsCastShadow() && actor->IsVisible())
-						actor->Render(renderer);
-
-				if (m_mirror->IsCastShadow() && m_mirror->IsVisible())
-					m_mirror->Render(renderer);
-
-				for (auto& billboard : m_actorList[1])
-					if (billboard->IsCastShadow() && billboard->IsVisible())
-						billboard->Render(renderer);
-			}
+			m_lights[i]->RenderShadow(renderer, m_actorList[0]);
+			m_lights[i]->RenderShadow(renderer, { m_mirror });
+			m_lights[i]->RenderShadow(renderer, m_actorList[1]);
 		}
 	}
 

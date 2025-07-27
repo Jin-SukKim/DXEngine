@@ -34,8 +34,11 @@ struct Light {
 	// Light type bitmasking
     uint type;
     float radius; // 반지름 (Volume Light 용)
+    float nearPlane;
+    float frustumWidth;
     float haloRadius;
     float haloStrength;
+    float2 dummy; // padding
     
     Matrix viewProj;
     Matrix invProj;

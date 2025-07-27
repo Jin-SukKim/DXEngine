@@ -24,6 +24,7 @@ namespace DE {
 		void UsePerspectiveProjection(const bool& use) { m_usePerspectiveProjection = use; }
 		void SetFPV(const bool& fpv) { m_fpv = fpv; }
 		void EnableFPV() { m_fpv = !m_fpv; }
+
 	private:
 		// Projection 옵션
 		//float m_projFovAngleY = 90.f * 0.5f; // Luna 교재 기본 설정 (FOV)

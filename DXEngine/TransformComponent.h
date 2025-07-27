@@ -35,15 +35,15 @@ namespace DE {
 		Quaternion createRotationQuaternion(const float& yaw, const float& pitch, const float roll);
 		void SetBoundingVolumeScale();
 	private:
-		Vector3 m_pos = Vector3::Zero;
-		Vector3 m_scale = Vector3::One;
-		Vector3 m_localRotation = Vector3::Zero;
+		Vector3 m_pos = Vector3(0.f);
+		Vector3 m_scale = Vector3(1.f);
+		Vector3 m_localRotation = Vector3(0.f);
 		Quaternion m_localQuaternion;
-		Vector3 m_worldRotation = Vector3::Zero; // yaw, pitch, roll
+		Vector3 m_worldRotation = Vector3(0.f); // yaw, pitch, roll
 		Quaternion m_worldQuaternion;
 
-		Vector3 m_localForward = Vector3::UnitZ;
-		Vector3 m_localRight = Vector3::UnitX;
-		Vector3 m_localUp = Vector3::UnitY;
+		Vector3 m_localForward = Vector3(0.f, 0.f, 1.f);
+		Vector3 m_localRight = Vector3(1.f, 0.f, 0.f);
+		Vector3 m_localUp = Vector3(0.f, 1.f, 0.f);
 	};
 }

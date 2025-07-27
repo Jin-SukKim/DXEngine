@@ -15,6 +15,7 @@ namespace DE {
 	class MirrorActor;
 	class FogEffect;
 	class SquareActor;
+	class LightActor;
 
 	class Scene
 	{
@@ -50,9 +51,6 @@ namespace DE {
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 
-		// Shadow¸ÊÀ» ·»´õ¸µÇÒ¶§ »ç¿ëÇÒ GlobalConsts
-		ConstantBuffer<GlobalConstants> m_shadowGlobalConsts[MAX_LIGHTS];
-
 		std::shared_ptr<CameraActor> m_mainCamera;
 		InputButton f = InputButton::F;
 		InputAction m_fpv;
@@ -77,5 +75,7 @@ namespace DE {
 		Actor* m_pickedActor = nullptr;
 
 		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
+
+		std::array<std::shared_ptr<LightActor>, MAX_LIGHTS> m_lights;
 	};
 }

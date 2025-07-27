@@ -2,6 +2,7 @@
 #include "CameraActor.h"
 #include "TransformComponent.h"
 #include "AppBase.h"
+
 namespace DE {
     void CameraActor::Initialize()
     {
@@ -47,7 +48,7 @@ namespace DE {
         TransformComponent* tr = GetComponent<TransformComponent>();
         if (tr)
             return tr->GetInvTransformMatrix();
-        return Matrix::Identity;
+        return Matrix();
     }
 
     Matrix CameraActor::GetProjMatrix()
@@ -66,6 +67,6 @@ namespace DE {
         if (tr)
             return tr->GetPos();
 
-        return Vector3::Zero;
+        return Vector3(0.f, 0.f, 0.f);
     }
 }

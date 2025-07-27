@@ -46,17 +46,23 @@ namespace DE {
 
 	Vector3 TransformComponent::GetForwardDir()
 	{
-		return Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(m_worldQuaternion * m_localQuaternion));
+		Vector3 forward = Vector3::Transform(m_localForward, Matrix::CreateFromQuaternion(m_worldQuaternion * m_localQuaternion));
+		forward.Normalize();
+		return forward;
 	}
 
 	Vector3 TransformComponent::GetRightDir()
 	{
-		return Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(m_worldQuaternion * m_localQuaternion));
+		Vector3 right = Vector3::Transform(m_localRight, Matrix::CreateFromQuaternion(m_worldQuaternion * m_localQuaternion));
+		right.Normalize();
+		return right;
 	}
 
 	Vector3 TransformComponent::GetUpDir()
 	{
-		return Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(m_worldQuaternion * m_localQuaternion));
+		Vector3 up = Vector3::Transform(m_localUp, Matrix::CreateFromQuaternion(m_worldQuaternion * m_localQuaternion));
+		up.Normalize();
+		return up;
 	}
 
 	Matrix TransformComponent::GetTranslateMatrix()

@@ -6,7 +6,6 @@
 
 namespace DE {
 	UINT Actor::nextID = 0;
-
 	Actor::Actor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, name), m_id(nextID++) {
 		m_components.resize(static_cast<size_t>(ComponentType::MaxComponentType));
 		// 모든 Actor에 TransformComopnent추가
