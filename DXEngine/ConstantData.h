@@ -66,8 +66,8 @@ namespace DE {
 		float frustumWidth;
 		
 		// TODO: Shader에도 똑같이 추가 (Light 클래스를 하나 만들어서 사용)
-		float haloRadius = 0.5f;
-		float haloStrength = 1.0f;
+		float haloRadius = 0.0f;
+		float haloStrength = 0.f;
 		Vector2 dummy;
 
 		Matrix viewProj; // 그림자 렌더링에 필요

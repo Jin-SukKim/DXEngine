@@ -215,6 +215,7 @@
     <ClInclude Include="RenderBase.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SquareActor.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="ToneMappingFilter.h" />
@@ -259,6 +260,7 @@
     </ClCompile>
     <ClCompile Include="RenderBase.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="SquareActor.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="ToneMappingFilter.cpp" />

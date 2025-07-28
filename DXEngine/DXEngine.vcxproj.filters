@@ -116,6 +116,9 @@
     <Filter Include="public\Actor\Light">
       <UniqueIdentifier>{b6e0038e-3113-42d1-adb2-799212ed0cbf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="private\Actor\Light">
+      <UniqueIdentifier>{a3d78322-c03b-4938-9774-9a5a6f30ac4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -244,7 +247,10 @@
     <ClInclude Include="SquareActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="LightActor.h" />
+    <ClInclude Include="LightActor.h">
+      <Filter>public\Actor\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SpotLight.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -350,6 +356,9 @@
       <Filter>private\Actor</Filter>
     </ClCompile>
     <ClCompile Include="LightActor.cpp">
+      <Filter>private\Actor\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="SpotLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

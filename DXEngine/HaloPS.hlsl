@@ -60,13 +60,13 @@ int RaySphereIntersection(float3 start, float3 dir, float3 center, float radius,
 }
 
 // "Foundations of Game Engine Development" by Eric Lengyel, V2 p319
-float HaloEmission(float3 posView, float radius) {
+float HaloEmission(float3 posView, float radius, float3 lightPos) {
     // Halo
     float3 rayStart = float3(0, 0, 0); // View space (시점의 위치가 원점)
     float3 dir = normalize(posView - rayStart); // Shading 지점을 향하는 방향 벡터
     
     // 구의 중심은 Light의 Pos에 View 행렬을 곱해 View 좌표계로 변환해서 사용
-    float3 center = mul(float4(lights[1].position, 1.0), view).xyz; // View 공간으로 변환
+    float3 center = mul(float4(lightPos, 1.0), view).xyz; // View 공간으로 변환
 
     float t1 = 0.0; // 충돌 시작점
     float t2 = 0.0; // 충돌 끝점
@@ -110,10 +110,12 @@ float4 main(SamplingPSInput input) : SV_TARGET {
     
     // Halo
     float3 haloColor = float3(0.96, 0.96, 0.82);
-    float radius = lights[1].haloRadius;
+    float radius = lights[0].haloRadius;
     // 빛이 조명으로부터 반지름 거리 안에서 진행하면서 빛을 받게되면서 밝아지기 때문에 
     // 렌더링한 결과(픽셀색)에 빛의 밝기를 더해주고 있는 것 
-    color += HaloEmission(posView.xyz, radius) * haloColor * lights[1].haloStrength;
+    
+    for (int i = 0; i < MAX_LIGHTS; ++i)
+        color += HaloEmission(posView.xyz, radius, lights[i].position) * haloColor * lights[i].haloStrength;
     
     return float4(color, 1.0);
 

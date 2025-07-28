@@ -18,6 +18,7 @@
 #include "SquareActor.h"
 
 #include "LightActor.h"
+#include "SpotLight.h"
 
 namespace DE {
 	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
@@ -40,11 +41,12 @@ namespace DE {
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
 
-			for (int i = 0; i < MAX_LIGHTS; ++i)
+			m_lights[0] = std::make_shared<SpotLight>(device, context, L"SpotLight");
+			for (int i = 1; i < MAX_LIGHTS; ++i)
 				//m_shadowGlobalConsts[i].Initialize(device);
 				m_lights[i] = std::make_shared<LightActor>(device, context, L"Light");
 
-			m_lights[0]->GetLight().type = LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
+			//m_lights[0]->GetLight().type = LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
 		}
 
 		triangle = std::make_shared<SampleActor>(device, context, L"Temp");
@@ -272,9 +274,9 @@ namespace DE {
 		for (int i = 0; i < MAX_LIGHTS; i++) {
 			renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 
-			m_lights[i]->RenderShadow(renderer, m_actorList[0]);
+			for (auto& actor : m_actorList)
+				m_lights[i]->RenderShadow(renderer, actor);
 			m_lights[i]->RenderShadow(renderer, { m_mirror });
-			m_lights[i]->RenderShadow(renderer, m_actorList[1]);
 		}
 	}
 

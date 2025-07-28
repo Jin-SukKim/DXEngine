@@ -5,6 +5,7 @@ namespace DE {
     class HaloEffect;
     class BoundComponent;
 
+    // 기본적으로 Spot Light으로 구현되어 있음
     class LightActor : public Actor
     {
         using Super = Actor;
@@ -26,7 +27,8 @@ namespace DE {
 		Vector3 GetPos() const { return m_light.position; }
         Light& GetLight() { return m_light; }
 		UINT GetLightID() const { return m_lightID; }
-    private:
+    
+    protected:
         static UINT lightID;
         UINT m_lightID;
 
