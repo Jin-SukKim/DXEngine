@@ -13,6 +13,8 @@ namespace DE {
 		m_light.haloRadius = 0.5f;
 		m_light.haloStrength = 1.0f;
 		m_light.type = LIGHT_SPOT | LIGHT_SHADOW;
+
+		GET_SINGLE(RenderBase)->CreateShadowBuffer(m_lightID); // Shadow Map¿ë Buffer »ý¼º
 	}
 
 	void SpotLight::Initialize()

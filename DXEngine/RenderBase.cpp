@@ -239,13 +239,13 @@ namespace DE {
 		// Shadow Map용 Texture 생성
 		dsDesc.Width = m_shadowWidth;
 		dsDesc.Height = m_shadowHeight;
-		for (int i = 0; i < MAX_LIGHTS; ++i) {
-			ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_shadowBuffers[i].GetAddressOfTexture()));
-			// Shadow Map용 DSV 생성 (dsvDesc는 위에서 DepthOnlyDSV만들떄 사용한 걸 그대로 사용)
-			ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowBuffers[i].GetTexture(), &dsvDesc, m_shadowDSVs[i].GetAddressOf()));
-			// Shadow Map용 SRV 생성 (위에서 만든 srvDesc 그대로 사용)
-			ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowBuffers[i].GetTexture(), &srvDesc, m_shadowBuffers[i].GetAddressOfSRV()));
-		}
+		//for (int i = 0; i < MAX_LIGHTS; ++i) {
+		//	ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_shadowBuffers[i].GetAddressOfTexture()));
+		//	// Shadow Map용 DSV 생성 (dsvDesc는 위에서 DepthOnlyDSV만들떄 사용한 걸 그대로 사용)
+		//	ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowBuffers[i].GetTexture(), &dsvDesc, m_shadowDSVs[i].GetAddressOf()));
+		//	// Shadow Map용 SRV 생성 (위에서 만든 srvDesc 그대로 사용)
+		//	ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowBuffers[i].GetTexture(), &srvDesc, m_shadowBuffers[i].GetAddressOfSRV()));
+		//}
 	}
 
 
@@ -254,6 +254,40 @@ namespace DE {
 		m_context->ClearDepthStencilView(m_depthOnlyDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 		// DepthOnly라서 RTV 불필요
 		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
+	}
+
+	void RenderBase::CreateShadowBuffer(int idx)
+	{
+		D3D11_TEXTURE2D_DESC dsDesc;		
+		dsDesc.Width = m_shadowWidth;
+		dsDesc.Height = m_shadowHeight;
+		dsDesc.MipLevels = 1; // Depth Stencil Buffer는 Mipmap 불필요
+		dsDesc.ArraySize = 1;
+		dsDesc.Usage = D3D11_USAGE_DEFAULT;
+		dsDesc.CPUAccessFlags = 0;
+		dsDesc.MiscFlags = 0;
+		dsDesc.SampleDesc.Count = 1;
+		dsDesc.SampleDesc.Quality = 0;
+		dsDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format 사용
+		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		ZeroMemory(&srvDesc, sizeof(srvDesc));
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV로 사용하기 위해 R32 format 사용
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_shadowBuffers[idx].GetAddressOfTexture()));
+		// Shadow Map용 DSV 생성 (dsvDesc는 위에서 DepthOnlyDSV만들떄 사용한 걸 그대로 사용)
+		ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowBuffers[idx].GetTexture(), &dsvDesc, m_shadowDSVs[idx].GetAddressOf()));
+		// Shadow Map용 SRV 생성 (위에서 만든 srvDesc 그대로 사용)
+		ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowBuffers[idx].GetTexture(), &srvDesc, m_shadowBuffers[idx].GetAddressOfSRV()));
+
 	}
 
 	void RenderBase::ResizeSwapChain(const WindowInfo& window)

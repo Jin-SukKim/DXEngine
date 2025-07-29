@@ -282,11 +282,13 @@ namespace DE {
 
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		for (int i = 0; i < MAX_LIGHTS; i++) {
-			renderer.SetShadowMapRender(m_lights[i]->GetLightID());
+			if (m_lights[i]->GetLight().type & LIGHT_SHADOW) {
+				renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 
-			for (auto& actor : m_actorList)
-				m_lights[i]->RenderShadow(actor);
-			m_lights[i]->RenderShadow({ m_mirror });
+				for (auto& actor : m_actorList)
+					m_lights[i]->RenderShadow(actor);
+				m_lights[i]->RenderShadow({ m_mirror });
+			}
 		}
 	}
 
