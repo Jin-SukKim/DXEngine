@@ -20,6 +20,7 @@ namespace DE {
 	AppBase::AppBase()
 		//: m_window(0, 1920, 1080) {
 		: m_window(0, 1280, 960) {
+		m_renderer = GET_SINGLE(RenderBase);
 	}
 
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
@@ -28,16 +29,16 @@ namespace DE {
 		if (!initWindow())
 			return false;
 		
-		if (!m_renderer.Initialize(m_window))
+		if (!m_renderer->Initialize(m_window))
 			return false;
 
-		if (!m_gui.Initialize(m_window, m_renderer))
+		if (!m_gui.Initialize(m_window, *m_renderer))
 			return false;
 
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.hwnd);
 
-		m_scene = std::make_unique<Scene>(m_renderer);
+		m_scene = std::make_unique<Scene>();
 		float aspect = float(m_window.width) / m_window.height;
 		m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 		m_scene->Initialize();
@@ -54,7 +55,7 @@ namespace DE {
 			postRender();
 			
 			m_gui.Render();
-			m_renderer.Present();
+			m_renderer->Present();
 		}
 		
 		return 0; 
@@ -76,18 +77,18 @@ namespace DE {
 	void AppBase::update() {
 		m_gui.Update();
 		m_inputManager.Update(m_mouseX, m_mouseY, true);
-		m_renderer.Update();
-		m_scene->Update(m_renderer.GetContext(), GetDeltaTime());
+		m_renderer->Update();
+		m_scene->Update(GetDeltaTime());
 	}
 
 	void AppBase::render() {
-		m_renderer.Render();
-		m_scene->Render(m_renderer);
+		m_renderer->Render();
+		m_scene->Render();
 	}
 
 	void AppBase::postRender()
 	{
-		m_renderer.PostRender();
+		m_renderer->PostRender();
 	}
 
 	float AppBase::GetDeltaTime() {
@@ -130,7 +131,7 @@ namespace DE {
 		switch (msg) {
 		case WM_SIZE:
 			// 화면 해상도가 바뀌면 SwapChain을 다시 생성
-			if (m_renderer.GetSwapChain()) {
+			if (m_renderer->GetSwapChain()) {
 				m_window.width = int(LOWORD(lParam));
 				m_window.height= int(HIWORD(lParam));
 
@@ -138,7 +139,7 @@ namespace DE {
 				if (m_window.width && m_window.height) {
 					//std::cout << "Resize SwapChain to " << m_window.width << " " << m_window.height << std::endl;
 
-					m_renderer.ResizeSwapChain(m_window);
+					m_renderer->ResizeSwapChain(m_window);
 
 					if (m_scene && m_scene->GetMainCamera()) {
 						m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
@@ -165,7 +166,7 @@ namespace DE {
 			m_mouseY = float(HIWORD(lParam));
 
 			// TODO: Mouse Pick Test
-			//m_renderer.CopyIndexForPicking(LOWORD(lParam), HIWORD(lParam), m_scene->GetPickColor());
+			//m_renderer->CopyIndexForPicking(LOWORD(lParam), HIWORD(lParam), m_scene->GetPickColor());
 
 			// 마우스 커서의 위치를 NDC로 변환
 			// 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)

@@ -9,18 +9,18 @@ namespace DE {
 	{
 		using Super = Component;
 	public:
-		ModelComponent(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name, ComponentType::Model) {}
+		ModelComponent(const std::wstring& name) : Super(name, ComponentType::Model) {}
 		~ModelComponent() override {}
 
 		void Initialize() override;
-		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(ComPtr<ID3D11DeviceContext>& context) override;
-		void RenderNormal(ComPtr<ID3D11DeviceContext>& context);
-		void RenderPoints(ComPtr<ID3D11DeviceContext>& context);
+		void Update(const float& deltaTime) override;
+		void Render() override;
+		void RenderNormal();
+		void RenderPoints();
 		
-		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF = false);
-		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<MeshData>& meshes, bool isGLTF = false);
-		void SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const MeshData& mesh, bool isGLTF = false);
+		void SetModel(const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF = false);
+		void SetModel(const std::vector<MeshData>& meshes, bool isGLTF = false);
+		void SetModel(const MeshData& mesh, bool isGLTF = false);
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
 

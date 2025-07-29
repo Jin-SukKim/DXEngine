@@ -8,17 +8,17 @@ namespace DE {
 	{
 		using Super = Object;
 	public:
-		Actor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
+		Actor(const std::wstring& name);
 		virtual ~Actor() override {}
 
 		virtual void Initialize() override;
-		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		virtual void Render(RenderBase& renderer) override;
-		void RenderBoundingVolume(RenderBase& renderer);
-		void RenderNormal(RenderBase& renderer);
+		virtual void Update(const float& deltaTime) override;
+		virtual void Render() override;
+		void RenderBoundingVolume();
+		void RenderNormal();
 
 		template<typename T_COMPONENT>
-		T_COMPONENT* AddComponent(ComPtr<ID3D11Device>& device, const std::wstring& name);
+		T_COMPONENT* AddComponent(const std::wstring& name);
 
 		template<typename T_COMPONENT>
 		T_COMPONENT* GetComponent();
@@ -29,7 +29,7 @@ namespace DE {
 		bool IsVisible() { return m_isVisible; }
 		bool IsCastShadow() { return m_castShadow; }
 	protected:
-		void RenderComponent(ComPtr<ID3D11DeviceContext>& context, const ComponentType& type);
+		void RenderComponent(const ComponentType& type);
 	private:
 		static UINT nextID;
 
@@ -38,7 +38,7 @@ namespace DE {
 		std::vector<std::unique_ptr<Component>> m_components;
 
 		// TransformComponent Ãß°¡
-		void initTransform(ComPtr<ID3D11Device>& device);
+		void initTransform();
 		void setHashIdToColor(const int& hashID);
 
 		bool m_isVisible = true;
@@ -46,9 +46,9 @@ namespace DE {
 	};
 
 	template<typename T_COMPONENT>
-	inline T_COMPONENT* Actor::AddComponent(ComPtr<ID3D11Device>& device, const std::wstring& name)
+	inline T_COMPONENT* Actor::AddComponent(const std::wstring& name)
 	{
-		std::unique_ptr<T_COMPONENT> comp = std::make_unique<T_COMPONENT>(device, name);
+		std::unique_ptr<T_COMPONENT> comp = std::make_unique<T_COMPONENT>(name);
 		comp->SetOwner(this);
 		size_t idx = static_cast<size_t>(comp->GetType());
 		m_components[idx] = std::move(comp);

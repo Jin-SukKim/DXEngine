@@ -4,11 +4,11 @@
 #include "GraphicsCommon.h"
 
 namespace DE {
-	void ToneMappingFilter::Initialize(RenderBase& renderer, const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height)
+	void ToneMappingFilter::Initialize(const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height)
 	{
-		Super::Initialize(renderer, resources, targets, width, height);
+		Super::Initialize(resources, targets, width, height);
 
-		m_toneMapping.Initialize(renderer.GetDevice(), renderer.GetContext(), RenderBase::graphicsCommon.toneMappingPS, width, height);
+		m_toneMapping.Initialize(RenderBase::graphicsCommon.toneMappingPS, width, height);
 		m_toneMapping.SetShaderResources({ resources[0] });
 		m_toneMapping.SetRenderTargets(targets);
 
@@ -16,25 +16,24 @@ namespace DE {
 		m_toneMapping.GetConstData().option1 = 1.0f;  // Exposure로 사용;
 		m_toneMapping.GetConstData().option2 = 2.2f; // Gamma로 사용;
 
-		m_toneMapping.UpdateConstantBuffer(renderer.GetContext());
+		m_toneMapping.UpdateConstantBuffer();
 
 		// Constant Buffer 생성
-		m_const.Initialize(renderer.GetDevice());
+		m_const.Initialize();
 	}
 	
-	void ToneMappingFilter::Update(ComPtr<ID3D11DeviceContext>& context)
+	void ToneMappingFilter::Update()
 	{
-		m_toneMapping.UpdateConstantBuffer(context);
-		m_const.Upload(context);
+		m_toneMapping.UpdateConstantBuffer();
+		m_const.Upload();
 	}
 
-	void ToneMappingFilter::Render(RenderBase& renderer)
+	void ToneMappingFilter::Render()
 	{
-		Super::Render(renderer);
+		Super::Render();
 
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		// 화면 렌더링
-		context->PSSetConstantBuffers(5, 1, m_const.GetAddressOf());
-		RenderImageFilter(context, m_toneMapping);
+		GET_SINGLE(RenderBase)->GetContext()->PSSetConstantBuffers(5, 1, m_const.GetAddressOf());
+		RenderImageFilter(m_toneMapping);
 	}
 }

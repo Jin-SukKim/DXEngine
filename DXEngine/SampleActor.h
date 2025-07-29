@@ -9,12 +9,12 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		SampleActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
+		SampleActor(const std::wstring& name);
 		virtual ~SampleActor() override {}
 
 		void Initialize() override;
-		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(RenderBase& renderer) override;
+		void Update(const float& deltaTime) override;
+		void Render() override;
 	private:
 		ModelComponent* m_sample;
 		BoundComponent* m_boundVolume;

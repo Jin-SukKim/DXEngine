@@ -8,14 +8,14 @@
 #include "BoundComponent.h"
 
 namespace DE {
-	MirrorActor::MirrorActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
+	MirrorActor::MirrorActor(const std::wstring& name) : Super(name)
 	{
 		MeshData mesh = GeometryGenerator::MakeSquare(1.f);
-		m_mirror = AddComponent<ModelComponent>(device, L"Mirror");
-		m_mirror->SetModel(device, context, mesh);
+		m_mirror = AddComponent<ModelComponent>(L"Mirror");
+		m_mirror->SetModel(mesh);
 
-		m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
-		m_boundVolume->SetBoundingVolume(device, { mesh });
+		m_boundVolume = AddComponent<BoundComponent>(L"BoundingVolume");
+		m_boundVolume->SetBoundingVolume({ mesh });
 
 		MaterialConstants consts = m_mirror->GetMaterialCpu();
 		consts.albedoFactor = Vector3(0.3f);
@@ -28,7 +28,7 @@ namespace DE {
 		Vector3 normal = Vector3(0.f, 0.f, -1.f);
 		m_mirrorPlane = DirectX::SimpleMath::Plane(pos, normal);
 
-		m_reflectGlobalConsts.Initialize(device);
+		m_reflectGlobalConsts.Initialize();
 	}
 
 	void MirrorActor::Initialize()
@@ -38,9 +38,9 @@ namespace DE {
 		m_boundVolume->SetVisibility(false);
 	}
 
-	void MirrorActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void MirrorActor::Update(const float& deltaTime)
 	{
-		Super::Update(context, deltaTime);
+		Super::Update(deltaTime);
 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
@@ -49,9 +49,9 @@ namespace DE {
 		}
 	}
 
-	void MirrorActor::Render(RenderBase& renderer, std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap, const ComPtr<ID3D11Buffer>& globalConstsGPU)
+	void MirrorActor::Render(std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap, const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
-		
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11DeviceContext> context = renderer.GetContext();
 
 		// 거울 위치만 StencilBuffer에 1로 표기
@@ -60,60 +60,62 @@ namespace DE {
 		// 굳이 Stencil Buffer를 Clear해주지 않아도 됨
 		renderer.ClearStencilBuffer(); 
 
-		cubeMap->SetCommonSRVToNull(context); // IBL용 Shader Resource를 NULL로 설정
+		cubeMap->SetCommonSRVToNull(); // IBL용 Shader Resource를 NULL로 설정
 
 		// 거울을 렌더링 과정을 통해 Stencil Buffer에 Masking
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.stencilMaskPSO);
-		RenderComponent(context, ComponentType::Model);
+		RenderComponent(ComponentType::Model);
 		
 		// 거울 부분은 다른 반사된 세상을 그리므로 거울 부분의 Depth를 초기화
 		renderer.ClearDepthBuffer();
 
 		// 거울 위치에 반사된 물체들을 렌더링
-		SetGlobals(context, m_reflectGlobalConsts.Get());
+		SetGlobals(m_reflectGlobalConsts.Get());
 		// 반사된 세상을 그리므로 winding이 바뀜
-		cubeMap->SetCommonSRVs(context);
+		cubeMap->SetCommonSRVs();
 		// 반사된 세상을 물체들을 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSolidPSO);
 		for (auto& model : actorList[0])
 			if (model.get() != this)
-				model->Render(renderer);
+				model->Render();
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectBillboardSolidPSO);
 		for (auto& billboard : actorList[1])
-			billboard->Render(renderer);
+			billboard->Render();
 			
 		// 반사된 세상의 환경맵 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSkyboxSolidPSO);
-		cubeMap->Render(renderer);
+		cubeMap->Render();
 
 		// 거울 자체의 재질을 Blend로 렌더링
 		const float t = 1.f - m_mirrorAlpha;
 		const float blendFactor[4] = { t, t, t, 1.f };
 		RenderBase::graphicsCommon.mirror.mirrorBlendSolidPSO.SetBlendFactor(blendFactor);
-		cubeMap->SetCommonSRVToNull(context);
+		cubeMap->SetCommonSRVToNull();
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.mirrorBlendSolidPSO);
-		SetGlobals(context, globalConstsGPU);
-		RenderComponent(context, ComponentType::Model);
+		SetGlobals(globalConstsGPU);
+		RenderComponent(ComponentType::Model);
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
-		RenderComponent(context, ComponentType::BoundingVolume);
+		RenderComponent(ComponentType::BoundingVolume);
 	}
 
-	void MirrorActor::Render(RenderBase& renderer)
+	void MirrorActor::Render()
 	{
-		Super::Render(renderer);
+		Super::Render();
 	}
 
-	void MirrorActor::SetGlobals(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Buffer>& globalConstsGPU)
+	void MirrorActor::SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
 		context->VSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 		context->GSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 		context->PSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 	}
 
-	void MirrorActor::UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const GlobalConstants& globalConstsCPU, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj)
+	void MirrorActor::UpdateGlobalConstants(const GlobalConstants& globalConstsCPU, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj)
 	{
 		Matrix reflect = Matrix::CreateReflection(m_reflectPlane);
 		// DirectX는 Row-Major인데 HLSL는 Column-Major이므로 Transpose
@@ -127,6 +129,6 @@ namespace DE {
 		// 그림자 렌더링에 사용 (거울의 경우 광원의 위치도 반사시킨 후에 계산해야 함)
 		m_reflectGlobalConsts.GetCpu().invViewProj = m_reflectGlobalConsts.GetCpu().viewProj.Invert();
 
-		m_reflectGlobalConsts.Upload(context);
+		m_reflectGlobalConsts.Upload();
 	}
 }

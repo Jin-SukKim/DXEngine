@@ -6,10 +6,10 @@
 
 namespace DE {
 	UINT Actor::nextID = 0;
-	Actor::Actor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, name), m_id(nextID++) {
+	Actor::Actor(const std::wstring& name) : Super(name), m_id(nextID++) {
 		m_components.resize(static_cast<size_t>(ComponentType::MaxComponentType));
 		// 모든 Actor에 TransformComopnent추가
-		initTransform(device);
+		initTransform();
 		
 		setHashIdToColor(GetHashID());
 	}
@@ -23,20 +23,18 @@ namespace DE {
 		}
 	}
 
-	void Actor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void Actor::Update(const float& deltaTime)
 	{
 		for (std::unique_ptr<Component>& component : m_components) {
 			Component* comp = component.get();
 			if (comp)
-				comp->Update(context, deltaTime);
+				comp->Update(deltaTime);
 		}
 	}
 
-	void Actor::Render(RenderBase& renderer)
+	void Actor::Render()
 	{
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
-
-		RenderComponent(context, ComponentType::Model);
+		RenderComponent(ComponentType::Model);
 		
 
 		//for (std::unique_ptr<Component>& component : m_components) {
@@ -46,23 +44,23 @@ namespace DE {
 		//}
 	}
 
-	void Actor::RenderBoundingVolume(RenderBase& renderer)
+	void Actor::RenderBoundingVolume()
 	{
-		RenderComponent(renderer.GetContext(), ComponentType::BoundingVolume);
+		RenderComponent(ComponentType::BoundingVolume);
 	}
 
-	void Actor::RenderNormal(RenderBase& renderer)
+	void Actor::RenderNormal()
 	{
 		ModelComponent* comp = dynamic_cast<ModelComponent*>(m_components[size_t(ComponentType::Model)].get());
 		if (comp && comp->IsDrawNormal()) {
 			// Normal Vector 그리기
-			comp->RenderNormal(renderer.GetContext());
+			comp->RenderNormal();
 		}
 	}
 
-	void Actor::initTransform(ComPtr<ID3D11Device>& device)
+	void Actor::initTransform()
 	{
-		TransformComponent* tr = AddComponent<TransformComponent>(device, L"Transform");
+		TransformComponent* tr = AddComponent<TransformComponent>(L"Transform");
 	}
 
 	int Actor::GetHashID()
@@ -81,10 +79,10 @@ namespace DE {
 		m_hashColor[3] = 255;						// a
 	}
 
-	void Actor::RenderComponent(ComPtr<ID3D11DeviceContext>& context, const ComponentType& type)
+	void Actor::RenderComponent(const ComponentType& type)
 	{
 		Component* comp = m_components[size_t(type)].get();
 		if (comp)
-			comp->Render(context);
+			comp->Render();
 	}
 }

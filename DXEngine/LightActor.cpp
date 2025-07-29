@@ -1,12 +1,11 @@
 #include "pch.h"
 #include "LightActor.h"
 #include "TransformComponent.h"
-#include "RenderBase.h"
 
 namespace DE {
 	UINT LightActor::lightID = 0;
 
-	LightActor::LightActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name), m_lightID(lightID++)
+	LightActor::LightActor(const std::wstring& name) : Super(name), m_lightID(lightID++)
 	{
 		m_light.radiance = Vector3(5.0f);
 		m_light.spotPower = 10.0f;                      // 좀 더 집중된 빛
@@ -14,7 +13,7 @@ namespace DE {
 		m_light.fallOffEnd = 100.0f;
 		m_light.type = LIGHT_OFF;
 
-		m_shadowGlobalConsts.Initialize(device);
+		m_shadowGlobalConsts.Initialize();
 	}
 
 	void LightActor::Initialize()
@@ -29,11 +28,11 @@ namespace DE {
 		//}
 	}
 
-	void LightActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void LightActor::Update(const float& deltaTime)
 	{
 		if (m_light.type & LIGHT_OFF)
 			return; // 빛이 꺼져있으면 업데이트하지 않음
-		Super::Update(context, deltaTime);
+		Super::Update(deltaTime);
 
 		TransformComponent* tr = GetComponent<TransformComponent>();
 		if (tr) {
@@ -47,36 +46,36 @@ namespace DE {
 			Matrix view = GetLightViewMatrix();
 			Matrix proj = GetLightProjMatrix();
 
-			UpdateShadowGlobals(context, view, proj);
+			UpdateShadowGlobals(view, proj);
 		}
 	}
 
-	void LightActor::Render(RenderBase& renderer)
+	void LightActor::Render()
 	{
 		if (m_light.type & LIGHT_OFF)
 			return; // 빛이 꺼져있으면 렌더링하지 않음
 
-		Super::Render(renderer);
+		Super::Render();
 		// TODO: 빛을 의미하는 표현하는 걸 렌더링하면 좋을듯 (언리얼 엔진 생각해보기)
 	}
 
-	void LightActor::RenderShadow(RenderBase& renderer, const std::vector<std::shared_ptr<Actor>>& actorList)
+	void LightActor::RenderShadow(const std::vector<std::shared_ptr<Actor>>& actorList)
 	{
 		if (m_light.type & LIGHT_OFF)
 			return; // 빛이 꺼져있으면 렌더링하지 않음
 
 		if (m_light.type & LIGHT_SHADOW) {
-			SetGlobals(renderer.GetContext(), m_shadowGlobalConsts.Get());
+			SetGlobals(m_shadowGlobalConsts.Get());
 
 			for (const auto& actor : actorList) {
 				if (actor->IsCastShadow() && actor->IsVisible()) {
-					actor->Render(renderer);
+					actor->Render();
 				}
 			}
 		}
 	}
 
-	void LightActor::UpdateShadowGlobals(ComPtr<ID3D11DeviceContext>& context, const Matrix& view, const Matrix& proj)
+	void LightActor::UpdateShadowGlobals(const Matrix& view, const Matrix& proj)
 	{
 		m_shadowGlobalConsts.GetCpu().eyeWorld = m_light.position;
 		m_shadowGlobalConsts.GetCpu().view = view.Transpose();
@@ -91,7 +90,7 @@ namespace DE {
 		m_light.nearPlane = m_nearZ;
 		m_light.frustumWidth = GetLightFrustumWidth(proj);
 
-		m_shadowGlobalConsts.Upload(context);
+		m_shadowGlobalConsts.Upload();
 	}
 
 	float LightActor::GetLightFrustumWidth(const Matrix& proj)
@@ -126,7 +125,9 @@ namespace DE {
 			DirectX::XMConvertToRadians(m_lightFov), m_aspectRatio, m_nearZ, m_farZ);
 	}
 
-	void LightActor::SetGlobals(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Buffer>& globalConstsGPU) {
+	void LightActor::SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU) {
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
 		context->VSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 		context->GSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());

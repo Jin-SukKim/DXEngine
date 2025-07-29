@@ -7,11 +7,11 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		CameraActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name) {}
+		CameraActor(const std::wstring& name) : Super(name) {}
 		virtual ~CameraActor() {}
 
 		void Initialize() override;
-		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
+		void Update(const float& deltaTime) override;
 
 		Matrix GetViewMatrix();
 		Matrix GetProjMatrix();

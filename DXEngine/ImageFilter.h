@@ -5,11 +5,11 @@ namespace DE {
 	{
 	public:
 		ImageFilter() {};
-		ImageFilter(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, ComPtr<ID3D11PixelShader>& pixelShader, int width, int height);
+		ImageFilter(ComPtr<ID3D11PixelShader>& pixelShader, int width, int height);
 
-		void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, ComPtr<ID3D11PixelShader>& pixelShader, int width, int height);
-		void UpdateConstantBuffer(ComPtr<ID3D11DeviceContext>& context);
-		void Render(ComPtr<ID3D11DeviceContext>& context) const;
+		void Initialize(ComPtr<ID3D11PixelShader>& pixelShader, int width, int height);
+		void UpdateConstantBuffer();
+		void Render() const;
 
 		// Image Filter Pixel Shader에서 사용할 ShaderResourceView 설정
 		void SetShaderResources(const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources);

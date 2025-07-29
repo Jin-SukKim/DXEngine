@@ -9,7 +9,7 @@
 #include "RenderBase.h"
 
 namespace DE {
-	SampleActor::SampleActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
+	SampleActor::SampleActor(const std::wstring& name) : Super(name)
 	{
 		// main object
 		{
@@ -27,11 +27,11 @@ namespace DE {
 				//meshes.heightTextureFilename = basePath + "Bricks075A_1K-PNG_Displacement.png";
 			}
 
-			m_sample = AddComponent<ModelComponent>(device, L"Model");
-			m_sample->SetModel(device, context, meshes, true);
+			m_sample = AddComponent<ModelComponent>(L"Model");
+			m_sample->SetModel(meshes, true);
 
-			m_boundVolume = AddComponent<BoundComponent>(device, L"BoundingVolume");
-			m_boundVolume->SetBoundingVolume(device, meshes);
+			m_boundVolume = AddComponent<BoundComponent>(L"BoundingVolume");
+			m_boundVolume->SetBoundingVolume(meshes);
 
 			//MaterialConstants consts = m_sample->GetMaterialCpu();
 			//consts.albedoFactor = Vector3(0.3f);
@@ -47,8 +47,8 @@ namespace DE {
 		m_boundVolume->SetVisibility(false);
 	}
 
-	void SampleActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
-		Super::Update(context, deltaTime);
+	void SampleActor::Update(const float& deltaTime) {
+		Super::Update(deltaTime);
 		// constant buffer data °»½Å
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
@@ -58,8 +58,8 @@ namespace DE {
 		}
 	}
 
-	void SampleActor::Render(RenderBase& renderer) {
-		Super::Render(renderer);
+	void SampleActor::Render() {
+		Super::Render();
 	}
 
 }

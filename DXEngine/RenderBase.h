@@ -10,8 +10,8 @@ namespace DE {
 
 	class RenderBase
 	{
+		GENERATE_SINGLE(RenderBase)
 	public:
-		RenderBase();
 		virtual ~RenderBase();
 
 		virtual bool Initialize(WindowInfo& window);
@@ -84,7 +84,7 @@ namespace DE {
 		// [0.0, 1.0]으로 정해진 범위가 아닌 float으로 더 넓은 범위에 대해서 렌더링을 할 수 있음
 		//DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT; // 64-bit color (HDR Pipeline 사용)
 
-		D3D11_VIEWPORT m_screenViewport;
+		D3D11_VIEWPORT m_screenViewport = D3D11_VIEWPORT();
 		bool m_drawAsWire = false;
 
 		// Depth-Stencil Buffer

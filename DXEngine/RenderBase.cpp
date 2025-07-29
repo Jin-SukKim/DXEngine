@@ -9,9 +9,6 @@
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
 
-	RenderBase::RenderBase() : m_screenViewport(D3D11_VIEWPORT())
-	{
-	}
 	RenderBase::~RenderBase()
 	{
 	}
@@ -83,7 +80,7 @@ namespace DE {
 		// TODO: 임시
 		D3D11Utils::CreateImageFilterTexture(m_device, int(m_screenViewport.Width), int(m_screenViewport.Height), m_toneMapTexture);
 		m_toneMapping = std::make_shared<ToneMappingFilter>();
-		m_toneMapping->Initialize(*this, { m_toneMapTexture.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
+		m_toneMapping->Initialize({ m_toneMapTexture.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
 
 		return true;
 	}
@@ -91,10 +88,10 @@ namespace DE {
 	void RenderBase::Update()
 	{
 		if (m_postProcess)
-			m_postProcess->Update(m_context);
+			m_postProcess->Update();
 
 		// TODO: 임시
-		m_toneMapping->Update(m_context);
+		m_toneMapping->Update();
 	}
 
 	void RenderBase::Render()
@@ -112,10 +109,10 @@ namespace DE {
 		// Set PostProcessing GraphcisPSO
 		SetPipelineState(m_postProcessPSO);
 		if (m_postProcess)
-			m_postProcess->Render(*this);
+			m_postProcess->Render();
 
 		// TODO: 임시
-		m_toneMapping->Render(*this);
+		m_toneMapping->Render();
 
 		// 현재 프레임 결과 복사
 		ComPtr<ID3D11Texture2D> backBuffer;
@@ -298,7 +295,7 @@ namespace DE {
 
 	void RenderBase::SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso)
 	{
-		postProcess.Initialize(*this, { m_floatBuffer.GetSRV(), m_prevFrame.GetSRV() }, { m_toneMapTexture.GetRTV() }, int(m_screenViewport.Width), int(m_screenViewport.Height));
+		postProcess.Initialize({ m_floatBuffer.GetSRV(), m_prevFrame.GetSRV() }, { m_toneMapTexture.GetRTV() }, int(m_screenViewport.Width), int(m_screenViewport.Height));
 		m_postProcess = &postProcess;
 		m_postProcessPSO = pso;
 	}

@@ -3,27 +3,30 @@
 #include "GeometryGenerator.h"
 #include "TransformComponent.h"
 #include "Actor.h"
-
+#include "RenderBase.h"
 #include <filesystem>
 
 namespace DE {
-	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF)
+	void ModelComponent::SetModel(const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF)
 	{
 		std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
-		SetModel(device, context, meshes, isGLTF);
+		SetModel(meshes, isGLTF);
 	}
 
-	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const MeshData& mesh, bool isGLTF)
+	void ModelComponent::SetModel(const MeshData& mesh, bool isGLTF)
 	{
-		SetModel(device, context, std::vector<MeshData>{mesh}, isGLTF);
+		SetModel(std::vector<MeshData>{mesh}, isGLTF);
 	}
 
-	void ModelComponent::SetModel(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<MeshData>& meshes, bool isGLTF)
+	void ModelComponent::SetModel(const std::vector<MeshData>& meshes, bool isGLTF)
 	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
 		// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
-		m_constant.Initialize(device);
-		m_basicMaterial.Initialize(device);
-		m_material.Initialize(device);
+		m_constant.Initialize();
+		m_basicMaterial.Initialize();
+		m_material.Initialize();
 
 		for (const auto& meshData : meshes) {
 			Mesh newMesh;
@@ -100,17 +103,17 @@ namespace DE {
 		Super::Initialize();
 	}
 	
-	void ModelComponent::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
-		Super::Update(context, deltaTime);
+	void ModelComponent::Update(const float& deltaTime) {
+		Super::Update(deltaTime);
 		// Constant Data를 CPU -> GPU
 		if (m_meshes.empty())
 			return;
 
 		if (updateWorldCpu()) {
 			// 현재 모델의 모든 Mesh가 buffer를 공유하기 때문에 하나만 복사
-			m_constant.Upload(context);
-			m_basicMaterial.Upload(context);
-			m_material.Upload(context);
+			m_constant.Upload();
+			m_basicMaterial.Upload();
+			m_material.Upload();
 		}
 	}
 
@@ -147,8 +150,9 @@ namespace DE {
 		return true;
 	}
 
-	void ModelComponent::Render(ComPtr<ID3D11DeviceContext>& context) {
-		Super::Render(context);
+	void ModelComponent::Render() {
+		Super::Render();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		for (const auto& mesh : m_meshes) {
 			ID3D11Buffer* constBuffers[3] = {
 				mesh.basicMaterialConstGPU.Get(),
@@ -175,11 +179,13 @@ namespace DE {
 		}
 	}
 
-	void ModelComponent::RenderNormal(ComPtr<ID3D11DeviceContext>& context)
+	void ModelComponent::RenderNormal()
 	{
 		if (!m_drawNormal)
 			return;
 		// Normal Vector 그리기
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
 		for (const auto& mesh : m_meshes) {
 			ID3D11Buffer* constBuffers[3] = {mesh.basicMaterialConstGPU.Get(),
 											 mesh.meshConstGPU.Get(),
@@ -190,8 +196,10 @@ namespace DE {
 		}
 	}
 
-	void ModelComponent::RenderPoints(ComPtr<ID3D11DeviceContext>& context)
+	void ModelComponent::RenderPoints()
 	{
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
 		for (const auto& mesh : m_meshes) {
 			ID3D11Buffer* constBuffers[3] = {
 				mesh.basicMaterialConstGPU.Get(),

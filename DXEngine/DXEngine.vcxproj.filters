@@ -251,6 +251,10 @@
       <Filter>public\Actor\Light</Filter>
     </ClInclude>
     <ClInclude Include="SpotLight.h" />
+    <ClInclude Include="PointLight.h" />
+    <ClInclude Include="Utils.h">
+      <Filter>public\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -359,6 +363,9 @@
       <Filter>private\Actor\Light</Filter>
     </ClCompile>
     <ClCompile Include="SpotLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PointLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -10,16 +10,16 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		MirrorActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
+		MirrorActor(const std::wstring& name);
 		~MirrorActor() override {}
 
 		void Initialize() override;
-		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(RenderBase& renderer, std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap, const ComPtr<ID3D11Buffer>& globalConstsGPU);
-		void Render(RenderBase& renderer) override;
+		void Update(const float& deltaTime) override;
+		void Render(std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap, const ComPtr<ID3D11Buffer>& globalConstsGPU);
+		void Render() override;
 
-		void SetGlobals(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Buffer>& globalConstsGPU);
-		void UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const GlobalConstants& globalConstsCPU, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
+		void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
+		void UpdateGlobalConstants(const GlobalConstants& globalConstsCPU, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
 	private:
 		ModelComponent* m_mirror; // 거울 형상
 		DirectX::SimpleMath::Plane m_mirrorPlane; // 반사 행렬을 만들기 위한 Plane(일종의 반사되는 기준)

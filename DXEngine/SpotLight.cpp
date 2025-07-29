@@ -4,7 +4,7 @@
 
 namespace DE {
 
-	SpotLight::SpotLight(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
+	SpotLight::SpotLight(const std::wstring& name) : Super(name)
 	{
 		m_light.radiance = Vector3(5.0f);
 		m_light.spotPower = 10.0f;    
@@ -27,11 +27,11 @@ namespace DE {
 		}
 	}
 
-	void SpotLight::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void SpotLight::Update(const float& deltaTime)
 	{
 		if (m_light.type & LIGHT_OFF)
 			return; // 빛이 꺼져있으면 업데이트하지 않음
-		Super::Update(context, deltaTime);
+		Super::Update(deltaTime);
 	}
 
 	float SpotLight::GetLightFrustumWidth(const Matrix& proj)

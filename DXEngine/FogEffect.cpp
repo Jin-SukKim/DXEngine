@@ -3,42 +3,39 @@
 #include "RenderBase.h"
 
 namespace DE {
-	void FogEffect::Initialize(RenderBase& renderer, const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height)
+	void FogEffect::Initialize(const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height)
 	{
-		Super::Initialize(renderer, resources, targets, width, height);
-
-		ComPtr<ID3D11Device>& device = renderer.GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+		Super::Initialize(resources, targets, width, height);
 		
-		CreateBuffer(device, width, height, m_haloTexture);
+		CreateBuffer(width, height, m_haloTexture);
 
-		m_haloFilter.Initialize(device, context, RenderBase::graphicsCommon.haloPS, width, height);
+		m_haloFilter.Initialize(RenderBase::graphicsCommon.haloPS, width, height);
 		m_haloFilter.SetShaderResources({ resources[0] });
 		m_haloFilter.SetRenderTargets({ m_haloTexture.GetRTV() });
 
-		m_fogFilter.Initialize(device, context, RenderBase::graphicsCommon.fogPS, width, height);
+		m_fogFilter.Initialize(RenderBase::graphicsCommon.fogPS, width, height);
 		m_fogFilter.SetShaderResources({ m_haloTexture.GetSRV() });
 		m_fogFilter.SetRenderTargets(targets);
 		
-		m_const.Initialize(renderer.GetDevice());
+		m_const.Initialize();
 	}
-	void FogEffect::Update(ComPtr<ID3D11DeviceContext>& context)
+	void FogEffect::Update()
 	{
-		m_fogFilter.UpdateConstantBuffer(context);
-		m_haloFilter.UpdateConstantBuffer(context);
-		m_const.Upload(context);
+		m_fogFilter.UpdateConstantBuffer();
+		m_haloFilter.UpdateConstantBuffer();
+		m_const.Upload();
 	}
-	void FogEffect::Render(RenderBase& renderer)
+	void FogEffect::Render()
 	{
-		Super::Render(renderer);
+		Super::Render();
 
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		context->PSSetConstantBuffers(5, 1, m_const.GetAddressOf());
 
-		Texture2D& depthBuffer = renderer.GetDepthOnlyBuffer();
+		Texture2D& depthBuffer = GET_SINGLE(RenderBase)->GetDepthOnlyBuffer();
 		context->PSSetShaderResources(1, 1, depthBuffer.GetAddressOfSRV());
 
-		RenderImageFilter(context, m_haloFilter);
-		RenderImageFilter(context, m_fogFilter);
+		RenderImageFilter(m_haloFilter);
+		RenderImageFilter(m_fogFilter);
 	}
 }

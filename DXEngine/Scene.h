@@ -20,26 +20,26 @@ namespace DE {
 	class Scene
 	{
 	public:
-		Scene(RenderBase& renderer);
+		Scene();
 		virtual ~Scene() {}
 		virtual void Initialize();
-		virtual void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime);
-		virtual void Render(RenderBase& renderer);
+		virtual void Update(const float& deltaTime);
+		virtual void Render();
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
 
 		uint8_t* GetPickColor() { return m_pickColor; }
 	protected:
-		virtual void UpdateLight(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime);
-		virtual void SetGlobals(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Buffer>& globalConstsGPU);
-		virtual void UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
+		virtual void UpdateLight(const float& deltaTime);
+		virtual void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
+		virtual void UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
 		// Rendering
-		virtual void RenderOpaqueObjects(RenderBase& renderer); // 불투명한 물체 렌더링
-		virtual void RenderMirror(RenderBase& renderer); // 거울 렌더링
+		virtual void RenderOpaqueObjects(); // 불투명한 물체 렌더링
+		virtual void RenderMirror(); // 거울 렌더링
 		// Depth값만 추출하기 위한 Depth Only Pass
-		virtual void RenderDepthOnly(RenderBase& renderer);
+		virtual void RenderDepthOnly();
 		// 그림자를 위한 그림자 맵
-		virtual void RenderShadowMap(RenderBase& renderer);
+		virtual void RenderShadowMap();
 	private:
 		void enableCamFpv();
 		void pickingRay(float click);

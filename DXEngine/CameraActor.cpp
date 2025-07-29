@@ -13,7 +13,7 @@ namespace DE {
         m_mouseClick = InputAxisAction(lButton, rButton);
     }
 
-    void CameraActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+    void CameraActor::Update(const float& deltaTime)
     {
         if (!m_fpv)
             return;

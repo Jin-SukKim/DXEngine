@@ -2,12 +2,12 @@
 #include "ImageFilter.h"
 
 namespace DE {
-	ImageFilter::ImageFilter(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, ComPtr<ID3D11PixelShader>& pixelShader, int width, int height)
+	ImageFilter::ImageFilter(ComPtr<ID3D11PixelShader>& pixelShader, int width, int height)
 	{
-		Initialize(device, context, pixelShader, width, height);
+		Initialize(pixelShader, width, height);
 	}
 
-	void ImageFilter::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, ComPtr<ID3D11PixelShader>& pixelShader, int width, int height)
+	void ImageFilter::Initialize(ComPtr<ID3D11PixelShader>& pixelShader, int width, int height)
 	{
 		// Pixel Shader 복사
 		ThrowIfFailed(pixelShader.CopyTo(m_pixelShader.GetAddressOf()));
@@ -21,21 +21,21 @@ namespace DE {
 		m_viewport.MaxDepth = 1.f;
 
 		// Constant Buffer 생성
-		m_const.Initialize(device);
+		m_const.Initialize();
 		m_const.GetCpu().dx = 1.f / width;
 		m_const.GetCpu().dy = 1.f / height;
 	}
 
-	void ImageFilter::UpdateConstantBuffer(ComPtr<ID3D11DeviceContext>& context)
+	void ImageFilter::UpdateConstantBuffer()
 	{
-		m_const.Upload(context);
+		m_const.Upload();
 	}
 
-	void ImageFilter::Render(ComPtr<ID3D11DeviceContext>& context) const
+	void ImageFilter::Render() const
 	{
 		assert(m_shaderResources.size() > 0);
 		assert(m_renderTargets.size() > 0);
-
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		context->RSSetViewports(1, &m_viewport);
 		// Image Filter이므로 DepthStencilView는 필요없음
 		context->OMSetRenderTargets(UINT(m_renderTargets.size()), m_renderTargets.data(), NULL);

@@ -7,10 +7,10 @@
 #include "RenderBase.h"
 
 namespace DE {
-	BillboardActor::BillboardActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
+	BillboardActor::BillboardActor(const std::wstring& name) : Super(name)
 	{	
-		m_billboardModel = AddComponent<ModelComponent>(device, L"BillboardModel");
-		m_billboardBounds = AddComponent<BoundComponent>(device, L"BillboardBound");
+		m_billboardModel = AddComponent<ModelComponent>(L"BillboardModel");
+		m_billboardBounds = AddComponent<BoundComponent>(L"BillboardBound");
 	}
 
 	void BillboardActor::Initialize()
@@ -20,14 +20,14 @@ namespace DE {
 		m_billboardBounds->SetVisibility(false);
 	}
 
-	void BillboardActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void BillboardActor::Update(const float& deltaTime)
 	{
-		Super::Update(context, deltaTime);
-		m_billboardConsts.Upload(context);
+		Super::Update(deltaTime);
+		m_billboardConsts.Upload();
 	}
 
-	void BillboardActor::Render(RenderBase& renderer) {
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+	void BillboardActor::Render() {
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		if (m_pixelShader)
 			context->PSSetShader(m_pixelShader.Get(), 0, 0);
@@ -38,11 +38,11 @@ namespace DE {
 		// Texture Array도 Texture2D와 동일하게 사용
 		context->PSSetShaderResources(0, 1, m_texArray.GetAddressOfSRV());
 
-		m_billboardModel->RenderPoints(context);
+		m_billboardModel->RenderPoints();
 		context->GSSetShader(nullptr, 0, 0);
 	}
 
-	void BillboardActor::SetBillboard(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader)
+	void BillboardActor::SetBillboard(const std::vector<Vector3>& points, const float& width, const std::vector<std::string>& filenames, const ComPtr<ID3D11PixelShader>& pixelShader)
 	{
 		MeshData meshData;
 		uint32_t indexCount = 0;
@@ -55,18 +55,21 @@ namespace DE {
 			meshData.indices.emplace_back(indexCount++);
 		}
 
-		m_billboardModel->SetModel(device, context, meshData);
+		m_billboardModel->SetModel(meshData);
 		m_pixelShader = pixelShader;
 
-		m_billboardBounds->SetBoundingVolume(device, { meshData });
+		m_billboardBounds->SetBoundingVolume({ meshData });
 
 		if (filenames.size()) {
+			ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+			ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
 			D3D11Utils::CreateTextureArray(device, context, filenames, m_texArray);
 			m_billboardConsts.GetCpu().arraySize = UINT(filenames.size());
 		}
 
 		m_billboardConsts.GetCpu().widthWorld = width;
-		m_billboardConsts.Initialize(device);
+		m_billboardConsts.Initialize();
 	}
 }
 

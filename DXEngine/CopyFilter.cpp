@@ -3,27 +3,24 @@
 #include "RenderBase.h"
 
 namespace DE {
-	void CopyFilter::Initialize(RenderBase& renderer, const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height)
+	void CopyFilter::Initialize(const std::vector<ComPtr<ID3D11ShaderResourceView>>& resources, const std::vector<ComPtr<ID3D11RenderTargetView>>& targets, int width, int height)
 	{
-		Super::Initialize(renderer, resources, targets, width, height);
+		Super::Initialize(resources, targets, width, height);
 
-		ComPtr<ID3D11Device>& device = renderer.GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
-
-		m_copyFilter.Initialize(device, context, RenderBase::graphicsCommon.copyPS, width, height);
+		m_copyFilter.Initialize(RenderBase::graphicsCommon.copyPS, width, height);
 		m_copyFilter.SetShaderResources({ resources[0] });
 		m_copyFilter.SetRenderTargets(targets);
 	}
 
-	void CopyFilter::Update(ComPtr<ID3D11DeviceContext>& context)
+	void CopyFilter::Update()
 	{
-		m_copyFilter.UpdateConstantBuffer(context);
+		m_copyFilter.UpdateConstantBuffer();
 	}
 
-	void CopyFilter::Render(RenderBase& renderer)
+	void CopyFilter::Render()
 	{
-		Super::Render(renderer);
+		Super::Render();
 
-		RenderImageFilter(renderer.GetContext(), m_copyFilter);
+		RenderImageFilter(m_copyFilter);
 	}
 }

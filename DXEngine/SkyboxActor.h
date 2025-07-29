@@ -8,19 +8,19 @@ namespace DE {
 	{
 		using Super = Actor;
 	public:
-		SkyboxActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name);
+		SkyboxActor(const std::wstring& name);
 		~SkyboxActor() override {}
 
 		void Initialize() override;
-		void Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) override;
-		void Render(RenderBase& renderer) override;
+		void Update(const float& deltaTime) override;
+		void Render() override;
 
-		void SetCubeMaps(ComPtr<ID3D11Device>& device, std::wstring basePath, std::wstring envFilename, std::wstring specularFilename, std::wstring irradianceFilename, std::wstring brdfFilename);
+		void SetCubeMaps(std::wstring basePath, std::wstring envFilename, std::wstring specularFilename, std::wstring irradianceFilename, std::wstring brdfFilename);
 		
 		// 렌더링할 때 공통으로 사용할 Texture들을 Graphics Pipeline에 설정
-		void SetCommonSRVs(ComPtr<ID3D11DeviceContext>& context);
+		void SetCommonSRVs();
 		// Resource로 사용하지 않기 위해 null로 설정
-		void SetCommonSRVToNull(ComPtr<ID3D11DeviceContext>& context);
+		void SetCommonSRVToNull();
 	private:
 		ModelComponent* m_sky;
 

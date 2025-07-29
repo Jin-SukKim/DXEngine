@@ -9,14 +9,14 @@
 #include "RenderBase.h"
 
 namespace DE {
-	SquareActor::SquareActor(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::wstring& name) : Super(device, context, name)
+	SquareActor::SquareActor(const std::wstring& name) : Super(name)
 	{
 		// main object
 		{
 			MeshData mesh = GeometryGenerator::MakeSquare(3.f);
 
-			m_sample = AddComponent<ModelComponent>(device, L"Model");
-			m_sample->SetModel(device, context, mesh);
+			m_sample = AddComponent<ModelComponent>(L"Model");
+			m_sample->SetModel(mesh);
 
 			MaterialConstants consts = m_sample->GetMaterialCpu();
 			consts.albedoFactor = Vector3(0.3f);
@@ -39,12 +39,12 @@ namespace DE {
 		}
 	}
 
-	void SquareActor::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
-		Super::Update(context, deltaTime);
+	void SquareActor::Update(const float& deltaTime) {
+		Super::Update(deltaTime);
 	}
 
-	void SquareActor::Render(RenderBase& renderer) {
-		Super::Render(renderer);
+	void SquareActor::Render() {
+		Super::Render();
 	}
 
 }

@@ -21,8 +21,9 @@
 #include "SpotLight.h"
 
 namespace DE {
-	Scene::Scene(RenderBase& renderer) : xAxis(InputAxis::XAxis)
+	Scene::Scene() : xAxis(InputAxis::XAxis)
 	{
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11Device>& device = renderer.GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
@@ -32,27 +33,27 @@ namespace DE {
 
 		// Scene 공통 Actor
 		{
-			m_mainCamera = std::make_shared<CameraActor>(device, context, L"MainCamera");
+			m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");
 			//m_actorList.emplace_back(m_mainCamera);
 			m_fpv = InputAction(f);
 
-			m_skybox = std::make_shared<SkyboxActor>(device, context, L"Skybox");
+			m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
 			//m_actorList.emplace_back(m_skybox);
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
 
-			m_lights[0] = std::make_shared<SpotLight>(device, context, L"SpotLight");
+			m_lights[0] = std::make_shared<SpotLight>(L"SpotLight");
 			for (int i = 1; i < MAX_LIGHTS; ++i)
 				//m_shadowGlobalConsts[i].Initialize(device);
-				m_lights[i] = std::make_shared<LightActor>(device, context, L"Light");
+				m_lights[i] = std::make_shared<LightActor>(L"Light");
 
 			//m_lights[0]->GetLight().type = LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
 		}
 
-		triangle = std::make_shared<SampleActor>(device, context, L"Temp");
+		triangle = std::make_shared<SampleActor>(L"Temp");
 		m_actorList[0].emplace_back(triangle);
 
-		ground = std::make_shared<SquareActor>(device, context, L"ground");
+		ground = std::make_shared<SquareActor>(L"ground");
 		m_actorList[0].emplace_back(ground);
 
 		m_copyPostProcess = std::make_shared<CopyFilter>();
@@ -61,10 +62,10 @@ namespace DE {
 		m_depthPP = std::make_shared<FogEffect>();
 		renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
-		m_billboard = std::make_shared<TreeBillboard>(device, context, L"trees");
+		m_billboard = std::make_shared<TreeBillboard>(L"trees");
 		m_actorList[1].emplace_back(m_billboard);
 
-		m_mirror = std::make_shared<MirrorActor>(device, context, L"Mirror");
+		m_mirror = std::make_shared<MirrorActor>(L"Mirror");
 	}
 
 	void Scene::Initialize() {
@@ -121,34 +122,38 @@ namespace DE {
 
 	}
 
-	void Scene::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime) {
+	void Scene::Update(const float& deltaTime) {
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
+		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+
 		// Camera Update
-		m_mainCamera->Update(context, deltaTime);
+		m_mainCamera->Update(deltaTime);
 
 		const Vector3 eyeWorld = m_mainCamera->GetPos();
 		const Matrix view = m_mainCamera->GetViewMatrix();
 		const Matrix proj = m_mainCamera->GetProjMatrix();
 
 		// 공용 Constant buffer 업데이트
-		UpdateGlobalConstants(context, deltaTime, eyeWorld, view, proj);
+		UpdateGlobalConstants(deltaTime, eyeWorld, view, proj);
 		// 조명 업데이트
-		UpdateLight(context, deltaTime);
+		UpdateLight(deltaTime);
 
 		for (auto& actorList : m_actorList)
 			for (auto& actor : actorList)
-				actor->Update(context, deltaTime);
+				actor->Update(deltaTime);
 		
-		m_mirror->Update(context, deltaTime);
-		m_mirror->UpdateGlobalConstants(context, m_globalConstsCPU, deltaTime, eyeWorld, view, proj);
+		m_mirror->Update(deltaTime);
+		m_mirror->UpdateGlobalConstants(m_globalConstsCPU, deltaTime, eyeWorld, view, proj);
 		
 		// TODO: Picking Test
 		//pickingGpu(0);
 	}
 
-	void Scene::Render(RenderBase& renderer) {
+	void Scene::Render() {
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		// Shader들에서 공통으로 사용할 Constant Buffer, Sampler State등을 설정
-		SetGlobals(context, m_globalConstsGPU);
+		SetGlobals(m_globalConstsGPU);
 
 		// Shader들에서 공통으로 사용하는 Sampler States
 		context->VSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
@@ -156,39 +161,42 @@ namespace DE {
 		context->PSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
 			RenderBase::graphicsCommon.sampleStates.data());
 
-		RenderDepthOnly(renderer);
-		RenderShadowMap(renderer);
+		RenderDepthOnly();
+		RenderShadowMap();
 
 		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
 		//m_skybox->SetCommonSRVs(context);
 
 		// 불투명 물체들 렌더링
-		RenderOpaqueObjects(renderer);
+		RenderOpaqueObjects();
 
 		// 거울 렌더링
-		RenderMirror(renderer);
+		RenderMirror();
 	}
 
-	void Scene::UpdateLight(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void Scene::UpdateLight(const float& deltaTime)
 	{
 		// 그림자맵을 만들기 위한 시점
 		for (int i = 0; i < MAX_LIGHTS; ++i) {
-			m_lights[i]->Update(context, deltaTime);
+			m_lights[i]->Update(deltaTime);
 
 			m_globalConstsCPU.lights[i] = m_lights[i]->GetLight();
 		}
 	}
 
-	void Scene::SetGlobals(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Buffer>& globalConstsGPU)
+	void Scene::SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
+		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		// Global Constants을 Shader에서 사용할 수 있도록 설정
 		context->VSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 		context->GSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 		context->PSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 	}
 
-	void Scene::UpdateGlobalConstants(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj)
+	void Scene::UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj)
 	{
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		// DirectX는 Row-Major인데 HLSL는 Column-Major이므로 Transpose
 		m_globalConstsCPU.view = view.Transpose();
 		m_globalConstsCPU.proj = proj.Transpose();
@@ -196,17 +204,17 @@ namespace DE {
 		m_globalConstsCPU.invProj = proj.Invert().Transpose();
 		m_globalConstsCPU.invViewProj = m_globalConstsCPU.viewProj.Invert(); // 그림자 렌더링에 사용
 		m_globalConstsCPU.eyeWorld = eyeWorld;
-		D3D11Utils::UpdateBuffer(context, m_globalConstsCPU, m_globalConstsGPU);
+		D3D11Utils::UpdateBuffer(renderer.GetContext(), m_globalConstsCPU, m_globalConstsGPU);
 	}
 
-	void Scene::RenderOpaqueObjects(RenderBase& renderer)
-	{		
+	void Scene::RenderOpaqueObjects()
+	{
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		// 원래 렌더링 해상도
 		renderer.SetViewport();
 		renderer.SetRender();
 
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
-		SetGlobals(context, m_globalConstsGPU);
+		SetGlobals(m_globalConstsGPU);
 
 		// 그림자맵들도 공용 Texture들 이후에 추가
 		// 주의: 마지막 shadowDSV를 RenderTarget에서 해제한 후 설정
@@ -215,57 +223,59 @@ namespace DE {
 		// 거울 없이 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 		for (auto& actor : m_actorList[0])
-			actor->Render(renderer);
+			actor->Render();
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
 		for (auto& billboard : m_actorList[1])
-			billboard->Render(renderer);
+			billboard->Render();
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		m_skybox->Render(renderer);
+		m_skybox->Render();
 
 		// Bounding Volume 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
 		for (auto& actor : m_actorList[0])
-			actor->RenderBoundingVolume(renderer);
+			actor->RenderBoundingVolume();
 
 		for (auto& billboard : m_actorList[1])
-			billboard->RenderBoundingVolume(renderer);
+			billboard->RenderBoundingVolume();
 
 		// Normal 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
 		for (auto& actor : m_actorList[0])
-			actor->RenderNormal(renderer);
+			actor->RenderNormal();
 
 		for (auto& billboard : m_actorList[1])
-			billboard->RenderNormal(renderer);
+			billboard->RenderNormal();
 	}
 
-	void Scene::RenderMirror(RenderBase& renderer)
+	void Scene::RenderMirror()
 	{
 		// 거울 렌더링
-		m_mirror->Render(renderer, m_actorList, m_skybox, m_globalConstsGPU);
+		m_mirror->Render(m_actorList, m_skybox, m_globalConstsGPU);
 	}
 
-	void Scene::RenderDepthOnly(RenderBase& renderer)
+	void Scene::RenderDepthOnly()
 	{
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		renderer.SetDepthOnlyRender();
 		// 전부 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.depth.depthOnlyPSO);
 
 		for (auto& actor : m_actorList[0])
-			actor->Render(renderer);
+			actor->Render();
 		
-		m_mirror->Render(renderer); // 거울만 렌더링
+		m_mirror->Render(); // 거울만 렌더링
 
 		for (auto& billboard : m_actorList[1])
-			billboard->Render(renderer);
+			billboard->Render();
 		
-		m_skybox->Render(renderer);
+		m_skybox->Render();
 	}
 
-	void Scene::RenderShadowMap(RenderBase& renderer)
+	void Scene::RenderShadowMap()
 	{
+		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		// RenderShadowMap()전에 RenderDepthOnly()를 실행시켜서 PSO가 depthOnly로 설정되어 있는 상태
 		// 그림자맵 만들기
 		renderer.SetShadowViewport(); // 그림자맵 해상도
@@ -275,8 +285,8 @@ namespace DE {
 			renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 
 			for (auto& actor : m_actorList)
-				m_lights[i]->RenderShadow(renderer, actor);
-			m_lights[i]->RenderShadow(renderer, { m_mirror });
+				m_lights[i]->RenderShadow(actor);
+			m_lights[i]->RenderShadow({ m_mirror });
 		}
 	}
 

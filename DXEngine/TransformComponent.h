@@ -6,7 +6,7 @@ namespace DE {
 	{
 		using Super = Component;
 	public:
-		TransformComponent(ComPtr<ID3D11Device>& device, const std::wstring& name) : Super(device, name, ComponentType::Transform) {}
+		TransformComponent(const std::wstring& name) : Super(name, ComponentType::Transform) {}
 		~TransformComponent() override {}
 
 		void SetPos(const Vector3& pos) { m_pos = pos; }

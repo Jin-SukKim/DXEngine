@@ -7,15 +7,16 @@
 #include "Actor.h"
 #include "ModelComponent.h"
 #include "TransformComponent.h"
+#include "RenderBase.h"
 
 namespace DE {
-	void BoundComponent::SetBoundingVolume(ComPtr<ID3D11Device>& device, const std::vector<MeshData>& meshes)
+	void BoundComponent::SetBoundingVolume(const std::vector<MeshData>& meshes)
 	{
 		// Model 크기에 맞는 Bounding Box 설정
-		setBoundingBox(meshes, device);
+		setBoundingBox(meshes);
 
 		// Model 크기에 맞는 Bounding Sphere 설정
-		setBoundingSphere(meshes, device);
+		setBoundingSphere(meshes);
 
 		SetVisibility(true);
 	}
@@ -24,16 +25,17 @@ namespace DE {
 	{
 	}
 
-	void BoundComponent::Update(ComPtr<ID3D11DeviceContext>& context, const float& deltaTime)
+	void BoundComponent::Update(const float& deltaTime)
 	{
 
 	}
 
-	void BoundComponent::Render(ComPtr<ID3D11DeviceContext>& context)
+	void BoundComponent::Render()
 	{
 		if (!m_drawBound)
 			return;
 
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		ID3D11Buffer* constBuffers[3] = {
 			// Bounding Box와 Bounding Sphere의 Constant Data는 같음
 			m_boundingBoxMesh->basicMaterialConstGPU.Get(),
@@ -59,8 +61,9 @@ namespace DE {
 		m_boundingSphere.Radius *= std::max({ scale.x, scale.y, scale.z });
 	}
 
-	void BoundComponent::setBoundingBox(const std::vector<DE::MeshData>& meshes, Microsoft::WRL::ComPtr<ID3D11Device>& device)
+	void BoundComponent::setBoundingBox(const std::vector<DE::MeshData>& meshes)
 	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		// 모델은 여러 개의 Mesh들로 이루어진 경우가 많으니 다른 Mesh들의 Bounding Box의 크기도 비교해
 		// 최종적으로 가장 큰 Bounding Box를 사용
 		m_boundingBox = getBoundingBox(meshes[0].vertices);
@@ -88,8 +91,10 @@ namespace DE {
 		}
 	}
 
-	void BoundComponent::setBoundingSphere(const std::vector<DE::MeshData>& meshes, Microsoft::WRL::ComPtr<ID3D11Device>& device)
+	void BoundComponent::setBoundingSphere(const std::vector<DE::MeshData>& meshes)
 	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+
 		// Model 크기에 맞는 Bounding Sphere 설정
 		float maxRadius = 0.5f;
 		// Sphere의 최대 Radius 찾기
