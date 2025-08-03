@@ -17,7 +17,7 @@ namespace DE {
 			float fogStrength = 0.0f;
 			float fogMin = 1.f;
 			float fogMax = 5.f;
-			float dummy;
+			float dummy = 0.f;
 		};
 
 	protected:

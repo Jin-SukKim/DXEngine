@@ -34,6 +34,9 @@ namespace DE {
 
 	void Actor::Render()
 	{
+		if (IsVisible() == false)
+			return;
+
 		RenderComponent(ComponentType::Model);
 		
 

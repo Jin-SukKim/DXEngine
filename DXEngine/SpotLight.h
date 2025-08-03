@@ -12,5 +12,6 @@ namespace DE {
         void Initialize() override;
         void Update(const float& deltaTime) override;
         float GetLightFrustumWidth(const Matrix& proj) override;
+
     };
 }

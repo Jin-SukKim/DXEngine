@@ -1,6 +1,7 @@
 #pragma once
 #include "D3D11Utils.h"
 #include "GraphicsCommon.h"
+#include "LightActor.h"
 
 namespace DE {
 	class GraphicsCommon;
@@ -28,7 +29,8 @@ namespace DE {
 		// DepthStencilView Buffer 생성
 		void CreateDepthStencilBuffer();
 		void SetDepthOnlyRender();
-		void CreateShadowBuffer(int idx);
+
+		void CreateShadowArrayBuffer(const std::array<std::shared_ptr<LightActor>, MAX_LIGHTS>& lights);
 
 		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
 		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }
@@ -47,11 +49,10 @@ namespace DE {
 		void ClearDepthBuffer();
 		Texture2D& GetDepthOnlyBuffer() { return m_depthOnlyBuffer; };
 		// Shadow Map용 viewport 설정
-		void SetShadowViewport();
-		// ShadowMap Rendering 준비
-		void SetShadowMapRender(int idx);
+		void SetShadowViewport(float width, float height);
 		// 그림자맵들도 공요 Texture들 이후에 추가하고 있는 중으로 PS의 t15부터 추가
 		void SetShadowSRVs();
+		void SetShadowMap(int idx);
 
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
@@ -95,7 +96,7 @@ namespace DE {
 		ComPtr<ID3D11DepthStencilView> m_depthOnlyDSV;
 
 		// TODO: 여러 개의 PostProcess를 사용하려면 Vector를 사용하는게 좋지 않을까?
-		PostProcess* m_postProcess;
+		PostProcess* m_postProcess = nullptr;
 		GraphicsPSO m_postProcessPSO;
 		// TODO: 임시로 여기서 Tone Mapping 사용, Scene이나 AppBase에서 하는게 좋아보임
 		std::shared_ptr<ToneMappingFilter> m_toneMapping;
@@ -107,7 +108,7 @@ namespace DE {
 		int m_shadowWidth = 1280;
 		int m_shadowHeight = 1280; 
 		// 설정한 그림자 맵 해상도에 맞춰서 그림자맵용 viewport 설정
-		Texture2D m_shadowBuffers[MAX_LIGHTS]; // light 개수만큼 shadow 맵 생성
-		ComPtr<ID3D11DepthStencilView> m_shadowDSVs[MAX_LIGHTS];
+		Texture2D m_shadowArrayBuffer; // light 개수만큼 shadow 맵 생성
+		std::vector<ComPtr<ID3D11DepthStencilView>> m_shadowDSVs;
 	};
 }

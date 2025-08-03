@@ -4,21 +4,23 @@
 #include "Common.hlsli"
 #include "DiskSamples.hlsli"
 
-// TODO: Constant Buffer·Î °ªÀ» ¹Ş¾Æ »ç¿ë
-//#define NEAR_PLANE 0.1 // Shadow MapÀ» ¸¸µé¶§ »ç¿ëÇÑ Near Z°ªÀ» »ç¿ë
+// TODO: Constant Bufferë¡œ ê°’ì„ ë°›ì•„ ì‚¬ìš©
+//#define NEAR_PLANE 0.1 // Shadow Mapì„ ë§Œë“¤ë•Œ ì‚¬ìš©í•œ Near Zê°’ì„ ì‚¬ìš©
 // #define LIGHT_WORLD_RADIUS 0.001
-//#define LIGHT_FRUSTUM_WIDTH 0.34641 // <- °è»êÇØ¼­ Ã£Àº °ª
+//#define LIGHT_FRUSTUM_WIDTH 0.34641 // <- ê³„ì‚°í•´ì„œ ì°¾ì€ ê°’
 
 // Assuming that LIGHT_FRUSTUM_WIDTH == LIGHT_FRUSTUM_HEIGHT
 // #define LIGHT_RADIUS_UV (LIGHT_WORLD_RADIUS / LIGHT_FRUSTUM_WIDTH)
 
-float PCF_Filter(float2 uv, float zReceiverNdc, float filterRadiusUV, Texture2D shadowMap) {
+float PCF_Filter(float2 uv, float zReceiverNdc, float filterRadiusUV, uint shadowIdx)
+{
     float sum = 0.0;
-    for (int i = 0; i < 64; ++i) {
-        // Disk¾È¿¡ ÆĞÅÏÀ» »ı¼ºÇÏ´Â ÄÚµå·Î SamplingÇÒ ÁöÁ¡µéÀ» »ı¼ºÇØ ÀúÀåÇÑ ¹è¿­ diskSampleÀ» SamplingÇÒ Point·Î »ç¿ë
-        // (ÇÏÁö¸¸ ÀÚ¿¬½º·´Áø ¾Ê±â ¶§¹®¿¡ Noise¸¦ È°¿ëÇÏ¸é ÀÚ¿¬½º·¯¿ö º¸ÀÓ. ´Ü, °¡±îÀÌ¼­´Â ³ëÀÌÁî°¡ ³¤°Í °°ÀÌ º¸ÀÏ ¼ö ÀÖÀ½)
+    for (int i = 0; i < 64; ++i)
+    {
+        // Diskì•ˆì— íŒ¨í„´ì„ ìƒì„±í•˜ëŠ” ì½”ë“œë¡œ Samplingí•  ì§€ì ë“¤ì„ ìƒì„±í•´ ì €ì¥í•œ ë°°ì—´ diskSampleì„ Samplingí•  Pointë¡œ ì‚¬ìš©
+        // (í•˜ì§€ë§Œ ìì—°ìŠ¤ëŸ½ì§„ ì•Šê¸° ë•Œë¬¸ì— Noiseë¥¼ í™œìš©í•˜ë©´ ìì—°ìŠ¤ëŸ¬ì›Œ ë³´ì„. ë‹¨, ê°€ê¹Œì´ì„œëŠ” ë…¸ì´ì¦ˆê°€ ë‚€ê²ƒ ê°™ì´ ë³´ì¼ ìˆ˜ ìˆìŒ)
         float2 offset = diskSamples64[i] * filterRadiusUV;
-        sum += shadowMap.SampleCmpLevelZero(shadowCompare, uv + offset, zReceiverNdc);
+        sum += shadowMaps.SampleCmpLevelZero(shadowCompare, float3(uv + offset, shadowIdx), zReceiverNdc);
     }
     
     return sum / 64;
@@ -31,54 +33,58 @@ float N2V(float ndcDepth, matrix invProj)
     return pointView.z / pointView.w;
 }
 
-// ´õ ºü¸¥ NDC to View º¯È¯
-float FasterN2V(float z_ndc) {
-    // Projection Çà·ÄÀ» »ç¿ëÇØ °è½Ñ
+// ë” ë¹ ë¥¸ NDC to View ë³€í™˜
+float FasterN2V(float z_ndc)
+{
+    // Projection í–‰ë ¬ì„ ì‚¬ìš©í•´ ê³„ì‹¼
 	// z_ndc = A + B/viewZ, where gProj[2, 2] = A and gProj[3, 2] = B
     float viewZ = proj[3][2] / (z_ndc - proj[2][2]);
     return viewZ;
 }
 
-// void Func(out float a) <- c++ÀÇ void Func(float& a) Ã³·³ Ãâ·Â°ª ÀúÀå °¡´É
-// ShadingÇÏ°í ÀÖ´Â Pixel¿¡ ±×¸²ÀÚ°¡ »ı±æ °¡´É¼ºÀÌ ÀÖ´ÂÁö ¾ø´ÂÁö ÆÄ¾Ç - ºûÀ» °¡·Î¸·´Â ¹°Ã¼°¡ ÀÖ´ÂÁö Ã£´Â ´Ü°è
+// void Func(out float a) <- c++ì˜ void Func(float& a) ì²˜ëŸ¼ ì¶œë ¥ê°’ ì €ì¥ ê°€ëŠ¥
+// Shadingí•˜ê³  ìˆëŠ” Pixelì— ê·¸ë¦¼ìê°€ ìƒê¸¸ ê°€ëŠ¥ì„±ì´ ìˆëŠ”ì§€ ì—†ëŠ”ì§€ íŒŒì•… - ë¹›ì„ ê°€ë¡œë§‰ëŠ” ë¬¼ì²´ê°€ ìˆëŠ”ì§€ ì°¾ëŠ” ë‹¨ê³„
 void FindBlocker(out float avgBlockerDepthView, out float numBlockers, float2 uv,
-                 float zReceiverView, Texture2D shadowMap, matrix invProj, float lightRadiusWorld, float nearPlane, float frustumWidth)
+                 float zReceiverView, uint shadowIdx, matrix invProj, float lightRadiusWorld, float nearPlane, float frustumWidth)
 {
     
-    // Texture ÁÂÇ¥ °ø°£ Å©±â¿¡¼­ ºÃÀ»¶§ÀÇ Á¶¸íÀÇ Å©±â¸¦ °è»ê
-    // Á¶¸íÀÇ Å©±â¿Í Á¶¸íÀÇ ViewFrustumÀÇ ³ĞÀÌÀÇ World ÁÂÇ¥°è ±âÁØ¿¡¼­ÀÇ °ªÀ» Ã£¾Æ
-    // µÎ °ªÀÇ ºñÀ²·Î Texture ÁÂÇ¥°è¿¡¼­ÀÇ Á¶¸íÀÇ ³ĞÀÌ¸¦ °è»ê
-    float lightRadiusUV = lightRadiusWorld / frustumWidth; // ½±°Ô »ı°¢ÇØ Á¶¸íÀÇ Radius¸¦ NDC ÁÂÇ¥°è·Î º¯È¯ÇÑ °Í
+    // Texture ì¢Œí‘œ ê³µê°„ í¬ê¸°ì—ì„œ ë´¤ì„ë•Œì˜ ì¡°ëª…ì˜ í¬ê¸°ë¥¼ ê³„ì‚°
+    // ì¡°ëª…ì˜ í¬ê¸°ì™€ ì¡°ëª…ì˜ ViewFrustumì˜ ë„“ì´ì˜ World ì¢Œí‘œê³„ ê¸°ì¤€ì—ì„œì˜ ê°’ì„ ì°¾ì•„
+    // ë‘ ê°’ì˜ ë¹„ìœ¨ë¡œ Texture ì¢Œí‘œê³„ì—ì„œì˜ ì¡°ëª…ì˜ ë„“ì´ë¥¼ ê³„ì‚°
+    float lightRadiusUV = lightRadiusWorld / frustumWidth; // ì‰½ê²Œ ìƒê°í•´ ì¡°ëª…ì˜ Radiusë¥¼ NDC ì¢Œí‘œê³„ë¡œ ë³€í™˜í•œ ê²ƒ
     
-    // Á¶¸íÀÇ ³ĞÀÌ¿Í Near Plane À§¿¡¼­ÀÇ ³ĞÀÌÀÇ ºñÀ²°ú Á¶¸í¿¡¼­ Sampling ÁöÁ¡±îÁöÀÇ °Å¸®¿Í 
-    // Near Plane¿¡¼­ Sampling ÁöÁ¡±îÁöÀÇ °Å¸®ÀÇ ºñÀ²ÀÌ µ¿ÀÏ
-    // Á¶¸íÀÇ ³ĞÀÌ¿Í Near PlaneÀÇ °Å¸®´Â Á¤ÀÇÇÑ °ªÀ¸·Î ¾Ë°í ÀÖÀ¸´Ï depth°ªÀ» ÀÌ¿ëÇØ ºñÀ²À» °è»êÇØ¼­
-    // Á¶¸íÀÇ ³ĞÀÌ¸¦ °öÇØ Near Plane À§¿¡¼­ÀÇ ³ĞÀÌ¸¦ °è»ê
+    // ì¡°ëª…ì˜ ë„“ì´ì™€ Near Plane ìœ„ì—ì„œì˜ ë„“ì´ì˜ ë¹„ìœ¨ê³¼ ì¡°ëª…ì—ì„œ Sampling ì§€ì ê¹Œì§€ì˜ ê±°ë¦¬ì™€ 
+    // Near Planeì—ì„œ Sampling ì§€ì ê¹Œì§€ì˜ ê±°ë¦¬ì˜ ë¹„ìœ¨ì´ ë™ì¼
+    // ì¡°ëª…ì˜ ë„“ì´ì™€ Near Planeì˜ ê±°ë¦¬ëŠ” ì •ì˜í•œ ê°’ìœ¼ë¡œ ì•Œê³  ìˆìœ¼ë‹ˆ depthê°’ì„ ì´ìš©í•´ ë¹„ìœ¨ì„ ê³„ì‚°í•´ì„œ
+    // ì¡°ëª…ì˜ ë„“ì´ë¥¼ ê³±í•´ Near Plane ìœ„ì—ì„œì˜ ë„“ì´ë¥¼ ê³„ì‚°
     float searchRadius = lightRadiusUV * (zReceiverView - nearPlane) / zReceiverView;
 
     float blockerSum = 0;
     numBlockers = 0;
-    // Á¶¸í ³ĞÀÌ¿¡¼­ Depth°ªÀ» ¸ğµÎ º¸°í °¡¸®´Â ¹°Ã¼°¡ ÀÖ´ÂÁö ¾ø´ÂÁö ÆÇ´Ü
-    for (int i = 0; i < 64; ++i) {
+    // ì¡°ëª… ë„“ì´ì—ì„œ Depthê°’ì„ ëª¨ë‘ ë³´ê³  ê°€ë¦¬ëŠ” ë¬¼ì²´ê°€ ìˆëŠ”ì§€ ì—†ëŠ”ì§€ íŒë‹¨
+    for (int i = 0; i < 64; ++i)
+    {
         float shadowMapDepth =
-            shadowMap.SampleLevel(shadowPointSampler, float2(uv + diskSamples64[i] * searchRadius), 0).r;
+            shadowMaps.SampleLevel(shadowPointSampler, float3(uv + diskSamples64[i] * searchRadius, shadowIdx), 0).r;
 
-        // Æò±ÕÀ» °è»êÇÏ·Á¸é Depth°ªÀÌ ¼±Çü(Linear)ÇÑ °ø°£¿¡ ÀÖ¾î¾ß ÇÏ´Âµ¥ NDC¿¡¼­´Â ±íÀÌ°¡ ºñ¼±Çü °ø°£ÀÌ¹Ç·Î
-        // NDC¿¡¼­ View ÁÂÇ¥°è·Î º¯È¯ÇØ linearÇÑ Depth°ªÀ¸·Î º¯È¯ÇØ¼­ »ç¿ë
+        // í‰ê· ì„ ê³„ì‚°í•˜ë ¤ë©´ Depthê°’ì´ ì„ í˜•(Linear)í•œ ê³µê°„ì— ìˆì–´ì•¼ í•˜ëŠ”ë° NDCì—ì„œëŠ” ê¹Šì´ê°€ ë¹„ì„ í˜• ê³µê°„ì´ë¯€ë¡œ
+        // NDCì—ì„œ View ì¢Œí‘œê³„ë¡œ ë³€í™˜í•´ linearí•œ Depthê°’ìœ¼ë¡œ ë³€í™˜í•´ì„œ ì‚¬ìš©
         shadowMapDepth = N2V(shadowMapDepth, invProj);
         
-        if (shadowMapDepth < zReceiverView) {
+        if (shadowMapDepth < zReceiverView)
+        {
             blockerSum += shadowMapDepth;
             numBlockers++;
         }
     }
     
-    // °¡¸®´Â ¹°Ã¼ÀÇ Æò±Õ Depth°ª
+    // ê°€ë¦¬ëŠ” ë¬¼ì²´ì˜ í‰ê·  Depthê°’
     avgBlockerDepthView = blockerSum / numBlockers;
 }
 
-//  PCSS´Â Á¶¸í°ú ¹°Ã¼ °£ÀÇ ±íÀÌ(Depth)¸¦ °¡Áö°í PCFÀÇ ¹İÁö¸§À» Á¶ÀıÇÏ´Â °ÍÀÌ ±âº»ÀûÀÎ ¿ø¸®
-float PCSS(float2 uv, float zReceiverNdc, Texture2D shadowMap, matrix invProj, float lightRadiusWorld, float nearPlane, float frustumWidth) {
+//  PCSSëŠ” ì¡°ëª…ê³¼ ë¬¼ì²´ ê°„ì˜ ê¹Šì´(Depth)ë¥¼ ê°€ì§€ê³  PCFì˜ ë°˜ì§€ë¦„ì„ ì¡°ì ˆí•˜ëŠ” ê²ƒì´ ê¸°ë³¸ì ì¸ ì›ë¦¬
+float PCSS(float2 uv, float zReceiverNdc, uint shadowIdx, matrix invProj, float lightRadiusWorld, float nearPlane, float frustumWidth)
+{
     float lightRadiusUV = lightRadiusWorld / frustumWidth;
     
     float zReceiverView = N2V(zReceiverNdc, invProj);
@@ -87,26 +93,54 @@ float PCSS(float2 uv, float zReceiverNdc, Texture2D shadowMap, matrix invProj, f
     float avgBlockerDepthView = 0;
     float numBlockers = 0;
 
-    // °¡¸®´Â ¹°Ã¼°¡ ¾ø´ÂÁö Å½»ö
-    FindBlocker(avgBlockerDepthView, numBlockers, uv, zReceiverView, shadowMap, invProj, lightRadiusWorld, nearPlane, frustumWidth);
+    // ê°€ë¦¬ëŠ” ë¬¼ì²´ê°€ ì—†ëŠ”ì§€ íƒìƒ‰
+    FindBlocker(avgBlockerDepthView, numBlockers, uv, zReceiverView, shadowIdx, invProj, lightRadiusWorld, nearPlane, frustumWidth);
 
-    // °¡¸®´Â ¹°Ã¼°¡ ¾ø´Ù¸é
-    if (numBlockers < 1) {
+    // ê°€ë¦¬ëŠ” ë¬¼ì²´ê°€ ì—†ë‹¤ë©´
+    if (numBlockers < 1)
+    {
         // There are no occluders so early out(this saves filtering)
         return 1.0f;
     }
-    // °¡¸®´Â ¹°Ã¼°¡ ÀÖ´Ù¸é
-    else {
-        // STEP 2: penumbra size - Penumbra Å©±â¿¡ µû¶ó PCFÀÇ ¹İÁö¸§ÀÇ Å©±â¸¦ Á¶ÀıÇØ ±×¸²ÀÚ °­µµ(Shadow Factor) °áÁ¤
-        //  Penumbra°¡ ³ĞÀº¶§´Â ³ĞÀº ¹İÁö¸§, ÀÛÀ»¶§´Â ÀÛÀº ¹İÁö¸§ »ç¿ë
-        float penumbraRatio = (zReceiverView - avgBlockerDepthView) / avgBlockerDepthView; // Penumbra ºñÀ² °è½Ñ
-        // PenumbraÀÇ ³ĞÀÌ´Â LightÀÇ ³ĞÀÌ¿Í ºñ·ÊÇÏ±â ¶§¹®¿¡ ºñÀ²À» ÅëÇØ PCF¸¦ À§ÇÑ Radius °è»ê
+    // ê°€ë¦¬ëŠ” ë¬¼ì²´ê°€ ìˆë‹¤ë©´
+    else
+    {
+        // STEP 2: penumbra size - Penumbra í¬ê¸°ì— ë”°ë¼ PCFì˜ ë°˜ì§€ë¦„ì˜ í¬ê¸°ë¥¼ ì¡°ì ˆí•´ ê·¸ë¦¼ì ê°•ë„(Shadow Factor) ê²°ì •
+        //  Penumbraê°€ ë„“ì€ë•ŒëŠ” ë„“ì€ ë°˜ì§€ë¦„, ì‘ì„ë•ŒëŠ” ì‘ì€ ë°˜ì§€ë¦„ ì‚¬ìš©
+        float penumbraRatio = (zReceiverView - avgBlockerDepthView) / avgBlockerDepthView; // Penumbra ë¹„ìœ¨ ê³„ì‹¼
+        // Penumbraì˜ ë„“ì´ëŠ” Lightì˜ ë„“ì´ì™€ ë¹„ë¡€í•˜ê¸° ë•Œë¬¸ì— ë¹„ìœ¨ì„ í†µí•´ PCFë¥¼ ìœ„í•œ Radius ê³„ì‚°
         //      penumbraSize = penumbraRatio * lightRadiusUV;
-        //      Near Plane À§¿¡¼­ÀÇ PenumbraSize = penumbraSize * NEAR_PLANE / zReceiverView;
+        //      Near Plane ìœ„ì—ì„œì˜ PenumbraSize = penumbraSize * NEAR_PLANE / zReceiverView;
         float filterRadiusUV = penumbraRatio * lightRadiusUV * nearPlane / zReceiverView;
 
         // STEP 3: filtering
-        return PCF_Filter(uv, zReceiverNdc, filterRadiusUV, shadowMap);
+        return PCF_Filter(uv, zReceiverNdc, filterRadiusUV, shadowIdx);
+    }
+}
+
+// Determines the face index and texture coordinates for a given direction vector.
+void GetCubeFace(uint type, float3 lightVec, out uint faceIndex)
+{
+    if (type & LIGHT_POINT)
+    {
+        float3 absLightVec = abs(lightVec);
+    
+        if (absLightVec.x > absLightVec.y && absLightVec.x > absLightVec.z)
+        {
+            faceIndex = lightVec.x > 0 ? 0 : 1; // +X face or -X face
+        }
+        else if (absLightVec.y > absLightVec.z)
+        {
+            faceIndex = lightVec.y > 0 ? 2 : 3; // +Y face or -Y face
+        }
+        else
+        {
+            faceIndex = lightVec.z > 0 ? 4 : 5; // +Z face or -Z face
+        }
+    }
+    else
+    {
+        faceIndex = 0; // default;
     }
 }
 

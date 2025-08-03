@@ -235,17 +235,6 @@ namespace DE {
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_depthOnlyBuffer.GetTexture(), &srvDesc, m_depthOnlyBuffer.GetAddressOfSRV()));
-		
-		// Shadow Map용 Texture 생성
-		dsDesc.Width = m_shadowWidth;
-		dsDesc.Height = m_shadowHeight;
-		//for (int i = 0; i < MAX_LIGHTS; ++i) {
-		//	ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_shadowBuffers[i].GetAddressOfTexture()));
-		//	// Shadow Map용 DSV 생성 (dsvDesc는 위에서 DepthOnlyDSV만들떄 사용한 걸 그대로 사용)
-		//	ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowBuffers[i].GetTexture(), &dsvDesc, m_shadowDSVs[i].GetAddressOf()));
-		//	// Shadow Map용 SRV 생성 (위에서 만든 srvDesc 그대로 사용)
-		//	ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowBuffers[i].GetTexture(), &srvDesc, m_shadowBuffers[i].GetAddressOfSRV()));
-		//}
 	}
 
 
@@ -256,38 +245,57 @@ namespace DE {
 		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
 	}
 
-	void RenderBase::CreateShadowBuffer(int idx)
+	void RenderBase::CreateShadowArrayBuffer(const std::array<std::shared_ptr<LightActor>, MAX_LIGHTS>& lights)
 	{
-		D3D11_TEXTURE2D_DESC dsDesc;		
-		dsDesc.Width = m_shadowWidth;
-		dsDesc.Height = m_shadowHeight;
-		dsDesc.MipLevels = 1; // Depth Stencil Buffer는 Mipmap 불필요
-		dsDesc.ArraySize = 1;
-		dsDesc.Usage = D3D11_USAGE_DEFAULT;
-		dsDesc.CPUAccessFlags = 0;
-		dsDesc.MiscFlags = 0;
-		dsDesc.SampleDesc.Count = 1;
-		dsDesc.SampleDesc.Quality = 0;
-		dsDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+		if (lights[0] == nullptr)
+			return;
 
-		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format 사용
-		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		int arraySize = 0;
+		for (const auto& light : lights) {
+			if (light != nullptr) {
+				if (light->GetLight().type & (LIGHT_SPOT | LIGHT_DIRECTIONAL))
+					++arraySize;
+				else if (light->GetLight().type & LIGHT_POINT)
+					arraySize += 6;
+			}
+		}
+
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width = lights[0]->GetShadowWidth();
+		desc.Height = lights[0]->GetShadowHeight();
+		desc.MipLevels = 1; // Mipmap Level 최대
+		desc.ArraySize = arraySize; // Texture Array이므로 사용할 Texture 개수
+		desc.Format = DXGI_FORMAT_R32_TYPELESS;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture로부터 복사 가능
+		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+		// 초기 데이터 없이 Texture 생성
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_shadowArrayBuffer.GetAddressOfTexture()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
 		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV로 사용하기 위해 R32 format 사용
-		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = 1;
-
-		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_shadowBuffers[idx].GetAddressOfTexture()));
-		// Shadow Map용 DSV 생성 (dsvDesc는 위에서 DepthOnlyDSV만들떄 사용한 걸 그대로 사용)
-		ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowBuffers[idx].GetTexture(), &dsvDesc, m_shadowDSVs[idx].GetAddressOf()));
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.MipLevels = 1;
+		srvDesc.Texture2DArray.ArraySize = arraySize;
 		// Shadow Map용 SRV 생성 (위에서 만든 srvDesc 그대로 사용)
-		ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowBuffers[idx].GetTexture(), &srvDesc, m_shadowBuffers[idx].GetAddressOfSRV()));
+		ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowArrayBuffer.GetTexture(), &srvDesc, m_shadowArrayBuffer.GetAddressOfSRV()));
+	
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format 사용
+		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+		dsvDesc.Texture2DArray.MipSlice = 0;
+		dsvDesc.Texture2DArray.ArraySize = 1; // 각 DSV는 하나만 사용
 
+		m_shadowDSVs.resize(arraySize);
+		for (int i = 0; i < arraySize; ++i) {
+			dsvDesc.Texture2DArray.FirstArraySlice = i;
+			ThrowIfFailed(m_device->CreateDepthStencilView(m_shadowArrayBuffer.GetTexture(), &dsvDesc, m_shadowDSVs[i].GetAddressOf()));
+		}
 	}
 
 	void RenderBase::ResizeSwapChain(const WindowInfo& window)
@@ -369,7 +377,7 @@ namespace DE {
 		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	void RenderBase::SetShadowViewport()
+	void RenderBase::SetShadowViewport(float width, float height)
 	{
 		// Shadow Mapping에 맞는 Viewport를 설정
 		D3D11_VIEWPORT shadowViewport;
@@ -377,29 +385,33 @@ namespace DE {
 		shadowViewport.TopLeftX = 0;
 		shadowViewport.TopLeftY = 0;
 		// Shadow Map으로 사용할 Depth Buffer의 해상도를 따로 설정해줬음
-		shadowViewport.Width = float(m_shadowWidth);
-		shadowViewport.Height = float(m_shadowHeight);
+		shadowViewport.Width = width;
+		shadowViewport.Height = height;
 		shadowViewport.MinDepth = 0.f;
 		shadowViewport.MaxDepth = 1.f;
 
 		m_context->RSSetViewports(1, &shadowViewport);
 	}
 
-	void RenderBase::SetShadowMapRender(int idx)
-	{
-		// RTS 생략 가능
-		m_context->OMSetRenderTargets(0, NULL, m_shadowDSVs[idx].Get());
-		m_context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
-			D3D11_CLEAR_DEPTH, 1.0f, 0);
-	}
-
 	void RenderBase::SetShadowSRVs()
 	{
-		std::vector<ID3D11ShaderResourceView*> shadowSRVs;
-		for (int i = 0; i < MAX_LIGHTS; ++i)
-			shadowSRVs.emplace_back(m_shadowBuffers[i].GetSRV());
+		//std::vector<ID3D11ShaderResourceView*> shadowSRVs;
+		//for (int i = 0; i < MAX_LIGHTS; ++i)
+		//	shadowSRVs.emplace_back(m_shadowBuffers[i].GetSRV());
 
-		m_context->PSSetShaderResources(15, UINT(shadowSRVs.size()), shadowSRVs.data());
+		//m_context->PSSetShaderResources(15, UINT(shadowSRVs.size()), shadowSRVs.data());
+		ID3D11ShaderResourceView* shadowSRV = m_shadowArrayBuffer.GetSRV();
+		m_context->PSSetShaderResources(15, 1, &shadowSRV);
+	}
+
+	void RenderBase::SetShadowMap(int idx)
+	{
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		// RTS 생략 가능
+		context->OMSetRenderTargets(0, NULL, m_shadowDSVs[idx].Get());
+		context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
+			D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
 	void RenderBase::ClearStencilBuffer()

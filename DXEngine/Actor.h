@@ -26,6 +26,7 @@ namespace DE {
 		int GetHashID();
 		const uint8_t* GetHashColor() const { return m_hashColor; }
 
+		void SetVisible(bool visible) { m_isVisible = visible; }
 		bool IsVisible() { return m_isVisible; }
 		bool IsCastShadow() { return m_castShadow; }
 	protected:

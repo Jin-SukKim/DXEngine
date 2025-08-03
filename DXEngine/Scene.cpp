@@ -19,6 +19,7 @@
 
 #include "LightActor.h"
 #include "SpotLight.h"
+#include "PointLight.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -42,7 +43,8 @@ namespace DE {
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
 
-			m_lights[0] = std::make_shared<SpotLight>(L"SpotLight");
+			//m_lights[0] = std::make_shared<SpotLight>(L"SpotLight");
+			m_lights[0] = std::make_shared<PointLight>(L"Light");
 			for (int i = 1; i < MAX_LIGHTS; ++i)
 				//m_shadowGlobalConsts[i].Initialize(device);
 				m_lights[i] = std::make_shared<LightActor>(L"Light");
@@ -66,11 +68,13 @@ namespace DE {
 		m_actorList[1].emplace_back(m_billboard);
 
 		m_mirror = std::make_shared<MirrorActor>(L"Mirror");
+		m_mirror->SetVisible(false);
 	}
 
 	void Scene::Initialize() {
 		// 조명 설정
 		{
+			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(m_lights);
 			// IBL은 그림자를 구현하지 않고 AO를 사용해 그림자 효과를 비슷하게 구현함
 			// (TODO: Direct Light으로 자연광 효괄르 구현하는게 좋을듯)
 			for (int i = 0; i < MAX_LIGHTS; ++i)
@@ -176,6 +180,13 @@ namespace DE {
 
 	void Scene::UpdateLight(const float& deltaTime)
 	{
+		auto* tr = m_lights[0]->GetComponent<TransformComponent>();
+		if (tr) {
+			Vector3 pos = tr->GetPos();
+			pos = Vector3::Transform(pos, Matrix::CreateRotationY(deltaTime * 0.5f));
+			tr->SetPos(pos);
+		}
+
 		// 그림자맵을 만들기 위한 시점
 		for (int i = 0; i < MAX_LIGHTS; ++i) {
 			m_lights[i]->Update(deltaTime);
@@ -278,16 +289,17 @@ namespace DE {
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		// RenderShadowMap()전에 RenderDepthOnly()를 실행시켜서 PSO가 depthOnly로 설정되어 있는 상태
 		// 그림자맵 만들기
-		renderer.SetShadowViewport(); // 그림자맵 해상도
+		//renderer.SetShadowViewport(); // 그림자맵 해상도
 
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 		for (int i = 0; i < MAX_LIGHTS; i++) {
 			if (m_lights[i]->GetLight().type & LIGHT_SHADOW) {
-				renderer.SetShadowMapRender(m_lights[i]->GetLightID());
-
-				for (auto& actor : m_actorList)
-					m_lights[i]->RenderShadow(actor);
-				m_lights[i]->RenderShadow({ m_mirror });
+				//renderer.SetShadowMapRender(m_lights[i]->GetLightID());
+				
+				m_lights[i]->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
+				//for (auto& actor : m_actorList)
+				//	m_lights[i]->RenderShadow(actor);
+				//m_lights[i]->RenderShadow({ m_mirror });
 			}
 		}
 	}

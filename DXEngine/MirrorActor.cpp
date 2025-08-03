@@ -51,6 +51,9 @@ namespace DE {
 
 	void MirrorActor::Render(std::vector<std::shared_ptr<Actor>>* actorList, std::shared_ptr<SkyboxActor>& cubeMap, const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
+		if (IsVisible() == false)
+			return;
+
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11DeviceContext> context = renderer.GetContext();
 

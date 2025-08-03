@@ -59,18 +59,20 @@ namespace DE {
 		// TODO: 빛을 의미하는 표현하는 걸 렌더링하면 좋을듯 (언리얼 엔진 생각해보기)
 	}
 
-	void LightActor::RenderShadow(const std::vector<std::shared_ptr<Actor>>& actorList)
+	void LightActor::RenderShadow(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists)
 	{
 		if (m_light.type & LIGHT_OFF)
 			return; // 빛이 꺼져있으면 렌더링하지 않음
 
 		if (m_light.type & LIGHT_SHADOW) {
+			GET_SINGLE(RenderBase)->SetShadowViewport(m_shadowWidth, m_shadowHeight);
+			GET_SINGLE(RenderBase)->SetShadowMap(m_lightID);
 			SetGlobals(m_shadowGlobalConsts.Get());
 
-			for (const auto& actor : actorList) {
-				if (actor->IsCastShadow() && actor->IsVisible()) {
-					actor->Render();
-				}
+			for (const auto& actorList : actorLists) {
+				for (const auto& actor : actorList)
+					if (actor->IsCastShadow() && actor->IsVisible())
+						actor->Render();
 			}
 		}
 	}
@@ -84,7 +86,7 @@ namespace DE {
 		m_shadowGlobalConsts.GetCpu().viewProj = (view * proj).Transpose();
 
 		// 그림자를 실제로 렌더링할 때 필요
-		m_light.viewProj = m_shadowGlobalConsts.GetCpu().viewProj;
+		m_light.viewProj[0] = m_shadowGlobalConsts.GetCpu().viewProj;
 		m_light.invProj = m_shadowGlobalConsts.GetCpu().invProj;
 
 		m_light.nearPlane = m_nearZ;

@@ -2,6 +2,8 @@
 #define __COMMON_HLSLI__
 
 #define MAX_LIGHTS 3
+#define MAX_SPOT 2
+#define MAX_POINT 1
 #define LIGHT_OFF 0x00
 #define LIGHT_DIRECTIONAL 0x01
 #define LIGHT_POINT 0x02
@@ -21,7 +23,7 @@ TextureCube irradianceIBLTex : register(t12);
 Texture2D brdfTex : register(t13);
 
 // TODO: Texture2D로 사용중인데 Texture2DArray를 사용하는 것을 생각해보기
-Texture2D shadowMaps[MAX_LIGHTS] : register(t15);
+Texture2DArray shadowMaps : register(t15);
 
 struct Light {
     float3 radiance; // 빛의 세기 (Strength)
@@ -40,7 +42,7 @@ struct Light {
     float haloStrength;
     float2 dummy; // padding
     
-    Matrix viewProj;
+    Matrix viewProj[6];
     Matrix invProj;
 };
 

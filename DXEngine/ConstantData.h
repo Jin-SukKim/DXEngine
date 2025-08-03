@@ -3,6 +3,8 @@
 
 // "Common.hlsli"와 동일해야 함
 #define MAX_LIGHTS 3 // 보통 조명의 개수는 고정되어 있고 사용하지 않으면 OFF로 설정 (Particle System과 비슷)
+#define MAX_SPOT 2
+#define MAX_POINT 1
 #define LIGHT_OFF 0x00
 #define LIGHT_DIRECTIONAL 0x01
 #define LIGHT_POINT 0x02
@@ -70,7 +72,7 @@ namespace DE {
 		float haloStrength = 0.f;
 		Vector2 dummy;
 
-		Matrix viewProj; // 그림자 렌더링에 필요
+		Matrix viewProj[6]; // 그림자 렌더링에 필요
 		Matrix invProj; // 그림자 렌더링 디버깅용
 	};
 
