@@ -14,7 +14,7 @@ namespace DE {
 		m_light.type = LIGHT_POINT | LIGHT_SHADOW;
 
 		if (m_light.type & LIGHT_SHADOW) {
-			m_lightFov = 90.f;
+			m_lightFov = 91.f;
 		}
 	}
 
