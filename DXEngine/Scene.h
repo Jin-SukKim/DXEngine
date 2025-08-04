@@ -16,6 +16,7 @@ namespace DE {
 	class FogEffect;
 	class SquareActor;
 	class LightActor;
+	class Outliner;
 
 	class Scene
 	{
@@ -24,6 +25,7 @@ namespace DE {
 		virtual ~Scene() {}
 		virtual void Initialize();
 		virtual void Update(const float& deltaTime);
+		virtual void UpdateGUI();
 		virtual void Render();
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
@@ -77,5 +79,7 @@ namespace DE {
 		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
 
 		std::array<std::shared_ptr<LightActor>, MAX_LIGHTS> m_lights;
+
+		std::shared_ptr<Outliner> m_outliner;
 	};
 }

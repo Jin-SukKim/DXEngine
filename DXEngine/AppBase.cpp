@@ -21,6 +21,7 @@ namespace DE {
 		//: m_window(0, 1920, 1080) {
 		: m_window(0, 1280, 960) {
 		m_renderer = GET_SINGLE(RenderBase);
+		m_gui = GET_SINGLE(GuiBase);
 	}
 
 	AppBase::~AppBase() { WindowUtils::Destroy(m_window.hwnd); }
@@ -32,7 +33,7 @@ namespace DE {
 		if (!m_renderer->Initialize(m_window))
 			return false;
 
-		if (!m_gui.Initialize(m_window, *m_renderer))
+		if (!m_gui->Initialize(m_window, *m_renderer))
 			return false;
 
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
@@ -50,11 +51,10 @@ namespace DE {
 		while (WindowUtils::Tick()) {
 			preUpdtea();
 			update();
-			m_gui.PostUpdate();
 			render();
 			postRender();
 			
-			m_gui.Render();
+			m_gui->Render();
 			m_renderer->Present();
 		}
 		
@@ -63,7 +63,6 @@ namespace DE {
 
 	void AppBase::preUpdtea()
 	{
-		m_gui.PreUpdate();
 		// 오른쪽 GUI 창 크기에 맞춰 viewport 크기 변환
 		// TODO: 매 프레임마다 하지 않고 GUI 창 크기가 변경되면 설정 변경해주기
 		//if (m_gui->IsSizeChanged()) {
@@ -75,7 +74,6 @@ namespace DE {
 	}
 
 	void AppBase::update() {
-		m_gui.Update();
 		m_inputManager.Update(m_mouseX, m_mouseY, true);
 		m_renderer->Update();
 		m_scene->Update(GetDeltaTime());

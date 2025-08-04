@@ -20,6 +20,7 @@
 #include "LightActor.h"
 #include "SpotLight.h"
 #include "PointLight.h"
+#include "Outliner.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -69,6 +70,9 @@ namespace DE {
 
 		m_mirror = std::make_shared<MirrorActor>(L"Mirror");
 		m_mirror->SetVisible(false);
+
+		m_outliner = std::make_unique<Outliner>();
+		m_outliner->Initialize({ m_actorList[0], m_actorList[1], {m_mirror} });
 	}
 
 	void Scene::Initialize() {
@@ -129,6 +133,8 @@ namespace DE {
 	void Scene::Update(const float& deltaTime) {
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+
+		UpdateGUI();
 
 		// Camera Update
 		m_mainCamera->Update(deltaTime);
@@ -218,6 +224,27 @@ namespace DE {
 		D3D11Utils::UpdateBuffer(renderer.GetContext(), m_globalConstsCPU, m_globalConstsGPU);
 	}
 
+	void Scene::UpdateGUI()
+	{
+		GuiBase* gui = GET_SINGLE(GuiBase);
+		gui->PreUpdate();
+
+		m_outliner->Update();
+
+		gui->Update();
+		if (m_pickedActor) {
+			m_pickedActor->UpdateGUI();
+			return;
+		}
+
+		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+		if (ImGui::TreeNode("Global")) {
+			ImGui::SliderFloat("Strength IBL", &m_globalConstsCPU.strengthIBL, 0.f, 1.f);
+			ImGui::TreePop();
+		}
+
+		gui->PostUpdate();
+	}
 	void Scene::RenderOpaqueObjects()
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);

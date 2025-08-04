@@ -37,7 +37,7 @@ namespace DE {
 		int m_winMouseY = 0;
 	protected:
 		class RenderBase* m_renderer;
-		GuiBase m_gui;
+		class GuiBase* m_gui;
 		std::unique_ptr<Scene> m_scene;
 		static InputManager m_inputManager;
 	};

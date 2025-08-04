@@ -197,6 +197,7 @@
     <ClInclude Include="ImageFilter.h" />
     <ClInclude Include="LightActor.h" />
     <ClInclude Include="MirrorActor.h" />
+    <ClInclude Include="Outliner.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="SkyboxActor.h" />
@@ -243,6 +244,7 @@
     <ClCompile Include="ImageFilter.cpp" />
     <ClCompile Include="LightActor.cpp" />
     <ClCompile Include="MirrorActor.cpp" />
+    <ClCompile Include="Outliner.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="SkyboxActor.cpp" />

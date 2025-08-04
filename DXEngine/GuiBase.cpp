@@ -2,14 +2,7 @@
 #include "GuiBase.h"
 #include "RenderBase.h"
 
-#include <imgui.h>
-#include <imgui_impl_dx11.h>
-#include <imgui_impl_win32.h>
-
 namespace DE {
-	GuiBase::GuiBase()
-	{
-	}
 	GuiBase::~GuiBase()
 	{
 		ImGui_ImplDX11_Shutdown();
@@ -42,6 +35,10 @@ namespace DE {
 		ImGui_ImplWin32_NewFrame();
 
 		ImGui::NewFrame();
+	}
+
+	void GuiBase::Update()
+	{
 		ImGui::Begin("Scene Control");
 
 		// ImGui가 측정해주는 Framerate 출력
@@ -49,19 +46,14 @@ namespace DE {
 			1000.0f / ImGui::GetIO().Framerate,
 			ImGui::GetIO().Framerate);
 	}
-
-	void GuiBase::Update()
-	{
-	}
-
 	void GuiBase::PostUpdate()
 	{
 		ImGui::End();
-		ImGui::Render();
 	}
 
 	void GuiBase::Render()
 	{
+		ImGui::Render();
 		// GUI 렌더링
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}

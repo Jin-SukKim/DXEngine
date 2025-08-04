@@ -250,11 +250,16 @@
     <ClInclude Include="LightActor.h">
       <Filter>public\Actor\Light</Filter>
     </ClInclude>
-    <ClInclude Include="SpotLight.h" />
-    <ClInclude Include="PointLight.h" />
     <ClInclude Include="Utils.h">
       <Filter>public\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="PointLight.h">
+      <Filter>public\Actor\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="SpotLight.h">
+      <Filter>public\Actor\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Outliner.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -363,9 +368,12 @@
       <Filter>private\Actor\Light</Filter>
     </ClCompile>
     <ClCompile Include="SpotLight.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Actor\Light</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
+      <Filter>private\Actor\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Outliner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
