@@ -191,6 +191,7 @@
     <ClInclude Include="ConstantData.h" />
     <ClInclude Include="CopyFilter.h" />
     <ClInclude Include="DepthFilter.h" />
+    <ClInclude Include="DetailGui.h" />
     <ClInclude Include="FogEffect.h" />
     <ClInclude Include="GraphicsCommon.h" />
     <ClInclude Include="GraphicsPSO.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CopyFilter.cpp" />
     <ClCompile Include="DepthFilter.cpp" />
+    <ClCompile Include="DetailGui.cpp" />
     <ClCompile Include="FogEffect.cpp" />
     <ClCompile Include="GraphicsCommon.cpp" />
     <ClCompile Include="GraphicsPSO.cpp" />

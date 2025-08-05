@@ -10,8 +10,6 @@ namespace DE {
 		virtual bool Initialize(const WindowInfo& window, class RenderBase& renderer);
 		// Frame 시작할때 호출
 		void PreUpdate();
-		void Update();
-		void PostUpdate();
 		virtual void Render();
 
 		static float GetDeltaTime();

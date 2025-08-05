@@ -49,7 +49,7 @@ namespace DE {
 			return; // ºûÀÌ ²¨Á®ÀÖÀ¸¸é ·»´õ¸µÇÏÁö ¾ÊÀ½
 
 		if (m_light.type & LIGHT_SHADOW) {
-			GET_SINGLE(RenderBase)->SetShadowViewport(GetShadowWidth(), GetShadowHeight());
+			GET_SINGLE(RenderBase)->SetShadowViewport((float)GetShadowWidth(), (float)GetShadowHeight());
 			
 			Matrix proj = GetLightProjMatrix();
 			

@@ -37,20 +37,6 @@ namespace DE {
 		ImGui::NewFrame();
 	}
 
-	void GuiBase::Update()
-	{
-		ImGui::Begin("Scene Control");
-
-		// ImGui가 측정해주는 Framerate 출력
-		ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
-			1000.0f / ImGui::GetIO().Framerate,
-			ImGui::GetIO().Framerate);
-	}
-	void GuiBase::PostUpdate()
-	{
-		ImGui::End();
-	}
-
 	void GuiBase::Render()
 	{
 		ImGui::Render();

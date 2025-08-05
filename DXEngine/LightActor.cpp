@@ -65,7 +65,7 @@ namespace DE {
 			return; // ºûÀÌ ²¨Á®ÀÖÀ¸¸é ·»´õ¸µÇÏÁö ¾ÊÀ½
 
 		if (m_light.type & LIGHT_SHADOW) {
-			GET_SINGLE(RenderBase)->SetShadowViewport(m_shadowWidth, m_shadowHeight);
+			GET_SINGLE(RenderBase)->SetShadowViewport((float)m_shadowWidth, (float)m_shadowHeight);
 			GET_SINGLE(RenderBase)->SetShadowMap(m_lightID);
 			SetGlobals(m_shadowGlobalConsts.Get());
 

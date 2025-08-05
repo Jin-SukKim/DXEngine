@@ -18,6 +18,7 @@ namespace DE {
 	class LightActor;
 	class Outliner;
 	class Gui;
+	class DetailGui;
 
 	class Scene
 	{
@@ -79,9 +80,10 @@ namespace DE {
 
 		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
 
-		std::array<std::shared_ptr<LightActor>, MAX_LIGHTS> m_lights;
+		std::vector<std::shared_ptr<Actor>> m_lights;
 
 		std::vector<std::shared_ptr<Gui>> m_guis;
 		std::shared_ptr<Outliner> m_outliner;
+		std::shared_ptr<DetailGui> m_detailGui;
 	};
 }

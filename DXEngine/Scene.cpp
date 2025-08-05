@@ -21,6 +21,7 @@
 #include "SpotLight.h"
 #include "PointLight.h"
 #include "Outliner.h"
+#include "DetailGui.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -45,11 +46,11 @@ namespace DE {
 			m_mouseClick = InputAxisAction(lButton, rButton);
 
 			//m_lights[0] = std::make_shared<SpotLight>(L"SpotLight");
-			m_lights[0] = std::make_shared<PointLight>(L"Light");
-			for (int i = 1; i < MAX_LIGHTS; ++i)
+			m_lights.emplace_back(std::make_shared<PointLight>(L"Light" + std::to_wstring(0)));
+			for (int i = 1; i < MAX_LIGHTS; ++i) {
 				//m_shadowGlobalConsts[i].Initialize(device);
-				m_lights[i] = std::make_shared<LightActor>(L"Light");
-
+				m_lights.emplace_back(std::make_shared<LightActor>(L"Light" + std::to_wstring(i)));
+			}
 			//m_lights[0]->GetLight().type = LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
 		}
 
@@ -72,8 +73,12 @@ namespace DE {
 		m_mirror->SetVisible(false);
 
 		m_outliner = std::make_unique<Outliner>();
-		m_outliner->SetActorLists({ m_actorList[0], m_actorList[1], {m_mirror} });
+		m_outliner->SetActorLists({ m_lights, m_actorList[0], m_actorList[1], {m_mirror} });
 		m_guis.emplace_back(m_outliner);
+
+		m_detailGui = std::make_unique<DetailGui>();
+		m_detailGui->SetSelectedActor(m_outliner->GetSelectedActor());
+		m_guis.emplace_back(m_detailGui);
 	}
 
 	void Scene::Initialize() {
@@ -196,11 +201,13 @@ namespace DE {
 			tr->SetPos(pos);
 		}
 
+		std::shared_ptr<LightActor> light;
 		// 그림자맵을 만들기 위한 시점
 		for (int i = 0; i < MAX_LIGHTS; ++i) {
-			m_lights[i]->Update(deltaTime);
+			light = std::dynamic_pointer_cast<LightActor>(m_lights[i]);
+			light->Update(deltaTime);
 
-			m_globalConstsCPU.lights[i] = m_lights[i]->GetLight();
+			m_globalConstsCPU.lights[i] = light->GetLight();
 		}
 	}
 
@@ -232,30 +239,13 @@ namespace DE {
 		GuiBase* guiBase = GET_SINGLE(GuiBase);
 		guiBase->PreUpdate();
 
+		m_detailGui->SetSelectedActor(m_outliner->GetSelectedActor());
 		for (auto& gui : m_guis)
 			gui->Update();
 
-		guiBase->Update();
-		if (m_pickedActor) {
-			m_pickedActor->UpdateGUI();
-			return;
-		}
+		//guiBase->Update();
 
-		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
-		if (ImGui::TreeNode("Global")) {
-			ImGui::SliderFloat("Strength IBL", &m_globalConstsCPU.strengthIBL, 0.f, 1.f);
-			ImGui::TreePop();
-		}
-
-		if (auto& actor = m_outliner->GetSelectedActor()) {
-			ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-			if (ImGui::TreeNode("Detail")) {
-				ImGui::Text("Name: %ls", actor->GetName().c_str());
-				ImGui::TreePop();
-			}
-		}
-
-		guiBase->PostUpdate();
+		//guiBase->PostUpdate();
 	}
 	void Scene::RenderOpaqueObjects()
 	{
@@ -331,11 +321,14 @@ namespace DE {
 		//renderer.SetShadowViewport(); // 그림자맵 해상도
 
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+
+		std::shared_ptr<LightActor> light;
 		for (int i = 0; i < MAX_LIGHTS; i++) {
-			if (m_lights[i]->GetLight().type & LIGHT_SHADOW) {
+			light = std::dynamic_pointer_cast<LightActor>(m_lights[i]);
+			if (light->GetLight().type & LIGHT_SHADOW) {
 				//renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 				
-				m_lights[i]->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
+				light->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
 				//for (auto& actor : m_actorList)
 				//	m_lights[i]->RenderShadow(actor);
 				//m_lights[i]->RenderShadow({ m_mirror });

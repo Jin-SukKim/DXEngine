@@ -119,6 +119,12 @@
     <Filter Include="private\Actor\Light">
       <UniqueIdentifier>{a3d78322-c03b-4938-9774-9a5a6f30ac4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="private\Renderer\GUI">
+      <UniqueIdentifier>{e6595f02-6323-4fb6-825d-4b99a1d9dcb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\Renderer\GUI">
+      <UniqueIdentifier>{f8dd685a-2991-43f1-b6e4-c95fb3273691}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -138,9 +144,6 @@
     </ClInclude>
     <ClInclude Include="ConstantData.h">
       <Filter>public\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="GuiBase.h">
-      <Filter>public\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RenderBase.h">
       <Filter>public\Renderer</Filter>
@@ -259,8 +262,16 @@
     <ClInclude Include="SpotLight.h">
       <Filter>public\Actor\Light</Filter>
     </ClInclude>
-    <ClInclude Include="Outliner.h" />
-    <ClInclude Include="Gui.h" />
+    <ClInclude Include="Gui.h">
+      <Filter>public\Renderer\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Outliner.h">
+      <Filter>public\Renderer\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GuiBase.h">
+      <Filter>public\Renderer\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="DetailGui.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -274,9 +285,6 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>private\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="GuiBase.cpp">
-      <Filter>private\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="RenderBase.cpp">
       <Filter>private\Renderer</Filter>
@@ -374,10 +382,16 @@
     <ClCompile Include="PointLight.cpp">
       <Filter>private\Actor\Light</Filter>
     </ClCompile>
-    <ClCompile Include="Outliner.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Gui.cpp">
+      <Filter>private\Renderer\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Outliner.cpp">
+      <Filter>private\Renderer\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GuiBase.cpp">
+      <Filter>private\Renderer\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="DetailGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

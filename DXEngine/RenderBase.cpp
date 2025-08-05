@@ -245,13 +245,15 @@ namespace DE {
 		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
 	}
 
-	void RenderBase::CreateShadowArrayBuffer(const std::array<std::shared_ptr<LightActor>, MAX_LIGHTS>& lights)
+	void RenderBase::CreateShadowArrayBuffer(const std::vector<std::shared_ptr<Actor>>& lights)
 	{
 		if (lights[0] == nullptr)
 			return;
 
 		int arraySize = 0;
-		for (const auto& light : lights) {
+		std::shared_ptr<LightActor> light;
+		for (const auto& actor : lights) {
+			light = std::dynamic_pointer_cast<LightActor>(actor);
 			if (light != nullptr) {
 				if (light->GetLight().type & (LIGHT_SPOT | LIGHT_DIRECTIONAL))
 					++arraySize;
@@ -260,10 +262,11 @@ namespace DE {
 			}
 		}
 
+		light = std::dynamic_pointer_cast<LightActor>(lights[0]);
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Width = lights[0]->GetShadowWidth();
-		desc.Height = lights[0]->GetShadowHeight();
+		desc.Width = light->GetShadowWidth();
+		desc.Height = light->GetShadowHeight();
 		desc.MipLevels = 1; // Mipmap Level 최대
 		desc.ArraySize = arraySize; // Texture Array이므로 사용할 Texture 개수
 		desc.Format = DXGI_FORMAT_R32_TYPELESS;
