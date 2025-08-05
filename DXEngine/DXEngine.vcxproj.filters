@@ -260,6 +260,7 @@
       <Filter>public\Actor\Light</Filter>
     </ClInclude>
     <ClInclude Include="Outliner.h" />
+    <ClInclude Include="Gui.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -374,6 +375,9 @@
       <Filter>private\Actor\Light</Filter>
     </ClCompile>
     <ClCompile Include="Outliner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

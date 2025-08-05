@@ -17,6 +17,7 @@ namespace DE {
 	class SquareActor;
 	class LightActor;
 	class Outliner;
+	class Gui;
 
 	class Scene
 	{
@@ -80,6 +81,7 @@ namespace DE {
 
 		std::array<std::shared_ptr<LightActor>, MAX_LIGHTS> m_lights;
 
+		std::vector<std::shared_ptr<Gui>> m_guis;
 		std::shared_ptr<Outliner> m_outliner;
 	};
 }

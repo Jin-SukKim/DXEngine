@@ -2,14 +2,7 @@
 #include "Outliner.h"
 
 namespace DE {
-    void Outliner::Initialize(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists) {
-        for (const auto& actorList : actorLists) {
-            for (const auto& actor : actorList) {
-                if (actor) {
-                    m_actors.emplace_back(actor);
-                }
-            }
-        }
+    void Outliner::Initialize() {
     }
 
 	void Outliner::Update() {
@@ -37,7 +30,9 @@ namespace DE {
 					std::wcstombs(label, m_actors[n]->GetName().c_str(), sizeof(label) - 1);
                     bool item_is_selected = selection.Contains((ImGuiID)n);
                     ImGui::SetNextItemSelectionUserData(n);
-                    ImGui::Selectable(label, item_is_selected);
+                    if (ImGui::Selectable(label, item_is_selected)) {
+                        SetSelectedActor(m_actors[n]);
+                    }
                 }
             }
 
@@ -48,4 +43,15 @@ namespace DE {
 
 		ImGui::End();
 	}
+
+    void Outliner::SetActorLists(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists)
+    {
+        for (const auto& actorList : actorLists) {
+            for (const auto& actor : actorList) {
+                if (actor) {
+                    m_actors.emplace_back(actor);
+                }
+            }
+        }
+    }
 } // namespace DE

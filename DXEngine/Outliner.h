@@ -1,13 +1,16 @@
 #pragma once
+#include "Gui.h"
 
 namespace DE {
-    class Outliner
+    class Outliner : public Gui
     {
     public:
-        void Initialize(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists);
-        void Update();
+        void Initialize() override;
+        void Update() override;
     
+        void SetActorLists(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists);
+    
+    private:
         std::vector<std::shared_ptr<Actor>> m_actors;
-        bool m_show = true;
     };
 }

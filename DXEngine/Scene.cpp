@@ -72,7 +72,8 @@ namespace DE {
 		m_mirror->SetVisible(false);
 
 		m_outliner = std::make_unique<Outliner>();
-		m_outliner->Initialize({ m_actorList[0], m_actorList[1], {m_mirror} });
+		m_outliner->SetActorLists({ m_actorList[0], m_actorList[1], {m_mirror} });
+		m_guis.emplace_back(m_outliner);
 	}
 
 	void Scene::Initialize() {
@@ -128,6 +129,8 @@ namespace DE {
 			//tr->SetRotation(0.f, 90.f, 0.f);
 		}
 
+		for (auto& gui : m_guis)
+			gui->Initialize();
 	}
 
 	void Scene::Update(const float& deltaTime) {
@@ -226,12 +229,13 @@ namespace DE {
 
 	void Scene::UpdateGUI()
 	{
-		GuiBase* gui = GET_SINGLE(GuiBase);
-		gui->PreUpdate();
+		GuiBase* guiBase = GET_SINGLE(GuiBase);
+		guiBase->PreUpdate();
 
-		m_outliner->Update();
+		for (auto& gui : m_guis)
+			gui->Update();
 
-		gui->Update();
+		guiBase->Update();
 		if (m_pickedActor) {
 			m_pickedActor->UpdateGUI();
 			return;
@@ -243,7 +247,15 @@ namespace DE {
 			ImGui::TreePop();
 		}
 
-		gui->PostUpdate();
+		if (auto& actor = m_outliner->GetSelectedActor()) {
+			ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+			if (ImGui::TreeNode("Detail")) {
+				ImGui::Text("Name: %ls", actor->GetName().c_str());
+				ImGui::TreePop();
+			}
+		}
+
+		guiBase->PostUpdate();
 	}
 	void Scene::RenderOpaqueObjects()
 	{

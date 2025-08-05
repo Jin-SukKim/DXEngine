@@ -194,6 +194,7 @@
     <ClInclude Include="FogEffect.h" />
     <ClInclude Include="GraphicsCommon.h" />
     <ClInclude Include="GraphicsPSO.h" />
+    <ClInclude Include="Gui.h" />
     <ClInclude Include="ImageFilter.h" />
     <ClInclude Include="LightActor.h" />
     <ClInclude Include="MirrorActor.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="FogEffect.cpp" />
     <ClCompile Include="GraphicsCommon.cpp" />
     <ClCompile Include="GraphicsPSO.cpp" />
+    <ClCompile Include="Gui.cpp" />
     <ClCompile Include="ImageFilter.cpp" />
     <ClCompile Include="LightActor.cpp" />
     <ClCompile Include="MirrorActor.cpp" />
