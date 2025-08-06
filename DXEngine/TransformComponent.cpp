@@ -5,7 +5,7 @@
 
 namespace DE {
 	using namespace DirectX;
-
+	
 	void TransformComponent::SetLocalRotation(const float& yaw, const float& pitch, const float roll)
 	{
 		m_localRotation = Vector3(yaw, pitch, roll);
@@ -90,6 +90,35 @@ namespace DE {
 	{
 		Matrix invMat = GetTransformMatrix();
 		return invMat.Invert();
+	}
+
+	void TransformComponent::UpdateGui()
+	{
+		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+		if (ImGui::TreeNode("Transform")) {
+			pos[0] = m_pos.x;
+			pos[1] = m_pos.y;
+			pos[2] = m_pos.z;
+
+			rotate[0] = m_worldRotation.x;
+			rotate[1] = m_worldRotation.y;
+			rotate[2] = m_worldRotation.z;
+
+			scale[0] = m_scale.x;
+			scale[1] = m_scale.y;
+			scale[2] = m_scale.z;
+
+			ImGui::DragFloat3("Location", pos, 0.001f, -10000.f, 10000.f);
+			SetPos(Vector3(pos[0], pos[1], pos[2]));
+
+			ImGui::DragFloat3("Rotation", rotate, 0.001f, -10000.f, 10000.f);
+			SetRotation(rotate[0], rotate[1], rotate[2]);
+
+			ImGui::DragFloat3("Scale", scale, 0.001f, -10000.f, 10000.f);
+			SetScale(Vector3(scale[0], scale[1], scale[2]));
+
+			ImGui::TreePop();
+		}
 	}
 
 	Quaternion TransformComponent::createRotationQuaternion(const float& yaw, const float& pitch, const float roll)

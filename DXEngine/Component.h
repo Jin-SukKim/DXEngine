@@ -11,6 +11,7 @@ namespace DE {
 
 		virtual void Initialize() override {}
 		virtual void Update(const float& deltaTime) override {}
+		virtual void UpdateGui() override {}
 		virtual void Render() override  { if (!m_show) return; }
 
 		void SetOwner(Object* owner) { m_owner = owner; }

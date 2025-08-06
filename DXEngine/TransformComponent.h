@@ -21,6 +21,7 @@ namespace DE {
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
 		void SetRotation(const Quaternion& q);
 		void Rotate(const float& yaw, const float& pitch, const float roll);
+		Vector3& GetRotation() { return m_worldRotation; }
 		
 		Vector3 GetForwardDir();
 		Vector3 GetRightDir();
@@ -31,6 +32,7 @@ namespace DE {
 		Matrix GetTransformMatrix(); // 변환 행렬
 		Matrix GetInvTransformMatrix(); // 역변환 행렬
 
+		void UpdateGui() override;
 	private:
 		Quaternion createRotationQuaternion(const float& yaw, const float& pitch, const float roll);
 		void SetBoundingVolumeScale();
@@ -45,5 +47,10 @@ namespace DE {
 		Vector3 m_localForward = Vector3(0.f, 0.f, 1.f);
 		Vector3 m_localRight = Vector3(1.f, 0.f, 0.f);
 		Vector3 m_localUp = Vector3(0.f, 1.f, 0.f);
+
+		// Gui
+		float pos[3] = { 0.f, 0.f, 0.f };
+		float rotate[3] = { 0.f, 0.f, 0.f };
+		float scale[3] = { 0.f, 0.f, 0.f };
 	};
 }

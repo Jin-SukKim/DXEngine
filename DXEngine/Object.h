@@ -11,7 +11,7 @@ namespace DE {
 
 		virtual void Initialize() = 0;
 		virtual void Update(const float& deltaTime) = 0;
-		virtual void UpdateGUI() {}
+		virtual void UpdateGui() {}
 		virtual void Render() {}
 
 		void SetName(const std::wstring& name) { m_name = name; }

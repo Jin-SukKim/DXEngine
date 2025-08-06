@@ -4,6 +4,7 @@
 #include "CameraActor.h"
 #include "LightActor.h"
 #include "Actor.h"
+#include "TransformComponent.h"
 
 namespace DE
 {
@@ -17,6 +18,10 @@ namespace DE
 
 		if (auto& actor = GetSelectedActor()) {
 			ImGui::Text("Name: %ls", actor->GetName().c_str());
+
+			TransformComponent* tr = GetSelectedActor()->GetComponent<TransformComponent>();
+			if (tr)
+				tr->UpdateGui();
 
 			if (auto camera = std::dynamic_pointer_cast<CameraActor>(actor)) {
 				UpdateCamera();
@@ -35,12 +40,6 @@ namespace DE
 
 	void DetailGui::UpdateActor()
 	{
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::TreeNode("Transform")) {
-
-
-			ImGui::TreePop();
-		}
 
 		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
 		if (ImGui::TreeNode("Mesh")) {
@@ -59,14 +58,6 @@ namespace DE
 
 	void DetailGui::UpdateCamera()
 	{
-
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::TreeNode("Transform")) {
-
-
-			ImGui::TreePop();
-		}
-
 		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
 		if (ImGui::TreeNode("Projection")) {
 
@@ -77,14 +68,6 @@ namespace DE
 
 	void DetailGui::UpdateLight()
 	{
-
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::TreeNode("Transform")) {
-
-
-			ImGui::TreePop();
-		}
-
 		ImGui::SetNextItemOpen(false, ImGuiCond_Once);
 		if (ImGui::TreeNode("Projection")) {
 
