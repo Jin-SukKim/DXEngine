@@ -208,7 +208,7 @@
     <ClInclude Include="MirrorActor.h" />
     <ClInclude Include="Outliner.h" />
     <ClInclude Include="ParticleProperties.h" />
-    <ClInclude Include="ParticleScene.h" />
+    <ClInclude Include="ParticleEditor.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="SampleScene.h" />
@@ -260,7 +260,7 @@
     <ClCompile Include="MirrorActor.cpp" />
     <ClCompile Include="Outliner.cpp" />
     <ClCompile Include="ParticleProperties.cpp" />
-    <ClCompile Include="ParticleScene.cpp" />
+    <ClCompile Include="ParticleEditor.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="SampleScene.cpp" />

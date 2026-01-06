@@ -1,13 +1,12 @@
 #include "pch.h"
 #include "Scene.h"
+
 #include "CameraActor.h"
 #include "SkyboxActor.h"
 #include "TransformComponent.h"
 
 #include "AppBase.h"
 #include "InputManager.h"
-
-#include "SampleActor.h"
 #include "RenderBase.h"
 
 #include "CopyFilter.h"
@@ -15,13 +14,8 @@
 #include "TreeBillboard.h"
 #include "MirrorActor.h"
 #include "FogEffect.h"
-#include "SquareActor.h"
 
 #include "LightActor.h"
-#include "SpotLight.h"
-#include "PointLight.h"
-#include "Outliner.h"
-#include "DetailGui.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -32,7 +26,6 @@ namespace DE {
 
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(device, m_globalConstsCPU, m_globalConstsGPU);
-		
 
 		// Scene 공통 Actor
 		{
@@ -224,11 +217,8 @@ namespace DE {
 
 		for (auto& gui : m_guis)
 			gui->Update();
-
-		//guiBase->Update();
-
-		//guiBase->PostUpdate();
 	}
+
 	void Scene::RenderOpaqueObjects()
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
@@ -447,6 +437,7 @@ namespace DE {
 			//}
 		}
 	}
+
 	Actor* Scene::pickClosest(const DirectX::SimpleMath::Ray& pickingRay, float& minDist)
 	{
 		minDist = 1e5f;

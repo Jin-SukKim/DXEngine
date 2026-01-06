@@ -283,8 +283,12 @@
     <ClInclude Include="ParticleProperties.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleScene.h" />
-    <ClInclude Include="SampleScene.h" />
+    <ClInclude Include="SampleScene.h">
+      <Filter>public\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEditor.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -410,11 +414,11 @@
     <ClCompile Include="ParticleProperties.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleScene.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ParticleEditor.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="SampleScene.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

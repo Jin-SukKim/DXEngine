@@ -1,8 +1,7 @@
 #pragma once
 
-//#include "InputTypes.h"
-//#include "InputAction.h"
 #include "InputManager.h"
+#include "Gui.h"
 
 namespace DE {
 	class SampleActor;
@@ -14,11 +13,7 @@ namespace DE {
 	class Actor;
 	class MirrorActor;
 	class FogEffect;
-	class SquareActor;
-	class LightActor;
-	class Outliner;
 	class Gui;
-	class DetailGui;
 
 	class Scene
 	{
@@ -90,7 +85,7 @@ namespace DE {
 
 		std::vector<std::unique_ptr<Actor>> m_lights;
 
-		std::vector<std::shared_ptr<Gui>> m_guis;
+		std::vector<std::unique_ptr<Gui>> m_guis;
 	};
 
 	template<class T>
