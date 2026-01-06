@@ -1,5 +1,5 @@
 #pragma once
-//
+
 //#include "InputTypes.h"
 //#include "InputAction.h"
 #include "InputManager.h"
@@ -34,6 +34,15 @@ namespace DE {
 
 		uint8_t* GetPickColor() { return m_pickColor; }
 	protected:
+		template<class T>
+		T* AddObject(const std::wstring& name);
+
+		template<class T>
+		T* AddLight(const std::wstring& name);
+
+		template<class T>
+		T* AddGui();
+
 		virtual void UpdateLight(const float& deltaTime);
 		virtual void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
 		virtual void UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
@@ -44,6 +53,7 @@ namespace DE {
 		virtual void RenderDepthOnly();
 		// 그림자를 위한 그림자 맵
 		virtual void RenderShadowMap();
+
 	private:
 		void enableCamFpv();
 		void pickingRay(float click);
@@ -64,12 +74,10 @@ namespace DE {
 		InputAxisAction m_mouseClick;
 
 	private:
-		std::shared_ptr<SampleActor> triangle;
-		std::shared_ptr<SquareActor> ground;
-		std::shared_ptr<SkyboxActor> m_skybox;
-		std::shared_ptr<TreeBillboard> m_billboard;
-		// 거울 반사
-		std::shared_ptr<MirrorActor> m_mirror;
+		//std::shared_ptr<SkyboxActor> m_skybox;
+		//std::shared_ptr<TreeBillboard> m_billboard;
+		//// 거울 반사
+		//std::shared_ptr<MirrorActor> m_mirror;
 
 		std::shared_ptr<CopyFilter> m_copyPostProcess;
 		std::shared_ptr<FogEffect> m_depthPP;
@@ -80,10 +88,32 @@ namespace DE {
 
 		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
 
-		std::vector<std::shared_ptr<Actor>> m_lights;
+		std::vector<std::unique_ptr<Actor>> m_lights;
 
 		std::vector<std::shared_ptr<Gui>> m_guis;
-		std::shared_ptr<Outliner> m_outliner;
-		std::shared_ptr<DetailGui> m_detailGui;
 	};
+
+	template<class T>
+	inline T* Scene::AddObject(const std::wstring& name)
+	{
+		std::unique_ptr<T> actor = std::make_unique<T>(name);
+		m_actorList[0].emplace_back(std::move(actor));
+		return dynamic_cast<T*>(m_actorList[0].back().get());
+	}
+	template<class T>
+	inline T* Scene::AddLight(const std::wstring& name)
+	{
+		assert(m_lights.size() <= MAX_LIGHTS);
+			
+		std::unique_ptr<T> light = std::make_unique<T>(name);
+		m_lights.emplace_back(std::move(light));
+		return dynamic_cast<T*>(m_lights.back().get());
+	}
+	template<class T>
+	inline T* Scene::AddGui()
+	{
+		std::unique_ptr<T> gui = std::make_unique<T>();
+		m_guis.emplace_back(std::move(gui));
+		return dynamic_cast<T*>(m_guis.back().get());
+	}
 }

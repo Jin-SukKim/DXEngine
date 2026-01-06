@@ -30,7 +30,7 @@ namespace DE {
 		void CreateDepthStencilBuffer();
 		void SetDepthOnlyRender();
 
-		void CreateShadowArrayBuffer(const std::vector<std::shared_ptr<Actor>>& lights);
+		void CreateShadowArrayBuffer(const std::vector<LightActor*>& lights);
 
 		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
 		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }

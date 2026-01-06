@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "AppBase.h"
 #include "WindowUtils.h"
-#include "Scene.h"
+#include "SampleScene.h"
 #include "CameraActor.h"
 
 #include <imgui_impl_win32.h>
@@ -39,7 +39,7 @@ namespace DE {
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.hwnd);
 
-		m_scene = std::make_unique<Scene>();
+		m_scene = std::make_unique<SampleScene>();
 		float aspect = float(m_window.width) / m_window.height;
 		m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 		m_scene->Initialize();

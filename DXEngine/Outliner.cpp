@@ -44,7 +44,7 @@ namespace DE {
 		ImGui::End();
 	}
 
-    void Outliner::SetActorLists(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists)
+    void Outliner::SetActorLists(const std::vector<std::vector<Actor*>>& actorLists)
     {
         for (const auto& actorList : actorLists) {
             for (const auto& actor : actorList) {

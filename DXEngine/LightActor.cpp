@@ -5,7 +5,7 @@
 namespace DE {
 	UINT LightActor::lightID = 0;
 
-	LightActor::LightActor(const std::wstring& name) : Super(name), m_lightID(lightID++)
+	LightActor::LightActor(const std::wstring& name) : Super(name + std::to_wstring(lightID)), m_lightID(lightID++)
 	{
 		m_light.radiance = Vector3(5.0f);
 		m_light.spotPower = 10.0f;                      // 좀 더 집중된 빛

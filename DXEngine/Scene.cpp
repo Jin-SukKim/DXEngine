@@ -40,51 +40,41 @@ namespace DE {
 			//m_actorList.emplace_back(m_mainCamera);
 			m_fpv = InputAction(f);
 
-			m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
+			//m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
 			//m_actorList.emplace_back(m_skybox);
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
-
-			//m_lights[0] = std::make_shared<SpotLight>(L"SpotLight");
-			m_lights.emplace_back(std::make_shared<PointLight>(L"Light" + std::to_wstring(0)));
-			for (int i = 1; i < MAX_LIGHTS; ++i) {
-				//m_shadowGlobalConsts[i].Initialize(device);
-				m_lights.emplace_back(std::make_shared<LightActor>(L"Light" + std::to_wstring(i)));
-			}
-			//m_lights[0]->GetLight().type = LIGHT_SPOT | LIGHT_SHADOW; // Point with shadow
 		}
-
-		triangle = std::make_shared<SampleActor>(L"Temp");
-		m_actorList[0].emplace_back(triangle);
-
-		ground = std::make_shared<SquareActor>(L"ground");
-		m_actorList[0].emplace_back(ground);
 
 		m_copyPostProcess = std::make_shared<CopyFilter>();
 		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
-		m_depthPP = std::make_shared<FogEffect>();
-		renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
+		//m_depthPP = std::make_shared<FogEffect>();
+		//renderer.SetPostProcess(*m_depthPP.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 
-		m_billboard = std::make_shared<TreeBillboard>(L"trees");
-		m_actorList[1].emplace_back(m_billboard);
+		//m_billboard = std::make_shared<TreeBillboard>(L"trees");
+		//m_actorList[1].emplace_back(m_billboard);
 
-		m_mirror = std::make_shared<MirrorActor>(L"Mirror");
-		m_mirror->SetVisible(false);
-
-		m_outliner = std::make_unique<Outliner>();
-		m_outliner->SetActorLists({ m_lights, m_actorList[0], m_actorList[1], {m_mirror} });
-		m_guis.emplace_back(m_outliner);
-
-		m_detailGui = std::make_unique<DetailGui>();
-		m_detailGui->SetSelectedActor(m_outliner->GetSelectedActor());
-		m_guis.emplace_back(m_detailGui);
+		//m_mirror = std::make_shared<MirrorActor>(L"Mirror");
+		//m_mirror->SetVisible(false);
 	}
 
 	void Scene::Initialize() {
 		// 조명 설정
 		{
-			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(m_lights);
+			for (size_t i = m_lights.size(); i < MAX_LIGHTS; ++i) {
+				std::unique_ptr<LightActor> tempLight = std::make_unique<LightActor>(L"TempLight");
+				m_lights.emplace_back(std::move(tempLight));
+			}
+
+
+			std::vector<LightActor*> lights;
+			lights.reserve(m_lights.size());
+			for (auto& light : m_lights) {
+				lights.emplace_back(dynamic_cast<LightActor*>(light.get()));
+			}
+
+			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(lights);
 			// IBL은 그림자를 구현하지 않고 AO를 사용해 그림자 효과를 비슷하게 구현함
 			// (TODO: Direct Light으로 자연광 효괄르 구현하는게 좋을듯)
 			for (int i = 0; i < MAX_LIGHTS; ++i)
@@ -102,7 +92,7 @@ namespace DE {
 
 		// Skybox
 		{
-			m_skybox->Initialize();
+			//m_skybox->Initialize();
 		}
 
 		// 입력 Bind
@@ -115,24 +105,17 @@ namespace DE {
 			for (auto& actor : actorList)
 				actor->Initialize();
 
-		TransformComponent* tr = triangle->GetComponent<TransformComponent>();
-		if (tr) {
-			tr->SetScale(Vector3(0.5f));
-			tr->SetPos(Vector3(0.f, 0.f, -1.f));
-			tr->SetRotation(90.f, 0.f, 0.f);
-		}
+		//tr = m_billboard->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	tr->SetPos(Vector3(0.f, 0.f, 5.f));
+		//}
 
-		tr = m_billboard->GetComponent<TransformComponent>();
-		if (tr) {
-			tr->SetPos(Vector3(0.f, 0.f, 5.f));
-		}
-
-		m_mirror->Initialize();
-		tr = m_mirror->GetComponent<TransformComponent>();
-		if (tr) {
-			//tr->SetPos({ 0.f, -0.5f, -.5f });
-			//tr->SetRotation(0.f, 90.f, 0.f);
-		}
+		//m_mirror->Initialize();
+		//tr = m_mirror->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	//tr->SetPos({ 0.f, -0.5f, -.5f });
+		//	//tr->SetRotation(0.f, 90.f, 0.f);
+		//}
 
 		for (auto& gui : m_guis)
 			gui->Initialize();
@@ -160,8 +143,8 @@ namespace DE {
 			for (auto& actor : actorList)
 				actor->Update(deltaTime);
 		
-		m_mirror->Update(deltaTime);
-		m_mirror->UpdateGlobalConstants(m_globalConstsCPU, deltaTime, eyeWorld, view, proj);
+		//m_mirror->Update(deltaTime);
+		//m_mirror->UpdateGlobalConstants(m_globalConstsCPU, deltaTime, eyeWorld, view, proj);
 		
 		// TODO: Picking Test
 		//pickingGpu(0);
@@ -201,10 +184,10 @@ namespace DE {
 			tr->SetPos(pos);
 		}
 
-		std::shared_ptr<LightActor> light;
+		LightActor* light;
 		// 그림자맵을 만들기 위한 시점
 		for (int i = 0; i < MAX_LIGHTS; ++i) {
-			light = std::dynamic_pointer_cast<LightActor>(m_lights[i]);
+			light = dynamic_cast<LightActor*>(m_lights[i].get());
 			light->Update(deltaTime);
 
 			m_globalConstsCPU.lights[i] = light->GetLight();
@@ -239,7 +222,6 @@ namespace DE {
 		GuiBase* guiBase = GET_SINGLE(GuiBase);
 		guiBase->PreUpdate();
 
-		m_detailGui->SetSelectedActor(m_outliner->GetSelectedActor());
 		for (auto& gui : m_guis)
 			gui->Update();
 
@@ -269,8 +251,8 @@ namespace DE {
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		m_skybox->Render();
+		//renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		//m_skybox->Render();
 
 		// Bounding Volume 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
@@ -292,7 +274,7 @@ namespace DE {
 	void Scene::RenderMirror()
 	{
 		// 거울 렌더링
-		m_mirror->Render(m_actorList, m_skybox, m_globalConstsGPU);
+		//m_mirror->Render(m_actorList, m_skybox, m_globalConstsGPU);
 	}
 
 	void Scene::RenderDepthOnly()
@@ -305,12 +287,12 @@ namespace DE {
 		for (auto& actor : m_actorList[0])
 			actor->Render();
 		
-		m_mirror->Render(); // 거울만 렌더링
+		//m_mirror->Render(); // 거울만 렌더링
 
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
 		
-		m_skybox->Render();
+		//m_skybox->Render();
 	}
 
 	void Scene::RenderShadowMap()
@@ -322,13 +304,14 @@ namespace DE {
 
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-		std::shared_ptr<LightActor> light;
+		LightActor* light;
 		for (int i = 0; i < MAX_LIGHTS; i++) {
-			light = std::dynamic_pointer_cast<LightActor>(m_lights[i]);
+			light = dynamic_cast<LightActor*>(m_lights[i].get());
 			if (light->GetLight().type & LIGHT_SHADOW) {
 				//renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 				
-				light->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
+				//light->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
+				light->RenderShadow({ m_actorList[0], m_actorList[1] });
 				//for (auto& actor : m_actorList)
 				//	m_lights[i]->RenderShadow(actor);
 				//m_lights[i]->RenderShadow({ m_mirror });
