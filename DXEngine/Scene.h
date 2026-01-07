@@ -69,7 +69,7 @@ namespace DE {
 		InputAxisAction m_mouseClick;
 
 	private:
-		//std::shared_ptr<SkyboxActor> m_skybox;
+		std::shared_ptr<SkyboxActor> m_skybox;
 		//std::shared_ptr<TreeBillboard> m_billboard;
 		//// 거울 반사
 		//std::shared_ptr<MirrorActor> m_mirror;

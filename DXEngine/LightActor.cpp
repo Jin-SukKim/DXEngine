@@ -135,4 +135,12 @@ namespace DE {
 		context->GSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 		context->PSSetConstantBuffers(0, 1, globalConstsGPU.GetAddressOf());
 	}
+	void LightActor::TurnOff()
+	{
+		m_light.type |= LIGHT_OFF;
+	}
+	void LightActor::TurnOn()
+	{
+		m_light.type &= ~LIGHT_OFF;
+	}
 }

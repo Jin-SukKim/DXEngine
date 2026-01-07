@@ -2,15 +2,12 @@
 #include "ParticleProperties.h"
 
 namespace DE {
-class Particle
-{
-public:
-	void Initialize();
-	void Update();
-	void Render();
-private:
-	ParticleProperties properties;
-};
-
+	struct Particle {
+		Vector3 position;
+		Vector3 velocity;
+		Vector3 color;
+		float life = -1.f;
+		float size = 1.f;
+	};
 }
 

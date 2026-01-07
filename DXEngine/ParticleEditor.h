@@ -2,8 +2,8 @@
 #include "Scene.h"
 
 namespace DE {
-	class SquareActor;
-	class PointLight;
+
+	class ParticleEmitter;
 
 class ParticleEditor : public Scene
 {
@@ -17,8 +17,7 @@ public:
 	void Render() override;
 
 private:
-	SquareActor* m_ground;
-	PointLight* m_pointLight;
+	std::unique_ptr<ParticleEmitter> particleEmitter;
 };
 
 

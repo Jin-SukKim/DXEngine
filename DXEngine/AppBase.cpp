@@ -2,6 +2,7 @@
 #include "AppBase.h"
 #include "WindowUtils.h"
 #include "ParticleEditor.h"
+#include "Scene.h"
 #include "CameraActor.h"
 
 #include <imgui_impl_win32.h>

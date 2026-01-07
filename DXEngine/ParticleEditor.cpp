@@ -1,13 +1,11 @@
 #include "pch.h"
 #include "ParticleEditor.h"
+#include "ParticleEmitter.h"
 
-#include "SquareActor.h"
-#include "PointLight.h"
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
-		m_ground = AddObject<SquareActor>(L"Ground");
-		m_pointLight = AddLight<PointLight>(L"Light");
+		particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -17,20 +15,28 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
+
+		particleEmitter->Initialize();
 	}
 
 	void ParticleEditor::Update(const float& deltaTime)
 	{
 		Scene::Update(deltaTime);
+
+		particleEmitter->Update(deltaTime);
 	}
 
 	void ParticleEditor::UpdateGUI()
 	{
 		Scene::UpdateGUI();
+
+		particleEmitter->UpdateGui();
 	}
 
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
+
+		particleEmitter->Render();
 	}
 }

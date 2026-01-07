@@ -67,6 +67,10 @@ namespace DE {
 			GraphicsPSO depthOnlyPSO; // Depth값을 측정하기 위한 PSO
 		} depth;
 
+		struct {
+			GraphicsPSO animPSO;
+		} particle;
+
 		// Shader에서 공통으로 사용할 Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
@@ -143,6 +147,13 @@ namespace DE {
 		// Blend States (원래 렌더링이 된 색 위에 새로운 색을 섞어서 렌더링할 때 사용하는 방법)
 		 // 2가지 색을 Alpha(비율)로 섞어주는 Alpha Blending
 		ComPtr<ID3D11BlendState> mirrorBS;
+
+		// Particle System
+		ComPtr<ID3D11InputLayout> particleIL;
+		ComPtr<ID3D11VertexShader> particleVS;
+		ComPtr<ID3D11GeometryShader> particleGS;
+		ComPtr<ID3D11PixelShader> particlePS;
+		ComPtr<ID3D11BlendState> accumulateBS; // 색을 전부 더하면서 렌더링
 
 	};
 

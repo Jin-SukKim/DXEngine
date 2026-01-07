@@ -431,4 +431,82 @@ namespace DE {
 
 		return sizeof(uint8_t) * 4;
 	}
+	void D3D11Utils::CreateStructuredBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav)
+	{
+		// Structured Buffer 持失
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = numElements * elementSize;
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | 
+						D3D11_BIND_UNORDERED_ACCESS;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		bufferDesc.StructureByteStride = elementSize;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else 
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+		
+		// SRV 持失
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.FirstElement = 0;
+		srvDesc.Buffer.NumElements = numElements;
+		ThrowIfFailed(device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf()));
+
+		// UAV 持失
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = numElements;
+		uavDesc.Buffer.Flags = 0;
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+	}
+
+	void D3D11Utils::CreateStagingBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer)
+	{
+		// StagingBuffer 持失
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = numElements * elementSize;
+		bufferDesc.Usage = D3D11_USAGE_STAGING;
+		bufferDesc.BindFlags = 0;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = elementSize;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+
+	}
+	void D3D11Utils::CopyToStagingBuffer(ID3D11DeviceContext* context, ID3D11Buffer* dest, UINT size, void* src)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms = {};
+		context->Map(dest, NULL, D3D11_MAP_WRITE, NULL, &ms);
+		memcpy(ms.pData, src, size);
+		context->Unmap(dest, NULL);
+	}
+	void D3D11Utils::CopyFromStagingBuffer(ID3D11DeviceContext* context, void* dest, UINT size, ID3D11Buffer* src)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms = {};
+		context->Map(src, NULL, D3D11_MAP_READ, NULL, &ms);
+		memcpy(dest, ms.pData, size);
+		context->Unmap(src, NULL);
+	}
 }

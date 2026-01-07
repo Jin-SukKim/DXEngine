@@ -15,7 +15,7 @@
 #include "MirrorActor.h"
 #include "FogEffect.h"
 
-#include "LightActor.h"
+#include "PointLight.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -33,7 +33,7 @@ namespace DE {
 			//m_actorList.emplace_back(m_mainCamera);
 			m_fpv = InputAction(f);
 
-			//m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
+			m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
 			//m_actorList.emplace_back(m_skybox);
 
 			m_mouseClick = InputAxisAction(lButton, rButton);
@@ -56,7 +56,8 @@ namespace DE {
 		// 조명 설정
 		{
 			for (size_t i = m_lights.size(); i < MAX_LIGHTS; ++i) {
-				std::unique_ptr<LightActor> tempLight = std::make_unique<LightActor>(L"TempLight");
+				std::unique_ptr<PointLight> tempLight = std::make_unique<PointLight>(L"TempLight");
+				tempLight->TurnOff();
 				m_lights.emplace_back(std::move(tempLight));
 			}
 
@@ -85,7 +86,7 @@ namespace DE {
 
 		// Skybox
 		{
-			//m_skybox->Initialize();
+			m_skybox->Initialize();
 		}
 
 		// 입력 Bind
@@ -241,8 +242,8 @@ namespace DE {
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
 
-		//renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		//m_skybox->Render();
+		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		m_skybox->Render();
 
 		// Bounding Volume 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
@@ -282,7 +283,7 @@ namespace DE {
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
 		
-		//m_skybox->Render();
+		m_skybox->Render();
 	}
 
 	void Scene::RenderShadowMap()

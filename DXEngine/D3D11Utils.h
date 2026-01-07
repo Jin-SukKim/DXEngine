@@ -102,5 +102,14 @@ namespace DE {
 
 		// Pixel Format에 따라 Pixel 색상의 범위가 다르기 때문에 같은 uint8_t를 쓰지만 대신 데이터 범위가 다름
 		static size_t GetPixelSize(const DXGI_FORMAT& pixelFormat);
+
+
+		// Particle System
+		static void CreateStructuredBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav);
+		static void CreateStagingBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer);
+		static void CopyToStagingBuffer(ID3D11DeviceContext* context, ID3D11Buffer* dest, UINT size, void* src);
+		static void CopyFromStagingBuffer(ID3D11DeviceContext* context, void* dest, UINT size, ID3D11Buffer* src);
+
+
 	};
 }
