@@ -1,5 +1,6 @@
 #pragma once
 #include "GraphicsPSO.h"
+#include "ComputePSO.h"
 
 namespace DE {
 	class GraphicsCommon {

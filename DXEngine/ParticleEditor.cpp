@@ -1,10 +1,12 @@
 #include "pch.h"
 #include "ParticleEditor.h"
 #include "ParticleEmitter.h"
+#include "SquareActor.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
+		ground = AddObject<SquareActor>(L"Ground");
 		particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
 	}
 

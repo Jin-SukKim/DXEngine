@@ -211,7 +211,7 @@ namespace DE {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
 		}; // Dummy (실제로는 Structured Buffer 사용)
 		D3D11Utils::CreateVSAndIL(device, L"ParticleVS.hlsl", particleIEs, particleVS, particleIL);
-		//D3D11Utils::CreateGS(device, L"ParticleGS.hlsl", particleGS);
+		D3D11Utils::CreateGS(device, L"ParticleGS.hlsl", particleGS);
 		D3D11Utils::CreatePS(device, L"ParticlePS.hlsl", particlePS);
 	}
 	
@@ -425,7 +425,7 @@ namespace DE {
 		// Particle System
 		particle.animPSO = basic.solidPSO;
 		particle.animPSO.vertexShader = particleVS;
-		//particle.animPSO.geometryShader = particleGS;
+		particle.animPSO.geometryShader = particleGS;
 		particle.animPSO.pixelShader = particlePS;
 		particle.animPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		particle.animPSO.rasterizerState = solidBothRS;

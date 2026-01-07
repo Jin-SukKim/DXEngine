@@ -2,6 +2,7 @@
 #include "Actor.h"
 #include "StructuredBuffer.h"
 #include "Particle.h"
+#include "ComputeShader.h"
 
 namespace DE {
 	class ParticleEmitter : public Actor
@@ -18,6 +19,9 @@ namespace DE {
 
 	private:
 		StructuredBuffer<Particle> m_particles;
+		ComputeShader particleCS;
+		
+		ConstantBuffer<ParticleConsts> m_consts;
 	};
 }
 

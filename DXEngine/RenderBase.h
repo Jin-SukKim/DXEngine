@@ -6,6 +6,7 @@
 namespace DE {
 	class GraphicsCommon;
 	class GraphicsPSO;
+	class ComputePSO;
 	class PostProcess;
 	class ToneMappingFilter;
 
@@ -38,6 +39,7 @@ namespace DE {
 		void ResizeSwapChain(const WindowInfo& window);
 
 		void SetPipelineState(const GraphicsPSO& pso);
+		void SetPipelineState(const ComputePSO& pso);
 		
 		void SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso);
 

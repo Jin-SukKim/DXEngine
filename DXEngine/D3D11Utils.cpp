@@ -509,4 +509,21 @@ namespace DE {
 		memcpy(dest, ms.pData, size);
 		context->Unmap(src, NULL);
 	}
+	void D3D11Utils::CreateCS(ID3D11Device* device, const std::wstring& filename, ComPtr<ID3D11ComputeShader>& computeShader)
+	{
+		ComPtr<ID3DBlob> shaderBlob;
+		ComPtr<ID3DBlob> errorBlob;
+
+		UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+		compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+		ThrowIfFailed(D3DCompileFromFile(
+			filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
+			"main", "cs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
+
+		ThrowIfFailed(device->CreateComputeShader(
+			shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(),
+			NULL, &computeShader));
+	}
 }

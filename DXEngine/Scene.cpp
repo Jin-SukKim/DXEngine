@@ -15,6 +15,7 @@
 #include "MirrorActor.h"
 #include "FogEffect.h"
 
+#include "SpotLight.h"
 #include "PointLight.h"
 
 namespace DE {
@@ -55,17 +56,12 @@ namespace DE {
 	void Scene::Initialize() {
 		// 조명 설정
 		{
+			std::vector<LightActor*> lights;
 			for (size_t i = m_lights.size(); i < MAX_LIGHTS; ++i) {
 				std::unique_ptr<PointLight> tempLight = std::make_unique<PointLight>(L"TempLight");
 				tempLight->TurnOff();
 				m_lights.emplace_back(std::move(tempLight));
-			}
-
-
-			std::vector<LightActor*> lights;
-			lights.reserve(m_lights.size());
-			for (auto& light : m_lights) {
-				lights.emplace_back(dynamic_cast<LightActor*>(light.get()));
+				lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));
 			}
 
 			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(lights);
@@ -157,7 +153,7 @@ namespace DE {
 			RenderBase::graphicsCommon.sampleStates.data());
 
 		RenderDepthOnly();
-		RenderShadowMap();
+		//RenderShadowMap();
 
 		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
 		//m_skybox->SetCommonSRVs(context);
@@ -171,12 +167,12 @@ namespace DE {
 
 	void Scene::UpdateLight(const float& deltaTime)
 	{
-		auto* tr = m_lights[0]->GetComponent<TransformComponent>();
-		if (tr) {
-			Vector3 pos = tr->GetPos();
-			pos = Vector3::Transform(pos, Matrix::CreateRotationY(deltaTime * 0.5f));
-			tr->SetPos(pos);
-		}
+		//auto* tr = m_lights[0]->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	Vector3 pos = tr->GetPos();
+		//	pos = Vector3::Transform(pos, Matrix::CreateRotationY(deltaTime * 0.5f));
+		//	tr->SetPos(pos);
+		//}
 
 		LightActor* light;
 		// 그림자맵을 만들기 위한 시점
@@ -231,7 +227,7 @@ namespace DE {
 
 		// 그림자맵들도 공용 Texture들 이후에 추가
 		// 주의: 마지막 shadowDSV를 RenderTarget에서 해제한 후 설정
-		renderer.SetShadowSRVs();
+		//renderer.SetShadowSRVs();
 
 		// 거울 없이 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);

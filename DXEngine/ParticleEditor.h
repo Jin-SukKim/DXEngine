@@ -4,7 +4,7 @@
 namespace DE {
 
 	class ParticleEmitter;
-
+	class SquareActor;
 class ParticleEditor : public Scene
 {
 public:
@@ -17,6 +17,7 @@ public:
 	void Render() override;
 
 private:
+	SquareActor* ground;
 	std::unique_ptr<ParticleEmitter> particleEmitter;
 };
 

@@ -5,6 +5,7 @@
 #include "MeshData.h"
 #include "PostProcess.h"
 #include "ToneMappingFilter.h"
+#include "ComputePSO.h"
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
@@ -336,6 +337,16 @@ namespace DE {
 		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // 마지막 parameter는 multi-sample을 사용할때 사용
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
+	}
+
+	void RenderBase::SetPipelineState(const ComputePSO& pso)
+	{
+		m_context->VSSetShader(NULL, 0, 0);
+		m_context->PSSetShader(NULL, 0, 0);
+		m_context->HSSetShader(NULL, 0, 0);
+		m_context->DSSetShader(NULL, 0, 0);
+		m_context->GSSetShader(NULL, 0, 0);
+		m_context->CSSetShader(pso.computeShader.Get(), 0, 0);
 	}
 
 	void RenderBase::SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso)

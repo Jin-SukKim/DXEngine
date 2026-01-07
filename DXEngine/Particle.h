@@ -9,5 +9,10 @@ namespace DE {
 		float life = -1.f;
 		float size = 1.f;
 	};
+
+	struct ParticleConsts {
+		float dt;
+		Vector3 dummy;
+	};
 }
 

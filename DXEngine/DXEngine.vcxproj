@@ -195,6 +195,7 @@
     <ClInclude Include="CameraActor.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="ComputePSO.h" />
     <ClInclude Include="ConstantData.h" />
     <ClInclude Include="CopyFilter.h" />
     <ClInclude Include="DepthFilter.h" />
@@ -208,6 +209,7 @@
     <ClInclude Include="MirrorActor.h" />
     <ClInclude Include="Outliner.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleProperties.h" />
     <ClInclude Include="ParticleEditor.h" />
@@ -251,6 +253,7 @@
     <ClCompile Include="BoundComponent.cpp" />
     <ClCompile Include="CameraActor.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComputePSO.cpp" />
     <ClCompile Include="CopyFilter.cpp" />
     <ClCompile Include="DepthFilter.cpp" />
     <ClCompile Include="DetailGui.cpp" />
@@ -263,6 +266,7 @@
     <ClCompile Include="MirrorActor.cpp" />
     <ClCompile Include="Outliner.cpp" />
     <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleProperties.cpp" />
     <ClCompile Include="ParticleEditor.cpp" />
@@ -447,6 +451,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="ParticleCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="ParticleGS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
