@@ -11,9 +11,9 @@ namespace DE {
 	};
 
 	struct ParticleConsts {
-		float dt;
-		Vector3 dummy;
-		//UINT activeCount;
+		float dt;              // 델타 타임
+		float time;            // 경과 시간 (랜덤 시드용)
+		float spawnRate;       // 초당 생성률
+		UINT maxParticles;     // 최대 파티클 수
 	};
 }
-

@@ -18,9 +18,6 @@ namespace DE {
 		void Render() override;
 
 	private:
-		void GenerateRandomParticles(StructuredBuffer<Particle>& particles);
-
-	private:
 		AppendBuffer<Particle> m_append;
 		AppendBuffer<Particle> m_consume;
 
@@ -33,6 +30,10 @@ namespace DE {
 		ComputeShader m_argsUpdateCS;
 		ComputeShader m_particleCS;
 		ConstantBuffer<ParticleConsts> m_consts;
+
+		// 최소한의 상태만 관리
+		UINT maxParticles = 2048;
+		float m_elapsedTime = 0.0f;
+		float m_targetSpawnRate = 100.0f;
 	};
 }
-
