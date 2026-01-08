@@ -14,8 +14,10 @@ void ParticleEmitter::Initialize()
 	ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 	m_particles.Initialize(device.Get(), particleCount);
 	GenerateRandomParticles(m_particles);
+	ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+	m_particles.Upload(context.Get());
 
-	particleCS.Initialize(L"ParticleCS.hlsl");
+	m_particleCS.Initialize(L"ParticleCS.hlsl");
 
 	m_consts.Initialize();
 }
@@ -25,40 +27,21 @@ void ParticleEmitter::Update(const float& dt)
 	m_consts.GetCpu().dt = dt * 0.5f;
 	m_consts.Upload();
 
-	//std::random_device rd;
-	//std::mt19937 gen(rd());
-	//std::uniform_real_distribution<float> randomPosition(-1.f, 1.f);
-	//std::uniform_real_distribution<float> randomSpeed(1.f, 2.f);
-	//std::uniform_real_distribution<float> randomLife(0.f, 1.f);
-
-	//int newCount = 10;
-	//for (UINT i = 0; i < particleCount; ++i) {
-	//	Particle& p = m_particles.Get(i);
-	//	if (p.life < 0.f && newCount > 0) {
-	//		p.position = Vector3(randomPosition(gen), randomPosition(gen), 0.f);
-	//		p.velocity = Vector3(randomPosition(gen), 1.f, randomPosition(gen)) * randomSpeed(gen);
-	//		p.life = randomLife(gen);
-	//		--newCount;
-	//	}
-	//}
-
-	//for (UINT i = 0; i < particleCount; ++i) {
-	//	Particle& p = m_particles.Get(i);
-	//	if (p.life < 0.f)
-	//		continue;
-	//	
-	//	p.position += p.velocity * dt * 0.5f;
-	//	p.life -= dt * 0.5f;
-	//}
-
-	//ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-	//m_particles.Upload(context.Get());
+	m_particleCS.UpdateConsts(0, 1, m_consts.GetAddressOf());
 }
 
 void ParticleEmitter::Render()
 {
 	RenderBase& renderer = *GET_SINGLE(RenderBase);
 	ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+
+	std::vector<ID3D11ShaderResourceView*> srvs = {
+		m_particles.GetSRV()
+	};
+	std::vector<ID3D11UnorderedAccessView*> uavs = {
+		m_particles.GetUAV()
+	};
+	m_particleCS.Dispatch(UINT(ceil(m_particles.Size() / 1024.f)), 1, 1, srvs, uavs);
 
 	renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 	context->VSSetShaderResources(0, 1, m_particles.GetAddressOfSRV());

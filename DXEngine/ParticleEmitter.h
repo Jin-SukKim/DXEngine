@@ -19,7 +19,7 @@ namespace DE {
 
 	private:
 		StructuredBuffer<Particle> m_particles;
-		ComputeShader particleCS;
+		ComputeShader m_particleCS;
 		
 		ConstantBuffer<ParticleConsts> m_consts;
 	};

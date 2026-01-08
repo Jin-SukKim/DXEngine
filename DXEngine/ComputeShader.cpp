@@ -19,6 +19,12 @@ namespace DE {
 		ComputeShaderBarrier(context, static_cast<UINT>(srvs.size()), static_cast<UINT>(uavs.size()));
 	}
 
+	void ComputeShader::UpdateConsts(UINT startSlot, UINT numBuffers, ID3D11Buffer* const* ppConsts)
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		context->CSSetConstantBuffers(startSlot, numBuffers, ppConsts);
+	}
+
 	void ComputeShader::ComputeShaderBarrier(ID3D11DeviceContext* context, UINT srvNum, UINT uavNum)
 	{
 		std::vector<ID3D11ShaderResourceView*> nullSRV(srvNum, 0);
