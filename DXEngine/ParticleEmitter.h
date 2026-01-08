@@ -35,5 +35,6 @@ namespace DE {
 		UINT maxParticles = 2048;
 		float m_elapsedTime = 0.0f;
 		float m_targetSpawnRate = 100.0f;
+		float m_spawnAccumulator = 0.f;
 	};
 }

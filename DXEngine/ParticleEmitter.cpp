@@ -45,36 +45,33 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		m_elapsedTime += dt;
+		m_spawnAccumulator += m_targetSpawnRate * dt;
 
 		// GPU에 필요한 정보만 전달
 		m_consts.GetCpu().dt = dt;
 		m_consts.GetCpu().time = m_elapsedTime;
-		m_consts.GetCpu().spawnRate = m_targetSpawnRate;
 		m_consts.GetCpu().maxParticles = maxParticles;
 		m_consts.Upload();
 
 		// ----------------------------------------------------
 		// 1. Spawn 단계 항상 실행 (GPU가 생성 여부 결정)
 		// ----------------------------------------------------
-		{
+		int spawnCount = static_cast<int>(m_spawnAccumulator);
+		if (spawnCount > 0) {
+			m_spawnAccumulator -= static_cast<float>(spawnCount);
+			m_consts.GetCpu().spawnCount = static_cast<float>(spawnCount);
+			m_consts.Upload();
+
+			m_spawnCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf()); 
+
 			// activeCount를 t0에 바인딩
 			context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 
 			ID3D11UnorderedAccessView* uav = m_consume.GetUAV();
 			context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
-			// 충분한 스레드 그룹 Dispatch (GPU가 필터링)
-			UINT maxPossibleSpawn = static_cast<UINT>(m_targetSpawnRate * dt * 2.0f);
-			UINT dispatchGroups = std::max(1u, (maxPossibleSpawn + 255) / 256);
-
-			m_spawnCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf());
-			m_spawnCS.Dispatch(context.Get(), dispatchGroups, 1, 1);
-
-			// 해제
-			ID3D11ShaderResourceView* nullSRV = nullptr;
-			context->CSSetShaderResources(0, 1, &nullSRV);
-			ID3D11UnorderedAccessView* nullUAV = nullptr;
-			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+			UINT groupCount = (spawnCount + 255) / 256;
+			m_spawnCS.Dispatch(context.Get(), groupCount, 1, 1);
 		}
 
 		// ----------------------------------------------------
