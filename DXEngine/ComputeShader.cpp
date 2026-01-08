@@ -2,36 +2,42 @@
 #include "ComputeShader.h"
 
 namespace DE {
-	void ComputeShader::Initialize(const std::wstring& csName)
+	void ComputeShader::Initialize(ID3D11Device* device, const std::wstring& csName)
 	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		D3D11Utils::CreateCS(device.Get(), csName, m_cs);
+		D3D11Utils::CreateCS(device, csName, m_cs);
 	}
 
-	void ComputeShader::Dispatch(UINT groupX, UINT groupY, UINT groupZ, std::vector<ID3D11ShaderResourceView*>& srvs, std::vector<ID3D11UnorderedAccessView*>& uavs)
+	void ComputeShader::Dispatch(ID3D11DeviceContext* context, UINT groupX, UINT groupY, UINT groupZ)
 	{
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-
-		context->CSSetShaderResources(0, static_cast<UINT>(srvs.size()), srvs.data());
-		context->CSSetUnorderedAccessViews(0, static_cast<UINT>(uavs.size()), uavs.data(), nullptr);
 		context->CSSetShader(m_cs.Get(), 0, 0);
 		context->Dispatch(groupX, groupY, groupZ);
-		ComputeShaderBarrier(context, static_cast<UINT>(srvs.size()), static_cast<UINT>(uavs.size()));
+		ComputeShaderBarrier(context);
 	}
 
-	void ComputeShader::UpdateConsts(UINT startSlot, UINT numBuffers, ID3D11Buffer* const* ppConsts)
+	void ComputeShader::UpdateConsts(ID3D11DeviceContext* context, UINT startSlot, UINT numBuffers, ID3D11Buffer* const* ppConsts)
 	{
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		context->CSSetConstantBuffers(startSlot, numBuffers, ppConsts);
 	}
 
-	void ComputeShader::ComputeShaderBarrier(ID3D11DeviceContext* context, UINT srvNum, UINT uavNum)
+	void ComputeShader::SetSRVs(ID3D11DeviceContext* context, UINT startSlot, const std::vector<ID3D11ShaderResourceView*>& srvs)
 	{
-		std::vector<ID3D11ShaderResourceView*> nullSRV(srvNum, 0);
-		context->CSSetShaderResources(0, srvNum, nullSRV.data());
+		m_srvs = srvs;
+		context->CSSetShaderResources(startSlot, static_cast<UINT>(srvs.size()), srvs.data());
+	}
 
-		std::vector<ID3D11UnorderedAccessView*> nullUAV(uavNum, 0);
-		context->CSSetUnorderedAccessViews(0, uavNum, nullUAV.data(), NULL);
+	void ComputeShader::SetUAVs(ID3D11DeviceContext* context, UINT startSlot, const std::vector<ID3D11UnorderedAccessView*>& uavs, const UINT* initCounts)
+	{
+		m_uavs = uavs;
+		context->CSSetUnorderedAccessViews(startSlot, static_cast<UINT>(uavs.size()), uavs.data(), initCounts);
+	}
+
+	void ComputeShader::ComputeShaderBarrier(ID3D11DeviceContext* context)
+	{
+		std::fill(m_srvs.begin(), m_srvs.end(), nullptr);
+		context->CSSetShaderResources(0, static_cast<UINT>(m_srvs.size()), m_srvs.data());
+
+		std::fill(m_uavs.begin(), m_uavs.end(), nullptr);
+		context->CSSetUnorderedAccessViews(0, static_cast<UINT>(m_uavs.size()), m_uavs.data(), NULL);
 
 		context->CSSetShader(nullptr, 0, 0);
 	}

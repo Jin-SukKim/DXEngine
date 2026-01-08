@@ -301,6 +301,10 @@
     <ClInclude Include="StructuredBuffer.h" />
     <ClInclude Include="ComputePSO.h" />
     <ClInclude Include="ComputeShader.h" />
+    <ClInclude Include="AppendBuffer.h" />
+    <ClInclude Include="StagingBuffer.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">

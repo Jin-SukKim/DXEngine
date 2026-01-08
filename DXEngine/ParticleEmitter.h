@@ -3,6 +3,8 @@
 #include "StructuredBuffer.h"
 #include "Particle.h"
 #include "ComputeShader.h"
+#include "AppendBuffer.h"
+#include "StagingBuffer.h"
 
 namespace DE {
 	class ParticleEmitter : public Actor
@@ -18,9 +20,13 @@ namespace DE {
 		void GenerateRandomParticles(StructuredBuffer<Particle>& particles);
 
 	private:
-		StructuredBuffer<Particle> m_particles;
-		ComputeShader m_particleCS;
+		//StructuredBuffer<Particle> m_particles;
 		
+		AppendBuffer<Particle> m_append;
+		AppendBuffer<Particle> m_consume;
+		StagingBuffer<UINT> m_activeCount;
+
+		ComputeShader m_particleCS;
 		ConstantBuffer<ParticleConsts> m_consts;
 	};
 }

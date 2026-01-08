@@ -189,6 +189,7 @@
   <ItemGroup>
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AppBase.h" />
+    <ClInclude Include="AppendBuffer.h" />
     <ClInclude Include="BillboardActor.h" />
     <ClInclude Include="BloomEffect.h" />
     <ClInclude Include="BoundComponent.h" />
@@ -235,6 +236,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SquareActor.h" />
+    <ClInclude Include="StagingBuffer.h" />
     <ClInclude Include="StructuredBuffer.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="ToneMappingFilter.h" />

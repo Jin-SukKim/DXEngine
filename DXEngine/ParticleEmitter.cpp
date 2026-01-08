@@ -4,7 +4,7 @@
 
 namespace DE {
 
-	UINT particleCount = 1000;
+	UINT particleCount = 500;
 ParticleEmitter::ParticleEmitter(const std::wstring& name) : Actor(name)
 {
 }
@@ -12,22 +12,29 @@ ParticleEmitter::ParticleEmitter(const std::wstring& name) : Actor(name)
 void ParticleEmitter::Initialize()
 {
 	ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-	m_particles.Initialize(device.Get(), particleCount);
-	GenerateRandomParticles(m_particles);
 	ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-	m_particles.Upload(context.Get());
+	//m_particles.Initialize(device.Get(), particleCount);
+	//GenerateRandomParticles(m_particles);
+	//m_particles.Upload(context.Get());
 
-	m_particleCS.Initialize(L"ParticleCS.hlsl");
+	GenerateRandomParticles(m_consume);
+	m_consume.Initialize(device.Get());
+
+	m_append.Initialize(device.Get(), m_consume.Size());
+	m_activeCount.Initialize(device.Get(), { 0 }); // Count값 1개
+
+	m_particleCS.Initialize(device.Get(), L"ParticleCS.hlsl");
 
 	m_consts.Initialize();
 }
 
 void ParticleEmitter::Update(const float& dt)
 {
+	ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 	m_consts.GetCpu().dt = dt * 0.5f;
 	m_consts.Upload();
 
-	m_particleCS.UpdateConsts(0, 1, m_consts.GetAddressOf());
+	m_particleCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf());
 }
 
 void ParticleEmitter::Render()
@@ -35,17 +42,24 @@ void ParticleEmitter::Render()
 	RenderBase& renderer = *GET_SINGLE(RenderBase);
 	ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
-	std::vector<ID3D11ShaderResourceView*> srvs = {
-		m_particles.GetSRV()
-	};
-	std::vector<ID3D11UnorderedAccessView*> uavs = {
-		m_particles.GetUAV()
-	};
-	m_particleCS.Dispatch(UINT(ceil(m_particles.Size() / 1024.f)), 1, 1, srvs, uavs);
+	// 각 UAV의 시작 크기
+	UINT initCounts[2] = { static_cast<UINT>(m_consume.Size()), 0 };
+	m_particleCS.SetUAVs(context.Get(), 0, 
+		{m_consume.GetUAV(), m_append.GetUAV()},
+		initCounts);
+	m_particleCS.Dispatch(context.Get(), UINT(ceil(m_consume.Size() / 1024.f)), 1, 1);
 
+	// Append의 UAV 개수 복사
+	context->CopyStructureCount(m_activeCount.GetGpu(), 0, m_append.GetUAV());
+	m_activeCount.Download(context.Get());
+	
 	renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
-	context->VSSetShaderResources(0, 1, m_particles.GetAddressOfSRV());
-	context->Draw(m_particles.Size(), 0);
+	context->VSSetShaderResources(0, 1, m_append.GetAddressOfSRV());
+	context->Draw(m_activeCount.GetCpu(0), 0); // append에 저장된 particle 개수
+	
+	//ID3D11ShaderResourceView* nullSRVs[1] = { NULL };
+	//context->VSSetShaderResources(0, 1, nullSRVs);
+	swap(m_consume, m_append);
 }
 
 void ParticleEmitter::GenerateRandomParticles(StructuredBuffer<Particle>& particles)
@@ -71,7 +85,7 @@ void ParticleEmitter::GenerateRandomParticles(StructuredBuffer<Particle>& partic
 	std::uniform_real_distribution<float> randomLife(0.f, 1.f);
 	std::uniform_int_distribution<UINT> di(0, static_cast<UINT>(colors.size() - 1));
 
-	for (int i = 0; i < particleCount; ++i) {
+	for (UINT i = 0; i < particleCount; ++i) {
 		Particle p;
 		p.position = Vector3(df(gen), df(gen), 0.f);
 		p.color = colors[di(gen)];

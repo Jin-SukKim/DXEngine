@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#include "StructuredBuffer.h"
 
 namespace DE {
 
@@ -8,7 +7,8 @@ template <typename T_ELEMENT>
 class StructuredBuffer
 {
 public:
-	void Initialize(ID3D11Device* device, const UINT numElements);
+	virtual void Initialize(ID3D11Device* device, const UINT numElements);
+	virtual void Initialize(ID3D11Device* device);
 	void Upload(ID3D11DeviceContext* context);
 	void Download(ID3D11DeviceContext* context);
 
@@ -16,13 +16,14 @@ public:
 	auto GetSRV() const->ID3D11ShaderResourceView*;
 	auto GetUAV() const->ID3D11UnorderedAccessView*;
 
-	auto GetAddressOfSRV() const->ID3D11ShaderResourceView*const*;
-	auto GetAddressOfUAV() const->ID3D11UnorderedAccessView*const *;
+	auto GetAddressOfSRV() const->ID3D11ShaderResourceView* const*;
+	auto GetAddressOfUAV() const->ID3D11UnorderedAccessView* const*;
 	
 	void SetData(std::vector<T_ELEMENT> data);
 	auto Get(UINT idx) -> T_ELEMENT&;
 	auto Size() -> UINT;
-private:
+
+protected:
 	std::vector<T_ELEMENT> m_cpu;
 	ComPtr<ID3D11Buffer> m_gpu;
 	ComPtr<ID3D11Buffer> m_staging;
@@ -34,13 +35,18 @@ private:
 template<typename T_ELEMENT>
 void StructuredBuffer<T_ELEMENT>::Initialize(ID3D11Device* device, const UINT numElements)
 {
-	m_cpu.reserve(numElements);
+	m_cpu.resize(numElements);
+	Initialize(device);
+}
 
+template<typename T_ELEMENT>
+void StructuredBuffer<T_ELEMENT>::Initialize(ID3D11Device* device)
+{
 	// StructuredBuffer 持失
-	D3D11Utils::CreateStructuredBuffer(device, numElements, sizeof(T_ELEMENT), m_cpu.data(), m_gpu, m_srv, m_uav);
+	D3D11Utils::CreateStructuredBuffer(device, static_cast<UINT>(m_cpu.size()), sizeof(T_ELEMENT), m_cpu.data(), m_gpu, m_srv, m_uav);
 
 	// StagingBuffer 持失
-	D3D11Utils::CreateStagingBuffer(device, numElements, sizeof(T_ELEMENT), m_cpu.data(), m_staging);
+	D3D11Utils::CreateStagingBuffer(device, static_cast<UINT>(m_cpu.size()), sizeof(T_ELEMENT), m_cpu.data(), m_staging);
 }
 
 template<typename T_ELEMENT>
@@ -84,16 +90,17 @@ auto StructuredBuffer<T_ELEMENT>::GetUAV() const -> ID3D11UnorderedAccessView*
 }
 
 template<typename T_ELEMENT>
-auto StructuredBuffer<T_ELEMENT>::GetAddressOfSRV() const -> ID3D11ShaderResourceView*const *
+auto StructuredBuffer<T_ELEMENT>::GetAddressOfSRV() const -> ID3D11ShaderResourceView* const*
 {
 	return m_srv.GetAddressOf();
 }
 
 template<typename T_ELEMENT>
-auto StructuredBuffer<T_ELEMENT>::GetAddressOfUAV() const -> ID3D11UnorderedAccessView*const *
+auto StructuredBuffer<T_ELEMENT>::GetAddressOfUAV() const -> ID3D11UnorderedAccessView* const*
 {
-	return m_uav.GetAddresss();
+	return m_uav.GetAddressOf();
 }
+
 template<typename T_ELEMENT>
 void StructuredBuffer<T_ELEMENT>::SetData(std::vector<T_ELEMENT> data)
 {
