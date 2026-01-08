@@ -3,7 +3,9 @@
 #include <random>
 
 namespace DE {
-	ParticleEmitter::ParticleEmitter(const std::wstring& name) : Actor(name)
+
+	ParticleEmitter::ParticleEmitter(const std::wstring& name) 
+		: Actor(name)
 	{
 	}
 
@@ -12,32 +14,33 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		// 1. 셰이더 먼저 로드
-		m_spawnCS.Initialize(device.Get(), L"SpawnCS.hlsl");
-		m_argsUpdateCS.Initialize(device.Get(), L"ParticleArgsUpdateCS.hlsl");
-		m_particleCS.Initialize(device.Get(), L"ParticleCS.hlsl");
-
-		// 2. 버퍼 생성 (초기값 없이 생성)
-		m_consume.Initialize(device.Get(), maxParticles);
-		m_append.Initialize(device.Get(), m_consume.Size()); // 크기는 같게
-
-		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 });
-		m_drawInstancedArgs.Initialize(device.Get(), { 0, 1, 0, 0 });
-
-		// 카운트 버퍼 (SRV 플래그 포함된 CreateBuffer 사용 필수)
-		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), 0, DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
+		InitializeShaders(device.Get());
+		InitializeBuffers(device.Get());
 
 		m_consts.Initialize();
+	}
 
-		// 3. 초기 카운트 0으로 리셋 (중요)
-		// GPU 스폰 방식을 쓰므로 처음엔 비어있어야 합니다.
-		ID3D11UnorderedAccessView* uav = m_consume.GetUAV();
-		UINT initCount = 0;
-		context->CSSetUnorderedAccessViews(0, 1, &uav, &initCount);
+	void ParticleEmitter::InitializeShaders(ID3D11Device* device)
+	{
+		// 셰이더 로드
+		m_spawnCS.Initialize(device, L"SpawnCS.hlsl");
+		m_argsUpdateCS.Initialize(device, L"ParticleArgsUpdateCS.hlsl");
+		m_particleCS.Initialize(device, L"ParticleCS.hlsl");
+	}
 
-		// 해제
-		ID3D11UnorderedAccessView* nullUAV = nullptr;
-		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+	void ParticleEmitter::InitializeBuffers(ID3D11Device* device)
+	{
+		// 핑퐁 업데이트를 위한 이중 버퍼 파티클 저장소
+		m_consume.Initialize(device, maxParticles);
+		m_append.Initialize(device, maxParticles);
+
+		// 간접 디스패치 및 드로우 인수
+		m_dispatchArgs.Initialize(device, { 0, 1, 1 });
+		m_drawInstancedArgs.Initialize(device, { 0, 1, 0, 0 });
+
+		// 활성 파티클 개수를 추적하는 카운터 버퍼
+		D3D11Utils::CreateBuffer(device, sizeof(UINT), nullptr, 
+			DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
 	}
 
 	void ParticleEmitter::Update(const float& dt)
@@ -47,73 +50,79 @@ namespace DE {
 		m_elapsedTime += dt;
 		m_spawnAccumulator += m_targetSpawnRate * dt;
 
-		// GPU에 필요한 정보만 전달
+		// 상수 버퍼 업데이트
 		m_consts.GetCpu().dt = dt;
 		m_consts.GetCpu().time = m_elapsedTime;
 		m_consts.GetCpu().maxParticles = maxParticles;
 		m_consts.Upload();
 
-		// ----------------------------------------------------
-		// 1. Spawn 단계 항상 실행 (GPU가 생성 여부 결정)
-		// ----------------------------------------------------
+		// GPU 파티클 업데이트 파이프라인 실행
+		UpdateSpawnStage(context.Get(), dt);
+		UpdateArgsBuffers(context.Get());
+		UpdateSimulationStage(context.Get());
+	}
+
+	void ParticleEmitter::UpdateSpawnStage(ID3D11DeviceContext* context, float dt)
+	{
+		// 생성할 파티클 개수 계산
 		int spawnCount = static_cast<int>(m_spawnAccumulator);
-		if (spawnCount > 0) {
-			m_spawnAccumulator -= static_cast<float>(spawnCount);
-			m_consts.GetCpu().spawnCount = spawnCount;
-			m_consts.Upload();
+		if (spawnCount <= 0)
+			return;
 
-			m_spawnCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf()); 
+		// 생성할 파티클 개수만큼 누적기에서 차감
+		m_spawnAccumulator -= static_cast<float>(spawnCount);
+		
+		// 상수 버퍼에 스폰 개수 업데이트
+		m_consts.GetCpu().spawnCount = spawnCount;
+		m_consts.Upload();
 
-			// activeCount를 t0에 바인딩
-			context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
+		m_spawnCS.UpdateConsts(context, 0, 1, m_consts.GetAddressOf());
+		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 
-			ID3D11UnorderedAccessView* uav = m_consume.GetUAV();
-			context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
+		ID3D11UnorderedAccessView* uav = m_consume.GetUAV();
+		context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
-			UINT groupCount = (spawnCount + 255) / 256;
-			m_spawnCS.Dispatch(context.Get(), groupCount, 1, 1);
-		}
+		// Spawn Compute Shader
+		UINT groupCount = (spawnCount + 255) / 256;
+		m_spawnCS.Dispatch(context, groupCount, 1, 1);
+	}
 
-		// ----------------------------------------------------
-		// 2. Counter 복사 및 Args 업데이트
-		// ----------------------------------------------------
+	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
+	{
+		// Append 버퍼에서 현재 파티클 개수를 카운트 버퍼로 복사
 		context->CopyStructureCount(m_countBuffer.Get(), 0, m_consume.GetUAV());
 
 		ID3D11UnorderedAccessView* argUAVs[] = {
 			m_dispatchArgs.GetUAV(),
-			m_drawInstancedArgs.GetUAV(),
+			m_drawInstancedArgs.GetUAV()
 		};
 
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 		context->CSSetUnorderedAccessViews(0, 2, argUAVs, nullptr);
 
-		m_argsUpdateCS.Dispatch(context.Get(), 1, 1, 1);
+		// Indirect Args Update
+		m_argsUpdateCS.Dispatch(context, 1, 1, 1);
+	}
 
-		// 해제
-		ID3D11ShaderResourceView* nullSRV = nullptr;
-		context->CSSetShaderResources(0, 1, &nullSRV);
-		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
-
-		// ----------------------------------------------------
-		// 3. Simulation 단계
-		// ----------------------------------------------------
+	void ParticleEmitter::UpdateSimulationStage(ID3D11DeviceContext* context)
+	{
+		// Counter buffer binding
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 
-		UINT initCounts[2] = { (UINT)-1, 0 }; // 현재 Count개수 유지
-
+		// UAV 설정 (초기 카운트 지정)
+		// -1: consume 버퍼의 기존 카운트 유지
+		// 0: append 버퍼의 카운트 리셋
+		UINT initCounts[2] = { static_cast<UINT>(-1), 0 };
 		ID3D11UnorderedAccessView* particleUAVs[] = {
 			m_consume.GetUAV(),
 			m_append.GetUAV()
 		};
 
 		context->CSSetUnorderedAccessViews(0, 2, particleUAVs, initCounts);
-		m_particleCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf());
-		m_particleCS.DispatchIndirect(context.Get(), m_dispatchArgs.GetBuffer());
+		m_particleCS.UpdateConsts(context, 0, 1, m_consts.GetAddressOf());
 
-		// 정리
-		context->CSSetShaderResources(0, 1, &nullSRV);
-		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
+		// Particle Simulation Compute Shader
+		m_particleCS.DispatchIndirect(context, m_dispatchArgs.GetBuffer());
 	}
 
 	void ParticleEmitter::Render()
@@ -122,11 +131,16 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+		
+		// IndirectDraw
 		context->VSSetShaderResources(0, 1, m_append.GetAddressOfSRV());
 		context->DrawInstancedIndirect(m_drawInstancedArgs.GetBuffer(), 0);
 
-		ID3D11ShaderResourceView* nullSRVs[1] = { NULL };
+		// 정리
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		context->VSSetShaderResources(0, 1, nullSRVs);
+
+		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);
 	}
 }
