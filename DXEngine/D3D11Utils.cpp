@@ -566,4 +566,71 @@ namespace DE {
 		uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
 	}
+
+	void D3D11Utils::CreateIndirectBuffer(ID3D11Device* device, UINT byteWidth, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)
+	{
+		D3D11_BUFFER_DESC desc = {};
+		desc.ByteWidth = byteWidth;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
+		desc.StructureByteStride = 0; 
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			ThrowIfFailed(device->CreateBuffer(&desc, &data, buffer.GetAddressOf()));
+		}
+		else {
+			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
+		}
+
+		// UAV 생성 (R32_UINT 포맷 사용)
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint로 읽기 위해 R32_UINT 사용
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = byteWidth / 4; // UINT 개수 (Byte / 4)
+		uavDesc.Buffer.Flags = 0;
+
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+	}
+
+	void D3D11Utils::CreateBuffer(ID3D11Device* device, const UINT elementSize, const void* initData, DXGI_FORMAT format, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv)
+	{
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = elementSize;
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags =  D3D11_BIND_SHADER_RESOURCE;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = 0;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.NumElements = 1;
+		device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf());
+
+		/*D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = format; 
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = 1;
+		uavDesc.Buffer.Flags = 0;
+
+		device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf());*/
+	}
 }

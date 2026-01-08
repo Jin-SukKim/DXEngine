@@ -4,8 +4,10 @@
 #include "ComputeShader.h"
 #include "AppendBuffer.h"
 #include "StagingBuffer.h"
+#include "IndirectArgsBuffer.h"
 
 namespace DE {
+
 	class ParticleEmitter : public Actor
 	{
 	public:
@@ -21,8 +23,13 @@ namespace DE {
 	private:
 		AppendBuffer<Particle> m_append;
 		AppendBuffer<Particle> m_consume;
-		StagingBuffer<UINT> m_activeCount;
 
+		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
+		IndirectArgsBuffer<DrawInstancedArgs> m_drawInstancedArgs;
+		ComPtr<ID3D11Buffer> m_countBuffer;
+		ComPtr<ID3D11ShaderResourceView> m_countSRV;
+
+		ComputeShader m_argsUpdateCS;
 		ComputeShader m_particleCS;
 		ConstantBuffer<ParticleConsts> m_consts;
 	};

@@ -14,18 +14,18 @@ cbuffer ParticleConsts : register(b0)
 	//uint activeCount;
 };
 
-//RWStructuredBuffer<Particle> particles : register(u0);
-ConsumeStructuredBuffer<Particle> inputParticles : register(u0);
-AppendStructuredBuffer<Particle> outputParticles : register(u1);
+Buffer<uint> activeCount : register(t0);
+ConsumeStructuredBuffer<Particle> inputParticles : register(u2);
+AppendStructuredBuffer<Particle> outputParticles : register(u3);
 
-
-[numthreads(1024, 1, 1)]
+[numthreads(256, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
-	//if (dtID.x >= activeCount) return;
+	if (dtID.x >= activeCount[0]) return;
 
 	Particle p = inputParticles.Consume();
 
+	// TODO: Particle Update
 	//p.position += p.velocity * dt * 0.5f;
 
 	outputParticles.Append(p);

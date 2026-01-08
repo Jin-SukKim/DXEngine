@@ -14,19 +14,16 @@ namespace DE {
 		ComputeShaderBarrier(context);
 	}
 
+	void ComputeShader::DispatchIndirect(ID3D11DeviceContext* context, ID3D11Buffer* args)
+	{
+		context->CSSetShader(m_cs.Get(), 0, 0);
+		context->DispatchIndirect(args, 0);
+		ComputeShaderBarrier(context);
+	}
+
 	void ComputeShader::UpdateConsts(ID3D11DeviceContext* context, UINT startSlot, UINT numBuffers, ID3D11Buffer* const* ppConsts)
 	{
 		context->CSSetConstantBuffers(startSlot, numBuffers, ppConsts);
-	}
-
-	void ComputeShader::SetSRVs(ID3D11DeviceContext* context, UINT startSlot, const std::vector<ID3D11ShaderResourceView*>& srvs)
-	{
-		context->CSSetShaderResources(startSlot, static_cast<UINT>(srvs.size()), srvs.data());
-	}
-
-	void ComputeShader::SetUAVs(ID3D11DeviceContext* context, UINT startSlot, const std::vector<ID3D11UnorderedAccessView*>& uavs, const UINT* initCounts)
-	{
-		context->CSSetUnorderedAccessViews(startSlot, static_cast<UINT>(uavs.size()), uavs.data(), initCounts);
 	}
 
 	void ComputeShader::ComputeShaderBarrier(ID3D11DeviceContext* context)

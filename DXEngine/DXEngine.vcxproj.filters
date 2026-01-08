@@ -298,11 +298,22 @@
     <ClInclude Include="Particle.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="StructuredBuffer.h" />
-    <ClInclude Include="ComputePSO.h" />
-    <ClInclude Include="ComputeShader.h" />
-    <ClInclude Include="AppendBuffer.h" />
     <ClInclude Include="StagingBuffer.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="AppendBuffer.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputePSO.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeShader.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="StructuredBuffer.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="IndirectArgsBuffer.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
   </ItemGroup>
@@ -443,10 +454,10 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ComputePSO.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ComputeShader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -544,6 +555,9 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="ParticleCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleArgsUpdateCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>

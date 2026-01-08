@@ -18,11 +18,25 @@ void ParticleEmitter::Initialize()
 	m_consume.Initialize(device.Get());
 
 	m_append.Initialize(device.Get(), m_consume.Size());
-	m_activeCount.Initialize(device.Get(), { 0 }); // Count값 1개
 
+	m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 });
+	m_drawInstancedArgs.Initialize(device.Get(), { 0, 1, 0, 0 });
+	D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), 0, DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
+
+	m_argsUpdateCS.Initialize(device.Get(), L"ParticleArgsUpdateCS.hlsl");
 	m_particleCS.Initialize(device.Get(), L"ParticleCS.hlsl");
 
 	m_consts.Initialize();
+
+	// [추가] 초기 파티클 개수만큼 m_consume의 카운터를 설정해줍니다.
+	// 이렇게 해야 첫 프레임의 CopyStructureCount가 올바른 개수(1024)를 가져옵니다.
+	ID3D11UnorderedAccessView* uav = m_consume.GetUAV();
+	UINT initCount = m_consume.Size(); // 초기 개수 (1024)
+	context->CSSetUnorderedAccessViews(0, 1, &uav, &initCount);
+
+	// 설정 후 바로 해제 (다른 곳에 영향을 주지 않기 위해)
+	ID3D11UnorderedAccessView* nullUAV = nullptr;
+	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 }
 
 void ParticleEmitter::Update(const float& dt)
@@ -32,27 +46,35 @@ void ParticleEmitter::Update(const float& dt)
 	m_consts.Upload();
 
 	m_particleCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf());
+
+	context->CopyStructureCount(m_countBuffer.Get(), 0, m_consume.GetUAV());
+
+	ID3D11UnorderedAccessView* argUAVs[] = {
+		m_dispatchArgs.GetUAV(),    
+		m_drawInstancedArgs.GetUAV(), 
+	};
+	context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
+	context->CSSetUnorderedAccessViews(0, 2, argUAVs, nullptr);
+	m_argsUpdateCS.Dispatch(context.Get(), 1, 1, 1);
+
+	context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
+	UINT initCounts[2] = { static_cast<UINT>(m_consume.Size()), 0 };
+	ID3D11UnorderedAccessView* particleUAVs[] = {
+		m_consume.GetUAV(),
+		m_append.GetUAV()
+	};
+	context->CSSetUnorderedAccessViews(2, 2, particleUAVs, initCounts);
+	m_particleCS.DispatchIndirect(context.Get(), m_dispatchArgs.GetBuffer());
 }
 
 void ParticleEmitter::Render()
 {
 	RenderBase& renderer = *GET_SINGLE(RenderBase);
 	ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
-
-	// 각 UAV의 시작 크기
-	UINT initCounts[2] = { static_cast<UINT>(m_consume.Size()), 0 };
-	m_particleCS.SetUAVs(context.Get(), 0, 
-		{m_consume.GetUAV(), m_append.GetUAV()},
-		initCounts);
-	m_particleCS.Dispatch(context.Get(), UINT(ceil(m_consume.Size() / 1024.f)), 1, 1);
-
-	// Append의 UAV 개수 복사
-	context->CopyStructureCount(m_activeCount.GetGpu(), 0, m_append.GetUAV());
-	m_activeCount.Download(context.Get());
 	
 	renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 	context->VSSetShaderResources(0, 1, m_append.GetAddressOfSRV());
-	context->Draw(m_activeCount.GetCpu(0), 0); // append에 저장된 particle 개수
+	context->DrawInstancedIndirect(m_drawInstancedArgs.GetBuffer(), 0);
 	
 	ID3D11ShaderResourceView* nullSRVs[1] = { NULL };
 	context->VSSetShaderResources(0, 1, nullSRVs);
