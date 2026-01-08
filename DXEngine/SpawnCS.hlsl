@@ -7,7 +7,7 @@ Buffer<uint> activeCount : register(t0);
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     // 이번 프레임에 생성해야 할 개수(spawnCount)를 넘으면 생성 중단
-    if (dtID.x >= (uint) spawnCount)
+    if (dtID.x >= spawnCount)
         return;
     
     Particle p;

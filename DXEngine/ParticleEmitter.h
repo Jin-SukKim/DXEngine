@@ -32,9 +32,9 @@ namespace DE {
 		ConstantBuffer<ParticleConsts> m_consts;
 
 		// 최소한의 상태만 관리
-		UINT maxParticles = 2048;
+		UINT maxParticles = 1024;
 		float m_elapsedTime = 0.0f;
-		float m_targetSpawnRate = 100.0f;
+		float m_targetSpawnRate = 5.0f;
 		float m_spawnAccumulator = 0.f;
 	};
 }

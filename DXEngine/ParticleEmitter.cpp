@@ -59,7 +59,7 @@ namespace DE {
 		int spawnCount = static_cast<int>(m_spawnAccumulator);
 		if (spawnCount > 0) {
 			m_spawnAccumulator -= static_cast<float>(spawnCount);
-			m_consts.GetCpu().spawnCount = static_cast<float>(spawnCount);
+			m_consts.GetCpu().spawnCount = spawnCount;
 			m_consts.Upload();
 
 			m_spawnCS.UpdateConsts(context.Get(), 0, 1, m_consts.GetAddressOf()); 
@@ -100,7 +100,7 @@ namespace DE {
 		// ----------------------------------------------------
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 
-		UINT initCounts[2] = { (UINT)-1, 0 };
+		UINT initCounts[2] = { (UINT)-1, 0 }; // 현재 Count개수 유지
 
 		ID3D11UnorderedAccessView* particleUAVs[] = {
 			m_consume.GetUAV(),

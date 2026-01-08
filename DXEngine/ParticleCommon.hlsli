@@ -15,7 +15,7 @@ cbuffer ParticleConsts : register(b0)
 {
     float dt;
     float time;
-    float spawnCount; // 이번 프레임에 생성할 개수
+    uint spawnCount; // 이번 프레임에 생성할 개수
     uint maxParticles; // 최대 파티클 수
 };
 
