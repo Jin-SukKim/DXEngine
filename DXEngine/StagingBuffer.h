@@ -8,6 +8,7 @@ namespace DE {
         void Initialize(ID3D11Device* device, const std::vector<T>& data);
         void Download(ID3D11DeviceContext* context);
 
+        //void SetData(const std::vector<T>& data);
         const std::vector<T>& GetCpu();
         const T& GetCpu(UINT idx);
         ID3D11Buffer* GetGpu();
@@ -33,6 +34,12 @@ namespace DE {
         memcpy(m_cpu.data(), &pData[0], sizeof(T) * m_cpu.size());
         context->Unmap(m_gpu.Get(), NULL);
     }
+    //template<typename T>
+    //void StagingBuffer<T>::SetData(const std::vector<T>& data)
+    //{
+    //    m_cpu = data;
+    //}
+    //
     template<typename T>
     const std::vector<T>& StagingBuffer<T>::GetCpu()
     {

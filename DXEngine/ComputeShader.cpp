@@ -21,23 +21,21 @@ namespace DE {
 
 	void ComputeShader::SetSRVs(ID3D11DeviceContext* context, UINT startSlot, const std::vector<ID3D11ShaderResourceView*>& srvs)
 	{
-		m_srvs = srvs;
 		context->CSSetShaderResources(startSlot, static_cast<UINT>(srvs.size()), srvs.data());
 	}
 
 	void ComputeShader::SetUAVs(ID3D11DeviceContext* context, UINT startSlot, const std::vector<ID3D11UnorderedAccessView*>& uavs, const UINT* initCounts)
 	{
-		m_uavs = uavs;
 		context->CSSetUnorderedAccessViews(startSlot, static_cast<UINT>(uavs.size()), uavs.data(), initCounts);
 	}
 
 	void ComputeShader::ComputeShaderBarrier(ID3D11DeviceContext* context)
 	{
-		std::fill(m_srvs.begin(), m_srvs.end(), nullptr);
-		context->CSSetShaderResources(0, static_cast<UINT>(m_srvs.size()), m_srvs.data());
+		ID3D11ShaderResourceView* nullSRVs[8] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[8] = { nullptr };
 
-		std::fill(m_uavs.begin(), m_uavs.end(), nullptr);
-		context->CSSetUnorderedAccessViews(0, static_cast<UINT>(m_uavs.size()), m_uavs.data(), NULL);
+		context->CSSetShaderResources(0, 8, nullSRVs);
+		context->CSSetUnorderedAccessViews(0, 8, nullUAVs, nullptr);
 
 		context->CSSetShader(nullptr, 0, 0);
 	}

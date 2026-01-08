@@ -13,6 +13,7 @@ namespace DE {
 	struct ParticleConsts {
 		float dt;
 		Vector3 dummy;
+		//UINT activeCount;
 	};
 }
 

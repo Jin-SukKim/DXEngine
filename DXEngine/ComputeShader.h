@@ -14,8 +14,8 @@ namespace DE {
 		void ComputeShaderBarrier(ID3D11DeviceContext* context);
 	private:
 		ComPtr<ID3D11ComputeShader> m_cs;
-		std::vector<ID3D11ShaderResourceView*> m_srvs;
-		std::vector<ID3D11UnorderedAccessView*> m_uavs;
+		const UINT maxSRV = 8;
+		const UINT maxUAV= 8;
 	};
 }
 

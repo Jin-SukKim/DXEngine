@@ -4,7 +4,7 @@
 
 namespace DE {
 
-	UINT particleCount = 500;
+	UINT particleCount = 1024;
 ParticleEmitter::ParticleEmitter(const std::wstring& name) : Actor(name)
 {
 }
@@ -13,9 +13,6 @@ void ParticleEmitter::Initialize()
 {
 	ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 	ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-	//m_particles.Initialize(device.Get(), particleCount);
-	//GenerateRandomParticles(m_particles);
-	//m_particles.Upload(context.Get());
 
 	GenerateRandomParticles(m_consume);
 	m_consume.Initialize(device.Get());
@@ -57,8 +54,8 @@ void ParticleEmitter::Render()
 	context->VSSetShaderResources(0, 1, m_append.GetAddressOfSRV());
 	context->Draw(m_activeCount.GetCpu(0), 0); // append에 저장된 particle 개수
 	
-	//ID3D11ShaderResourceView* nullSRVs[1] = { NULL };
-	//context->VSSetShaderResources(0, 1, nullSRVs);
+	ID3D11ShaderResourceView* nullSRVs[1] = { NULL };
+	context->VSSetShaderResources(0, 1, nullSRVs);
 	swap(m_consume, m_append);
 }
 

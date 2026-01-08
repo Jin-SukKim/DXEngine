@@ -1,6 +1,5 @@
 #pragma once
 #include "Actor.h"
-#include "StructuredBuffer.h"
 #include "Particle.h"
 #include "ComputeShader.h"
 #include "AppendBuffer.h"
@@ -20,8 +19,6 @@ namespace DE {
 		void GenerateRandomParticles(StructuredBuffer<Particle>& particles);
 
 	private:
-		//StructuredBuffer<Particle> m_particles;
-		
 		AppendBuffer<Particle> m_append;
 		AppendBuffer<Particle> m_consume;
 		StagingBuffer<UINT> m_activeCount;
