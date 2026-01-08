@@ -545,6 +545,15 @@
     <FxCompile Include="HaloPS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
+    <FxCompile Include="SpawnCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleArgsUpdateCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
     <FxCompile Include="ParticleVS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
@@ -552,12 +561,6 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="ParticlePS.hlsl">
-      <Filter>Shaders\Particle</Filter>
-    </FxCompile>
-    <FxCompile Include="ParticleCS.hlsl">
-      <Filter>Shaders\Particle</Filter>
-    </FxCompile>
-    <FxCompile Include="ParticleArgsUpdateCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>
@@ -576,6 +579,9 @@
     </None>
     <None Include="DiskSamples.hlsli">
       <Filter>Shaders\Shadow</Filter>
+    </None>
+    <None Include="ParticleCommon.hlsli">
+      <Filter>Shaders\Particle</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,15 +1,17 @@
-struct GSInput {
-	float4 position : SV_POSITION;
-	float3 color : COLOR;
-	float life : PSIZE0;
-	float size : PSIZE1;
+struct GSInput
+{
+    float4 position : SV_POSITION;
+    float3 color : COLOR;
+    float life : PSIZE0;
+    float size : PSIZE1;
 };
 
-struct PSInput {
-	float4 position : SV_POSITION;
-	float2 texCoord : TEXCOORD;
-	float3 color : COLOR;
-	uint primID: SV_PrimitiveID;
+struct PSInput
+{
+    float4 position : SV_POSITION;
+    float2 texCoord : TEXCOORD;
+    float3 color : COLOR;
+    uint primID : SV_PrimitiveID;
 };
 
 [maxvertexcount(4)]
@@ -47,7 +49,5 @@ void main(
 
     output.Append(billboard);
 
-    // 주의: GS는 Triangle Strips으로 출력합니다.
-    // https://learn.microsoft.com/en-us/windows/win32/direct3d9/triangle-strips
-    output.RestartStrip(); // Strip을 다시 시작
+    output.RestartStrip();
 }

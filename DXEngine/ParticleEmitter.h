@@ -29,6 +29,7 @@ namespace DE {
 		ComPtr<ID3D11Buffer> m_countBuffer;
 		ComPtr<ID3D11ShaderResourceView> m_countSRV;
 
+		ComputeShader m_spawnCS;
 		ComputeShader m_argsUpdateCS;
 		ComputeShader m_particleCS;
 		ConstantBuffer<ParticleConsts> m_consts;
