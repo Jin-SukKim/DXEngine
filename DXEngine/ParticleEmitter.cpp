@@ -68,7 +68,7 @@ namespace DE {
 		config.velocity = 10.0f;               // 매우 빠른 초기 속도!
 
 		config.gravity = { 0.0f, 0.0f, 0.0f };     // 약한 중력
-		config.drag = 20.0f;                         // ★핵심: 강한 저항 (팡! 터지고 금방 느려짐)
+		config.drag = 20.0f;                         // 핵심: 강한 저항 (팡! 터지고 금방 느려짐)
 
 		config.lifeTimeBase = 0.2f;
 		config.lifeTimeRand = 0.5f;
@@ -78,7 +78,7 @@ namespace DE {
 		config.startColor = { 1.0f, 0.0f, 0.0f };   // 흰색 섬광
 		config.endColor = { 0.0f, 0.0f, 0.0f };     // 검은 연기
 
-		SetSpawnRate(1.5f);
+		SetSpawnRate(1.f);
 		SetParticlesPerSpawn(200);
 		SetParticleConfig(config);
 	}

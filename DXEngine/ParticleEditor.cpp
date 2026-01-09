@@ -8,8 +8,8 @@ namespace DE {
 	{
 		ground = AddObject<SquareActor>(L"Ground");
 		particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
-		particleEmitter->SetupFire();
-		//particleEmitter->SetupExplosion();
+		//particleEmitter->SetupFire();
+		particleEmitter->SetupExplosion();
 	}
 
 	ParticleEditor::~ParticleEditor()
