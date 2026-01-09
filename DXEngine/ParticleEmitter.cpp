@@ -50,7 +50,7 @@ namespace DE {
 		config.gravity = { 0.0f, 1.0f, 0.0f };      // 부력 (위로 가속)
 		config.drag = 0.0f;                         // 저항 없음
 
-		config.minMaxSize = Vector2(0.5f, 0.1f) * 0.2f;
+		config.minMaxSize = Vector2(0.25f, 0.05f);
 		config.startColor = { 1.0f, 0.1f, 0.0f };  // 빨강
 		config.endColor = { 1.0f, 0.8f, 0.1f };   // 노랑 
 
