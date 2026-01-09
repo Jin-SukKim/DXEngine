@@ -20,6 +20,69 @@ namespace DE {
 		m_consts.Initialize();
 	}
 
+	void ParticleEmitter::SetBurst(UINT count)
+	{
+		m_burstCount = count;
+	}
+
+	void ParticleEmitter::SetParticlesPerSpawn(UINT count)
+	{
+		m_particlePerSpawn = count;
+	}
+
+	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
+	{
+		m_consts.SetCpuData(config);
+	}
+
+	void ParticleEmitter::SetupFire()
+	{
+		ParticleConsts config;
+		config.spawnVolume = Vector3(0.5f, 0.7f, 0.5f) * 0.2f; // 좁은 바닥 영역
+		config.velocityBase = { 0.0f, 1.f, 0.0f }; // 위로 상승
+		config.velocityRand = { 0.2f, 0.5f, 0.2f };  // 약간 흔들림
+		config.velocity = 0.01f;
+
+		config.lifeTimeBase = 1.0f;
+		config.lifeTimeRand = 0.3f;
+		config.minMaxRotateSpeed = Vector2(1.f, 3.f);
+
+		config.gravity = { 0.0f, 1.0f, 0.0f };      // 부력 (위로 가속)
+		config.drag = 0.0f;                         // 저항 없음
+
+		config.minMaxSize = Vector2(0.5f, 0.1f) * 0.2f;
+		config.startColor = { 1.0f, 0.1f, 0.0f };  // 빨강
+		config.endColor = { 1.0f, 0.8f, 0.1f };   // 노랑 
+
+		SetSpawnRate(50.f);
+		SetParticlesPerSpawn(10);
+		SetParticleConfig(config);
+	}
+
+	void ParticleEmitter::SetupExplosion()
+	{
+		ParticleConsts config;
+		config.spawnVolume = { 0.1f, 0.1f, 0.1f };  // 한 점(작은 구)에서 시작
+		config.velocityBase = { 0.0f, 0.0f, 0.0f }; // 방향성 없음
+		config.velocityRand = { 1.0f, 1.0f, 1.0f };  // 사방으로 퍼짐
+		config.velocity = 10.0f;               // 매우 빠른 초기 속도!
+
+		config.gravity = { 0.0f, 0.0f, 0.0f };     // 약한 중력
+		config.drag = 20.0f;                         // ★핵심: 강한 저항 (팡! 터지고 금방 느려짐)
+
+		config.lifeTimeBase = 0.2f;
+		config.lifeTimeRand = 0.5f;
+		config.minMaxRotateSpeed = Vector2(1.f, 3.f);
+
+		config.minMaxSize = Vector2(0.02f, 0.15f);
+		config.startColor = { 1.0f, 0.0f, 0.0f };   // 흰색 섬광
+		config.endColor = { 0.0f, 0.0f, 0.0f };     // 검은 연기
+
+		SetSpawnRate(1.5f);
+		SetParticlesPerSpawn(200);
+		SetParticleConfig(config);
+	}
+
 	void ParticleEmitter::InitializeShaders(ID3D11Device* device)
 	{
 		// 셰이더 로드
@@ -65,15 +128,23 @@ namespace DE {
 	void ParticleEmitter::UpdateSpawnStage(ID3D11DeviceContext* context, float dt)
 	{
 		// 생성할 파티클 개수 계산
-		int spawnCount = static_cast<int>(m_spawnAccumulator);
-		if (spawnCount <= 0)
-			return;
+		int spawnCycles = static_cast<int>(m_spawnAccumulator);
 
-		// 생성할 파티클 개수만큼 누적기에서 차감
-		m_spawnAccumulator -= static_cast<float>(spawnCount);
-		
+		// 수동으로 요청은 Burst로 1번만 실행
+		int manualBurstCount = m_burstCount;
+		m_burstCount = 0;
+
+		int totalSpawnCount = (spawnCycles * m_particlePerSpawn) + manualBurstCount;
+
+		if (spawnCycles > 0)
+			m_spawnAccumulator -= static_cast<float>(spawnCycles);
+
+		if (totalSpawnCount <= 0)
+			return;
+	
+
 		// 상수 버퍼에 스폰 개수 업데이트
-		m_consts.GetCpu().spawnCount = spawnCount;
+		m_consts.GetCpu().spawnCount = totalSpawnCount;
 		m_consts.Upload();
 
 		m_spawnCS.UpdateConsts(context, 0, 1, m_consts.GetAddressOf());
@@ -83,7 +154,7 @@ namespace DE {
 		context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 		// Spawn Compute Shader
-		UINT groupCount = (spawnCount + 255) / 256;
+		UINT groupCount = (totalSpawnCount + 255) / 256;
 		m_spawnCS.Dispatch(context, groupCount, 1, 1);
 	}
 

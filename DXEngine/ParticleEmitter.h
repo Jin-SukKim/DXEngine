@@ -25,6 +25,11 @@ namespace DE {
 		UINT GetMaxParticles() const { return maxParticles; }
 		float GetSpawnRate() const { return m_targetSpawnRate; }
 
+		void SetBurst(UINT count);
+		void SetParticlesPerSpawn(UINT count);
+		void SetParticleConfig(const ParticleConsts& config);
+		void SetupFire();
+		void SetupExplosion();
 	private:
 		// 초기화 헬퍼 함수들
 		void InitializeShaders(ID3D11Device* device);
@@ -58,9 +63,11 @@ namespace DE {
 		// 파티클 시스템 파라미터
 		UINT maxParticles = 1024;
 		float m_targetSpawnRate = 1.0f;
+		UINT m_burstCount = 0;
 		
 		// 런타임 상태
 		float m_elapsedTime = 0.0f;
 		float m_spawnAccumulator = 0.0f;
+		UINT m_particlePerSpawn = 1;
 	};
 }

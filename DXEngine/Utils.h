@@ -15,6 +15,7 @@ namespace DE {
 			D3D11Utils::UpdateBuffer(GET_SINGLE(RenderBase)->GetContext(), m_cpu, m_gpu);
 		}
 
+		void SetCpuData(const T_CONST& data) { m_cpu = data; }
 		T_CONST& GetCpu() { return m_cpu; }
 		const auto Get() { return m_gpu.Get(); }
 		const auto GetAddressOf() const { return m_gpu.GetAddressOf(); }

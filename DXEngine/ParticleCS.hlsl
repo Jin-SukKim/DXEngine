@@ -12,14 +12,22 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         return;
     
     Particle p = inputParticles.Consume();
-
-    // 업데이트 (주석 해제!)
-    p.life -= dt; // 수명 감소
-    p.position += p.velocity * dt; // 이동 logic
     
-    // 수명이 0보다 클 때만 Append (죽은 파티클은 Append 안 함 -> 자연 소멸)
-    if (p.life > 0.0f)
-    {
+    p.life -= dt;
+
+    if (p.life > 0.f) {
+        float3 acceleration = gravity;
+
+        p.velocity += acceleration * dt; // 지소적인 가속
+        p.velocity *= max(0.f, 1.f - drag * dt); // 저항값으로 속도를 줄이는 역할
+
+        p.position += p.velocity * dt;
+        p.rotation += p.rotSpeed * dt;
+
+        float ratio = p.life / p.lifeMax; // [0.0, 1.0] -> life는 1에서 0으로 감소
+        p.size = lerp(minMaxSize[1], minMaxSize[0], ratio);
+        p.color = lerp(endColor, startColor, ratio);
+
         outputParticles.Append(p);
     }
 }
