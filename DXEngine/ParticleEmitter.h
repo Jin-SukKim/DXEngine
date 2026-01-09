@@ -16,7 +16,7 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(const float& dt) override;
-		void Render() override;
+		void Render(const ComPtr<ID3D11Buffer>& globalConstsGPU);
 
 		// 설정 메서드
 		void SetMaxParticles(UINT count) { maxParticles = count; }

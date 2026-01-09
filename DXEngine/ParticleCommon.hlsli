@@ -45,5 +45,4 @@ cbuffer ParticleConsts : register(b0)
 	float padding2;
 };
 
-
 #endif // __PARTICLE_COMMON_HLSLI__

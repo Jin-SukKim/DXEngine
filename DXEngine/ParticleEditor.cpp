@@ -3,13 +3,14 @@
 #include "ParticleEmitter.h"
 #include "SquareActor.h"
 
+// https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
 		particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
-		//particleEmitter->SetupFire();
-		particleEmitter->SetupExplosion();
+		particleEmitter->SetupFire();
+		//particleEmitter->SetupExplosion();
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -40,7 +41,7 @@ namespace DE {
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
-
-		particleEmitter->Render();
+		
+		particleEmitter->Render(m_globalConstsGPU);
 	}
 }

@@ -196,7 +196,7 @@ namespace DE {
 		m_particleCS.DispatchIndirect(context, m_dispatchArgs.GetBuffer());
 	}
 
-	void ParticleEmitter::Render()
+	void ParticleEmitter::Render(const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();

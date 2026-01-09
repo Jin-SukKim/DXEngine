@@ -1,4 +1,16 @@
-#include "ParticleCommon.hlsli"
+#include "Common.hlsli"
+
+struct Particle
+{
+    float3 position;
+    float3 velocity;
+    float3 color;
+    float life;
+    float lifeMax;
+    float size;
+    float rotation;
+    float rotSpeed;
+};
 
 StructuredBuffer<Particle> particles : register(t0);
 
