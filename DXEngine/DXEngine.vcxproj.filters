@@ -316,6 +316,7 @@
     <ClInclude Include="IndirectArgsBuffer.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
+    <ClInclude Include="BitonicSort.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -459,6 +460,9 @@
     <ClCompile Include="ComputeShader.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="BitonicSort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -561,6 +565,12 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="ParticlePS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="BitonicSortCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="InitBitonicSortCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>

@@ -5,8 +5,15 @@
 #include "AppendBuffer.h"
 #include "StagingBuffer.h"
 #include "IndirectArgsBuffer.h"
+#include "BitonicSort.h"
 
 namespace DE {
+
+	enum class BlendMode {
+		Additive,
+		AlphaBlend,
+		Opaque,
+	};
 
 	class ParticleEmitter : public Actor
 	{
@@ -28,6 +35,7 @@ namespace DE {
 		void SetBurst(UINT count);
 		void SetParticlesPerSpawn(UINT count);
 		void SetParticleConfig(const ParticleConsts& config);
+		void SetBlendMode(BlendMode mode);
 		void SetupFire();
 		void SetupExplosion();
 	private:
@@ -69,5 +77,9 @@ namespace DE {
 		float m_elapsedTime = 0.0f;
 		float m_spawnAccumulator = 0.0f;
 		UINT m_particlePerSpawn = 1;
+
+		BlendMode m_blendMode = BlendMode::Additive;
+		BitonicSort m_sort;
+		ComputeShader m_InitSortKeysCS;
 	};
 }

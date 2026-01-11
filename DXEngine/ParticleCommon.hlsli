@@ -45,4 +45,10 @@ cbuffer ParticleConsts : register(b0)
 	float padding2;
 };
 
+struct SortElement
+{
+    float key;
+    uint value;
+};
+
 #endif // __PARTICLE_COMMON_HLSLI__

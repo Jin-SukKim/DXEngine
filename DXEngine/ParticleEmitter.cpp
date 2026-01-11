@@ -17,6 +17,9 @@ namespace DE {
 		InitializeShaders(device.Get());
 		InitializeBuffers(device.Get());
 
+		m_InitSortKeysCS.Initialize(device.Get(), L"InitBitonicSortCS.hlsl");
+		m_sort.Initialize(device, maxParticles, L"BitonicSortCS.hlsl");
+
 		m_consts.Initialize();
 	}
 
@@ -57,6 +60,7 @@ namespace DE {
 		SetSpawnRate(50.f);
 		SetParticlesPerSpawn(10);
 		SetParticleConfig(config);
+		SetBlendMode(BlendMode::Additive);
 	}
 
 	void ParticleEmitter::SetupExplosion()
@@ -81,6 +85,26 @@ namespace DE {
 		SetSpawnRate(1.f);
 		SetParticlesPerSpawn(200);
 		SetParticleConfig(config);
+
+		SetBlendMode(BlendMode::AlphaBlend);
+	}
+
+	void ParticleEmitter::SetBlendMode(BlendMode mode)
+	{
+		m_blendMode = mode;
+
+		switch (m_blendMode)
+		{
+		case BlendMode::Additive:
+			RenderBase::graphicsCommon.particle.animPSO.blendState = RenderBase::graphicsCommon.accumulateBS;
+			break;
+		case BlendMode::AlphaBlend:
+			RenderBase::graphicsCommon.particle.animPSO.blendState = RenderBase::graphicsCommon.alphaBS;
+			break;
+		case BlendMode::Opaque:
+			RenderBase::graphicsCommon.particle.animPSO.blendState = nullptr;
+			break;
+		}
 	}
 
 	void ParticleEmitter::InitializeShaders(ID3D11Device* device)
@@ -201,15 +225,29 @@ namespace DE {
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
+		context->CSSetUnorderedAccessViews(0, 1, m_sort.m_array.GetAddressOfUAV(), nullptr);
+		ID3D11ShaderResourceView* srvs[] = {
+			m_append.GetSRV(),
+			m_countSRV.Get()
+		};
+		context->CSSetShaderResources(0, 2, srvs);
+		m_InitSortKeysCS.Dispatch(context.Get(), (maxParticles + 1023) / 1024, 1, 1);
+
+		m_sort.Sort(GET_SINGLE(RenderBase)->GetDevice().Get(), context.Get());
+
 		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
-		
+
 		// IndirectDraw
-		context->VSSetShaderResources(0, 1, m_append.GetAddressOfSRV());
+		ID3D11ShaderResourceView* sortSRVs[] = {
+			m_append.GetSRV(),
+			m_sort.m_array.GetSRV()
+		};
+		context->VSSetShaderResources(0, 2, sortSRVs);
 		context->DrawInstancedIndirect(m_drawInstancedArgs.GetBuffer(), 0);
 
 		// 정리
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		context->VSSetShaderResources(0, 1, nullSRVs);
+		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+		context->VSSetShaderResources(0, 2, nullSRVs);
 
 		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);

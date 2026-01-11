@@ -12,7 +12,14 @@ struct Particle
     float rotSpeed;
 };
 
+struct SortElement
+{
+    float key;
+    uint value;
+};
+
 StructuredBuffer<Particle> particles : register(t0);
+StructuredBuffer<SortElement> sortedElements : register(t1);
 
 struct GSInput
 {
@@ -24,7 +31,8 @@ struct GSInput
 
 GSInput main(uint vertexID : SV_VertexID)
 {
-    Particle p = particles[vertexID];
+    uint particleIdx = sortedElements[vertexID].value;
+    Particle p = particles[particleIdx];
 
     GSInput output;
     output.position = float4(p.position.xyz, 1.0);

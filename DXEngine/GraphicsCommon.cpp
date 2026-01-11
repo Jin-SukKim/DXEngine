@@ -319,6 +319,13 @@ namespace DE {
 			D3D11_COLOR_WRITE_ENABLE_ALL;
 		ThrowIfFailed(
 			device->CreateBlendState(&blendDesc, accumulateBS.GetAddressOf()));
+
+		
+		// SrcBlend를 ONE으로 변경 (이미 쉐이더에서 알파를 곱해올 것이므로)
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		ThrowIfFailed(
+			device->CreateBlendState(&blendDesc, alphaBS.GetAddressOf()));
 	}
 	
 	void GraphicsCommon::initPipelineStates(ComPtr<ID3D11Device>& device)
