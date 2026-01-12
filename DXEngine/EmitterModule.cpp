@@ -20,12 +20,9 @@ namespace DE {
 
 		if (spawnCycles > 0)
 			spawnAccumulator -= static_cast<float>(spawnCycles);
-		if (totalSpawnCount <= 0) {
-			m_canSpawn = false;
-			return;
-		}
+		if (totalSpawnCount < 0)
+			totalSpawnCount = 0;
 
 		m_owner->GetConsts().spawnCount = totalSpawnCount;
-		m_canSpawn = true;
 	}
 }

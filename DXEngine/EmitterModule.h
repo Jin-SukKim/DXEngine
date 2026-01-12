@@ -8,7 +8,6 @@ class EmitterModule : public ParticleModule
 public:
 	void OnSpawn(ID3D11DeviceContext* context) override;
 	void PreUpdate(ID3D11DeviceContext* context, float dt) override;
-	bool CanSpawn() { return m_canSpawn; }
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 
 public:
@@ -18,8 +17,6 @@ public:
 	UINT maxParticles = 1024;
 	Vector2 lifeRange = { 0.1f, 1.5f };
 	float spawnAccumulator = 0.f;
-private:
-	bool m_canSpawn = false;
 };
 }
 

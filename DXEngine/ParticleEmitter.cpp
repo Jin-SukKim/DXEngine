@@ -79,18 +79,7 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->PreUpdate(context.Get(), dt);
 
-		//m_elapsedTime += dt;
-		//m_spawnAccumulator += m_targetSpawnRate * dt;
-
-		//// 상수 버퍼 업데이트
-		//m_consts.GetCpu().dt = dt;
-		//m_consts.GetCpu().time = m_elapsedTime;
-		//m_consts.GetCpu().maxParticles = maxParticles;
 		m_consts.Upload();
-
-		//EmitterModule* spawnModule = GetModule<EmitterModule>();
-		//if (spawnModule && !spawnModule->CanSpawn())
-		//	return;
 
 		for (auto& mod : m_modules)
 			mod->OnUpdate(context.Get(), dt);
@@ -103,25 +92,8 @@ namespace DE {
 
 	void ParticleEmitter::UpdateSpawnStage(ID3D11DeviceContext* context, float dt)
 	{
-		//// 생성할 파티클 개수 계산
-		//int spawnCycles = static_cast<int>(m_spawnAccumulator);
-
-		//// 수동으로 요청은 Burst로 1번만 실행
-		//int manualBurstCount = m_burstCount;
-		//m_burstCount = 0;
-
-		//int totalSpawnCount = (spawnCycles * m_particlePerSpawn) + manualBurstCount;
-
-		//if (spawnCycles > 0)
-		//	m_spawnAccumulator -= static_cast<float>(spawnCycles);
-
-		//if (totalSpawnCount <= 0)
-		//	return;
-	
-
-		//// 상수 버퍼에 스폰 개수 업데이트
-		//m_consts.GetCpu().spawnCount = totalSpawnCount;
-		m_consts.Upload();
+		if (m_consts.GetCpu().spawnCount == 0)
+			return;
 
 		m_spawnCS.UpdateConsts(context, 0, 1, m_consts.GetAddressOf());
 
