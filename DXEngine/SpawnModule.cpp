@@ -3,25 +3,25 @@
 #include "ParticleEmitter.h"
 
 namespace DE {
-	void SpawnModule::Initialize(ID3D11Device* device, ParticleEmitter* owner)
+	void SpawnModule::Initialize(ParticleInitContext& ctx)
 	{
-		ParticleModule::Initialize(device, owner);
-		m_owner->GetConstsData().maxParticles = maxParticles;
-		m_spawnCS.Initialize(device, L"SpawnCS.hlsl");
-	}
-	void SpawnModule::OnSpawn(ID3D11DeviceContext* context)
-	{
-		ParticleModule::OnSpawn(context);
-		ParticleConsts& consts = m_owner->GetConstsData();
-		consts.spawnVolume = spawnVolume;
-		consts.lifeRange = lifeRange;
-		consts.maxParticles = maxParticles;
+		ParticleModule::Initialize(ctx);
+		ctx.consts.maxParticles = maxParticles;
+		m_spawnCS.Initialize(ctx.device, L"SpawnCS.hlsl");
 	}
 
-	void SpawnModule::PreUpdate(ID3D11DeviceContext* context, float dt)
+	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
-		ParticleModule::PreUpdate(context, dt);
-		spawnAccumulator += spawnRate * dt;
+		ParticleModule::OnSpawn(ctx);
+		ctx.consts.spawnVolume = spawnVolume;
+		ctx.consts.lifeRange = lifeRange;
+		ctx.consts.maxParticles = maxParticles;
+	}
+
+	void SpawnModule::PreUpdate(SimulationContext& ctx)
+	{
+		ParticleModule::PreUpdate(ctx);
+		spawnAccumulator += spawnRate * ctx.dt;
 
 		UINT spawnCycles = static_cast<int>(spawnAccumulator);
 		m_totalSpawnCount = spawnCycles * particlesPerSpawn;
@@ -31,24 +31,25 @@ namespace DE {
 		if (m_totalSpawnCount < 0)
 			m_totalSpawnCount = 0;
 
-		m_owner->GetConstsData().spawnCount = m_totalSpawnCount;
+		ctx.consts.spawnCount = m_totalSpawnCount;
 	}
 	
-	void SpawnModule::OnUpdate(ID3D11DeviceContext* context, float dt)
+	void SpawnModule::OnUpdate(const SimulationContext& ctx)
 	{
-		ParticleModule::OnUpdate(context, dt);
+		ParticleModule::OnUpdate(ctx);
 		if (m_totalSpawnCount == 0)
 			return;
 
-		m_spawnCS.UpdateConsts(context, 0, 1, m_owner->GetConstBuffer().GetAddressOf());
+		m_spawnCS.UpdateConsts(ctx.context, 0, 1, ctx.constBuffer.GetAddressOf());
 
-		ID3D11UnorderedAccessView* uav = m_owner->GetConsumeBuffer().GetUAV();
-		context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
+		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
+		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 		// Spawn Compute Shader
 		UINT groupCount = (m_totalSpawnCount + 255) / 256;
-		m_spawnCS.Dispatch(context, groupCount, 1, 1);
+		m_spawnCS.Dispatch(ctx.context, groupCount, 1, 1);
 	}
+
 	void SpawnModule::LoadFromJson(const json& data)
 	{
 		if (data.contains("spawnVolume")) spawnVolume = JsonToVec3(data["spawnVolume"]);

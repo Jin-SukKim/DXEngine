@@ -6,7 +6,8 @@
 #include "SpawnModule.h"
 #include "VisualModule.h"
 #include "ForceModule.h"
-#include "RenderModule.h"
+#include "RenderModule.h"	
+#include "ParticleContext.h"
 namespace DE {
 
 	ParticleEmitter::ParticleEmitter(const std::wstring& name) 
@@ -22,17 +23,29 @@ namespace DE {
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+		
+		m_consts.Initialize();
+
+		ParticleInitContext initCtx = { device.Get(), m_consts.GetCpu() };
 
 		for (auto& mod : m_modules)
-			mod->Initialize(device.Get(), this);
+			mod->Initialize(initCtx);
 
 		InitializeShaders(device.Get());
 		InitializeBuffers(device);
 
-		m_consts.Initialize();
+
+		SimulationContext simCtx = {
+			context.Get(),
+			m_consts.GetCpu(),
+			0.f,
+			m_time,
+			m_consts,
+			m_consume
+		};
 
 		for (auto& mod : m_modules)
-			mod->OnSpawn(context.Get());
+			mod->OnSpawn(simCtx);
 	}
 
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
@@ -69,14 +82,23 @@ namespace DE {
 		m_time += dt;
 		m_consts.GetCpu().dt = dt;
 		m_consts.GetCpu().time = m_time;
+		
+		SimulationContext simCtx = {
+			context.Get(),
+			m_consts.GetCpu(),
+			dt,
+			m_time,
+			m_consts,
+			m_consume
+		};
 
 		for (auto& mod : m_modules)
-			mod->PreUpdate(context.Get(), dt);
+			mod->PreUpdate(simCtx);
 
 		m_consts.Upload();
 
 		for (auto& mod : m_modules)
-			mod->OnUpdate(context.Get(), dt);
+			mod->OnUpdate(simCtx);
 
 		// GPU 파티클 업데이트 파이프라인 실행
 		UpdateArgsBuffers(context.Get());
@@ -124,12 +146,20 @@ namespace DE {
 	void ParticleEmitter::Render(const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		
+		RenderContext renderCtx = {
+			context,
+			m_consts.GetCpu(),
+			m_append.GetSRV(),
+			m_countSRV.Get(),
+			m_drawInstancedArgs.GetBuffer()
+		};
 
 		for (auto& mod : m_modules)
-			mod->OnRender(context);
+			mod->OnRender(renderCtx);
 
 		if (auto* renderMod = GetModule<RenderModule>()) {
-			renderMod->Draw(context, m_drawInstancedArgs.GetBuffer(), m_append.GetSRV(), m_countSRV.Get());
+			renderMod->Draw(renderCtx);
 		}
 
 		// 다음 프레임을 위한 버퍼 교환 

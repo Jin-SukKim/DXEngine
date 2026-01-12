@@ -3,13 +3,12 @@
 #include "ParticleEmitter.h"
 
 namespace DE {
-	void VisualModule::OnSpawn(ID3D11DeviceContext* context)
+	void VisualModule::OnSpawn(SimulationContext& ctx)
 	{
-		ParticleModule::OnSpawn(context);
-		ParticleConsts& consts = m_owner->GetConstsData();
-		consts.startColor = startColor;
-		consts.endColor = endColor;
-		consts.sizeRange = sizeRange;
+		ParticleModule::OnSpawn(ctx);
+		ctx.consts.startColor = startColor;
+		ctx.consts.endColor = endColor;
+		ctx.consts.sizeRange = sizeRange;
 	}
 	void VisualModule::LoadFromJson(const json& data)
 	{

@@ -27,11 +27,12 @@ namespace DE {
 
         void Sort(ID3D11DeviceContext* context);
 
-        StructuredBuffer<Element> m_array;
-
+        ID3D11ShaderResourceView* GetSRV() const { return m_array.GetSRV(); }
+        ID3D11UnorderedAccessView* GetUAV() const { return m_array.GetUAV(); }
     protected:
         std::vector<Consts> m_constsCpu;
         std::vector<ComPtr<ID3D11Buffer>> m_constsGpu;
+        StructuredBuffer<Element> m_array;
 
 		ComputeShader m_bitonicSortCS;
 

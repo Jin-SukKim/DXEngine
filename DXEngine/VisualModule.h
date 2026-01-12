@@ -5,7 +5,7 @@ namespace DE {
 class VisualModule : public ParticleModule
 {
 public:
-	void OnSpawn(ID3D11DeviceContext* context) override;
+	void OnSpawn(SimulationContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	ModulePriority GetPriority() override { return ModulePriority::Visual; }
 public:

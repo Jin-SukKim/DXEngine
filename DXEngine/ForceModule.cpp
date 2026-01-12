@@ -3,15 +3,14 @@
 #include "ParticleEmitter.h"
 
 namespace DE {
-	void ForceModule::OnSpawn(ID3D11DeviceContext* context)
+	void ForceModule::OnSpawn(SimulationContext& ctx)
 	{
-		ParticleModule::OnSpawn(context);
-		ParticleConsts& consts = m_owner->GetConstsData();
-		consts.velocity = velocity;
-		consts.speedRange = speedRange;
-		consts.randomDir = randomDir;
-		consts.gravity = gravity;
-		consts.drag = drag;
+		ParticleModule::OnSpawn(ctx);
+		ctx.consts.velocity = velocity;
+		ctx.consts.speedRange = speedRange;
+		ctx.consts.randomDir = randomDir;
+		ctx.consts.gravity = gravity;
+		ctx.consts.drag = drag;
 	}
 	void ForceModule::LoadFromJson(const json& data)
 	{

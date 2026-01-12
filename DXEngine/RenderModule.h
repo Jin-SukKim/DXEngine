@@ -12,19 +12,15 @@ enum class BlendMode {
 class RenderModule : public ParticleModule
 {
 public:
-	void Initialize(ID3D11Device* device, ParticleEmitter* config) override;
-	void OnSpawn(ID3D11DeviceContext* context) override;
-	virtual void Draw(ID3D11DeviceContext* context,
-		ID3D11Buffer* indirectArgs,
-		ID3D11ShaderResourceView* particleSRV,
-		ID3D11ShaderResourceView* sortSRV);
+	void Initialize(ParticleInitContext& ctx) override;
+	void OnSpawn(SimulationContext& ctx) override;
+	virtual void Draw(const RenderContext& ctx);
 	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
-	ID3D11Device* m_device;
 	BitonicSort m_sort;
 	ComputeShader m_InitSortKeysCS;
 };
@@ -32,10 +28,7 @@ protected:
 class BillboardRenderModule : public RenderModule
 {
 public:
-	void Draw(ID3D11DeviceContext* context,
-		ID3D11Buffer* indirectArgs,
-		ID3D11ShaderResourceView* particleSRV,
-		ID3D11ShaderResourceView* m_countSRV) override;
+	void Draw(const RenderContext& context) override;
 private:
 	// TODO: Texture Ãß°¡
 };

@@ -7,10 +7,10 @@ namespace DE {
 class SpawnModule : public ParticleModule
 {
 public:
-	void Initialize(ID3D11Device* device, ParticleEmitter* owner);
-	void OnSpawn(ID3D11DeviceContext* context) override;
-	void PreUpdate(ID3D11DeviceContext* context, float dt) override;
-	void OnUpdate(ID3D11DeviceContext* context, float dt) override;
+	void Initialize(ParticleInitContext& ctx);
+	void OnSpawn(SimulationContext& ctx) override;
+	void PreUpdate(SimulationContext& ctx) override;
+	void OnUpdate(const SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
 public:

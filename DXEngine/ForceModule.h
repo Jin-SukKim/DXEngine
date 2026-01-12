@@ -5,7 +5,7 @@ namespace DE {
 class ForceModule : public ParticleModule
 {
 public:
-	void OnSpawn(ID3D11DeviceContext* context) override;
+	void OnSpawn(SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Force; }
 
 	void LoadFromJson(const json& data) override;

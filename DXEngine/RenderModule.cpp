@@ -3,35 +3,35 @@
 #include "ParticleEmitter.h"
 
 namespace DE {
-	void RenderModule::Initialize(ID3D11Device* device, ParticleEmitter* owner)
+	void RenderModule::Initialize(ParticleInitContext& ctx)
 	{
-		ParticleModule::Initialize(device, owner);
+		ParticleModule::Initialize(ctx);
 
-		m_device = device;
-		m_InitSortKeysCS.Initialize(device, L"InitBitonicSortCS.hlsl");
-		m_sort.Initialize(device, m_owner->GetConstsData().maxParticles, L"BitonicSortCS.hlsl");
+		m_InitSortKeysCS.Initialize(ctx.device, L"InitBitonicSortCS.hlsl");
+		m_sort.Initialize(ctx.device, ctx.consts.maxParticles, L"BitonicSortCS.hlsl");
 	}
 
-	void RenderModule::OnSpawn(ID3D11DeviceContext* context)
+	void RenderModule::OnSpawn(SimulationContext& ctx)
 	{
-		ParticleModule::OnSpawn(context);
+		ParticleModule::OnSpawn(ctx);
 		SetBlendState();
 	}
 
-	void RenderModule::Draw(ID3D11DeviceContext* context, ID3D11Buffer* indirectArgs, ID3D11ShaderResourceView* particleSRV, ID3D11ShaderResourceView* m_countSRV)
+	void RenderModule::Draw(const RenderContext& ctx)
 	{
 		if (!m_isEnabled)
 			return;
 
-		context->CSSetUnorderedAccessViews(0, 1, m_sort.m_array.GetAddressOfUAV(), nullptr);
+		ID3D11UnorderedAccessView* uav[1] = { m_sort.GetUAV() };
+		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
-			particleSRV,
-			m_countSRV
+			ctx.particleSRV,
+			ctx.countSRV
 		};
-		context->CSSetShaderResources(0, 2, srvs);
-		m_InitSortKeysCS.Dispatch(context, (m_owner->GetConstsData().maxParticles + 1023) / 1024, 1, 1);
+		ctx.context->CSSetShaderResources(0, 2, srvs);
+		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.consts.maxParticles + 1023) / 1024, 1, 1);
 
-		m_sort.Sort(context);
+		m_sort.Sort(ctx.context);
 	}
 
 	void RenderModule::SetBlendState()
@@ -60,23 +60,23 @@ namespace DE {
 		}
 	}
 
-	void BillboardRenderModule::Draw(ID3D11DeviceContext* context, ID3D11Buffer* indirectArgs, ID3D11ShaderResourceView* particleSRV, ID3D11ShaderResourceView* m_countSRV)
+	void BillboardRenderModule::Draw(const RenderContext& ctx)
 	{
-		RenderModule::Draw(context, indirectArgs, particleSRV, m_countSRV);
+		RenderModule::Draw(ctx);
 
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 		// IndirectDraw
 		ID3D11ShaderResourceView* sortSRVs[] = {
-			particleSRV,
-			m_sort.m_array.GetSRV()
+			ctx.particleSRV,
+			m_sort.GetSRV()
 		};
 
-		context->VSSetShaderResources(0, 2, sortSRVs);
-		context->DrawInstancedIndirect(indirectArgs, 0);
+		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
+		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
 
 		// Á¤¸®
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
-		context->VSSetShaderResources(0, 2, nullSRVs);
+		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
 	}
 }
