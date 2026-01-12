@@ -14,6 +14,7 @@ namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
+		particleEmitter = ParticleLoader::Load(L"C:\\Users\\jskim10\\Desktop\\Project\\DXEngine\\Assets\\Particles\\Fire.json");
 		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
 		//particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
 		//particleEmitter->AddModule(ParticleModuleFactory::Create("Visual"));

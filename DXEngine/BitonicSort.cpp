@@ -6,17 +6,20 @@ namespace DE {
     {
         // 2의 제곱인지 확인
         // https://stackoverflow.com/questions/108318/how-can-i-test-whether-a-number-is-a-power-of-2
-        assert(numElements > 0);
-        assert((numElements & (numElements - 1)) == 0);
+        UINT num = 1;
+        while (num < numElements)
+            num *= 2;
+        assert(num > 0);
+        assert((num & (num - 1)) == 0);
 
-        m_numElements = numElements;
+        m_numElements = num;
 
-        m_array.Initialize(device, numElements);
+        m_array.Initialize(device, num);
 
 		m_bitonicSortCS.Initialize(device, shaderFilename);
 
         // 필요한 ConstBuffer 들을 미리 만들어 두기
-        for (uint32_t k = 2; k <= numElements; k *= 2)
+        for (uint32_t k = 2; k <= num; k *= 2)
             for (uint32_t j = k / 2; j > 0; j /= 2) {
                 Consts c;
                 c.j = j;

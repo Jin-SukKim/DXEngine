@@ -32,8 +32,6 @@ std::unique_ptr<ParticleEmitter> ParticleLoader::Load(const std::wstring& filePa
 		}
 	}
 
-	emitter->Initialize();
-
 	return std::move(emitter);
 }
 }
