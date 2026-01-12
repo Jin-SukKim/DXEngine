@@ -42,31 +42,6 @@ namespace DE {
 		m_consts.SetCpuData(config);
 	}
 
-	void ParticleEmitter::SetupFire()
-	{
-		ParticleConsts config;
-
-		// 1. 생성 (좁은 원형 바닥에서 생성)
-		config.spawnVolume = Vector3(0.5f, 0.0f, 0.5f); // Y축 0 (바닥)
-		config.lifeRange = Vector2(0.5f, 1.2f); // 짧게 생존
-
-		// 2. 물리 (위로 상승)
-		// 중요: 불은 중력을 거슬러 올라갑니다. Gravity를 양수(+) Y로 설정하세요.
-		config.gravity = Vector3(0.0f, 3.0f, 0.0f); // 부력 (Buoyancy)
-		config.velocity = Vector3(0.0f, 1.0f, 0.0f); // 초기 상승 속도
-		config.speedRange = Vector2(0.5f, 1.5f);
-		config.randomDir = Vector3(0.2f, 0.1f, 0.2f); // 옆으로 살짝 퍼짐
-		config.drag = 0.5f; // 공기 저항 (끝에서 느려짐)
-
-		// 3. 시각 (색상 및 크기)
-		// 시작: 밝은 노랑/주황 -> 끝: 어두운 빨강/투명
-		config.startColor = Vector4(1.0f, 0.8f, 0.2f, 1.0f);
-		config.endColor = Vector4(0.8f, 0.1f, 0.0f, 0.0f); // Alpha 0으로 사라짐
-
-		// 크기: 중간 크기 -> 작아짐 (불꽃 끝부분 수축)
-		config.sizeRange = Vector2(1.5f, 0.5f);
-	}
-
 	void ParticleEmitter::InitializeShaders(ID3D11Device* device)
 	{
 		// 셰이더 로드

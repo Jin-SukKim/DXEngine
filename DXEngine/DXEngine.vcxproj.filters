@@ -613,5 +613,8 @@
     <None Include="ParticleCommon.hlsli">
       <Filter>Shaders\Particle</Filter>
     </None>
+    <None Include="Particle.hlsli">
+      <Filter>Shaders\Particle</Filter>
+    </None>
   </ItemGroup>
 </Project>

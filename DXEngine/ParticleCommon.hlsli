@@ -1,16 +1,6 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
-struct Particle
-{
-	float3 position;
-	float3 velocity;
-	float3 color;
-	float life;
-	float lifeMax;
-	float size;
-};
-
 cbuffer ParticleConsts : register(b0)
 {
 	float dt;            // µ®≈∏ ≈∏¿”

@@ -36,7 +36,6 @@ namespace DE {
 		void SetBurst(UINT count);
 		void SetParticlesPerSpawn(UINT count);
 		void SetParticleConfig(const ParticleConsts& config);
-		void SetupFire();
 
 		ParticleConsts& GetConsts() { return m_consts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }

@@ -1,4 +1,5 @@
 #include "ParticleCommon.hlsli"
+#include "Particle.hlsli"
 
 AppendStructuredBuffer<Particle> outputParticles : register(u0);
 
