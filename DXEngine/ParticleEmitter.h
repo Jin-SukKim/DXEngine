@@ -6,15 +6,9 @@
 #include "StagingBuffer.h"
 #include "IndirectArgsBuffer.h"
 #include "BitonicSort.h"
+#include "ParticleModule.h"
 
 namespace DE {
-
-	enum class BlendMode {
-		Additive,
-		AlphaBlend,
-		Opaque,
-	};
-
 	class ParticleEmitter : public Actor
 	{
 	public:
@@ -24,6 +18,13 @@ namespace DE {
 		void Initialize() override;
 		void Update(const float& dt) override;
 		void Render(const ComPtr<ID3D11Buffer>& globalConstsGPU);
+
+		void SortParticles(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context);
+
+		template<typename T>
+		void AddModule(std::unique_ptr<ParticleModule>&& module);
+		template<typename T>
+		T* GetModule();
 
 		// 설정 메서드
 		void SetMaxParticles(UINT count) { maxParticles = count; }
@@ -35,13 +36,19 @@ namespace DE {
 		void SetBurst(UINT count);
 		void SetParticlesPerSpawn(UINT count);
 		void SetParticleConfig(const ParticleConsts& config);
-		void SetBlendMode(BlendMode mode);
 		void SetupFire();
-		void SetupExplosion();
+
+		ParticleConsts& GetConsts() { return m_consts.GetCpu(); }
+		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
+		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
+		AppendBuffer<Particle>& GetAppendBuffer() { return m_append; }
+		ID3D11ShaderResourceView* GetCountSRV() { return m_countSRV.Get(); }
+		ID3D11ShaderResourceView** GetCountAddressOfSRV() { return m_countSRV.GetAddressOf(); }
+		IndirectArgsBuffer<DispatchArgs>& GetDispatchArgsBuffer() { return m_dispatchArgs; }
 	private:
 		// 초기화 헬퍼 함수들
 		void InitializeShaders(ID3D11Device* device);
-		void InitializeBuffers(ID3D11Device* device);
+		void InitializeBuffers(ComPtr<ID3D11Device>& device);
 
 		// 업데이트 단계별 함수들
 		void UpdateSpawnStage(ID3D11DeviceContext* context, float dt);
@@ -74,12 +81,55 @@ namespace DE {
 		UINT m_burstCount = 0;
 		
 		// 런타임 상태
-		float m_elapsedTime = 0.0f;
+		float m_time = 0.0f;
 		float m_spawnAccumulator = 0.0f;
 		UINT m_particlePerSpawn = 1;
 
-		BlendMode m_blendMode = BlendMode::Additive;
+		//BlendMode m_blendMode = BlendMode::Additive;
 		BitonicSort m_sort;
 		ComputeShader m_InitSortKeysCS;
+
+		std::vector<std::unique_ptr<ParticleModule>> m_modules;
 	};
+
+	template<typename T>
+	void ParticleEmitter::AddModule(std::unique_ptr<ParticleModule>&& module)
+	{
+		// 이미 해당 타입의 모듈이 있는지 확인하고 교체
+		for (auto& existingModule : m_modules)
+		{
+			// unique_ptr의 get()으로 Raw 포인터를 꺼내서 타입 검사
+			if (dynamic_cast<T*>(existingModule.get()) != nullptr)
+			{
+				// 기존 모듈을 새로운 모듈로 교체 (소유권 이전)
+				existingModule = std::move(module);
+				break;
+			}
+		}
+
+		// 없으면 새로 추가
+		if (module)
+			m_modules.emplace_back(std::move(module));
+
+		// Priority에 따라 정렬
+		// unique_ptr이므로 람다 인자를 unique_ptr& 로 받아야 함
+		std::sort(m_modules.begin(), m_modules.end(),
+			[](const std::unique_ptr<ParticleModule>& a, const std::unique_ptr<ParticleModule>& b) {
+				return a->GetPriority() < b->GetPriority();
+			});
+	}
+
+	template<typename T>
+	T* ParticleEmitter::GetModule()
+	{
+		for (auto& mod : m_modules)
+		{
+			// unique_ptr -> Raw Pointer -> dynamic_cast
+			if (auto* casted = dynamic_cast<T*>(mod.get()))
+			{
+				return casted;
+			}
+		}
+		return nullptr;
+	}
 }

@@ -317,6 +317,11 @@
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="BitonicSort.h" />
+    <ClInclude Include="ParticleModule.h" />
+    <ClInclude Include="EmitterModule.h" />
+    <ClInclude Include="ForceModule.h" />
+    <ClInclude Include="VisualModule.h" />
+    <ClInclude Include="RenderModule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -461,6 +466,21 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="BitonicSort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EmitterModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VisualModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

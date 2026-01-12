@@ -17,16 +17,15 @@ namespace DE {
 
         BitonicSort() {};
 
-        BitonicSort(ComPtr<ID3D11Device>& device, const UINT numElements,
+        BitonicSort(ID3D11Device* device, const UINT numElements,
             const std::wstring shaderFilename) {
             Initialize(device, numElements, shaderFilename);
         };
 
-        void Initialize(ComPtr<ID3D11Device>& device, const UINT numElements,
+        void Initialize(ID3D11Device* device, const UINT numElements,
             const std::wstring shaderFilename);
 
-        void Sort(ID3D11Device* device,
-            ID3D11DeviceContext* context);
+        void Sort(ID3D11DeviceContext* context);
 
         StructuredBuffer<Element> m_array;
 

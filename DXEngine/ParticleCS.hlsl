@@ -16,18 +16,31 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     p.life -= dt;
 
     if (p.life > 0.f) {
-        float3 acceleration = gravity;
+        // 1. 물리 연산 (Physics)
+                // 중력 적용
+        p.velocity += gravity * dt;
 
-        p.velocity += acceleration * dt; // 지소적인 가속
-        p.velocity *= max(0.f, 1.f - drag * dt); // 저항값으로 속도를 줄이는 역할
+        // 공기 저항 (Drag) 적용
+        // drag 값이 클수록 속도가 0에 빠르게 수렴
+        p.velocity *= max(0.0f, 1.0f - drag * dt);
 
+        // 위치 갱신
         p.position += p.velocity * dt;
-        p.rotation += p.rotSpeed * dt;
 
-        float ratio = p.life / p.lifeMax; // [0.0, 1.0] -> life는 1에서 0으로 감소
-        p.size = lerp(minMaxSize[1], minMaxSize[0], ratio);
-        p.color = lerp(endColor, startColor, ratio);
 
+        // 2. 시각 효과 (Visuals)
+        // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
+        // 주의: p.life는 줄어드므로 (Max -> 0), 1 - (life/lifeMax) 해야 0 -> 1 로 흐름
+        float ageRatio = 1.0f - (p.life / p.lifeMax);
+
+        // 크기 보간 (Start -> End)
+        // sizeRange.x = Start Size, sizeRange.y = End Size
+        p.size = lerp(sizeRange.x, sizeRange.y, ageRatio);
+
+        // 색상 보간 (Start -> End)
+        p.color = lerp(startColor.rgb, endColor.rgb, ageRatio);
+
+        // 결과 저장
         outputParticles.Append(p);
     }
 }

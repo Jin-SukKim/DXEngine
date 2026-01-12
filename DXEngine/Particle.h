@@ -9,8 +9,6 @@ namespace DE {
 		float life = -1.f;
 		float lifeMax = 0.f;
 		float size = 1.f;
-		float rotation = 0.f;
-		float rotSpeed = 0.f;
 	};
 
 	struct ParticleConsts {
@@ -21,26 +19,25 @@ namespace DE {
 
 		// Spawn
 		Vector3 spawnVolume = Vector3(0.f, 0.f, 0.f); // 생성 범위
-		float lifeTimeBase = 0.f; // 기본 수명
+		float padding1;
+		Vector2 lifeRange = Vector2(0.f, 0.f);
+		Vector2 padding2;
 
-		float lifeTimeRand = 0.f; // 랜덤 추가 생명
-		Vector3 velocityBase = Vector3(0.f, 0.f, 0.f); // 기본 방향 속도
+		// Force
+		Vector3 velocity;
+		float padding3;
+		Vector2 speedRange;
+		Vector2 padding4;
 
-		Vector3 velocityRand = Vector3(0.f, 0.f, 0.f); // 랜덤 추가 방향 및 속도
-		float velocity = 0.f; // 속도
-
-		// Physics
+		Vector3 randomDir;
+		float padding5;
 		Vector3 gravity = Vector3(0.f, 0.f, 0.f); // 중력 or 지속적으로 작용하는 힘
 		float drag = 0.f; // 공기저항
 
 		// Visual
-		Vector2 minMaxSize = Vector2(0.f, 0.f);
-		Vector2 minMaxRotateSpeed = Vector2(0.f, 0.f);
-
-		Vector3 startColor = Vector3(0.f, 0.f, 0.f);
-		float padding1 = 0.f;
-
-		Vector3 endColor = Vector3(0.f, 0.f, 0.f);
-		float padding2 = 0.f;
+		Vector2 sizeRange= Vector2(0.f, 0.f);
+		Vector2 padding6;
+		Vector4 startColor = Vector4(0.f, 0.f, 0.f, 0.f);
+		Vector4 endColor = Vector4(0.f, 0.f, 0.f, 0.f);
 	};
 }

@@ -1,7 +1,13 @@
 #include "ParticleCommon.hlsli"
 
 AppendStructuredBuffer<Particle> outputParticles : register(u0);
-Buffer<uint> activeCount : register(t0);
+
+float rand_hash_signed(float2 uv)
+{
+    // 0~1 범위의 해시를 구한 뒤 -1~1로 변환
+    float h = frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+    return h * 2.0f - 1.0f;
+}
 
 // 0.0 ~ 1.0 사이의 값을 반환
 float rand_hash(float2 uv)
@@ -17,35 +23,47 @@ float rand_range(float2 seed, float minVal, float maxVal)
 [numthreads(256, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
-    // 이번 프레임에 생성해야 할 개수(spawnCount)를 넘으면 생성 중단
+    // 이번 프레임 생성 할당량을 넘으면 종료
     if (dtID.x >= spawnCount)
         return;
-    
-    float2 seed = float2(dtID.x, time);
-    float r1 = rand_hash(seed);
-    float r2 = rand_hash(seed + 1.f);
-    float r3 = rand_hash(seed + 2.f);
-    float r4 = rand_hash(seed + 3.f);
+
+    // 랜덤 시드 생성 (인덱스 + 시간 조합)
+    float2 seed = float2(float(dtID.x), time);
+
+    // 랜덤 값 추출
+    float3 rPos;
+    rPos.x = rand_hash_signed(seed);
+    rPos.y = rand_hash_signed(seed + float2(1, 1));
+    rPos.z = rand_hash_signed(seed + float2(2, 2));
 
     Particle p;
-    
-    // Spawn Position
-    p.position = (float3(r1, r2, r3) - 0.5f) * 2.f * spawnVolume;
-    // velocityBase : 주 방향
-    // velocityRange : 랜덤 확산
-    float3 randomDir = (float3(r2, r3, r1) - 0.5f) * 2.f;
-    randomDir = normalize(randomDir + 0.0001f);
-    p.velocity = (velocityBase + randomDir * velocityRand) * velocity;
-    
-    // Life
-    p.life = lifeTimeBase + (r4 * lifeTimeRand);
+
+    // 1. Position 초기화 (Box Shape 기준)
+    // spawnVolume 범위 내 랜덤 위치
+    p.position = rPos * spawnVolume;
+
+    // 2. Life 초기화
+    // lifeRange.x ~ lifeRange.y 사이 랜덤
+    p.life = rand_range(seed + float2(3, 3), lifeRange.x, lifeRange.y);
     p.lifeMax = p.life;
 
-    // Visual
-    p.color = startColor;
-    p.size = minMaxSize[0];
-    p.rotation = r1 * 6.28f; // [0, 360]도 랜덤
-    p.rotSpeed = lerp(minMaxRotateSpeed[0], minMaxRotateSpeed[1], r2);
+    // 3. Velocity 초기화
+    // 기본 velocity 방향에 randomDir 만큼의 노이즈를 섞음
+    float3 noiseDir;
+    noiseDir.x = rand_hash_signed(seed + float2(10, 0));
+    noiseDir.y = rand_hash_signed(seed + float2(0, 10));
+    noiseDir.z = rand_hash_signed(seed + float2(5, 5));
+
+    float3 finalDir = normalize(velocity + noiseDir * randomDir);
+
+    // 속력(Speed) 랜덤 설정
+    float speed = rand_range(seed + float2(4, 4), speedRange.x, speedRange.y);
+
+    p.velocity = finalDir * speed;
+
+    // 4. Color & Size 초기화
+    p.color = startColor.rgb;
+    p.size = sizeRange.x; // Start Size
 
     outputParticles.Append(p);
 }

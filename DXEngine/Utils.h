@@ -7,7 +7,7 @@ namespace DE {
 	public:
 		// GPU에 Constant Buffer 생성
 		void Initialize() {
-			D3D11Utils::CreateConstantBuffer(GET_SINGLE(RenderBase)->GetDevice(), m_cpu, m_gpu);
+			D3D11Utils::CreateConstantBuffer(GET_SINGLE(RenderBase)->GetDevice().Get(), m_cpu, m_gpu);
 		}
 
 		// CPU 데이터를 GPU로 복사

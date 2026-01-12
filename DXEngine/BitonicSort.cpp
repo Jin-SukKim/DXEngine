@@ -2,7 +2,7 @@
 #include "BitonicSort.h"
 
 namespace DE {
-    void BitonicSort::Initialize(ComPtr<ID3D11Device>& device, const UINT numElements, const std::wstring shaderFilename)
+    void BitonicSort::Initialize(ID3D11Device* device, const UINT numElements, const std::wstring shaderFilename)
     {
         // 2의 제곱인지 확인
         // https://stackoverflow.com/questions/108318/how-can-i-test-whether-a-number-is-a-power-of-2
@@ -11,9 +11,9 @@ namespace DE {
 
         m_numElements = numElements;
 
-        m_array.Initialize(device.Get(), numElements);
+        m_array.Initialize(device, numElements);
 
-		m_bitonicSortCS.Initialize(device.Get(), shaderFilename);
+		m_bitonicSortCS.Initialize(device, shaderFilename);
 
         // 필요한 ConstBuffer 들을 미리 만들어 두기
         for (uint32_t k = 2; k <= numElements; k *= 2)
@@ -29,7 +29,7 @@ namespace DE {
         }
     }
 
-    void BitonicSort::Sort(ID3D11Device* device, ID3D11DeviceContext* context)
+    void BitonicSort::Sort(ID3D11DeviceContext* context)
     {
         size_t constCount = 0;
         for (uint32_t k = 2; k <= m_numElements; k *= 2)
