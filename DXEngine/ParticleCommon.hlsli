@@ -9,8 +9,6 @@ struct Particle
 	float life;
 	float lifeMax;
 	float size;
-	float rotation;
-	float rotSpeed;
 };
 
 cbuffer ParticleConsts : register(b0)

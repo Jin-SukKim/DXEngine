@@ -9,8 +9,6 @@ namespace DE {
 		float life = -1.f;
 		float lifeMax = 0.f;
 		float size = 1.f;
-		float rotation = 0.f;
-		float rotSpeed = 0.f;
 	};
 
 	struct ParticleConsts {
@@ -35,7 +33,7 @@ namespace DE {
 
 		// Visual
 		Vector2 minMaxSize = Vector2(0.f, 0.f);
-		Vector2 minMaxRotateSpeed = Vector2(0.f, 0.f);
+		Vector2 minMaxRotateSpeed;
 
 		Vector3 startColor = Vector3(0.f, 0.f, 0.f);
 		float padding1 = 0.f;

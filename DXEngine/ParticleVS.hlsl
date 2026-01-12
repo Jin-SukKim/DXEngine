@@ -8,8 +8,6 @@ struct Particle
     float life;
     float lifeMax;
     float size;
-    float rotation;
-    float rotSpeed;
 };
 
 struct SortElement

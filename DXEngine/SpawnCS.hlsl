@@ -44,8 +44,6 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // Visual
     p.color = startColor;
     p.size = minMaxSize[0];
-    p.rotation = r1 * 6.28f; // [0, 360]µµ ·£´ý
-    p.rotSpeed = lerp(minMaxRotateSpeed[0], minMaxRotateSpeed[1], r2);
 
     outputParticles.Append(p);
 }
