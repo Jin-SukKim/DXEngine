@@ -15,7 +15,6 @@ namespace DE {
 	}
 	void ForceModule::LoadFromJson(const json& data)
 	{
-		if (data.contains("time")) time = data["time"];
 		if (data.contains("velocity")) velocity = JsonToVec3(data["velocity"]);
 		if (data.contains("speedRange")) speedRange = JsonToVec2(data["speedRange"]);
 		if (data.contains("randomDir")) randomDir = JsonToVec3(data["randomDir"]);

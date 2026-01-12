@@ -56,6 +56,5 @@ namespace DE {
 		if (data.contains("particlesPerSpawn")) particlesPerSpawn = data["particlesPerSpawn"];
 		if (data.contains("maxParticles")) maxParticles = data["maxParticles"];
 		if (data.contains("lifeRange")) lifeRange = JsonToVec2(data["lifeRange"]);
-		if (data.contains("spawnAccumulator")) spawnAccumulator = data["spawnAccumulator"];
 	}
 }

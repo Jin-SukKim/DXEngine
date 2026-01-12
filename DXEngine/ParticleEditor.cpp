@@ -7,17 +7,18 @@
 #include "VisualModule.h"
 #include "ForceModule.h"
 #include "RenderModule.h"
+#include "ParticleLoader.h"
 
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
-		particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
-		particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
-		particleEmitter->AddModule(ParticleModuleFactory::Create("Visual"));
-		particleEmitter->AddModule(ParticleModuleFactory::Create("Force"));
-		particleEmitter->AddModule(ParticleModuleFactory::Create("BillboardRender"));
+		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
+		//particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
+		//particleEmitter->AddModule(ParticleModuleFactory::Create("Visual"));
+		//particleEmitter->AddModule(ParticleModuleFactory::Create("Force"));
+		//particleEmitter->AddModule(ParticleModuleFactory::Create("BillboardRender"));
 	}
 
 	ParticleEditor::~ParticleEditor()
