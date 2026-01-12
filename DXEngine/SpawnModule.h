@@ -12,7 +12,7 @@ public:
 	void PreUpdate(ID3D11DeviceContext* context, float dt) override;
 	void OnUpdate(ID3D11DeviceContext* context, float dt) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
-
+	void LoadFromJson(const json& data) override;
 public:
 	Vector3 spawnVolume = Vector3(0.05f, 0.15f, 0.05f);
 	float spawnRate = 50.f;

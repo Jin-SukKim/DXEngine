@@ -8,6 +8,7 @@ public:
 	void OnSpawn(ID3D11DeviceContext* context) override;
 	ModulePriority GetPriority() override { return ModulePriority::Force; }
 
+	void LoadFromJson(const json& data) override;
 public:
 	float time = 0.f;
 	Vector3 velocity = { 0.0f, 0.1f, 0.0f };; // 속도와 방향

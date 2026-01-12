@@ -1,13 +1,21 @@
 ﻿#include "pch.h"
 #include "ParticleEmitter.h"
-#include <random>
 #include "RenderModule.h"
+#include "ParticleModuleFactory.h"
 
+#include "SpawnModule.h"
+#include "VisualModule.h"
+#include "ForceModule.h"
+#include "RenderModule.h"
 namespace DE {
 
 	ParticleEmitter::ParticleEmitter(const std::wstring& name) 
 		: Actor(name)
 	{
+		ParticleModuleFactory::Register<SpawnModule>("Spawn");
+		ParticleModuleFactory::Register<VisualModule>("Visual");
+		ParticleModuleFactory::Register<ForceModule>("Force");
+		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
 	}
 
 	void ParticleEmitter::Initialize()
@@ -115,17 +123,33 @@ namespace DE {
 
 	void ParticleEmitter::Render(const ComPtr<ID3D11Buffer>& globalConstsGPU)
 	{
-		RenderBase& renderer = *GET_SINGLE(RenderBase);
-		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
 		for (auto& mod : m_modules)
-			mod->OnRender(context.Get());
+			mod->OnRender(context);
 
 		if (auto* renderMod = GetModule<RenderModule>()) {
-			renderMod->Draw(context.Get(), m_drawInstancedArgs.GetBuffer(), m_append.GetSRV(), m_countSRV.Get());
+			renderMod->Draw(context, m_drawInstancedArgs.GetBuffer(), m_append.GetSRV(), m_countSRV.Get());
 		}
 
 		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);
+	}
+
+	void ParticleEmitter::AddModule(std::unique_ptr<ParticleModule>&& module) {
+		for (auto& mod : m_modules) {
+			if (typeid(*mod) == typeid(*module)) {
+				mod = std::move(module);
+				break;
+			}
+		}
+
+		if (module)
+			m_modules.emplace_back(std::move(module));
+
+		std::sort(m_modules.begin(), m_modules.end(),
+			[](const std::unique_ptr<ParticleModule>& a, const std::unique_ptr<ParticleModule>& b) {
+				return a->GetPriority() < b->GetPriority();
+			});
 	}
 }

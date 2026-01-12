@@ -14,11 +14,15 @@ namespace DE {
 
 	void RenderModule::OnSpawn(ID3D11DeviceContext* context)
 	{
+		ParticleModule::OnSpawn(context);
 		SetBlendState();
 	}
 
 	void RenderModule::Draw(ID3D11DeviceContext* context, ID3D11Buffer* indirectArgs, ID3D11ShaderResourceView* particleSRV, ID3D11ShaderResourceView* m_countSRV)
 	{
+		if (!m_isEnabled)
+			return;
+
 		context->CSSetUnorderedAccessViews(0, 1, m_sort.m_array.GetAddressOfUAV(), nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
 			particleSRV,
@@ -43,6 +47,16 @@ namespace DE {
 		case BlendMode::Opaque:
 			RenderBase::graphicsCommon.particle.animPSO.blendState = nullptr;
 			break;
+		}
+	}
+
+	void RenderModule::LoadFromJson(const json& data)
+	{
+		if (data.contains("blendMode")) {
+			std::string mode = data["blendMode"];
+			if (mode == "Additive") blendMode = BlendMode::Additive;
+			if (mode == "AlphaBlend") blendMode = BlendMode::AlphaBlend;
+			if (mode == "Opaque") blendMode = BlendMode::Opaque;
 		}
 	}
 

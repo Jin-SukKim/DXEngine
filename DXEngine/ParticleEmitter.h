@@ -21,6 +21,7 @@ namespace DE {
 
 		template<typename T>
 		void AddModule(std::unique_ptr<ParticleModule>&& module);
+		void AddModule(std::unique_ptr<ParticleModule>&& module);
 		template<typename T>
 		T* GetModule();
 

@@ -20,6 +20,7 @@ public:
 		ID3D11ShaderResourceView* sortSRV);
 	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
+	void LoadFromJson(const json& data) override;
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:

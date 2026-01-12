@@ -106,7 +106,7 @@ namespace DE {
 		Image img(L"Image");
 
 		std::string ext(filename.end() - 3, filename.end());
-		std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
+		std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
 
 		// HDRI pipeline으로 float을 사용하는데 일반적인 이미지는 UNORM이므로 UNORM을 쓰면 일반적인 Texture가 너무 밝아지는 문제가 발생하기 떄문에 SRGB 포맷을 사용
 		// SRGB는 내부적으로 Gamma Correction을 해주기 때문에 HDR하고 같은 공간에서 작업 가능
