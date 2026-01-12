@@ -202,7 +202,7 @@
     <ClInclude Include="CopyFilter.h" />
     <ClInclude Include="DepthFilter.h" />
     <ClInclude Include="DetailGui.h" />
-    <ClInclude Include="EmitterModule.h" />
+    <ClInclude Include="SpawnModule.h" />
     <ClInclude Include="FogEffect.h" />
     <ClInclude Include="ForceModule.h" />
     <ClInclude Include="GraphicsCommon.h" />
@@ -267,7 +267,7 @@
     <ClCompile Include="CopyFilter.cpp" />
     <ClCompile Include="DepthFilter.cpp" />
     <ClCompile Include="DetailGui.cpp" />
-    <ClCompile Include="EmitterModule.cpp" />
+    <ClCompile Include="SpawnModule.cpp" />
     <ClCompile Include="FogEffect.cpp" />
     <ClCompile Include="ForceModule.cpp" />
     <ClCompile Include="GraphicsCommon.cpp" />

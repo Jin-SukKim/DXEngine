@@ -19,29 +19,17 @@ namespace DE {
 		void Update(const float& dt) override;
 		void Render(const ComPtr<ID3D11Buffer>& globalConstsGPU);
 
-		void SortParticles(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context);
-
 		template<typename T>
 		void AddModule(std::unique_ptr<ParticleModule>&& module);
 		template<typename T>
 		T* GetModule();
 
-		// 설정 메서드
-		void SetMaxParticles(UINT count) { maxParticles = count; }
-		void SetSpawnRate(float rate) { m_targetSpawnRate = rate; }
-		
-		UINT GetMaxParticles() const { return maxParticles; }
-		float GetSpawnRate() const { return m_targetSpawnRate; }
-
-		void SetBurst(UINT count);
-		void SetParticlesPerSpawn(UINT count);
 		void SetParticleConfig(const ParticleConsts& config);
 
 		ParticleConsts& GetConsts() { return m_consts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
 		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
 		AppendBuffer<Particle>& GetAppendBuffer() { return m_append; }
-		ID3D11ShaderResourceView* GetCountSRV() { return m_countSRV.Get(); }
 		ID3D11ShaderResourceView** GetCountAddressOfSRV() { return m_countSRV.GetAddressOf(); }
 		IndirectArgsBuffer<DispatchArgs>& GetDispatchArgsBuffer() { return m_dispatchArgs; }
 	private:
@@ -50,7 +38,6 @@ namespace DE {
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
 
 		// 업데이트 단계별 함수들
-		void UpdateSpawnStage(ID3D11DeviceContext* context, float dt);
 		void UpdateArgsBuffers(ID3D11DeviceContext* context);
 		void UpdateSimulationStage(ID3D11DeviceContext* context);
 
@@ -67,26 +54,14 @@ namespace DE {
 		ComPtr<ID3D11ShaderResourceView> m_countSRV;
 
 		// 컴퓨트 셰이더들
-		ComputeShader m_spawnCS;
 		ComputeShader m_argsUpdateCS;
 		ComputeShader m_particleCS;
 		
 		// 상수 버퍼
 		ConstantBuffer<ParticleConsts> m_consts;
-
-		// 파티클 시스템 파라미터
-		UINT maxParticles = 1024;
-		float m_targetSpawnRate = 1.0f;
-		UINT m_burstCount = 0;
 		
 		// 런타임 상태
 		float m_time = 0.0f;
-		float m_spawnAccumulator = 0.0f;
-		UINT m_particlePerSpawn = 1;
-
-		//BlendMode m_blendMode = BlendMode::Additive;
-		BitonicSort m_sort;
-		ComputeShader m_InitSortKeysCS;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;
 	};

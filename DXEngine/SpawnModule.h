@@ -1,13 +1,16 @@
 #pragma once
 #include "ParticleModule.h"
+#include "ComputeShader.h"
 
 namespace DE {
 
-class EmitterModule : public ParticleModule
+class SpawnModule : public ParticleModule
 {
 public:
+	void Initialize(ID3D11Device* device, ParticleEmitter* owner);
 	void OnSpawn(ID3D11DeviceContext* context) override;
 	void PreUpdate(ID3D11DeviceContext* context, float dt) override;
+	void OnUpdate(ID3D11DeviceContext* context, float dt) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 
 public:
@@ -17,6 +20,10 @@ public:
 	UINT maxParticles = 1024;
 	Vector2 lifeRange = { 0.1f, 1.5f };
 	float spawnAccumulator = 0.f;
+
+private:
+	ComputeShader m_spawnCS;
+	UINT m_totalSpawnCount = 0;
 };
 }
 

@@ -318,7 +318,7 @@
     </ClInclude>
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="ParticleModule.h" />
-    <ClInclude Include="EmitterModule.h" />
+    <ClInclude Include="SpawnModule.h" />
     <ClInclude Include="ForceModule.h" />
     <ClInclude Include="VisualModule.h" />
     <ClInclude Include="RenderModule.h" />
@@ -471,7 +471,7 @@
     <ClCompile Include="ParticleModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EmitterModule.cpp">
+    <ClCompile Include="SpawnModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ForceModule.cpp">
