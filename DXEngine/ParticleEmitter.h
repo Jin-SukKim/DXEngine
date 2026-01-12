@@ -26,12 +26,9 @@ namespace DE {
 
 		void SetParticleConfig(const ParticleConsts& config);
 
-		ParticleConsts& GetConsts() { return m_consts.GetCpu(); }
+		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
 		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
-		AppendBuffer<Particle>& GetAppendBuffer() { return m_append; }
-		ID3D11ShaderResourceView** GetCountAddressOfSRV() { return m_countSRV.GetAddressOf(); }
-		IndirectArgsBuffer<DispatchArgs>& GetDispatchArgsBuffer() { return m_dispatchArgs; }
 	private:
 		// 초기화 헬퍼 함수들
 		void InitializeShaders(ID3D11Device* device);

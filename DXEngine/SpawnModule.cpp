@@ -6,12 +6,12 @@ namespace DE {
 	void SpawnModule::Initialize(ID3D11Device* device, ParticleEmitter* owner)
 	{
 		ParticleModule::Initialize(device, owner);
-		m_owner->GetConsts().maxParticles = maxParticles;
+		m_owner->GetConstsData().maxParticles = maxParticles;
 		m_spawnCS.Initialize(device, L"SpawnCS.hlsl");
 	}
 	void SpawnModule::OnSpawn(ID3D11DeviceContext* context)
 	{
-		ParticleConsts& consts = m_owner->GetConsts();
+		ParticleConsts& consts = m_owner->GetConstsData();
 		consts.spawnVolume = spawnVolume;
 		consts.lifeRange = lifeRange;
 		consts.maxParticles = maxParticles;
@@ -29,8 +29,9 @@ namespace DE {
 		if (m_totalSpawnCount < 0)
 			m_totalSpawnCount = 0;
 
-		m_owner->GetConsts().spawnCount = m_totalSpawnCount;
+		m_owner->GetConstsData().spawnCount = m_totalSpawnCount;
 	}
+	
 	void SpawnModule::OnUpdate(ID3D11DeviceContext* context, float dt)
 	{
 		if (m_totalSpawnCount == 0)

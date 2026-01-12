@@ -5,7 +5,7 @@
 namespace DE {
 	void ForceModule::OnSpawn(ID3D11DeviceContext* context)
 	{
-		ParticleConsts& consts = m_owner->GetConsts();
+		ParticleConsts& consts = m_owner->GetConstsData();
 		consts.velocity = velocity;
 		consts.speedRange = speedRange;
 		consts.randomDir = randomDir;

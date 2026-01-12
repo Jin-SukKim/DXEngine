@@ -52,8 +52,6 @@ namespace DE {
 		// 활성 파티클 개수를 추적하는 카운터 버퍼
 		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), nullptr,
 			DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
-
-		
 	}
 
 	void ParticleEmitter::Update(const float& dt)

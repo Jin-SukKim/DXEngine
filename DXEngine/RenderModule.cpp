@@ -9,7 +9,7 @@ namespace DE {
 
 		m_device = device;
 		m_InitSortKeysCS.Initialize(device, L"InitBitonicSortCS.hlsl");
-		m_sort.Initialize(device, m_owner->GetConsts().maxParticles, L"BitonicSortCS.hlsl");
+		m_sort.Initialize(device, m_owner->GetConstsData().maxParticles, L"BitonicSortCS.hlsl");
 	}
 
 	void RenderModule::OnSpawn(ID3D11DeviceContext* context)
@@ -25,7 +25,7 @@ namespace DE {
 			m_countSRV
 		};
 		context->CSSetShaderResources(0, 2, srvs);
-		m_InitSortKeysCS.Dispatch(context, (m_owner->GetConsts().maxParticles + 1023) / 1024, 1, 1);
+		m_InitSortKeysCS.Dispatch(context, (m_owner->GetConstsData().maxParticles + 1023) / 1024, 1, 1);
 
 		m_sort.Sort(context);
 	}
