@@ -3,10 +3,11 @@
 #include "ParticleModuleFactory.h"
 
 namespace DE {
+	std::wstring ParticleLoader::presetPath = L"..\\Assets\\Particles\\";
 
 std::unique_ptr<ParticleEmitter> ParticleLoader::Load(const std::wstring& filePath)
 {
-	std::ifstream file(filePath);
+	std::ifstream file(presetPath + filePath);
 	if (!file.is_open())
 		return nullptr;
 

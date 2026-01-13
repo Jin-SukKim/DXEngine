@@ -24,59 +24,44 @@ void main(
 	inout TriangleStream<ParticlePSInput> outputStream
 )
 {
-    float hw = input[0].size * 0.5f;
-    // 월드 좌표계의 up 축
-    float4 up = float4(0.0, 1.0, 0.0, 0.0);
-    float4 front = float4(eyeWorld, 1.0) - input[0].pos; // Point - Point = Vector
-    front.w = 0.0; // 벡터
-    float4 right = normalize(float4(cross(up.xyz, normalize(front.xyz)), 0.0));
-
     ParticlePSInput output;
-    output.pos.w = 1;
+    output.primID = primID;
     output.color = input[0].color;
-    output.primID = primID;
 
-    output.center = input[0].pos; // 빌보드의 중심
+    output.posWorld = input[0].pos;
+    output.center = input[0].pos;
+    float4 viewPos = mul(float4(input[0].pos.xyz, 1.f), view);
+    float hw = input[0].size * 0.5f;
 
-    // 왼쪽 아래 Point
-    output.posWorld = input[0].pos - hw * right - hw * up;
-    output.pos = output.posWorld;
-    output.pos = mul(output.pos, view);
-    output.pos = mul(output.pos, proj);
-    output.texcoord = float2(1.0, 1.0);
-    output.primID = primID;
+    // View space에서의 offset 정의
+    float2 offsets[4] = {
+        float2(-1.f, -1.f),
+        float2(-1.f, 1.f),
+        float2(1.f, -1.f),
+        float2(1.f, 1.f)
+    };
 
-    outputStream.Append(output);
+    float2 uvs[4] = {
+        float2(0.f, 1.f),
+        float2(0.f, 0.f),
+        float2(1.f, 1.f),
+        float2(1.f, 0.f)
+    };
 
-    // 왼쪽 위 Point
-    output.posWorld = input[0].pos - hw * right + hw * up;
-    output.pos = output.posWorld;
-    output.pos = mul(output.pos, view);
-    output.pos = mul(output.pos, proj);
-    output.texcoord = float2(1.0, 0.0);
-    output.primID = primID;
+    [unroll]
+    for (int i = 0; i < 4; ++i)
+    {
+        // View space에서 billboard 위치 결정
+        float4 newPos = viewPos;
+        newPos.xy += offsets[i] * hw;
 
-    outputStream.Append(output);
+        // TODO: 만약 2D 회전을 넣고 싶다면 여기서 offsets[i]를 회전 행렬로 돌리기
 
-    // 오른쪽 아래 Point
-    output.posWorld = input[0].pos + hw * right - hw * up;
-    output.pos = output.posWorld;
-    output.pos = mul(output.pos, view);
-    output.pos = mul(output.pos, proj);
-    output.texcoord = float2(0.0, 1.0);
-    output.primID = primID;
+        output.pos = mul(newPos, proj);
+        output.texcoord = uvs[i];
 
-    outputStream.Append(output);
-
-    // 오른쪽 위 Point
-    output.posWorld = input[0].pos + hw * right + hw * up;
-    output.pos = output.posWorld;
-    output.pos = mul(output.pos, view);
-    output.pos = mul(output.pos, proj);
-    output.texcoord = float2(0.0, 0.0);
-    output.primID = primID;
-
-    outputStream.Append(output);
+        outputStream.Append(output);
+    }
 
     outputStream.RestartStrip(); // Strip을 다시 시작
 }
