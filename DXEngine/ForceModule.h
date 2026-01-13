@@ -16,6 +16,10 @@ public:
 	Vector3 randomDir = { 0.2f, 0.5f, 0.2f }; // Random 추가 방향
 	Vector3 gravity = { 0.f, 1.f, 0.f };
 	float drag = 0.f;
+	Vector3 vortexCenter = Vector3(0.f);
+	float vortexStrength = 0.f;
+	Vector3 vortexAxis = Vector3(0.f, 1.f, 0.f);
+	float vortexPull = 0.f;
 };
 
 }

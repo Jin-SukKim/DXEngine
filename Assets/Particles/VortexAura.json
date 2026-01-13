@@ -1,0 +1,41 @@
+{
+  "name": "VortexAura",
+  "Spawn": {
+    "spawnVolume": [ 0.5, 0.01, 0.5 ],
+    "spawnRate": 100.0,
+    "particlesPerSpawn": 10,
+    "maxParticles": 2048,
+    "lifeRange": [ 0.5, 0.7 ]
+  },
+  "Visual": {
+    "startColor": [ 0.2, 0.8, 1.0, 1.0 ],
+    "endColor": [ 0.0, 0.1, 0.5, 0.0 ],
+    "sizeRange": [ 0.2, 0.1 ],
+    "rotation": {
+      "minRotSpeed": [ -2.0, -2.0, -2.0 ],
+      "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
+    },
+    "trace": {
+      "enabled": true,
+      "scale": 0.5
+    }
+  },
+  "Force": {
+    "velocity": [ 0.0, 5.0, 0.0 ],
+    "speedRange": [ 1.0, 2.0 ],
+    "randomDir": [ 0.2, 0.5, 0.2 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.5,
+    "vortex": {
+      "strength": 30.0,
+      "pull": 100.0,
+      "center": [ 0.0, 0.0, 0.0 ],
+      "axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 1000.0,
+      "mode": 0
+    }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

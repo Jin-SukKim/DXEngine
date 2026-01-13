@@ -5,6 +5,24 @@ Buffer<uint> activeCount : register(t0);
 ConsumeStructuredBuffer<Particle> inputParticles : register(u0);
 AppendStructuredBuffer<Particle> outputParticles : register(u1);
 
+float3 CalculateVortexForce(float3 pos, float3 axis) {
+    float3 fromCenter = pos - vortexCenter;
+
+    // 회전축에 투영된 벡터를 제거 -> 회전 평면 벡터 (회전축에 수직인 벡터)
+    float3 projected = fromCenter - dot(fromCenter, axis) * axis;
+    float dist = length(projected); // 중심과의 거리
+
+    if (dist < 0.0001) return float3(0, 0, 0);
+
+    float3 dir = normalize(projected);
+    float3 tangent = cross(axis, dir); // 회전 방향
+    
+    // Tangent Force(회전) + Radial Force(구심력/원심력)
+    // Strength: 회전 속도 및 방향 (+: 시계, -: 반시계)
+    // Pull: 중심으로 당기는 힘 (+: 당김, -: 확산)
+    return (tangent * vortexStrength) - (dir * vortexPull);
+}
+
 [numthreads(256, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
@@ -14,11 +32,18 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     
     Particle p = inputParticles.Consume();
     
-    p.life -= dt;
-
-    if (p.life > 0.f) {
+    if (p.life - dt > 0.f) {
+        p.life -= dt;
+        
         // 1. 물리 연산 (Physics)
-                // 중력 적용
+
+        // Vortex(소용돌이)
+        if (abs(vortexStrength) > 0.001 || abs(vortexPull) > 0.001) {
+            float3 vForce = CalculateVortexForce(p.position, normalize(vortexAxis));
+            p.velocity += vForce * dt;
+        }
+
+        // 중력 적용
         p.velocity += gravity * dt;
 
         // 공기 저항 (Drag) 적용

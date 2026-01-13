@@ -14,7 +14,8 @@ namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
- 		particleEmitter = ParticleLoader::Load(L"Fire.json");
+ 		//particleEmitter = ParticleLoader::Load(L"Fire.json");
+ 		particleEmitter = ParticleLoader::Load(L"VortexAura.json");
 		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
 		//particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
 		//particleEmitter->AddModule(ParticleModuleFactory::Create("Visual"));

@@ -36,6 +36,11 @@ namespace DE {
 		Vector3 gravity = Vector3(0.f, 0.f, 0.f); // 중력 or 지속적으로 작용하는 힘
 		float drag = 0.f; // 공기저항
 
+		Vector3 vortexCenter = Vector3(0.f);
+		float vortexStrength = 0.f; // 회전력
+		Vector3 vortexAxis = Vector3(0.f, 1.f, 0.f); // 회전축
+		float vortexPull = 0.f; // 구심력
+
 		// Visual
 		Vector2 sizeRange= Vector2(1.0f, 1.0f);
 		Vector2 padding6;

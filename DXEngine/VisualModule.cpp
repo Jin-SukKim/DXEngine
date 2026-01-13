@@ -20,8 +20,8 @@ namespace DE {
 		if (data.contains("startColor")) startColor = JsonToVec4(data["startColor"]);
 		if (data.contains("endColor")) endColor = JsonToVec4(data["endColor"]);
 		if (data.contains("sizeRange")) sizeRange = JsonToVec2(data["sizeRange"]);
-		if (data.contains("Rotation")) {
-			auto& rot = data["Rotation"];
+		if (data.contains("rotation")) {
+			auto& rot = data["rotation"];
 			if (rot.contains("minRotation")) minRotation = JsonToVec3(rot["minRotation"]);
 			if (rot.contains("maxRotation")) maxRotation = JsonToVec3(rot["maxRotation"]);
 			if (rot.contains("minRotSpeed")) minRotSpeed = JsonToVec3(rot["minRotSpeed"]);

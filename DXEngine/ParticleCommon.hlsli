@@ -25,6 +25,11 @@ cbuffer ParticleConsts : register(b0)
 	float3 gravity; // 중력 or 지속적으로 작용하는 힘
 	float drag; // 공기저항
 
+	float3 vortexCenter;
+	float vortexStrength;
+	float3 vortexAxis;
+	float vortexPull;
+
 	// Visual
 	float2 sizeRange;
 	float2 padding6;
