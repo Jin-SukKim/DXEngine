@@ -153,10 +153,10 @@ namespace DE {
 			RenderBase::graphicsCommon.sampleStates.data());
 
 		RenderDepthOnly();
-		//RenderShadowMap();
+		RenderShadowMap();
 
 		// Shader들에서 공통으로 사용할 IBL용 Texture들 설정
-		//m_skybox->SetCommonSRVs(context);
+		m_skybox->SetCommonSRVs();
 
 		// 불투명 물체들 렌더링
 		RenderOpaqueObjects();
@@ -227,7 +227,7 @@ namespace DE {
 
 		// 그림자맵들도 공용 Texture들 이후에 추가
 		// 주의: 마지막 shadowDSV를 RenderTarget에서 해제한 후 설정
-		//renderer.SetShadowSRVs();
+		renderer.SetShadowSRVs();
 
 		// 거울 없이 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);

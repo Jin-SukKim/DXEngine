@@ -4,10 +4,10 @@
 #define MAX_LIGHTS 1
 #define MAX_SPOT 2
 #define MAX_POINT 1
-#define LIGHT_OFF 0x00
 #define LIGHT_DIRECTIONAL 0x01
 #define LIGHT_POINT 0x02
 #define LIGHT_SPOT 0x04
+#define LIGHT_OFF 0x08
 #define LIGHT_SHADOW 0x10
 
 // Sampler들은 모든 Shader에서 공통으로 사용
