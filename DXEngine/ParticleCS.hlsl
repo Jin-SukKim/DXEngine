@@ -5,7 +5,7 @@ Buffer<uint> activeCount : register(t0);
 ConsumeStructuredBuffer<Particle> inputParticles : register(u0);
 AppendStructuredBuffer<Particle> outputParticles : register(u1);
 
-float3 CalculateVortexForce(float3 pos, float3 axis) {
+float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
     float3 fromCenter = pos - vortexCenter;
 
     // 회전축에 투영된 벡터를 제거 -> 회전 평면 벡터 (회전축에 수직인 벡터)
@@ -20,7 +20,7 @@ float3 CalculateVortexForce(float3 pos, float3 axis) {
     // Tangent Force(회전) + Radial Force(구심력/원심력)
     // Strength: 회전 속도 및 방향 (+: 시계, -: 반시계)
     // Pull: 중심으로 당기는 힘 (+: 당김, -: 확산)
-    return (tangent * vortexStrength) - (dir * vortexPull);
+    return (tangent * vortexStrength) - (dir * pull);
 }
 
 [numthreads(256, 1, 1)]
@@ -37,9 +37,17 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         
         // 1. 물리 연산 (Physics)
 
-        // Vortex(소용돌이)
-        if (abs(vortexStrength) > 0.001 || abs(vortexPull) > 0.001) {
-            float3 vForce = CalculateVortexForce(p.position, normalize(vortexAxis));
+        // Vortex(소용돌이)        
+        // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
+        // 주의: p.life는 줄어드므로 (Max -> 0), 1 - (life/lifeMax) 해야 0 -> 1 로 흐름
+        float ageRatio = 1.0f - (p.life / p.lifeMax);
+
+        // 시간 흐름에 따라 Pull 힘을 보간 (Start -> End)
+        // 예: -20 (퍼짐) -> +50 (모임)
+        float currentPull = lerp(vortexPull[0], vortexPull[1], ageRatio);
+
+        if (abs(vortexStrength) > 0.001 || abs(currentPull) > 0.001) {
+            float3 vForce = CalculateVortexForce(p.position, normalize(vortexAxis), currentPull);
             p.velocity += vForce * dt;
         }
 
@@ -54,9 +62,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         p.position += p.velocity * dt;
 
         // 2. 시각 효과 (Visuals)
-        // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
-        // 주의: p.life는 줄어드므로 (Max -> 0), 1 - (life/lifeMax) 해야 0 -> 1 로 흐름
-        float ageRatio = 1.0f - (p.life / p.lifeMax);
+
 
         // 크기 보간 (Start -> End)
         // sizeRange.x = Start Size, sizeRange.y = End Size

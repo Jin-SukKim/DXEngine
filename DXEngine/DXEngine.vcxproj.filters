@@ -337,6 +337,7 @@
     <ClInclude Include="ParticleLoader.h" />
     <ClInclude Include="ParticleModuleFactory.h" />
     <ClInclude Include="ParticleContext.h" />
+    <ClInclude Include="FileWatcher.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -502,6 +503,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParticleModuleFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileWatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

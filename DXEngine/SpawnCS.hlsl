@@ -39,6 +39,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     // 랜덤 시드 생성 (인덱스 + 시간 조합)
     float2 seed = float2(float(dtID.x), time);
+    Particle p;
 
     // 랜덤 값 추출
     float3 rPos;
@@ -46,11 +47,35 @@ void main(uint3 dtID : SV_DispatchThreadID)
     rPos.y = rand_hash_signed(seed + float2(1, 1));
     rPos.z = rand_hash_signed(seed + float2(2, 2));
 
-    Particle p;
+    float3 rPosAbs = abs(rPos);
+    rPosAbs = lerp(spawnInnerRatio, 1.f, rPosAbs);
 
     // 1. Position 초기화 (Box Shape 기준)
-    // spawnVolume 범위 내 랜덤 위치
-    p.position = rPos * spawnVolume;
+    if (spawnShape == 0) // BOX
+    {
+        // 기존 박스 로직 (Hollow 포함)
+        float3 rPosAbs = abs(rPos);
+        rPosAbs = lerp(spawnInnerRatio, 1.0f, rPosAbs); // 안쪽 비우기
+        p.position = sign(rPos) * rPosAbs * spawnVolume;
+    }
+    else // SPHERE
+    {
+        // 1. 랜덤 방향(Direction) 구하기
+        // (단순히 normalize하면 모서리 쪽 확률이 높아지지만, 가벼운 연산엔 이정도면 충분)
+        float3 dir = normalize(rPos);
+        if (length(rPos) < 0.001) dir = float3(0, 1, 0); // 예외 처리
+
+        // 2. 거리(Radius) 결정 (Hollow 적용)
+        // 0~1 사이의 랜덤 거리 값 (rPos.x 등 아무거나 재활용)
+        float randomDist = abs(rPos.x);
+
+        // 안쪽 비율(innerRatio) ~ 1.0 사이로 거리 보간
+        float distScale = lerp(spawnInnerRatio, 1.0f, randomDist);
+
+        // 3. 최종 위치 = 방향 * 반지름(volume) * 거리비율
+        // spawnVolume의 x,y,z를 각각 곱해주면 "타원체(Ellipsoid)" 표현도 가능!
+        p.position = dir * (spawnVolume * distScale);
+    }
 
     // 2. Life 초기화
     // lifeRange.x ~ lifeRange.y 사이 랜덤

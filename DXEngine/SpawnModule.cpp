@@ -14,6 +14,8 @@ namespace DE {
 	{
 		ParticleModule::OnSpawn(ctx);
 		ctx.consts.spawnVolume = spawnVolume;
+		ctx.consts.spawnInnerRatio = spawnInnerRatio;
+		ctx.consts.spawnShape = spawnShape;
 		ctx.consts.lifeRange = lifeRange;
 		ctx.consts.maxParticles = maxParticles;
 	}
@@ -53,6 +55,12 @@ namespace DE {
 	void SpawnModule::LoadFromJson(const json& data)
 	{
 		if (data.contains("spawnVolume")) spawnVolume = JsonToVec3(data["spawnVolume"]);
+		if (data.contains("spawnInnerRatio")) spawnInnerRatio = data["spawnInnerRatio"];
+		if (data.contains("shape")) {
+			std::string shape = data["shape"];
+			if (shape == "Sphere") spawnShape = 1;
+			else if (shape == "Box") spawnShape = 0;
+		}
 		if (data.contains("spawnRate")) spawnRate = data["spawnRate"];
 		if (data.contains("particlesPerSpawn")) particlesPerSpawn = data["particlesPerSpawn"];
 		if (data.contains("maxParticles")) maxParticles = data["maxParticles"];

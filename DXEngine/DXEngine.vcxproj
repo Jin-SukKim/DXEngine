@@ -202,6 +202,7 @@
     <ClInclude Include="CopyFilter.h" />
     <ClInclude Include="DepthFilter.h" />
     <ClInclude Include="DetailGui.h" />
+    <ClInclude Include="FileWatcher.h" />
     <ClInclude Include="ParticleContext.h" />
     <ClInclude Include="ParticleLoader.h" />
     <ClInclude Include="ParticleModuleFactory.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="CopyFilter.cpp" />
     <ClCompile Include="DepthFilter.cpp" />
     <ClCompile Include="DetailGui.cpp" />
+    <ClCompile Include="FileWatcher.cpp" />
     <ClCompile Include="ParticleLoader.cpp" />
     <ClCompile Include="ParticleModuleFactory.cpp" />
     <ClCompile Include="SpawnModule.cpp" />

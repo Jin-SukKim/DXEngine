@@ -28,7 +28,7 @@ namespace DE {
 			if (vortex.contains("center")) vortexCenter = JsonToVec3(vortex["center"]);
 			if (vortex.contains("strength")) vortexStrength = vortex["strength"];
 			if (vortex.contains("axis")) vortexAxis = JsonToVec3(vortex["axis"]);
-			if (vortex.contains("pull")) vortexPull = vortex["pull"];
+			if (vortex.contains("pull")) vortexPull = JsonToVec2(vortex["pull"]);
 		}
 	}
 }
