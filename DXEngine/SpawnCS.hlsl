@@ -21,6 +21,15 @@ float rand_range(float2 seed, float minVal, float maxVal)
 {
     return minVal + (maxVal - minVal) * rand_hash(seed);
 }
+
+float3 rand3(float2 seed) {
+    return float3(
+        frac(sin(dot(seed, float2(12.9898, 78.233))) * 43758.5453),
+        frac(sin(dot(seed, float2(39.346, 11.135))) * 43758.5453),
+        frac(sin(dot(seed, float2(73.156, 52.235))) * 43758.5453)
+        );
+}
+
 [numthreads(256, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
@@ -65,6 +74,10 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // 4. Color & Size √ ±‚»≠
     p.color = startColor.rgb;
     p.size = sizeRange.x; // Start Size
+
+    float toRad = 3.141592f / 180.f;
+    p.rotation = lerp(minRotation, maxRotation, rand3(seed + 4.0)) * toRad;
+    p.rotSpeed = lerp(minRotSpeed, maxRotSpeed, rand3(seed + 5.0));
 
     outputParticles.Append(p);
 }

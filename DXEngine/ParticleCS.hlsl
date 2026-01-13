@@ -28,7 +28,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         // 위치 갱신
         p.position += p.velocity * dt;
 
-
         // 2. 시각 효과 (Visuals)
         // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
         // 주의: p.life는 줄어드므로 (Max -> 0), 1 - (life/lifeMax) 해야 0 -> 1 로 흐름
@@ -40,6 +39,8 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 
         // 색상 보간 (Start -> End)
         p.color = lerp(startColor.rgb, endColor.rgb, ageRatio);
+
+        p.rotation += p.rotSpeed * dt;
 
         // 결과 저장
         outputParticles.Append(p);

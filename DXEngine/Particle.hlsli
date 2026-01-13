@@ -9,6 +9,8 @@ struct Particle
     float life;
     float lifeMax;
     float size;
+    float3 rotation;
+    float3 rotSpeed;
 };
 
 #endif // __PARTICLE_HLSLI__

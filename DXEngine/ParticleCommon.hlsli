@@ -30,6 +30,15 @@ cbuffer ParticleConsts : register(b0)
 	float2 padding6;
 	float4 startColor;
 	float4 endColor;
+
+	float3 minRotation;
+	float padding7;
+	float3 maxRotation;
+	float padding8;
+	float3 minRotSpeed;
+	float padding9;
+	float3 maxRotSpeed;
+	float padding10;
 };
 
 struct SortElement

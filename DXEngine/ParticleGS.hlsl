@@ -6,6 +6,7 @@ struct GSInput
     float3 color : COLOR;
     float life : PSIZE0;
     float size : PSIZE1;
+    float rotation : PSIZE2;
 };
 
 struct ParticlePSInput
@@ -17,6 +18,16 @@ struct ParticlePSInput
     float3 color : COLOR;
     uint primID : SV_PrimitiveID;
 };
+
+float2x2 GetRotationMatrix(float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+
+    return float2x2(
+        c, -s,
+        s, c
+    );
+}
 
 [maxvertexcount(4)]
 void main(
@@ -48,12 +59,15 @@ void main(
         float2(1.f, 0.f)
     };
 
+    float2x2 rotMatrix = GetRotationMatrix(input[0].rotation);
+
     [unroll]
     for (int i = 0; i < 4; ++i)
     {
         // View space에서 billboard 위치 결정
         float4 newPos = viewPos;
-        newPos.xy += offsets[i] * hw;
+        float2 offset = mul(rotMatrix, offsets[i]);
+        newPos.xy += offset * hw;
 
         // TODO: 만약 2D 회전을 넣고 싶다면 여기서 offsets[i]를 회전 행렬로 돌리기
 
