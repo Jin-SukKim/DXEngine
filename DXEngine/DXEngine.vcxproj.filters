@@ -316,7 +316,28 @@
     <ClInclude Include="IndirectArgsBuffer.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="BitonicSort.h" />
+    <ClInclude Include="ParticleModule.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderModule.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="SpawnModule.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="VisualModule.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ForceModule.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BitonicSort.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleLoader.h" />
+    <ClInclude Include="ParticleModuleFactory.h" />
+    <ClInclude Include="ParticleContext.h" />
+    <ClInclude Include="FileWatcher.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -460,7 +481,31 @@
     <ClCompile Include="ComputeShader.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="SpawnModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="VisualModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
     <ClCompile Include="BitonicSort.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleModuleFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileWatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

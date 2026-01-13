@@ -37,7 +37,7 @@ namespace DE {
 		
 		// ConstantBuffer는 보통 Update에서 값을 매 프레임 바꿔주므로 CPU에서 쓰기, GPU에서 읽기가 가능한 Buffer를 생성
 		template<typename T_CONSTANT>
-		static void CreateConstantBuffer(ComPtr<ID3D11Device>& device, const T_CONSTANT& constantData, ComPtr<ID3D11Buffer>& constantBuffer) {
+		static void CreateConstantBuffer(ID3D11Device* device, const T_CONSTANT& constantData, ComPtr<ID3D11Buffer>& constantBuffer) {
 			D3D11_BUFFER_DESC desc = {};
 			ZeroMemory(&desc, sizeof(desc));
 			desc.Usage = D3D11_USAGE_DYNAMIC; // CPU에서 쓰기, GPU에서 읽기 가능

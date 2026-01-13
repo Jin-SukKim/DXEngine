@@ -202,7 +202,13 @@
     <ClInclude Include="CopyFilter.h" />
     <ClInclude Include="DepthFilter.h" />
     <ClInclude Include="DetailGui.h" />
+    <ClInclude Include="FileWatcher.h" />
+    <ClInclude Include="ParticleContext.h" />
+    <ClInclude Include="ParticleLoader.h" />
+    <ClInclude Include="ParticleModuleFactory.h" />
+    <ClInclude Include="SpawnModule.h" />
     <ClInclude Include="FogEffect.h" />
+    <ClInclude Include="ForceModule.h" />
     <ClInclude Include="GraphicsCommon.h" />
     <ClInclude Include="GraphicsPSO.h" />
     <ClInclude Include="Gui.h" />
@@ -214,10 +220,12 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="ParticleModule.h" />
     <ClInclude Include="ParticleProperties.h" />
     <ClInclude Include="ParticleEditor.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="RenderModule.h" />
     <ClInclude Include="SampleScene.h" />
     <ClInclude Include="SkyboxActor.h" />
     <ClInclude Include="D3D11Utils.h" />
@@ -247,6 +255,7 @@
     <ClInclude Include="TreeBillboard.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VisualModule.h" />
     <ClInclude Include="WindowUtils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -262,7 +271,12 @@
     <ClCompile Include="CopyFilter.cpp" />
     <ClCompile Include="DepthFilter.cpp" />
     <ClCompile Include="DetailGui.cpp" />
+    <ClCompile Include="FileWatcher.cpp" />
+    <ClCompile Include="ParticleLoader.cpp" />
+    <ClCompile Include="ParticleModuleFactory.cpp" />
+    <ClCompile Include="SpawnModule.cpp" />
     <ClCompile Include="FogEffect.cpp" />
+    <ClCompile Include="ForceModule.cpp" />
     <ClCompile Include="GraphicsCommon.cpp" />
     <ClCompile Include="GraphicsPSO.cpp" />
     <ClCompile Include="Gui.cpp" />
@@ -273,10 +287,12 @@
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="ParticleModule.cpp" />
     <ClCompile Include="ParticleProperties.cpp" />
     <ClCompile Include="ParticleEditor.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="PostProcess.cpp" />
+    <ClCompile Include="RenderModule.cpp" />
     <ClCompile Include="SampleScene.cpp" />
     <ClCompile Include="SkyboxActor.cpp" />
     <ClCompile Include="D3D11Utils.cpp" />
@@ -303,6 +319,7 @@
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="SampleActor.cpp" />
     <ClCompile Include="TreeBillboard.cpp" />
+    <ClCompile Include="VisualModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">

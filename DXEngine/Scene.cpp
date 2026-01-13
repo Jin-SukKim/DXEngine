@@ -26,7 +26,7 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = renderer.GetContext();
 
 		// 공통으로 쓰이는 Constant buffer
-		D3D11Utils::CreateConstantBuffer(device, m_globalConstsCPU, m_globalConstsGPU);
+		D3D11Utils::CreateConstantBuffer(device.Get(), m_globalConstsCPU, m_globalConstsGPU);
 
 		// Scene 공통 Actor
 		{

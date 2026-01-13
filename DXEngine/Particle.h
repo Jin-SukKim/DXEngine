@@ -5,40 +5,55 @@ namespace DE {
 	struct Particle {
 		Vector3 position = Vector3(0.f, 0.f, 0.f);
 		Vector3 velocity = Vector3(0.f, 0.f, 0.f);
-		Vector3 color = Vector3(0.f, 0.f, 0.f);
+		Vector4 color = Vector4(0.f);
 		float life = -1.f;
 		float lifeMax = 0.f;
 		float size = 1.f;
+		Vector3 rotation = Vector3(0.f);
+		Vector3 rotSpeed = Vector3(0.f);
 	};
 
-	struct ParticleConsts {
-		float dt = 0.f;              // 델타 타임
-		float time = 0.f;            // 경과 시간 (랜덤 시드용)
-		UINT spawnCount = 0;       // 이번 프레임에 생성할 개수
-		UINT maxParticles = 0;     // 최대 파티클 수
+    struct ParticleConsts {
+        float dt;
+        float time;
+        UINT spawnCount;
+        UINT maxParticles;
 
-		// Spawn
-		Vector3 spawnVolume = Vector3(0.f, 0.f, 0.f); // 생성 범위
-		float lifeTimeBase = 0.f; // 기본 수명
+        Vector3 spawnVolume;
+        float spawnInnerRatio;
+        Vector2 lifeRange;
+        int spawnShape = 0; // 0: Box, 1: Sphere
+        float padding1;
 
-		float lifeTimeRand = 0.f; // 랜덤 추가 생명
-		Vector3 velocityBase = Vector3(0.f, 0.f, 0.f); // 기본 방향 속도
+        Vector3 velocity;
+        float padding2;
+        Vector2 speedRange;
+        Vector2 padding3;
 
-		Vector3 velocityRand = Vector3(0.f, 0.f, 0.f); // 랜덤 추가 방향 및 속도
-		float velocity = 0.f; // 속도
+        Vector3 randomDir;
+        float drag;
 
-		// Physics
-		Vector3 gravity = Vector3(0.f, 0.f, 0.f); // 중력 or 지속적으로 작용하는 힘
-		float drag = 0.f; // 공기저항
+        Vector3 gravity;
 
-		// Visual
-		Vector2 minMaxSize = Vector2(0.f, 0.f);
-		Vector2 minMaxRotateSpeed;
+        float vortexStrength;
+        Vector3 vortexCenter;
+        float padding4;
+        Vector3 vortexAxis;
+        float padding5;
+        Vector2 vortexPull;
 
-		Vector3 startColor = Vector3(0.f, 0.f, 0.f);
-		float padding1 = 0.f;
+        Vector2 sizeRange;
 
-		Vector3 endColor = Vector3(0.f, 0.f, 0.f);
-		float padding2 = 0.f;
-	};
+        Vector4 startColor;
+        Vector4 endColor;
+
+        Vector3 minRotation;
+        float padding6;
+        Vector3 maxRotation;
+        float padding7;
+        Vector3 minRotSpeed;
+        float padding8;
+        Vector3 maxRotSpeed;
+        float padding9;
+    };
 }
