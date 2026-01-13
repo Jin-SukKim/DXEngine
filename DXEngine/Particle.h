@@ -19,6 +19,8 @@ namespace DE {
         UINT spawnCount;
         UINT maxParticles;
 
+        Vector3 localPos;
+        float padding0;
         Vector3 spawnVolume;
         float spawnInnerRatio;
         Vector2 lifeRange;

@@ -76,6 +76,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
         // spawnVolume의 x,y,z를 각각 곱해주면 "타원체(Ellipsoid)" 표현도 가능!
         p.position = dir * (spawnVolume * distScale);
     }
+    p.position += localPos;
 
     // 2. Life 초기화
     // lifeRange.x ~ lifeRange.y 사이 랜덤

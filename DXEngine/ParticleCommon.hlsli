@@ -9,10 +9,12 @@ cbuffer ParticleConsts : register(b0)
     uint spawnCount;
     uint maxParticles;
 
+    float3 localPos;
+    float padding0;
     float3 spawnVolume;
     float spawnInnerRatio;
     float2 lifeRange;
-    int spawnShape = 0; // 0: Box, 1: Sphere
+    int spawnShape; // 0: Box, 1: Sphere
     float padding1;
 
     float3 velocity;

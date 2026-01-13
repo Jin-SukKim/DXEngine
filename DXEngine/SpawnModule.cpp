@@ -13,6 +13,7 @@ namespace DE {
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
+		ctx.consts.localPos = localPos;
 		ctx.consts.spawnVolume = spawnVolume;
 		ctx.consts.spawnInnerRatio = spawnInnerRatio;
 		ctx.consts.spawnShape = spawnShape;
@@ -54,6 +55,7 @@ namespace DE {
 
 	void SpawnModule::LoadFromJson(const json& data)
 	{
+		if (data.contains("localPos")) localPos = JsonToVec3(data["localPos"]);
 		if (data.contains("spawnVolume")) spawnVolume = JsonToVec3(data["spawnVolume"]);
 		if (data.contains("spawnInnerRatio")) spawnInnerRatio = data["spawnInnerRatio"];
 		if (data.contains("shape")) {

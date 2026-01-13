@@ -334,10 +334,18 @@
     <ClInclude Include="BitonicSort.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleLoader.h" />
-    <ClInclude Include="ParticleModuleFactory.h" />
-    <ClInclude Include="ParticleContext.h" />
-    <ClInclude Include="FileWatcher.h" />
+    <ClInclude Include="FileWatcher.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleContext.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleLoader.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleModuleFactory.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -499,14 +507,14 @@
     <ClCompile Include="BitonicSort.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="FileWatcher.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
     <ClCompile Include="ParticleLoader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ParticleModuleFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileWatcher.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

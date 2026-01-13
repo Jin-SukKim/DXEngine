@@ -16,6 +16,7 @@ namespace DE {
 	{
 		ground = AddObject<SquareActor>(L"Ground");
  		particleEmitter = ParticleLoader::Load(L"Fire.json");
+ 		particleEmitter2 = ParticleLoader::Load(L"Smoke.json");
  		//particleEmitter = ParticleLoader::Load(L"VortexAura.json");
 		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
 		//particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
@@ -33,13 +34,15 @@ namespace DE {
 		Scene::Initialize();
 
 		particleEmitter->Initialize();
+		particleEmitter2->Initialize();
 	}
 
-	void ParticleEditor::Update(const float& deltaTime)
+	void ParticleEditor::Update(const float& dt)
 	{
-		Scene::Update(deltaTime);
+		Scene::Update(dt);
 
-		particleEmitter->Update(deltaTime);
+		particleEmitter->Update(dt);
+		particleEmitter2->Update(dt);
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
@@ -47,8 +50,6 @@ namespace DE {
 	void ParticleEditor::UpdateGUI()
 	{
 		Scene::UpdateGUI();
-
-		particleEmitter->UpdateGui();
 	}
 
 	void ParticleEditor::Render()
@@ -56,5 +57,6 @@ namespace DE {
 		Scene::Render();
 		
 		particleEmitter->Render(m_globalConstsGPU);
+		particleEmitter2->Render(m_globalConstsGPU);
 	}
 }

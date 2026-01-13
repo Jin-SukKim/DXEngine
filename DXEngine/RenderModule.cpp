@@ -39,13 +39,13 @@ namespace DE {
 		switch (blendMode)
 		{
 		case BlendMode::Additive:
-			RenderBase::graphicsCommon.particle.animPSO.blendState = RenderBase::graphicsCommon.accumulateBS;
+			m_blendState = RenderBase::graphicsCommon.accumulateBS.Get();
 			break;
 		case BlendMode::AlphaBlend:
-			RenderBase::graphicsCommon.particle.animPSO.blendState = RenderBase::graphicsCommon.alphaBS;
+			m_blendState = RenderBase::graphicsCommon.alphaBS.Get();
 			break;
 		case BlendMode::Opaque:
-			RenderBase::graphicsCommon.particle.animPSO.blendState = nullptr;
+			m_blendState = nullptr;
 			break;
 		}
 	}
@@ -66,6 +66,7 @@ namespace DE {
 
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 		// IndirectDraw
 		ID3D11ShaderResourceView* sortSRVs[] = {
 			ctx.particleSRV,

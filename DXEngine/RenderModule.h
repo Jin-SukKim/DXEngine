@@ -23,6 +23,7 @@ public:
 protected:
 	BitonicSort m_sort;
 	ComputeShader m_InitSortKeysCS;
+	ID3D11BlendState* m_blendState = NULL;
 };
 
 class BillboardRenderModule : public RenderModule
