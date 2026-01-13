@@ -13,7 +13,7 @@ StructuredBuffer<SortElement> sortedElements : register(t1);
 struct GSInput
 {
     float4 position : SV_POSITION;
-    float3 color : COLOR;
+    float4 color : COLOR;
     float life : PSIZE0;
     float size : PSIZE1;
     float rotation : PSIZE2;

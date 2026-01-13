@@ -69,7 +69,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         p.size = lerp(sizeRange.x, sizeRange.y, ageRatio);
 
         // 색상 보간 (Start -> End)
-        p.color = lerp(startColor.rgb, endColor.rgb, ageRatio);
+        p.color = lerp(startColor, endColor, ageRatio);
 
         p.rotation += p.rotSpeed * dt;
 

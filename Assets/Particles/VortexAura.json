@@ -3,23 +3,19 @@
   "Spawn": {
     "shape": "Sphere",
     "spawnVolume": [ 0.3, 0.01, 0.3 ],
-    "spawnInnerRatio": 1.0,
+    "spawnInnerRatio": 0.9,
     "spawnRate": 100.0,
     "particlesPerSpawn": 10,
     "maxParticles": 2048,
     "lifeRange": [ 0.5, 0.55 ]
   },
   "Visual": {
-    "startColor": [ 0.2, 0.8, 1.0, 1.0 ],
+    "startColor": [ 1.0, 0.8, 1.0, 1.0 ],
     "endColor": [ 0.0, 0.1, 0.5, 0.0 ],
     "sizeRange": [ 0.15, 0.01 ],
     "rotation": {
       "minRotSpeed": [ -2.0, -2.0, -2.0 ],
       "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
-    },
-    "trace": {
-      "enabled": true,
-      "scale": 0.5
     }
   },
   "Force": {

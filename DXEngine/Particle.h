@@ -5,7 +5,7 @@ namespace DE {
 	struct Particle {
 		Vector3 position = Vector3(0.f, 0.f, 0.f);
 		Vector3 velocity = Vector3(0.f, 0.f, 0.f);
-		Vector3 color = Vector3(0.f, 0.f, 0.f);
+		Vector4 color = Vector4(0.f);
 		float life = -1.f;
 		float lifeMax = 0.f;
 		float size = 1.f;

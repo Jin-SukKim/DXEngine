@@ -19,6 +19,14 @@ namespace DE {
 		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
 	}
 
+	ParticleEmitter::~ParticleEmitter()
+	{
+		// Emitter가 파괴될때 Callback 감시목록에서 제외
+		if (m_watcherID > -1) {
+			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+		}
+	}
+
 	void ParticleEmitter::Initialize()
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
@@ -51,6 +59,12 @@ namespace DE {
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
 	{
 		m_consts.SetCpuData(config);
+	}
+
+	void ParticleEmitter::SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id)
+	{
+		m_jsonPath = path;
+		m_watcherID = id;
 	}
 
 	void ParticleEmitter::InitializeShaders(ID3D11Device* device)

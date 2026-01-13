@@ -7,13 +7,14 @@
 #include "IndirectArgsBuffer.h"
 #include "BitonicSort.h"
 #include "ParticleModule.h"
+#include "FileWatcher.h"
 
 namespace DE {
 	class ParticleEmitter : public Actor
 	{
 	public:
 		ParticleEmitter(const std::wstring& name);
-		~ParticleEmitter() override = default;
+		~ParticleEmitter() override;
 
 		void Initialize() override;
 		void Update(const float& dt) override;
@@ -24,8 +25,11 @@ namespace DE {
 		void AddModule(std::unique_ptr<ParticleModule>&& module);
 		template<typename T>
 		T* GetModule();
+		
+		void ClearModules() { m_modules.clear(); }
 
 		void SetParticleConfig(const ParticleConsts& config);
+		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 
 		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
@@ -62,6 +66,9 @@ namespace DE {
 		float m_time = 0.0f;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;
+
+		std::wstring m_jsonPath;
+		FileWatcher::CallbackID m_watcherID = -1;
 	};
 
 	template<typename T>

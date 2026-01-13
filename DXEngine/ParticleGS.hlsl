@@ -3,7 +3,7 @@
 struct GSInput
 {
     float4 pos : SV_POSITION;
-    float3 color : COLOR;
+    float4 color : COLOR;
     float life : PSIZE0;
     float size : PSIZE1;
     float rotation : PSIZE2;
@@ -15,7 +15,7 @@ struct ParticlePSInput
     float4 posWorld : POSITION0;
     float4 center : POSITION1;
     float2 texcoord : TEXCOORD;
-    float3 color : COLOR;
+    float4 color : COLOR;
     uint primID : SV_PrimitiveID;
 };
 

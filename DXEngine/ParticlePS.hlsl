@@ -6,7 +6,7 @@ struct ParticlePSInput
     float4 posWorld : POSITION0;
     float4 center : POSITION1;
     float2 texCoord : TEXCOORD;
-    float3 color : COLOR;
+    float4 color : COLOR;
     uint primID : SV_PrimitiveID;
 };
 
@@ -22,5 +22,5 @@ float4 main(ParticlePSInput input) : SV_TARGET
     //return float4(input.color.rgb * scale, 1.0);
 
     // [수정 후] RGB에도 scale을 곱하고(Pre-multiplied), Alpha에도 scale을 적용
-    return float4(input.color.rgb * scale, scale);
+    return float4(input.color.rgb * scale, input.color.a);
 }

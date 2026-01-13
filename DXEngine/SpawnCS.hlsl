@@ -97,7 +97,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     p.velocity = finalDir * speed;
 
     // 4. Color & Size √ ±‚»≠
-    p.color = startColor.rgb;
+    p.color = startColor;
     p.size = sizeRange.x; // Start Size
 
     float toRad = 3.141592f / 180.f;

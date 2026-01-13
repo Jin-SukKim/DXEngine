@@ -7,7 +7,8 @@ namespace DE {
 
 std::unique_ptr<ParticleEmitter> ParticleLoader::Load(const std::wstring& filePath)
 {
-	std::ifstream file(presetPath + filePath);
+	std::wstring fullPath = presetPath + filePath;
+	std::ifstream file(fullPath);
 	if (!file.is_open())
 		return nullptr;
 
@@ -22,7 +23,37 @@ std::unique_ptr<ParticleEmitter> ParticleLoader::Load(const std::wstring& filePa
 
 	auto emitter = std::make_unique<ParticleEmitter>(name);
 
-	for (auto& [key, value] : j.items()) {
+	ApplyJsonToEmitter(emitter.get(), j);
+
+	// Hot-Reload µî·Ï
+	ParticleEmitter* rawPtr = emitter.get();
+	std::wstring absPath = std::filesystem::absolute(fullPath);
+
+	auto callback = [rawPtr, fullPath]() {
+		std::ifstream reloadFile(fullPath);
+
+		if (reloadFile.is_open()) {
+			json newJson;
+			reloadFile >> newJson;
+			ApplyJsonToEmitter(rawPtr, newJson);
+			std::wcout << L"Reloaded: " << fullPath << std::endl;
+		}
+
+		rawPtr->Initialize();
+	};
+
+	auto id = FileWatcher::Get().Register(fullPath, callback);
+	emitter->SetHotReloadInfo(fullPath, id);
+
+	return std::move(emitter);
+}
+void ParticleLoader::ApplyJsonToEmitter(ParticleEmitter* emitter, const json& jsonData)
+{
+	if (!emitter) return;
+
+	emitter->ClearModules();
+
+	for (auto& [key, value] : jsonData.items()) {
 		if (key == "name")
 			continue;
 
@@ -32,7 +63,5 @@ std::unique_ptr<ParticleEmitter> ParticleLoader::Load(const std::wstring& filePa
 			emitter->AddModule(std::move(module));
 		}
 	}
-
-	return std::move(emitter);
 }
 }
