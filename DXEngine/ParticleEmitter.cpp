@@ -104,7 +104,9 @@ namespace DE {
 			dt,
 			m_time,
 			m_consts,
-			m_consume
+			m_consume,
+			m_append.GetSRV(),
+			m_countSRV.Get()
 		};
 
 		for (auto& mod : m_modules)
@@ -166,12 +168,12 @@ namespace DE {
 			context,
 			m_consts.GetCpu(),
 			m_append.GetSRV(),
-			m_countSRV.Get(),
 			m_drawInstancedArgs.GetBuffer()
 		};
 
 		for (auto& mod : m_modules)
 			mod->OnRender(renderCtx);
+
 
 		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);

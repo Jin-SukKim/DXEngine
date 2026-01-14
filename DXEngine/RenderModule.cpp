@@ -17,10 +17,8 @@ namespace DE {
 		SetBlendState();
 	}
 
-	void RenderModule::OnRender(const RenderContext& ctx)
+	void RenderModule::OnUpdate(const SimulationContext& ctx)
 	{
-		ParticleModule::OnRender(ctx);
-
 		ID3D11UnorderedAccessView* uav[1] = { m_sort.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
@@ -31,6 +29,11 @@ namespace DE {
 		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.consts.maxParticles + 1023) / 1024, 1, 1);
 
 		m_sort.Sort(ctx.context);
+	}
+
+	void RenderModule::OnRender(const RenderContext& ctx)
+	{
+		ParticleModule::OnRender(ctx);
 	}
 
 	void RenderModule::SetBlendState()

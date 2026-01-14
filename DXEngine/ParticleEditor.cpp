@@ -23,14 +23,7 @@ namespace DE {
 		//effect = std::make_unique<ParticleSystem>(L"Effect");
 		effect->AddEmitter(std::move(particleEmitter));
 		effect->AddEmitter(std::move(particleEmitter2));
- 		
-		//particleEmitter = ParticleLoader::Load(L"VortexAura.json");
-		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
-		//particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
-		//particleEmitter->AddModule(ParticleModuleFactory::Create("Visual"));
-		//particleEmitter->AddModule(ParticleModuleFactory::Create("Force"));
-		//particleEmitter->AddModule(ParticleModuleFactory::Create("BillboardRender"));
-	}
+ 	}
 
 	ParticleEditor::~ParticleEditor()
 	{
@@ -39,19 +32,14 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
+		//effect->Initialize();
 		effect->OnSpawn();	
-		//particleEmitter->Initialize();
-		//particleEmitter2->Initialize();
-
-		//particleEmitter->OnSpawn();
-		//particleEmitter2->OnSpawn();
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
-		//particleEmitter->Update(dt);
-		//particleEmitter2->Update(dt);
+		//effect->Update(dt);
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
 
@@ -65,9 +53,6 @@ namespace DE {
 		Scene::Render();
 		//RenderBase& renderer = *GET_SINGLE(RenderBase);
 		//renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
-
-		//particleEmitter->Render();
-		//particleEmitter2->Render();
-		
+		//effect->Render();
 	}
 }
