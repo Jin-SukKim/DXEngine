@@ -27,8 +27,9 @@
     "drag": 0.5,
     "vortex": {
       "strength": 15.0,
-      "pull": [-15, 100],
+      "pull": [ -15, 100 ],
       "center": [ 0.0, 0.0, 0.0 ],
+      "vortexFalloff": 1.0,
       "axis": [ 0.0, 1.0, 0.0 ],
       "scale": 1000.0,
       "mode": 0

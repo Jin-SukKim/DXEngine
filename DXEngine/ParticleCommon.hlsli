@@ -43,7 +43,7 @@ cbuffer ParticleConsts : register(b4)
     float3 vortexCenter;
     float padding4;
     float3 vortexAxis;
-    float padding5;
+    float vortexFalloff;
     float2 vortexPull;
     float2 sizeRange;
 

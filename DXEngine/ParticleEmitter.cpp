@@ -124,6 +124,9 @@ namespace DE {
 		// GPU 파티클 업데이트 파이프라인 실행
 		UpdateArgsBuffers(context.Get());
 		UpdateSimulationStage(context.Get());
+
+		// 다음 프레임을 위한 버퍼 교환 
+		swap(m_consume, m_append);
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
@@ -171,16 +174,12 @@ namespace DE {
 		RenderContext renderCtx = {
 			context,
 			m_consts.GetCpu(),
-			m_append.GetSRV(),
+			m_consume.GetSRV(),
 			m_drawInstancedArgs.GetBuffer()
 		};
 
 		for (auto& mod : m_modules)
 			mod->OnRender(renderCtx);
-
-
-		// 다음 프레임을 위한 버퍼 교환 
-		swap(m_consume, m_append);
 	}
 
 	void ParticleEmitter::AddModule(std::unique_ptr<ParticleModule>&& module) {

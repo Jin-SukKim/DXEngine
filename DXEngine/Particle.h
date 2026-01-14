@@ -41,7 +41,7 @@ namespace DE {
         Vector3 vortexCenter;
         float padding4;
         Vector3 vortexAxis;
-        float padding5;
+        float vortexFalloff;
         Vector2 vortexPull;
 
         Vector2 sizeRange;

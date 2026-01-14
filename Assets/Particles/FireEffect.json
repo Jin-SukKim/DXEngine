@@ -7,7 +7,7 @@
   },
   "Looping": true,
   "Duration": 10.0,
-  "PlayRate": 0.03,
+  "PlayRate": 0.1,
   "PreWarmTime": 3.0,
   "State": "Play",
   "Emitters": [

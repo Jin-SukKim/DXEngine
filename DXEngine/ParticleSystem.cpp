@@ -155,16 +155,18 @@ namespace DE {
 	void ParticleSystem::ExecutePreWarm()
 	{
 		if (m_preWarmTime <= 0.f) return;
-		
-		// 고정 프레임(60FPS)로 시뮬레이션 반복 수행
-		static float step = 1.f / 60.f;
+
+		// 고정 프레임(60FPS)으로 시뮬레이션
+		static const float step = 1.f / 60.f;
 		float t = 0.f;
 
-		while (t < m_preWarmTime) {
-			for (auto& emitter : m_emitters) 
-				emitter->Update(t, m_time);
+		while (t < m_preWarmTime)
+		{
+			m_time += step;
 			t += step;
-			m_time += t;
+
+			for (auto& emitter : m_emitters)
+				emitter->Update(step, m_time);
 		}
 	}
 }

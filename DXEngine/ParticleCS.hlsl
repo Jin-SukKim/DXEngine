@@ -15,11 +15,14 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 
     float3 dir = normalize(projected);
     float3 tangent = cross(axis, dir); // 회전 방향
-    
+
+    // 거리 감쇠: 1/(1+dist²) - 중심에서 멀어질수록 힘이 약해짐
+     float falloff = 1.0f / (1.0f + dist * dist * vortexFalloff);
+
     // Tangent Force(회전) + Radial Force(구심력/원심력)
     // Strength: 회전 속도 및 방향 (+: 시계, -: 반시계)
     // Pull: 중심으로 당기는 힘 (+: 당김, -: 확산)
-    return (tangent * vortexStrength) - (dir * pull);
+    return ((tangent * vortexStrength) - (dir * pull)) * falloff;
 }
 
 [numthreads(256, 1, 1)]
@@ -46,16 +49,18 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         float currentPull = lerp(vortexPull[0], vortexPull[1], ageRatio);
 
         if (abs(vortexStrength) > 0.001 || abs(currentPull) > 0.001) {
-            float3 vForce = CalculateVortexForce(p.position, normalize(vortexAxis), currentPull);
+            float3 normalizedAxis = normalize(vortexAxis);
+            float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
             p.velocity += vForce * dt;
         }
+
 
         // 중력 적용
         p.velocity += gravity * dt;
 
         // 공기 저항 (Drag) 적용
         // drag 값이 클수록 속도가 0에 빠르게 수렴
-        p.velocity *= max(0.0f, 1.0f - drag * dt);
+        p.velocity *= 1.0f / (1.0f + drag * dt);
 
         // 위치 갱신
         p.position += p.velocity * dt;
@@ -70,7 +75,8 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         // 색상 보간 (Start -> End)
         p.color = lerp(startColor, endColor, ageRatio);
 
-        p.rotation += p.rotSpeed * dt;
+        //p.rotation += p.rotSpeed * dt;
+        p.rotation = fmod(p.rotation + p.rotSpeed * dt, 6.28318530718f);
 
         // 결과 저장
         outputParticles.Append(p);

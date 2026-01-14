@@ -14,6 +14,7 @@ namespace DE {
 		ctx.consts.vortexCenter = vortexCenter;
 		ctx.consts.vortexStrength = vortexStrength;
 		ctx.consts.vortexAxis = vortexAxis;
+		ctx.consts.vortexFalloff = vortexFalloff;
 		ctx.consts.vortexPull = vortexPull;
 	}
 	void ForceModule::LoadFromJson(const json& data)
@@ -28,6 +29,7 @@ namespace DE {
 			if (vortex.contains("center")) vortexCenter = JsonToVec3(vortex["center"]);
 			if (vortex.contains("strength")) vortexStrength = vortex["strength"];
 			if (vortex.contains("axis")) vortexAxis = JsonToVec3(vortex["axis"]);
+			if (vortex.contains("vortexFalloff")) vortexFalloff = vortex["vortexFalloff"];
 			if (vortex.contains("pull")) vortexPull = JsonToVec2(vortex["pull"]);
 		}
 	}
