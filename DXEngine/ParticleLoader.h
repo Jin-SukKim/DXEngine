@@ -50,7 +50,8 @@ std::unique_ptr<T> ParticleLoader::Load(const std::wstring& filePath) {
 		rawPtr->Initialize();
 	};
 
-	FileWatcher::Get().Register(fullPath, callback);
+	auto id = FileWatcher::Get().Register(fullPath, callback);
+	instance->SetHotReloadInfo(fullPath, id);
 
 	return std::move(instance);
 }

@@ -29,6 +29,7 @@ namespace DE {
 		void ClearModules() { m_modules.clear(); }
 
 		void SetParticleConfig(const ParticleConsts& config);
+		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 
 		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
@@ -67,6 +68,10 @@ namespace DE {
 		float m_time = 0.0f;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;
+
+		// Hot-Reload °ü¸®
+		std::wstring m_jsonPath;
+		FileWatcher::CallbackID m_watcherID = 0;
 	};
 
 	template<typename T>

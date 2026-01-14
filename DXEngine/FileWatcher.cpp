@@ -4,11 +4,11 @@
 namespace DE {
 	namespace fs = std::filesystem;
 
-	void FileWatcher::Register(const std::wstring& path, Callback callback)
+	FileWatcher::CallbackID FileWatcher::Register(const std::wstring& path, Callback callback)
 	{
 		if (!fs::exists(path)) {
 			std::wcout << L"[FileWatcher] Warning: File not found: " << path << std::endl;
-			return;
+			return 0;
 		}
 
 		std::wstring absPath = fs::absolute(path).wstring();
@@ -17,7 +17,28 @@ namespace DE {
 			m_watchedFiles[absPath].lastWriteTime = fs::last_write_time(absPath);
 		}
 		
-		m_watchedFiles[absPath].callbacks.emplace_back(callback);
+		CallbackID id = ++m_nextID;
+		m_watchedFiles[absPath].callbacks.emplace_back(CallbackEntity{ id, callback });
+		return id;
+	}
+
+	void FileWatcher::Unregister(const std::wstring& path, CallbackID id)
+	{
+		if (!fs::exists(path))
+			return;
+
+		std::wstring absPath = fs::absolute(path).wstring();
+
+		auto it = m_watchedFiles.find(absPath);
+		if (it != m_watchedFiles.end()) {
+			auto& list = it->second.callbacks;
+			list.erase(std::remove_if(list.begin(), list.end(), 
+					[id](const CallbackEntity& entity) { return entity.id == id; }), list.end());
+
+			// callback이 비어있다면 unordered_map의 element를 삭제
+			if (list.empty())
+				m_watchedFiles.erase(it);
+		}
 	}
 
 	void FileWatcher::Update()
@@ -32,9 +53,9 @@ namespace DE {
 					file.lastWriteTime = currentTime;
 					std::wcout << L"[FileWatcher] Detect Change : " << path << std::endl;
 
-					for (auto& callback : file.callbacks) {
-						if (callback)
-							callback();
+					for (auto& entity : file.callbacks) {
+						if (entity.callback)
+							entity.callback();
 					}
 				}
 			} 

@@ -20,6 +20,8 @@ namespace DE {
 
 	ParticleEmitter::~ParticleEmitter()
 	{
+		if (m_watcherID)
+			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
 	}
 
 	void ParticleEmitter::Initialize()
@@ -58,6 +60,12 @@ namespace DE {
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
 	{
 		m_consts.SetCpuData(config);
+	}
+
+	void ParticleEmitter::SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id)
+	{
+		m_jsonPath = path;
+		m_watcherID = id;
 	}
 
 	void ParticleEmitter::InitializeShaders(ID3D11Device* device)

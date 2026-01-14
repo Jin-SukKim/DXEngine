@@ -28,18 +28,9 @@ template<>
 void ParticleLoader::ApplyJsonTo<ParticleSystem>(ParticleSystem* target, const json& jsonData) {
 	if (!target) return;
 
-	target->ClearEmitters();
+	target->LoadFromJson(jsonData);
 
-	for (auto& [key, value] : jsonData.items()) {
-		if (key == "name")
-			continue;
-
-		std::wstring name(key.begin(), key.end());
-		auto system = std::make_unique<ParticleSystem>(name);
-		if (system) {
-			system->LoadFromJson(value);
-		}
-	}
+	target->Initialize();
 }
 
 }

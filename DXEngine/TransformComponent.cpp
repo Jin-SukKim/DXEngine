@@ -26,6 +26,12 @@ namespace DE {
 		m_worldQuaternion = createRotationQuaternion(yaw, pitch, roll);
 	}
 
+	void TransformComponent::SetRotation(const Vector3& rot)
+	{
+		m_worldRotation = rot;
+		m_worldQuaternion = createRotationQuaternion(rot.x, rot.y, rot.z);
+	}
+
 	void TransformComponent::SetRotation(const Quaternion& q)
 	{
 		m_worldQuaternion = q;

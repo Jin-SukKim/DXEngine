@@ -8,7 +8,7 @@ class ParticleSystem : public Actor
 {
 public:
 	ParticleSystem(const std::wstring& name);
-	~ParticleSystem() override {}
+	~ParticleSystem() override;
 
 	void Initialize() override;
 	void OnSpawn();
@@ -19,10 +19,14 @@ public:
 	void AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter);
 	void ClearEmitters();
 	void LoadFromJson(const json& data);
+	void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 private:
 	std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 	UINT m_looping = 1;
 	std::string m_state = "Play";
+
+	std::wstring m_jsonPath;
+	FileWatcher::CallbackID m_watcherID = 0;
 };
 
 }

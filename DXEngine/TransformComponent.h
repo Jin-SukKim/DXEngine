@@ -19,6 +19,7 @@ namespace DE {
 		void SetLocalRotation(const float& yaw, const float& pitch, const float roll);
 		void SetLocalRotation(const Quaternion& q);
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
+		void SetRotation(const Vector3& rot);
 		void SetRotation(const Quaternion& q);
 		void Rotate(const float& yaw, const float& pitch, const float roll);
 		Vector3& GetRotation() { return m_worldRotation; }
