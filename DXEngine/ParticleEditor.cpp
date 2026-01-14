@@ -38,7 +38,6 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
-		effect->Initialize();
 		effect->OnSpawn();
 		//particleEmitter->Initialize();
 		//particleEmitter2->Initialize();
@@ -50,7 +49,6 @@ namespace DE {
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
-		effect->Update(dt);
 		//particleEmitter->Update(dt);
 		//particleEmitter2->Update(dt);
 		FileWatcher::Get().Update(); // File이 변하는지 감시
@@ -64,7 +62,6 @@ namespace DE {
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
-		effect->Render();
 		//particleEmitter->Render();
 		//particleEmitter2->Render();
 		
