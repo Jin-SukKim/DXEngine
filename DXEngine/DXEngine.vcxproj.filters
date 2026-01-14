@@ -346,6 +346,7 @@
     <ClInclude Include="ParticleModuleFactory.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -515,6 +516,9 @@
     </ClCompile>
     <ClCompile Include="ParticleModuleFactory.cpp">
       <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

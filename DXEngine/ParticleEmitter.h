@@ -1,5 +1,4 @@
 #pragma once
-#include "Actor.h"
 #include "Particle.h"
 #include "ComputeShader.h"
 #include "AppendBuffer.h"
@@ -10,15 +9,16 @@
 #include "FileWatcher.h"
 
 namespace DE {
-	class ParticleEmitter : public Actor
+	class ParticleEmitter
 	{
 	public:
 		ParticleEmitter(const std::wstring& name);
-		~ParticleEmitter() override;
+		~ParticleEmitter();
 
-		void Initialize() override;
-		void Update(const float& dt) override;
-		void Render(const ComPtr<ID3D11Buffer>& globalConstsGPU);
+		void Initialize();
+		void OnSpawn();
+		void Update(const float& dt);
+		void Render();
 
 		template<typename T>
 		void AddModule(std::unique_ptr<ParticleModule>&& module);
@@ -42,6 +42,8 @@ namespace DE {
 		void UpdateArgsBuffers(ID3D11DeviceContext* context);
 		void UpdateSimulationStage(ID3D11DeviceContext* context);
 
+	private:
+		std::wstring m_name;
 		// 파티클 버퍼 (핑퐁 버퍼링)
 		AppendBuffer<Particle> m_consume;
 		AppendBuffer<Particle> m_append;

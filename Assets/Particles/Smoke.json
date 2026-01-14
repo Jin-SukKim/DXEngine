@@ -2,7 +2,7 @@
   "name": "SmokeEffect",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ 0.0, 0.1, 0.0 ],
+    "localPos": [ 0.0, 0.1, 0.10],
     "spawnVolume": [ 0.1, 0.2, 0.1 ],
     "spawnInnerRatio": 0.0,
     "spawnRate": 20.0,
@@ -11,9 +11,9 @@
     "lifeRange": [ 1.0, 1.5 ]
   },
   "Visual": {
-    "startColor": [ 0.5, 0.1, 0.0, 0.2 ],
-    "endColor": [ 0.1, 0.1, 0.0, 0.0 ],
-    "sizeRange": [ 0.2, 0.05 ]
+    "startColor": [ 0.5, 0.1, 0.0, 0.5 ],
+    "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
+    "sizeRange": [ 0.1, 0.05 ]
   },
   "Force": {
     "velocity": [ 0.0, 0.1, 0.0 ],

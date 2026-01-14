@@ -206,6 +206,7 @@
     <ClInclude Include="ParticleContext.h" />
     <ClInclude Include="ParticleLoader.h" />
     <ClInclude Include="ParticleModuleFactory.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="SpawnModule.h" />
     <ClInclude Include="FogEffect.h" />
     <ClInclude Include="ForceModule.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="FileWatcher.cpp" />
     <ClCompile Include="ParticleLoader.cpp" />
     <ClCompile Include="ParticleModuleFactory.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SpawnModule.cpp" />
     <ClCompile Include="FogEffect.cpp" />
     <ClCompile Include="ForceModule.cpp" />

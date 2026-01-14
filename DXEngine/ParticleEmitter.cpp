@@ -10,8 +10,7 @@
 #include "ParticleContext.h"
 namespace DE {
 
-	ParticleEmitter::ParticleEmitter(const std::wstring& name) 
-		: Actor(name)
+	ParticleEmitter::ParticleEmitter(const std::wstring& name) : m_name(name)
 	{
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
 		ParticleModuleFactory::Register<VisualModule>("Visual");
@@ -37,7 +36,11 @@ namespace DE {
 
 		InitializeShaders(device.Get());
 		InitializeBuffers(device);
+	}
 
+	void ParticleEmitter::OnSpawn()
+	{
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		SimulationContext simCtx = {
 			context.Get(),
@@ -147,7 +150,7 @@ namespace DE {
 		m_particleCS.DispatchIndirect(context, m_dispatchArgs.GetBuffer());
 	}
 
-	void ParticleEmitter::Render(const ComPtr<ID3D11Buffer>& globalConstsGPU)
+	void ParticleEmitter::Render()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		

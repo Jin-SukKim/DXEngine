@@ -5,6 +5,7 @@ namespace DE {
 
 	class ParticleEmitter;
 	class SquareActor;
+	class ParticleSystem;
 class ParticleEditor : public Scene
 {
 public:
@@ -20,6 +21,8 @@ private:
 	SquareActor* ground;
 	std::unique_ptr<ParticleEmitter> particleEmitter;
 	std::unique_ptr<ParticleEmitter> particleEmitter2;
+
+	ParticleSystem* effect;
 };
 
 

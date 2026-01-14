@@ -9,14 +9,19 @@
 #include "RenderModule.h"
 #include "ParticleLoader.h"
 #include "FileWatcher.h"
+#include "ParticleSystem.h"
 
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
- 		particleEmitter = ParticleLoader::Load(L"Fire.json");
- 		particleEmitter2 = ParticleLoader::Load(L"Smoke.json");
+ 		particleEmitter = ParticleLoader::Load<ParticleEmitter>(L"Fire.json");
+ 		particleEmitter2 = ParticleLoader::Load<ParticleEmitter>(L"Smoke.json");
+
+		effect = AddObject<ParticleSystem>(L"Effect");
+		effect->AddEmitter(std::move(particleEmitter));
+		effect->AddEmitter(std::move(particleEmitter2));
  		//particleEmitter = ParticleLoader::Load(L"VortexAura.json");
 		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
 		//particleEmitter->AddModule(ParticleModuleFactory::Create("Spawn"));
@@ -33,16 +38,11 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		particleEmitter->Initialize();
-		particleEmitter2->Initialize();
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
-
-		particleEmitter->Update(dt);
-		particleEmitter2->Update(dt);
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
@@ -56,7 +56,5 @@ namespace DE {
 	{
 		Scene::Render();
 		
-		particleEmitter->Render(m_globalConstsGPU);
-		particleEmitter2->Render(m_globalConstsGPU);
 	}
 }
