@@ -24,22 +24,17 @@ namespace DE {
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
 
-		const ComPtr<ID3D11Buffer> GetConsts() { return m_constant.Get(); }
 		const ComPtr<ID3D11Buffer> GetBasicMaterial() { return m_basicMaterial.Get(); }
 		const ComPtr<ID3D11Buffer> GetMaterial() { return m_material.Get(); }
 		const MaterialConstants GetMaterialCpu() { return m_material.GetCpu(); }
 		MaterialConstants& GetMaterialCpuRef() { return m_material.GetCpu(); }
 
-		const void SetConsts(MeshConstants& consts);
 		const void SetBasicMaterial(const BasicMaterialConstants& consts);
 		const void SetMaterial(const MaterialConstants& consts);
-	private:
-		bool updateWorldCpu();
 	private:
 		//Mesh triangle;
 		std::vector<Mesh> m_meshes; // 하나의 모델이 내부적으로는 여러개의 메쉬로 구성
 
-		ConstantBuffer<MeshConstants> m_constant;
 		ConstantBuffer<BasicMaterialConstants> m_basicMaterial;
 		ConstantBuffer<MaterialConstants> m_material;
 

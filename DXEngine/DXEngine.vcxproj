@@ -636,7 +636,6 @@
       <FileType>Document</FileType>
     </None>
     <None Include="DiskSamples.hlsli" />
-    <None Include="Particle.hlsli" />
     <None Include="ParticleCommon.hlsli" />
     <None Include="Shadow.hlsli" />
     <None Include="ToneMapping.hlsli" />

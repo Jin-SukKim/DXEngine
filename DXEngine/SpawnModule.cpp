@@ -43,7 +43,7 @@ namespace DE {
 		if (m_totalSpawnCount == 0)
 			return;
 
-		m_spawnCS.UpdateConsts(ctx.context, 0, 1, ctx.constBuffer.GetAddressOf());
+		m_spawnCS.UpdateConsts(ctx.context, 4, 1, ctx.constBuffer.GetAddressOf());
 
 		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);

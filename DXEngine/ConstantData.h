@@ -18,9 +18,6 @@ namespace DE {
 	__declspec(align(256)) struct MeshConstants {
 		Matrix world;
 		Matrix worldIT; // World Inverse Transpose (Normal 변환에 사용)
-		int useHeightMap = 0; 
-		float heightScale = 1.f;
-		float dummy[2];
 	};
 	
 	__declspec(align(256)) struct BasicMaterialConstants {
@@ -49,7 +46,9 @@ namespace DE {
 		int useMetallicMap = 0;
 		int useRoughnessMap = 0;
 		int useEmissiveMap = 0;
-		float dummy = 0.f;
+		int useHeightMap = 0;
+		float heightScale = 1.f;
+		float dummy[3];
 	};
 
 	struct Light {

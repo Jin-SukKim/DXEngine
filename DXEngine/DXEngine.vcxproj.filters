@@ -134,6 +134,15 @@
     <Filter Include="Shaders\Particle">
       <UniqueIdentifier>{3dd797af-74ba-42d5-8170-2550af713f39}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\ParticleSystem\Module">
+      <UniqueIdentifier>{32594ed6-85a3-431c-9708-5b3022f51583}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem\Utils">
+      <UniqueIdentifier>{13706464-1672-4e96-94fb-c5a7d74781c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem\Buffer">
+      <UniqueIdentifier>{16fc1ed4-a236-4b98-ac3d-674784a3b25f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -283,9 +292,6 @@
     <ClInclude Include="Outliner.h">
       <Filter>public\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleProperties.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
     <ClInclude Include="SampleScene.h">
       <Filter>public\Scene</Filter>
     </ClInclude>
@@ -298,55 +304,60 @@
     <ClInclude Include="Particle.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="StagingBuffer.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="AppendBuffer.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="ComputePSO.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="ComputeShader.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="StructuredBuffer.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="IndirectArgsBuffer.h">
+    <ClInclude Include="ParticleSystem.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="ParticleModule.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderModule.h">
-      <Filter>public\ParticleSystem</Filter>
+      <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
     <ClInclude Include="SpawnModule.h">
-      <Filter>public\ParticleSystem</Filter>
+      <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
-    <ClInclude Include="VisualModule.h">
-      <Filter>public\ParticleSystem</Filter>
+    <ClInclude Include="RenderModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
     <ClInclude Include="ForceModule.h">
-      <Filter>public\ParticleSystem</Filter>
+      <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
-    <ClInclude Include="BitonicSort.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="FileWatcher.h">
-      <Filter>public\ParticleSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleContext.h">
-      <Filter>public\ParticleSystem</Filter>
+    <ClInclude Include="VisualModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
     <ClInclude Include="ParticleLoader.h">
-      <Filter>public\ParticleSystem</Filter>
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="FileWatcher.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="AppendBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="IndirectArgsBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeShader.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="BitonicSort.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleContext.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputePSO.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleProperties.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="StagingBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="StructuredBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="ParticleModuleFactory.h">
-      <Filter>public\ParticleSystem</Filter>
+      <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -518,7 +529,7 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ParticleSystem.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -648,9 +659,6 @@
       <Filter>Shaders\Shadow</Filter>
     </None>
     <None Include="ParticleCommon.hlsli">
-      <Filter>Shaders\Particle</Filter>
-    </None>
-    <None Include="Particle.hlsli">
       <Filter>Shaders\Particle</Filter>
     </None>
   </ItemGroup>

@@ -59,7 +59,12 @@ cbuffer GlobalConsts : register(b0) {
     Light lights[MAX_LIGHTS];
 };
 
-cbuffer BasicMaterialConstants : register(b1) {
+cbuffer MeshConstants : register(b1) {
+    matrix world;
+    matrix worldIT; // Normal 변환용 inverse Transpose
+};
+
+cbuffer BasicMaterialConstants : register(b2) {
     float3 ambient;
     float shininess = 0.1f;
     float3 diffuse;
@@ -69,14 +74,6 @@ cbuffer BasicMaterialConstants : register(b1) {
     float3 fresnelR0;
     float dummy3;
     int hashID;
-};
-
-cbuffer MeshConstants : register(b2) {
-    matrix world;
-    matrix worldIT; // Normal 변환용 inverse Transpose
-    int useHeightMap;
-    float heightScale;
-    float2 dummy4;
 };
 
 cbuffer MaterialConstants : register(b3) {
@@ -93,7 +90,9 @@ cbuffer MaterialConstants : register(b3) {
     int useMetallicMap = 0;
     int useRoughnessMap = 0;
     int useEmissiveMap = 0;
-    float dummy5 = 0.f;
+    int useHeightMap;
+    float heightScale;
+    float3 dummy4;
 }
 
 struct VSInput {

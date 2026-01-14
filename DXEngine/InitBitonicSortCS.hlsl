@@ -1,11 +1,5 @@
 #include "Common.hlsli"
-#include "Particle.hlsli"
-
-struct SortElement
-{
-    float key;
-    uint value;
-};
+#include "ParticleCommon.hlsli"
 
 // TODO: particle pos에 world matrix 곱해주기
 

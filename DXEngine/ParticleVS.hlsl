@@ -1,11 +1,5 @@
 #include "Common.hlsli"
-#include "Particle.hlsli"
-
-struct SortElement
-{
-    float key;
-    uint value;
-};
+#include "ParticleCommon.hlsli"
 
 StructuredBuffer<Particle> particles : register(t0);
 StructuredBuffer<SortElement> sortedElements : register(t1);
@@ -40,7 +34,7 @@ GSInput main(uint vertexID : SV_VertexID)
 
     GSInput output;
 
-    output.position = float4(p.position.xyz, 1.0);
+    output.position = mul(float4(p.position.xyz, 1.0), world);
 
     /*float3x3 rotMatrix = GetRotationMatrix(p.rotation);
     output.position = float4(mul(rotMatrix, p.position.xyz), 1.0);*/

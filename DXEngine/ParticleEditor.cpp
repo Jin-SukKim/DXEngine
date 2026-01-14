@@ -10,6 +10,7 @@
 #include "ParticleLoader.h"
 #include "FileWatcher.h"
 #include "ParticleSystem.h"
+#include "TransformComponent.h"
 
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
@@ -33,6 +34,11 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
+
+		TransformComponent* tr = effect->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetPos(Vector3(0.f, 0.5f, 0.f));
+		}
 		//effect->Initialize();
 		effect->OnSpawn();	
 	}
@@ -41,6 +47,14 @@ namespace DE {
 	{
 		Scene::Update(dt);
 		//effect->Update(dt);
+
+		TransformComponent* tr = effect->GetComponent<TransformComponent>();
+		if (tr) {
+			Vector3 pos = tr->GetPos();
+			pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
+			tr->SetPos(pos);
+		}
+
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
 

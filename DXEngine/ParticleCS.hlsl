@@ -1,5 +1,4 @@
 #include "ParticleCommon.hlsli"
-#include "Particle.hlsli"
 
 Buffer<uint> activeCount : register(t0);
 ConsumeStructuredBuffer<Particle> inputParticles : register(u0);

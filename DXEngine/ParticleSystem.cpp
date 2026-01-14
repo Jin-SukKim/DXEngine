@@ -30,6 +30,7 @@ namespace DE {
 	void ParticleSystem::Update(const float& dt)
 	{
 		Actor::Update(dt);
+
 		for (auto& emitter : m_emitters)
 			emitter->Update(dt);
 	}

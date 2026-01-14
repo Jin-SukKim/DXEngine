@@ -1,7 +1,19 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
-cbuffer ParticleConsts : register(b0)
+struct Particle
+{
+    float3 position;
+    float3 velocity;
+    float4 color;
+    float life;
+    float lifeMax;
+    float size;
+    float3 rotation;
+    float3 rotSpeed;
+};
+
+cbuffer ParticleConsts : register(b4)
 {
     // Block 1: 기본 정보 (16 bytes)
     float dt;

@@ -36,13 +36,12 @@ namespace DE {
 			return;
 
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-		ID3D11Buffer* constBuffers[3] = {
+		ID3D11Buffer* constBuffers[2] = {
 			// Bounding Box와 Bounding Sphere의 Constant Data는 같음
 			m_boundingBoxMesh->basicMaterialConstGPU.Get(),
-			m_boundingBoxMesh->meshConstGPU.Get(),
 			m_boundingBoxMesh->materialConstGPU.Get(),
 		};
-		context->VSSetConstantBuffers(1, 3, constBuffers);
+		context->VSSetConstantBuffers(2, 2, constBuffers);
 
 		// Bounding Box Rendering
 		context->IASetVertexBuffers(0, 1, m_boundingBoxMesh->vertexBuffer.GetAddressOf(), &m_boundingBoxMesh->stride, &m_boundingBoxMesh->offset);
@@ -85,7 +84,6 @@ namespace DE {
 		Actor* owner = static_cast<Actor*>(this->GetOwner());
 		ModelComponent* model = owner->GetComponent<ModelComponent>();
 		if (model) {
-			m_boundingBoxMesh->meshConstGPU = model->GetConsts();
 			m_boundingBoxMesh->basicMaterialConstGPU = model->GetBasicMaterial();
 			m_boundingBoxMesh->materialConstGPU = model->GetMaterial();
 		}
@@ -120,7 +118,6 @@ namespace DE {
 		Actor* owner = static_cast<Actor*>(this->GetOwner());
 		ModelComponent* model = owner->GetComponent<ModelComponent>();
 		if (model) {
-			m_boundingSphereMesh->meshConstGPU = model->GetConsts();
 			m_boundingSphereMesh->basicMaterialConstGPU = model->GetBasicMaterial();
 			m_boundingSphereMesh->materialConstGPU = model->GetMaterial();
 		}

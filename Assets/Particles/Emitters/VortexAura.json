@@ -12,7 +12,7 @@
   "Visual": {
     "startColor": [ 1.0, 0.8, 1.0, 0.5 ],
     "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
-    "sizeRange": [ 0.15, 0.01 ],
+    "sizeRange": [ 0.15, 0.001 ],
     "rotation": {
       "minRotSpeed": [ -2.0, -2.0, -2.0 ],
       "maxRotSpeed": [ 2.0, 2.0, 2.0 ]

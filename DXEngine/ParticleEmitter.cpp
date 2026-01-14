@@ -154,7 +154,7 @@ namespace DE {
 		};
 
 		context->CSSetUnorderedAccessViews(0, 2, particleUAVs, initCounts);
-		m_particleCS.UpdateConsts(context, 0, 1, m_consts.GetAddressOf());
+		m_particleCS.UpdateConsts(context, 4, 1, m_consts.GetAddressOf());
 
 		// Particle Simulation Compute Shader
 		m_particleCS.DispatchIndirect(context, m_dispatchArgs.GetBuffer());
