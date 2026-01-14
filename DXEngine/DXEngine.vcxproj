@@ -190,6 +190,7 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="AppendBuffer.h" />
+    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="BillboardActor.h" />
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="BloomEffect.h" />
@@ -262,6 +263,7 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AppBase.cpp" />
+    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="BillboardActor.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
     <ClCompile Include="BloomEffect.cpp" />

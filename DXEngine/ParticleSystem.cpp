@@ -36,7 +36,7 @@ namespace DE {
 
 		Actor::Update(dt);
 
-		float newDt = dt* m_playRate;
+		float newDt = dt * m_playRate;
 		m_time += newDt;
 
 		// Loop 및 종료 체크
@@ -162,7 +162,7 @@ namespace DE {
 
 		while (t < m_preWarmTime)
 		{
-			m_time += step;
+			//m_time += step; // 필요하면 활성화
 			t += step;
 
 			for (auto& emitter : m_emitters)

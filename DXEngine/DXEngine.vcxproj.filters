@@ -358,6 +358,9 @@
     <ClInclude Include="ParticleModuleFactory.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="AssetManager.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -529,6 +532,9 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ParticleSystem.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
