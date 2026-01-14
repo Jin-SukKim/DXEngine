@@ -19,8 +19,6 @@ public:
 
 private:
 	SquareActor* ground;
-	std::unique_ptr<ParticleEmitter> particleEmitter;
-	std::unique_ptr<ParticleEmitter> particleEmitter2;
 
 	ParticleSystem* effect;
 };

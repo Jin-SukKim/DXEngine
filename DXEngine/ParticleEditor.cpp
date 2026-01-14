@@ -17,14 +17,9 @@ namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
- 		//particleEmitter = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Fire.json");
- 		//particleEmitter2 = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Smoke.json");
 
 		effect = AddEffect<ParticleSystem>(L"Effect");
 		ParticleLoader::Load<ParticleSystem>(L"FireEffect.json", effect);
-		//effect = std::make_unique<ParticleSystem>(L"Effect");
-		//effect->AddEmitter(std::move(particleEmitter));
-		//effect->AddEmitter(std::move(particleEmitter2));
  	}
 
 	ParticleEditor::~ParticleEditor()
@@ -34,19 +29,12 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
-
-		TransformComponent* tr = effect->GetComponent<TransformComponent>();
-		if (tr) {
-			tr->SetPos(Vector3(0.f, 0.5f, 0.f));
-		}
-		//effect->Initialize();
-		effect->OnSpawn();	
+		effect->OnSpawn();
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
-		//effect->Update(dt);
 
 		TransformComponent* tr = effect->GetComponent<TransformComponent>();
 		if (tr) {
@@ -66,8 +54,5 @@ namespace DE {
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
-		//RenderBase& renderer = *GET_SINGLE(RenderBase);
-		//renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
-		//effect->Render();
 	}
 }

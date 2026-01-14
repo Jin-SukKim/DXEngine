@@ -1,13 +1,18 @@
 {
   "name": "Fire",
   "Transform": {
-    "position": [ 0.0, 0.0, 0.0 ],
+    "position": [ 0.0, 0.5, 0.0 ],
     "rotation": [ 0.0, 0.0, 0.0 ],
     "size": [ 1.0, 1.0, 1.0 ]
   },
-  "Looping": 1,
+  "Looping": true,
+  "Duration": 10.0,
+  "PlayRate": 0.03,
+  "PreWarmTime": 3.0,
   "State": "Play",
   "Emitters": [
-    "Emitters\\Fire.json"
+    "Emitters\\Fire.json",
+    "Emitters\\Smoke.json",
+    "Emitters\\VortexAura.json"
   ]
 }

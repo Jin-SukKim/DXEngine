@@ -48,13 +48,18 @@ namespace DE {
 			context.Get(),
 			m_consts.GetCpu(),
 			0.f,
-			m_time,
+			0.f,
 			m_consts,
 			m_consume
 		};
 
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
+	}
+
+	void ParticleEmitter::Reset()
+	{
+		Initialize();
 	}
 
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
@@ -90,19 +95,18 @@ namespace DE {
 			DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
 	}
 
-	void ParticleEmitter::Update(const float& dt)
+	void ParticleEmitter::Update(const float& dt, const float& time)
 	{
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		m_time += dt;
 		m_consts.GetCpu().dt = dt;
-		m_consts.GetCpu().time = m_time;
+		m_consts.GetCpu().time = time;
 		
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts.GetCpu(),
 			dt,
-			m_time,
+			time,
 			m_consts,
 			m_consume,
 			m_append.GetSRV(),

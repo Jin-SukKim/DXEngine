@@ -157,13 +157,11 @@ namespace DE {
 		// Normal Vector ±×¸®±â
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		
-		Actor* owner = dynamic_cast<Actor*>(GetOwner());
-		TransformComponent* tr = owner->GetComponent<TransformComponent>();
 		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[3] = {tr->GetConstBuffer(),
+			ID3D11Buffer* constBuffers[2] = {
 										     mesh.basicMaterialConstGPU.Get(),
 											 mesh.materialConstGPU.Get()};
-			context->GSSetConstantBuffers(1, 3, constBuffers);
+			context->GSSetConstantBuffers(2, 2, constBuffers);
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->Draw(mesh.vertexCount, 0);
 		}
@@ -173,13 +171,10 @@ namespace DE {
 	{
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		Actor* owner = dynamic_cast<Actor*>(GetOwner());
-		TransformComponent* tr = owner->GetComponent<TransformComponent>();
 		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[3] = {tr->GetConstBuffer(),
-											 mesh.basicMaterialConstGPU.Get(),
+			ID3D11Buffer* constBuffers[2] = {mesh.basicMaterialConstGPU.Get(),
 											 mesh.materialConstGPU.Get() };
-			context->VSSetConstantBuffers(1, 3, constBuffers);
+			context->VSSetConstantBuffers(2, 2, constBuffers);
 
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->Draw(mesh.indexCount, 0);

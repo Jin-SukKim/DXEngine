@@ -17,7 +17,7 @@ namespace DE {
 
 		void Initialize();
 		void OnSpawn();
-		void Update(const float& dt);
+		void Update(const float& dt, const float& time);
 		void Render();
 
 		template<typename T>
@@ -27,6 +27,7 @@ namespace DE {
 		T* GetModule();
 		
 		void ClearModules() { m_modules.clear(); }
+		void Reset();
 
 		void SetParticleConfig(const ParticleConsts& config);
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
@@ -63,9 +64,6 @@ namespace DE {
 		
 		// 상수 버퍼
 		ConstantBuffer<ParticleConsts> m_consts;
-		
-		// 런타임 상태
-		float m_time = 0.0f;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;
 

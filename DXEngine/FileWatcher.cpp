@@ -7,7 +7,6 @@ namespace DE {
 	FileWatcher::CallbackID FileWatcher::Register(const std::wstring& path, Callback callback)
 	{
 		if (!fs::exists(path)) {
-			std::wcout << L"[FileWatcher] Warning: File not found: " << path << std::endl;
 			return 0;
 		}
 
@@ -51,7 +50,6 @@ namespace DE {
 				auto currentTime = fs::last_write_time(path);
 				if (file.lastWriteTime < currentTime) {
 					file.lastWriteTime = currentTime;
-					std::wcout << L"[FileWatcher] Detect Change : " << path << std::endl;
 
 					for (auto& entity : file.callbacks) {
 						if (entity.callback)
