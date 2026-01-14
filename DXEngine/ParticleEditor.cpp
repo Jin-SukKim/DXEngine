@@ -20,6 +20,7 @@ namespace DE {
  		particleEmitter2 = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Smoke.json");
 
 		effect = AddEffect<ParticleSystem>(L"Effect");
+		//effect = std::make_unique<ParticleSystem>(L"Effect");
 		effect->AddEmitter(std::move(particleEmitter));
 		effect->AddEmitter(std::move(particleEmitter2));
  		
@@ -38,7 +39,7 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
-		effect->OnSpawn();
+		effect->OnSpawn();	
 		//particleEmitter->Initialize();
 		//particleEmitter2->Initialize();
 
@@ -62,6 +63,9 @@ namespace DE {
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
+		//RenderBase& renderer = *GET_SINGLE(RenderBase);
+		//renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+
 		//particleEmitter->Render();
 		//particleEmitter2->Render();
 		
