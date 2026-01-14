@@ -16,13 +16,14 @@ namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
- 		particleEmitter = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Fire.json");
- 		particleEmitter2 = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Smoke.json");
+ 		//particleEmitter = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Fire.json");
+ 		//particleEmitter2 = ParticleLoader::Load<ParticleEmitter>(L"Emitters\\Smoke.json");
 
 		effect = AddEffect<ParticleSystem>(L"Effect");
+		ParticleLoader::Load<ParticleSystem>(L"FireEffect.json", effect);
 		//effect = std::make_unique<ParticleSystem>(L"Effect");
-		effect->AddEmitter(std::move(particleEmitter));
-		effect->AddEmitter(std::move(particleEmitter2));
+		//effect->AddEmitter(std::move(particleEmitter));
+		//effect->AddEmitter(std::move(particleEmitter2));
  	}
 
 	ParticleEditor::~ParticleEditor()

@@ -8,7 +8,8 @@
   "Looping": 1,
   "State": "Play",
   "Emitters": [
-    "Sparks.json",
-    "Smoke.json"
+    "Emitters\\Fire.json",
+    "Emitters\\Smoke.json",
+    "Emitters\\VortexAura.json"
   ]
 }
