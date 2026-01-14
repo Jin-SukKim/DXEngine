@@ -66,7 +66,8 @@ PSOutput main(PSInput input) {
     }
     
     // IBL (°£Á¢±¤)
-    float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld)) + float4(directLight, 1.0);
+    //float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, reflect(-toEye, normalWorld)) + float4(directLight, 1.0);
+    float4 diffuseColor = irradianceIBLTex.Sample(linearWrapSampler, normalWorld) + float4(directLight, 1.0);
     diffuseColor *= float4(diffuse, 1.0);
     diffuseColor *= albedo * ao;
     

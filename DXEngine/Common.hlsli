@@ -1,7 +1,7 @@
 #ifndef __COMMON_HLSLI__
 #define __COMMON_HLSLI__
 
-#define MAX_LIGHTS 1
+#define MAX_LIGHTS 3
 #define MAX_SPOT 2
 #define MAX_POINT 1
 #define LIGHT_DIRECTIONAL 0x01

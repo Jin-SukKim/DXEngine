@@ -63,12 +63,21 @@ namespace DE {
 				m_lights.emplace_back(std::move(tempLight));
 				lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));
 			}
+			lights[0]->TurnOn();
 
 			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(lights);
 			// IBL은 그림자를 구현하지 않고 AO를 사용해 그림자 효과를 비슷하게 구현함
 			// (TODO: Direct Light으로 자연광 효괄르 구현하는게 좋을듯)
 			for (int i = 0; i < MAX_LIGHTS; ++i)
 				m_lights[i]->Initialize();
+
+			//auto* tr = m_lights[0]->GetComponent<TransformComponent>();
+			//if (tr) {
+			//	Vector3 pos = tr->GetPos();
+			//	pos = Vector3::Transform(pos, Matrix::CreateRotationY(deltaTime * 0.5f));
+			//	tr->SetPos(pos);
+			//}
+
 		}
 
 		// 카메라 위치 표시

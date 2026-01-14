@@ -237,7 +237,7 @@ PSOutput main(PSInput input)
     // 임시로 unroll 사용
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
-        if (lights[i].type) {
+        if (!(lights[i].type & LIGHT_OFF)) {
             float3 radiance = DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness, shadowIdx);
             // TODO: radiance가 (0, 0, 0)인 경우 DirectLighting += ... 인데도 direfctLight이 (0, 0, 0)이 되어 버리는 오류 임시 수정
             if (abs(dot(float3(1, 1, 1), radiance)) > 1e-5) // radiance가 (0, 0, 0)일 경우 더하지 않음
