@@ -19,9 +19,9 @@ namespace DE {
  		particleEmitter = ParticleLoader::Load<ParticleEmitter>(L"Fire.json");
  		particleEmitter2 = ParticleLoader::Load<ParticleEmitter>(L"Smoke.json");
 
-		//effect = AddObject<ParticleSystem>(L"Effect");
-		//effect->AddEmitter(std::move(particleEmitter));
-		//effect->AddEmitter(std::move(particleEmitter2));
+		effect = AddObject<ParticleSystem>(L"Effect");
+		effect->AddEmitter(std::move(particleEmitter));
+		effect->AddEmitter(std::move(particleEmitter2));
  		
 		//particleEmitter = ParticleLoader::Load(L"VortexAura.json");
 		//particleEmitter = std::make_unique<ParticleEmitter>(L"Particle");
@@ -38,16 +38,21 @@ namespace DE {
 	void ParticleEditor::Initialize()
 	{
 		Scene::Initialize();
-		particleEmitter->Initialize();
-		particleEmitter2->Initialize();
+		effect->Initialize();
+		effect->OnSpawn();
+		//particleEmitter->Initialize();
+		//particleEmitter2->Initialize();
 
+		//particleEmitter->OnSpawn();
+		//particleEmitter2->OnSpawn();
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
-		particleEmitter->Update(dt);
-		particleEmitter2->Update(dt);
+		effect->Update(dt);
+		//particleEmitter->Update(dt);
+		//particleEmitter2->Update(dt);
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
 
@@ -59,8 +64,9 @@ namespace DE {
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
-		particleEmitter->Render();
-		particleEmitter2->Render();
+		effect->Render();
+		//particleEmitter->Render();
+		//particleEmitter2->Render();
 		
 	}
 }

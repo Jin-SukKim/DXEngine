@@ -173,10 +173,6 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->OnRender(renderCtx);
 
-		if (auto* renderMod = GetModule<RenderModule>()) {
-			renderMod->Draw(renderCtx);
-		}
-
 		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);
 	}

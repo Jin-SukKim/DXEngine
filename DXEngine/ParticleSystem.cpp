@@ -19,8 +19,6 @@ namespace DE {
 		Actor::Initialize();
 		for (auto& emitter : m_emitters)
 			emitter->Initialize();
-
-		OnSpawn();
 	}
 
 	void ParticleSystem::OnSpawn()

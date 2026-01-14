@@ -48,6 +48,7 @@ std::unique_ptr<T> ParticleLoader::Load(const std::wstring& filePath) {
 		}
 
 		rawPtr->Initialize();
+		rawPtr->OnSpawn();
 	};
 
 	auto id = FileWatcher::Get().Register(fullPath, callback);

@@ -14,7 +14,7 @@ class RenderModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
-	virtual void Draw(const RenderContext& ctx);
+	virtual void OnRender(const RenderContext& ctx) override;
 	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
@@ -29,7 +29,7 @@ protected:
 class BillboardRenderModule : public RenderModule
 {
 public:
-	void Draw(const RenderContext& context) override;
+	void OnRender(const RenderContext& context) override;
 private:
 	// TODO: Texture Ãß°¡
 };

@@ -17,10 +17,9 @@ namespace DE {
 		SetBlendState();
 	}
 
-	void RenderModule::Draw(const RenderContext& ctx)
+	void RenderModule::OnRender(const RenderContext& ctx)
 	{
-		if (!m_isEnabled)
-			return;
+		ParticleModule::OnRender(ctx);
 
 		ID3D11UnorderedAccessView* uav[1] = { m_sort.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
@@ -60,9 +59,9 @@ namespace DE {
 		}
 	}
 
-	void BillboardRenderModule::Draw(const RenderContext& ctx)
+	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
-		RenderModule::Draw(ctx);
+		RenderModule::OnRender(ctx);
 
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
