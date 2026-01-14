@@ -1,0 +1,14 @@
+{
+  "name": "Fire",
+  "Transform": {
+    "position": [ 0.0, 0.0, 0.0 ],
+    "rotation": [ 0.0, 0.0, 0.0 ],
+    "size": [ 1.0, 1.0, 1.0 ]
+  },
+  "Looping": 1,
+  "State": "Play",
+  "Emitters": [
+    "Sparks.json",
+    "Smoke.json"
+  ]
+}

@@ -33,6 +33,9 @@ namespace DE {
 		T* AddObject(const std::wstring& name);
 
 		template<class T>
+		T* AddEffect(const std::wstring& name);
+
+		template<class T>
 		T* AddLight(const std::wstring& name);
 
 		template<class T>
@@ -78,7 +81,7 @@ namespace DE {
 		std::shared_ptr<FogEffect> m_depthPP;
 		
 		// 0 row는 일반 actor, 1 row는 billboard
-		std::vector<std::shared_ptr<Actor>> m_actorList[2];
+		std::vector<std::shared_ptr<Actor>> m_actorList[3];
 		Actor* m_pickedActor = nullptr;
 
 		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
@@ -94,6 +97,13 @@ namespace DE {
 		std::unique_ptr<T> actor = std::make_unique<T>(name);
 		m_actorList[0].emplace_back(std::move(actor));
 		return dynamic_cast<T*>(m_actorList[0].back().get());
+	}
+	template<class T>
+	inline T* Scene::AddEffect(const std::wstring& name)
+	{
+		std::unique_ptr<T> actor = std::make_unique<T>(name);
+		m_actorList[2].emplace_back(std::move(actor));
+		return dynamic_cast<T*>(m_actorList[2].back().get());
 	}
 	template<class T>
 	inline T* Scene::AddLight(const std::wstring& name)

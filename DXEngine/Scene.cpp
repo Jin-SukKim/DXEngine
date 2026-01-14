@@ -247,24 +247,24 @@ namespace DE {
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
 
+		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+		for (auto& effect : m_actorList[2])
+			effect->Render();
+
 		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
 		m_skybox->Render();
 
 		// Bounding Volume 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
-		for (auto& actor : m_actorList[0])
-			actor->RenderBoundingVolume();
-
-		for (auto& billboard : m_actorList[1])
-			billboard->RenderBoundingVolume();
+		for (auto& actors : m_actorList)
+			for (auto& actor : actors)
+				actor->RenderBoundingVolume();
 
 		// Normal 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
-		for (auto& actor : m_actorList[0])
-			actor->RenderNormal();
-
-		for (auto& billboard : m_actorList[1])
-			billboard->RenderNormal();
+		for (auto& actors : m_actorList)
+			for (auto& actor : actors)
+				actor->RenderNormal();
 	}
 
 	void Scene::RenderMirror()
@@ -280,13 +280,17 @@ namespace DE {
 		// 전부 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.depth.depthOnlyPSO);
 
-		for (auto& actor : m_actorList[0])
-			actor->Render();
-		
-		//m_mirror->Render(); // 거울만 렌더링
+		for (auto& actors : m_actorList)
+			for (auto& actor : actors)
+				actor->Render();
 
-		for (auto& billboard : m_actorList[1])
-			billboard->Render();
+		//for (auto& actor : m_actorList[0])
+		//	actor->Render();
+		//
+		////m_mirror->Render(); // 거울만 렌더링
+
+		//for (auto& billboard : m_actorList[1])
+		//	billboard->Render();
 		
 		m_skybox->Render();
 	}
@@ -307,7 +311,7 @@ namespace DE {
 				//renderer.SetShadowMapRender(m_lights[i]->GetLightID());
 				
 				//light->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
-				light->RenderShadow({ m_actorList[0], m_actorList[1] });
+				light->RenderShadow({ m_actorList[0], m_actorList[1], m_actorList[2] });
 				//for (auto& actor : m_actorList)
 				//	m_lights[i]->RenderShadow(actor);
 				//m_lights[i]->RenderShadow({ m_mirror });

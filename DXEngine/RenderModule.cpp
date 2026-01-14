@@ -63,8 +63,8 @@ namespace DE {
 	{
 		RenderModule::OnRender(ctx);
 
-		RenderBase& renderer = *GET_SINGLE(RenderBase);
-		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+		//RenderBase& renderer = *GET_SINGLE(RenderBase);
+		//renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 		// IndirectDraw
 		ID3D11ShaderResourceView* sortSRVs[] = {
