@@ -110,9 +110,9 @@ namespace DE {
 		//}
 
 		//m_mirror->Initialize();
-		//tr = m_mirror->GetComponent<TransformComponent>();
+		//TransformComponent* tr = m_mirror->GetComponent<TransformComponent>();
 		//if (tr) {
-		//	//tr->SetPos({ 0.f, -0.5f, -.5f });
+		//	tr->SetPos({ 0.f, 0.f, 3.f });
 		//	//tr->SetRotation(0.f, 90.f, 0.f);
 		//}
 
@@ -141,10 +141,10 @@ namespace DE {
 		for (auto& actorList : m_actorList)
 			for (auto& actor : actorList)
 				actor->Update(deltaTime);
-		
+
 		//m_mirror->Update(deltaTime);
 		//m_mirror->UpdateGlobalConstants(m_globalConstsCPU, deltaTime, eyeWorld, view, proj);
-		
+
 		// TODO: Picking Test
 		//pickingGpu(0);
 	}
@@ -247,12 +247,13 @@ namespace DE {
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
-		for (auto& effect : m_actorList[2])
-			effect->Render();
 
 		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
 		m_skybox->Render();
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+		for (auto& effect : m_actorList[2])
+			effect->Render();
 
 		// Bounding Volume 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
@@ -286,12 +287,12 @@ namespace DE {
 
 		for (auto& actor : m_actorList[0])
 			actor->Render();
-		
+
 		//m_mirror->Render(); // 거울만 렌더링
 
 		for (auto& billboard : m_actorList[1])
 			billboard->Render();
-		
+
 		m_skybox->Render();
 	}
 
@@ -309,7 +310,7 @@ namespace DE {
 			light = dynamic_cast<LightActor*>(m_lights[i].get());
 			if (light->GetLight().type & LIGHT_SHADOW) {
 				//renderer.SetShadowMapRender(m_lights[i]->GetLightID());
-				
+
 				//light->RenderShadow({ m_actorList[0], m_actorList[1], {m_mirror} });
 				light->RenderShadow({ m_actorList[0], m_actorList[1], m_actorList[2] });
 				//for (auto& actor : m_actorList)
@@ -365,7 +366,7 @@ namespace DE {
 					std::wcout << "New Actor Selected: " << newActor->GetName() << std::endl;
 					activeActor = newActor;
 					m_pickedActor = newActor;
-					
+
 					// Actor가 선택된 좌표
 					pickPoint = curRay.position + dist * curRay.direction;
 					// 왼쪽 마우스 버튼 클릭인 경우 (물체를 회전시킬 예정)
@@ -383,7 +384,7 @@ namespace DE {
 						prevRatio = dist / (worldFar - worldNear).Length();
 						prevPos = pickPoint;
 					}
-				}	
+				}
 			}
 			// 이미 선택된 물체가 있었던 경우
 			else {
@@ -464,7 +465,7 @@ namespace DE {
 				minActor = actor.get();
 				minDist = dist;
 			}
-			
+
 		}
 
 		return minActor;

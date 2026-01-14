@@ -19,7 +19,7 @@ namespace DE {
 			m_sample->SetModel(mesh);
 
 			MaterialConstants consts = m_sample->GetMaterialCpu();
-			consts.albedoFactor = Vector3(0.5f);
+			consts.albedoFactor = Vector3(0.01f);
 			consts.emissionFactor = Vector3(0.0f);
 			consts.metallicFactor = 0.2f;
 			consts.roughnessFactor = 0.8f;

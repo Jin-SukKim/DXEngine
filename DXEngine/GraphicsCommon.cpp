@@ -445,5 +445,10 @@ namespace DE {
 		particle.animPSO.rasterizerState = solidBothRS;
 		particle.animPSO.blendState = accumulateBS;
 		particle.animPSO.depthStencilState = particleDDS;
+
+		mirror.reflectEffectSolidPSO = particle.animPSO;
+		mirror.reflectEffectSolidPSO.depthStencilState = drawMaskedDSS;
+		mirror.reflectEffectSolidPSO.rasterizerState = solidCcwRS;
+		mirror.reflectEffectSolidPSO.stencilRef = 1;
 	}
 }

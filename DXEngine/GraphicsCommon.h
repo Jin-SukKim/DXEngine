@@ -59,6 +59,7 @@ namespace DE {
 			GraphicsPSO reflectSkyboxSolidPSO;
 			GraphicsPSO reflectSkyboxWirePSO;
 			GraphicsPSO reflectBillboardSolidPSO;
+			GraphicsPSO reflectEffectSolidPSO;
 
 			GraphicsPSO mirrorBlendSolidPSO;
 			GraphicsPSO mirrorBlendWirePSO;

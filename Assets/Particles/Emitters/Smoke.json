@@ -2,7 +2,7 @@
   "name": "SmokeEffect",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ 0.0, 0.08, 0.1],
+    "localPos": [ 0.0, 0.08, 0.0],
     "spawnVolume": [ 0.1, 0.2, 0.1 ],
     "spawnInnerRatio": 0.3,
     "spawnRate": 20.0,
