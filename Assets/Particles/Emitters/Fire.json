@@ -8,7 +8,7 @@
     "spawnRate": 30.0,
     "particlesPerSpawn": 10,
     "maxParticles": 1000,
-    "lifeRange": [ 0.1, 1.2 ]
+    "lifeRange": [ 0.1, 0.5 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],

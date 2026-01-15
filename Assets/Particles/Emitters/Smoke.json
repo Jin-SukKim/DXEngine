@@ -6,12 +6,12 @@
     "spawnVolume": [ 0.1, 0.2, 0.1 ],
     "spawnInnerRatio": 0.3,
     "spawnRate": 20.0,
-    "particlesPerSpawn": 3,
+    "particlesPerSpawn": 5,
     "maxParticles": 1000,
     "lifeRange": [ 1.0, 1.5 ]
   },
   "Visual": {
-    "startColor": [ 0.3, 0.1, 0.1, 0.7 ],
+    "startColor": [ 0.2, 0.1, 0.1, 0.8 ],
     "endColor": [ 0.0, 0.0, 0.0, 0.0 ],
     "sizeRange": [ 0.1, 0.05 ]
   },
