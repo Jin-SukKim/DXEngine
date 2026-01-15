@@ -39,12 +39,12 @@ AssetManager::TextureEntity AssetManager::LoadParticleTexture(const std::string&
 
     if (m_nextFreeIndex >= MAX_PARTICLE_TEXTURES) {
         std::cout << "[AssetManager] Error: Particle Texture Arry is full." << std::endl;
-        return { fullpath, 0 };
+        return { fullpath, -1 };
     }
 
     Image2 img;
     if (!img.Load(fullpath))
-        return { fullpath, 0 };
+        return { fullpath, -1 };
 
     img.Resize(PARTICLE_TEXTURE_WIDTH, PARTICLE_TEXTURE_HEIGHT);
     img.Convert(particleSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM);

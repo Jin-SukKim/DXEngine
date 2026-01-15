@@ -20,7 +20,7 @@ public:
 
 	// Texture °ü¸®
 	std::string m_texturePath;
-	UINT m_textureIdx = 0;
+	int m_textureIdx = -1;
 };
 }
 

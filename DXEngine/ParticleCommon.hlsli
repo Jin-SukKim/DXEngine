@@ -59,7 +59,10 @@ cbuffer ParticleConsts : register(b4)
     float3 minRotSpeed;
     float padding8;
     float3 maxRotSpeed;
-    uint textureIdx;
+    float padding9;
+
+    int textureIdx;
+    float3 padding10;
 };
 
 struct SortElement

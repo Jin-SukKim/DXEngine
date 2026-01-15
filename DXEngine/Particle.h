@@ -13,7 +13,7 @@ namespace DE {
 		Vector3 rotSpeed = Vector3(0.f);
 	};
 
-    struct ParticleConsts {
+    __declspec(align(256)) struct ParticleConsts {
         float dt;
         float time;
         UINT spawnCount;
@@ -56,6 +56,8 @@ namespace DE {
         Vector3 minRotSpeed;
         float padding8;
         Vector3 maxRotSpeed;
-        UINT textureIdx;
+        float padding9;
+        int textureIdx;
+        Vector3 padding10;
     };
 }

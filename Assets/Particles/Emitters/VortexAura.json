@@ -11,13 +11,14 @@
     "lifeRange": [ 0.5, 0.55 ]
   },
   "Visual": {
-    "startColor": [ 1.0, 0.5, 1.0, 0.5 ],
+    "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
     "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
     "sizeRange": [ 0.1, 0.01 ],
     "rotation": {
       "minRotSpeed": [ -2.0, -2.0, -2.0 ],
       "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
-    }
+    },
+    "texture": "Textures\\glassParticle.png"
   },
   "Force": {
     "velocity": [ 0.0, 0.5, 0.0 ],
@@ -36,6 +37,6 @@
     }
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "AlphaBlend"
   }
 }

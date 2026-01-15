@@ -7,7 +7,7 @@ class AssetManager
 public:
 	struct TextureEntity {
 		std::string path;
-		UINT idx;
+		int idx;
 	};
 	static AssetManager& Get() {
 		static AssetManager instance;
@@ -23,9 +23,9 @@ private:
 	static const UINT MAX_PARTICLE_TEXTURES = 64;
 	static const bool particleSRGB = true;
 
-	std::unordered_map<std::string, UINT> m_pathToIndexMap;
+	std::unordered_map<std::string, int> m_pathToIndexMap;
 	std::unique_ptr<Texture2D> m_particleTextureArray;
-	UINT m_nextFreeIndex = 0;
+	int m_nextFreeIndex = 0;
 	std::string presetPath = "..\\Assets\\";
 };
 }

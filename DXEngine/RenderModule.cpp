@@ -76,8 +76,8 @@ namespace DE {
 		};
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
-		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
 		ctx.context->PSSetConstantBuffers(4, 1, ctx.constBuffer.GetAddressOf());
+		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
 
 		// Á¤¸®
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };

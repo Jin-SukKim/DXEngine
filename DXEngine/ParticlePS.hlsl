@@ -21,9 +21,10 @@ float4 main(ParticlePSInput input) : SV_TARGET
 
     // [수정 전] Alpha가 1.0이라서 배경을 다 지워버림
     //return float4(input.color.rgb * scale, 1.0);
-
-    float4 sprite = particleTex.Sample(linearWrapSampler, float3(input.texCoord, textureIdx));
+    
+    if (-1 < textureIdx)
+    input.color *= particleTex.Sample(linearWrapSampler, float3(input.texCoord, textureIdx));
 
     // [수정 후] RGB에도 scale을 곱하고(Pre-multiplied), Alpha에도 scale을 적용
-    return input.color * scale * sprite;
+    return input.color * scale;
 }
