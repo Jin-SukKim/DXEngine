@@ -13,14 +13,13 @@ struct ParticleInitContext {
 // Base Context (공통 멤버)
 struct ParticleContext {
     ID3D11DeviceContext* context;
-    ParticleConsts& consts;
+    ConstantBuffer<ParticleConsts>& constBuffer;
 };
 
 // Simulation 단계
 struct SimulationContext : ParticleContext {
     float dt;
     float time;
-    ConstantBuffer<ParticleConsts>& constBuffer;
     AppendBuffer<Particle>& consumeBuffer;
     ID3D11ShaderResourceView* particleSRV;
     ID3D11ShaderResourceView* countSRV;

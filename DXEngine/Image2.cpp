@@ -9,7 +9,7 @@ namespace DE {
 		std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
 
 		HRESULT hr = S_OK;
-		if (ext == "exr") 
+		if (ext == "dds") 
 			hr = DirectX::LoadFromDDSFile(wFilename.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, m_scratchImage);
 		else if (ext == "tga") 
 			hr = DirectX::LoadFromTGAFile(wFilename.c_str(), nullptr, m_scratchImage);

@@ -56,6 +56,6 @@ namespace DE {
         Vector3 minRotSpeed;
         float padding8;
         Vector3 maxRotSpeed;
-        float padding9;
+        UINT textureIdx;
     };
 }

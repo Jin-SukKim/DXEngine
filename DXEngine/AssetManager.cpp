@@ -1,33 +1,75 @@
 #include "pch.h"
 #include "AssetManager.h"
+#include "Image2.h"
 
 namespace DE {
     namespace fs = std::filesystem;
-UINT AssetManager::Load(std::wstring& path)
+
+void AssetManager::Initialize()
 {
-    if (m_textures.size() >= AssetManager::MaxTextureCount) {
-        std::cout << "[AssetManager]: Texture Max Count: 30. Texture load failed." << std::endl;
-        return 0;
-    }
+    auto device = GET_SINGLE(RenderBase)->GetDevice();
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+
+    m_particleTextureArray = std::make_unique<Texture2D>();
     
-    std::string absPath = fs::absolute(path).string();
-    auto it = m_texturesIdx.find(absPath);
-    if (it == m_texturesIdx.end()) {
-        ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-        ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+    ComPtr<ID3D11Texture2D> tex;
+    ComPtr<ID3D11ShaderResourceView> srv;
 
-        std::unique_ptr<Texture2D> texture = std::make_unique<Texture2D>();
-        D3D11Utils::CreateTexture(device, context, absPath, true, *texture.get());
-        //m_textures.emplace_back(L"Temp");
-
-        m_texturesIdx[absPath] = m_textures.size() - 1;
-    }
-
-    return m_texturesIdx[absPath];
+    D3D11Utils::CreateTexture2DArray(
+        device.Get(),
+        PARTICLE_TEXTURE_WIDTH,
+        PARTICLE_TEXTURE_HEIGHT,
+        MAX_PARTICLE_TEXTURES,
+        particleSRGB,
+        tex,
+        srv);
+    
+    m_particleTextureArray->SetResource(tex, srv);
+    m_pathToIndexMap.clear();
+    m_nextFreeIndex = 0;
 }
 
-void AssetManager::BindGPU()
+AssetManager::TextureEntity AssetManager::LoadParticleTexture(const std::string& path)
 {
-    // TODO: 일반적으로 Pixel Shader에만 Bind (Constant Buffer로 Index만 갱신해서 사용)
+    // TODO: 기본 Texture를 만들어서 없다면 기본 texture의 path와 idx를 반환
+    std::string fullpath = presetPath + path;
+    auto it = m_pathToIndexMap.find(fullpath);
+    if (it != m_pathToIndexMap.end())
+        return { fullpath, it->second };
+
+    if (m_nextFreeIndex >= MAX_PARTICLE_TEXTURES) {
+        std::cout << "[AssetManager] Error: Particle Texture Arry is full." << std::endl;
+        return { fullpath, 0 };
+    }
+
+    Image2 img;
+    if (!img.Load(fullpath))
+        return { fullpath, 0 };
+
+    img.Resize(PARTICLE_TEXTURE_WIDTH, PARTICLE_TEXTURE_HEIGHT);
+    img.Convert(particleSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM);
+
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+
+    D3D11Utils::UpdateTextureArraySlice(
+        context.Get(),
+        m_particleTextureArray->GetTexture(),
+        &img,
+        static_cast<UINT>(m_nextFreeIndex)
+    );
+
+    // 전체 Array에 대해 수행되므로 비용이 많이 소모될 수 있음
+    context->GenerateMips(m_particleTextureArray->GetSRV());
+
+    m_pathToIndexMap[fullpath] = m_nextFreeIndex;
+    return { fullpath, m_nextFreeIndex++ };
+}
+
+void AssetManager::BindParticleTextures()
+{
+    if (m_particleTextureArray == nullptr)
+        return;
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    context->PSSetShaderResources(14, 1, m_particleTextureArray->GetAddressOfSRV());
 }
 }

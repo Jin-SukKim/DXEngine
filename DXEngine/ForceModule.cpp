@@ -6,16 +6,17 @@ namespace DE {
 	void ForceModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		ctx.consts.velocity = velocity;
-		ctx.consts.speedRange = speedRange;
-		ctx.consts.randomDir = randomDir;
-		ctx.consts.gravity = gravity;
-		ctx.consts.drag = drag;
-		ctx.consts.vortexCenter = vortexCenter;
-		ctx.consts.vortexStrength = vortexStrength;
-		ctx.consts.vortexAxis = vortexAxis;
-		ctx.consts.vortexFalloff = vortexFalloff;
-		ctx.consts.vortexPull = vortexPull;
+		ParticleConsts& consts = ctx.constBuffer.GetCpu();
+		consts.velocity = velocity;
+		consts.speedRange = speedRange;
+		consts.randomDir = randomDir;
+		consts.gravity = gravity;
+		consts.drag = drag;
+		consts.vortexCenter = vortexCenter;
+		consts.vortexStrength = vortexStrength;
+		consts.vortexAxis = vortexAxis;
+		consts.vortexFalloff = vortexFalloff;
+		consts.vortexPull = vortexPull;
 	}
 	void ForceModule::LoadFromJson(const json& data)
 	{

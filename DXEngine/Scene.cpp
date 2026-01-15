@@ -17,6 +17,7 @@
 
 #include "SpotLight.h"
 #include "PointLight.h"
+#include "AssetManager.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -27,7 +28,7 @@ namespace DE {
 
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(device.Get(), m_globalConstsCPU, m_globalConstsGPU);
-
+		AssetManager::Get().Initialize();
 		// Scene 공통 Actor
 		{
 			m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");

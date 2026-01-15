@@ -400,31 +400,16 @@ namespace DE {
 		}
 	}
 
-	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<std::string>& filenames, UINT targetWidth, UINT targetHeight, const bool useSRGB, ComPtr<ID3D11Texture2D>& outTextureArray, ComPtr<ID3D11ShaderResourceView>& outArraySRV)
+	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, UINT width, UINT height, UINT arraySize, bool useSRGB, ComPtr<ID3D11Texture2D>& outTexture, ComPtr<ID3D11ShaderResourceView>& outSRV)
 	{
-		if (filenames.empty())
-			return;
-
-		std::vector<Image2> images(filenames.size());
-
 		DXGI_FORMAT pixelFormat = useSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
 
-		for (size_t i = 0; i < filenames.size(); ++i) {
-			if (!images[i].Load(filenames[i]))
-				// TODO: Load 실패 시 기본 이미지 사용
-				continue;
-
-			images[i].Resize(targetWidth, targetHeight);
-			images[i].Convert(pixelFormat);
-		}
-
-		// Texture2DArray를 생성 (이때 데이터를 CPU로부터 복사하지 않음)
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Width = targetWidth;
-		desc.Height = targetHeight;
+		desc.Width = width;
+		desc.Height = height;
 		desc.MipLevels = 0; // Mipmap Level 최대
-		desc.ArraySize = static_cast<UINT>(filenames.size()); // Texture Array이므로 사용할 Texture 개수
+		desc.ArraySize = arraySize; // Texture Array이므로 사용할 Texture 개수
 		desc.Format = pixelFormat;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
@@ -433,21 +418,8 @@ namespace DE {
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap 사용
 
-		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outTextureArray.GetAddressOf()));
-
-		UINT realMipLevels = 1 + static_cast<UINT>(std::floor(std::log2(std::max(targetWidth, targetHeight))));
-
-		// StagingTexture를 만들어서 하나씩 복사
-		for (size_t i = 0; i < images.size(); ++i) {
-			if (images[i].GetBuffer().GetImageCount() == 0) continue;
-			// StagingTexture는 Texture2DArray가 아니라 Texture2D
-			ComPtr<ID3D11Texture2D> stagingTexture;
-			CreateStagingTexture(device, context, &images[i], stagingTexture);
-
-			// Staging Texture를 Texture 배열의 해당 위치에 복사
-			UINT subresourceIndex = D3D11CalcSubresource(0, static_cast<UINT>(i), realMipLevels);
-			context->CopySubresourceRegion(outTextureArray.Get(), subresourceIndex, 0, 0, 0, stagingTexture.Get(), 0, nullptr);
-		}
+		// 초기 데이터 없이 생성
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outTexture.GetAddressOf()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
@@ -459,9 +431,33 @@ namespace DE {
 		srvDesc.Texture2DArray.FirstArraySlice = 0;
 		// 얼만큼 큰 Array를 사용할건지 설정해주는 핵심
 		srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
-		ThrowIfFailed(device->CreateShaderResourceView(outTextureArray.Get(), &srvDesc, outArraySRV.GetAddressOf()));
+		ThrowIfFailed(device->CreateShaderResourceView(outTexture.Get(), &srvDesc, outSRV.GetAddressOf()));
+	}
 
-		context->GenerateMips(outArraySRV.Get());
+	void D3D11Utils::UpdateTextureArraySlice(ID3D11DeviceContext* context, ID3D11Texture2D* textureArray, const Image2* image, UINT sliceIndex)
+	{
+		const auto& buffer = image->GetBuffer();
+		const DirectX::Image* imgData = buffer.GetImages();
+
+		D3D11_TEXTURE2D_DESC desc;
+		textureArray->GetDesc(&desc);
+
+		UINT mipLevels = desc.MipLevels;
+		if (mipLevels == 0)
+			// DX11에서 MipLevels=0으로 생성시 실제 개수는 Log2(max(w,h)) + 1 
+			mipLevels = 1 + static_cast<UINT>(std::floor(std::log2(std::max(desc.Width, desc.Height))));
+
+		UINT subresourceIndex = D3D11CalcSubresource(0, sliceIndex, mipLevels);
+		
+		// 데이터 갱신
+		context->UpdateSubresource(
+			textureArray,
+			subresourceIndex,
+			nullptr,
+			imgData->pixels,
+			static_cast<UINT>(imgData->rowPitch),
+			static_cast<UINT>(imgData->slicePitch)
+		);
 	}
 
 	void D3D11Utils::CreateStagingTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, ComPtr<ID3D11Texture2D>& outStagingTexture)

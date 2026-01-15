@@ -2,6 +2,7 @@
 #include "ParticleSystem.h"
 #include "ParticleLoader.h"
 #include "TransformComponent.h"
+#include "AssetManager.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Actor(name)
@@ -27,6 +28,7 @@ namespace DE {
 			emitter->OnSpawn();
 
 		ExecutePreWarm();
+		AssetManager::Get().BindParticleTextures();
 	}
 
 	void ParticleSystem::Update(const float& dt)
@@ -86,22 +88,16 @@ namespace DE {
 	void ParticleSystem::LoadFromJson(const json& data)
 	{
 		if (data.contains("Transform")) {
+			auto jsonTr = data["Transform"];
 			auto tr = this->GetComponent<TransformComponent>();
 			if (tr) {
-				if (data.contains("position")) tr->SetPos(JsonToVec3(data["position"]));
-				if (data.contains("rotation")) tr->SetRotation(JsonToVec3(data["rotation"]));
-				if (data.contains("size")) tr->SetScale(JsonToVec3(data["size"]));
+				if (jsonTr.contains("position"))
+					tr->SetPos(JsonToVec3(jsonTr["position"]));
+				if (jsonTr.contains("rotation"))
+					tr->SetRotation(JsonToVec3(jsonTr["rotation"]));
+				if (jsonTr.contains("size"))
+					tr->SetScale(JsonToVec3(jsonTr["size"]));
 			}
-		}
-		if (data.contains("Looping")) m_looping = data["Looping"];
-		if (data.contains("Duration")) m_duration = data["Duration"];
-		if (data.contains("PlayRate")) m_playRate = data["PlayRate"];
-		if (data.contains("PreWarmTime")) m_preWarmTime = data["PreWarmTime"];
-		if (data.contains("State")) {
-			std::string state = data["State"];
-			if (state == "Play") Restart();
-			else if (state == "Pause") Pause();
-			else if (state == "Stop") Stop();
 		}
 
 		ClearEmitters();
@@ -113,6 +109,18 @@ namespace DE {
 				if (emitter)
 					this->AddEmitter(std::move(emitter));
 			}
+		}
+
+		if (data.contains("Looping")) m_looping = data["Looping"];
+		if (data.contains("Duration")) m_duration = data["Duration"];
+		if (data.contains("PlayRate")) m_playRate = data["PlayRate"];
+		if (data.contains("PreWarmTime")) m_preWarmTime = data["PreWarmTime"];
+		
+		if (data.contains("State")) {
+			std::string state = data["State"];
+			if (state == "Play") Restart();
+			else if (state == "Pause") Pause();
+			else if (state == "Stop") Stop();
 		}
 	}
 	

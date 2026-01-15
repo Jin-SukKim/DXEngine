@@ -19,7 +19,7 @@ namespace DE {
 		ground = AddObject<SquareActor>(L"Ground");
 
 		effect = AddEffect<ParticleSystem>(L"Effect");
-		ParticleLoader::Load<ParticleSystem>(L"FireEffect.json", effect);
+		ParticleLoader::Load<ParticleSystem>(L"Particles\\FireEffect.json", effect);
  	}
 
 	ParticleEditor::~ParticleEditor()
@@ -27,9 +27,8 @@ namespace DE {
 	}
 
 	void ParticleEditor::Initialize()
-	{
+	{	
 		Scene::Initialize();
-		effect->OnSpawn();
 	}
 
 	void ParticleEditor::Update(const float& dt)

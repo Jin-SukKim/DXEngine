@@ -46,10 +46,9 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			m_consts.GetCpu(),
-			0.f,
-			0.f,
 			m_consts,
+			0.f,
+			0.f,
 			m_consume
 		};
 
@@ -104,10 +103,9 @@ namespace DE {
 		
 		SimulationContext simCtx = {
 			context.Get(),
-			m_consts.GetCpu(),
+			m_consts,
 			dt,
 			time,
-			m_consts,
 			m_consume,
 			m_append.GetSRV(),
 			m_countSRV.Get()
@@ -173,7 +171,7 @@ namespace DE {
 		
 		RenderContext renderCtx = {
 			context,
-			m_consts.GetCpu(),
+			m_consts,
 			m_consume.GetSRV(),
 			m_drawInstancedArgs.GetBuffer()
 		};

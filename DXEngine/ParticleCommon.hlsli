@@ -1,6 +1,8 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
+Texture2DArray particleTex : register(t14);
+
 struct Particle
 {
     float3 position;
@@ -57,7 +59,7 @@ cbuffer ParticleConsts : register(b4)
     float3 minRotSpeed;
     float padding8;
     float3 maxRotSpeed;
-    float padding9;
+    uint textureIdx;
 };
 
 struct SortElement

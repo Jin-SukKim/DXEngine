@@ -101,7 +101,17 @@ namespace DE {
 		// Metal과 Roughness Texture를 하나의 Texture에서 사용하는 MetallicRoughness Texture 생성
 		static void CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
 		// Texture2D Array 생성
-		static void CreateTexture2DArray(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<std::string>& filenames, UINT targetWidth, UINT targetHeight, const bool useSRGB, ComPtr<ID3D11Texture2D>& outTextureArray, ComPtr<ID3D11ShaderResourceView>& outArraySRV);
+		static void CreateTexture2DArray(ID3D11Device* device,
+			UINT width, UINT height, UINT arraySize,
+			bool useSRGB,
+			ComPtr<ID3D11Texture2D>& outTexture,
+			ComPtr<ID3D11ShaderResourceView>& outSRV);
+		// Texture2D Array에 데이터를 복사
+		static void UpdateTextureArraySlice(
+			ID3D11DeviceContext* context,
+			ID3D11Texture2D* textureArray,
+			const Image2* image,
+			UINT sliceIndex);
 		// Image2를 사용해 Miamap을 위한 Stating Texture 생성
 		static void CreateStagingTexture(ID3D11Device* device,
 			ID3D11DeviceContext* context,

@@ -13,12 +13,13 @@ namespace DE {
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		ctx.consts.localPos = localPos;
-		ctx.consts.spawnVolume = spawnVolume;
-		ctx.consts.spawnInnerRatio = spawnInnerRatio;
-		ctx.consts.spawnShape = spawnShape;
-		ctx.consts.lifeRange = lifeRange;
-		ctx.consts.maxParticles = maxParticles;
+		ParticleConsts& consts = ctx.constBuffer.GetCpu();
+		consts.localPos = localPos;
+		consts.spawnVolume = spawnVolume;
+		consts.spawnInnerRatio = spawnInnerRatio;
+		consts.spawnShape = spawnShape;
+		consts.lifeRange = lifeRange;
+		consts.maxParticles = maxParticles;
 	}
 
 	void SpawnModule::PreUpdate(SimulationContext& ctx)
@@ -34,7 +35,7 @@ namespace DE {
 		if (m_totalSpawnCount < 0)
 			m_totalSpawnCount = 0;
 
-		ctx.consts.spawnCount = m_totalSpawnCount;
+		ctx.constBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}
 	
 	void SpawnModule::OnUpdate(const SimulationContext& ctx)

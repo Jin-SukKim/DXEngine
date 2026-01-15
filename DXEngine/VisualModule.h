@@ -17,6 +17,10 @@ public:
 	Vector3 maxRotation = Vector3(360.f);
 	Vector3 minRotSpeed = Vector3(-1.f);
 	Vector3 maxRotSpeed = Vector3(1.f);
+
+	// Texture °ü¸®
+	std::string m_texturePath;
+	UINT m_textureIdx = 0;
 };
 }
 

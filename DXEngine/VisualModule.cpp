@@ -1,20 +1,23 @@
 #include "pch.h"
 #include "VisualModule.h"
 #include "ParticleEmitter.h"
+#include "AssetManager.h"
 
 namespace DE {
 	void VisualModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		ctx.consts.startColor = startColor;
-		ctx.consts.endColor = endColor;
-		ctx.consts.sizeRange = sizeRange;
-		ctx.consts.minRotation = minRotation;
-		ctx.consts.maxRotation = maxRotation;
-		ctx.consts.minRotSpeed = minRotSpeed;
-		ctx.consts.maxRotSpeed = maxRotSpeed;
-
+		ParticleConsts& consts = ctx.constBuffer.GetCpu();
+		consts.startColor = startColor;
+		consts.endColor = endColor;
+		consts.sizeRange = sizeRange;
+		consts.minRotation = minRotation;
+		consts.maxRotation = maxRotation;
+		consts.minRotSpeed = minRotSpeed;
+		consts.maxRotSpeed = maxRotSpeed;
+		consts.textureIdx = m_textureIdx;
 	}
+
 	void VisualModule::LoadFromJson(const json& data)
 	{
 		if (data.contains("startColor")) startColor = JsonToVec4(data["startColor"]);
@@ -26,6 +29,11 @@ namespace DE {
 			if (rot.contains("maxRotation")) maxRotation = JsonToVec3(rot["maxRotation"]);
 			if (rot.contains("minRotSpeed")) minRotSpeed = JsonToVec3(rot["minRotSpeed"]);
 			if (rot.contains("maxRotSpeed")) maxRotSpeed = JsonToVec3(rot["maxRotSpeed"]);
+		}
+		if (data.contains("texture")) {
+			const auto [path, idx] = AssetManager::Get().LoadParticleTexture(data["texture"]);
+			m_texturePath = path;
+			m_textureIdx = idx;
 		}
 	}
 }

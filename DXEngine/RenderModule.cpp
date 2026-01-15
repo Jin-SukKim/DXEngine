@@ -26,7 +26,7 @@ namespace DE {
 			ctx.countSRV
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
-		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.consts.maxParticles + 1023) / 1024, 1, 1);
+		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.constBuffer.GetCpu().maxParticles + 1023) / 1024, 1, 1);
 
 		m_sort.Sort(ctx.context);
 	}
@@ -77,6 +77,7 @@ namespace DE {
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
 		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
+		ctx.context->PSSetConstantBuffers(4, 1, ctx.constBuffer.GetAddressOf());
 
 		// Á¤¸®
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };

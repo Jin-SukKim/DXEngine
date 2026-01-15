@@ -4,7 +4,7 @@
 #include "FileWatcher.h"
 
 namespace DE {
-std::wstring ParticleLoader::presetPath = L"..\\Assets\\Particles\\";
+std::wstring ParticleLoader::presetPath = L"..\\Assets\\";
 
 template<>
 void ParticleLoader::ApplyJsonTo<ParticleEmitter>(ParticleEmitter* target, const json& jsonData) {
@@ -29,8 +29,6 @@ void ParticleLoader::ApplyJsonTo<ParticleSystem>(ParticleSystem* target, const j
 	if (!target) return;
 
 	target->LoadFromJson(jsonData);
-
-	target->Initialize();
 }
 
 }
