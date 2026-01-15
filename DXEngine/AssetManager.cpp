@@ -18,7 +18,7 @@ UINT AssetManager::Load(std::wstring& path)
 
         std::unique_ptr<Texture2D> texture = std::make_unique<Texture2D>();
         D3D11Utils::CreateTexture(device, context, absPath, true, *texture.get());
-        m_textures.emplace_back(std::move(texture));
+        //m_textures.emplace_back(L"Temp");
 
         m_texturesIdx[absPath] = m_textures.size() - 1;
     }

@@ -2,6 +2,7 @@
 #include "D3D11Utils.h"
 #include "Image.h"
 #include "Texture2D.h"
+#include "Image2.h"
 
 #include <directxtk/DDSTextureLoader.h>
 
@@ -399,6 +400,111 @@ namespace DE {
 		}
 	}
 
+	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<std::string>& filenames, UINT targetWidth, UINT targetHeight, const bool useSRGB, ComPtr<ID3D11Texture2D>& outTextureArray, ComPtr<ID3D11ShaderResourceView>& outArraySRV)
+	{
+		if (filenames.empty())
+			return;
+
+		std::vector<Image2> images(filenames.size());
+
+		DXGI_FORMAT pixelFormat = useSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
+
+		for (size_t i = 0; i < filenames.size(); ++i) {
+			if (!images[i].Load(filenames[i]))
+				// TODO: Load 실패 시 기본 이미지 사용
+				continue;
+
+			images[i].Resize(targetWidth, targetHeight);
+			images[i].Convert(pixelFormat);
+		}
+
+		// Texture2DArray를 생성 (이때 데이터를 CPU로부터 복사하지 않음)
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width = targetWidth;
+		desc.Height = targetHeight;
+		desc.MipLevels = 0; // Mipmap Level 최대
+		desc.ArraySize = static_cast<UINT>(filenames.size()); // Texture Array이므로 사용할 Texture 개수
+		desc.Format = pixelFormat;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture로부터 복사 가능
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap 사용
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outTextureArray.GetAddressOf()));
+
+		UINT realMipLevels = 1 + static_cast<UINT>(std::floor(std::log2(std::max(targetWidth, targetHeight))));
+
+		// StagingTexture를 만들어서 하나씩 복사
+		for (size_t i = 0; i < images.size(); ++i) {
+			if (images[i].GetBuffer().GetImageCount() == 0) continue;
+			// StagingTexture는 Texture2DArray가 아니라 Texture2D
+			ComPtr<ID3D11Texture2D> stagingTexture;
+			CreateStagingTexture(device, context, &images[i], stagingTexture);
+
+			// Staging Texture를 Texture 배열의 해당 위치에 복사
+			UINT subresourceIndex = D3D11CalcSubresource(0, static_cast<UINT>(i), realMipLevels);
+			context->CopySubresourceRegion(outTextureArray.Get(), subresourceIndex, 0, 0, 0, stagingTexture.Get(), 0, nullptr);
+		}
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		ZeroMemory(&srvDesc, sizeof(srvDesc));
+		srvDesc.Format = desc.Format;
+		// Array로 사용하겠다는 설정 핵심
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.MostDetailedMip = 0;
+		srvDesc.Texture2DArray.MipLevels = -1;
+		srvDesc.Texture2DArray.FirstArraySlice = 0;
+		// 얼만큼 큰 Array를 사용할건지 설정해주는 핵심
+		srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
+		ThrowIfFailed(device->CreateShaderResourceView(outTextureArray.Get(), &srvDesc, outArraySRV.GetAddressOf()));
+
+		context->GenerateMips(outArraySRV.Get());
+	}
+
+	void D3D11Utils::CreateStagingTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, ComPtr<ID3D11Texture2D>& outStagingTexture)
+	{
+		// Image2 내부의 DirectXTex 데이터 가져오기
+		const DirectX::ScratchImage& scratchImg = image->GetBuffer();
+		const DirectX::Image* imgData = scratchImg.GetImages(); // 첫 번째 이미지(Mip0, Slice0)
+
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = static_cast<UINT>(imgData->width);
+		desc.Height = static_cast<UINT>(imgData->height);
+		desc.MipLevels = 1; // Staging은 복사 용도이므로 MipMap 불필요 (원본 1장만)
+		desc.ArraySize = 1;
+		desc.Format = imgData->format;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_STAGING;
+		desc.BindFlags = 0; // Staging은 Bind Flag 없음
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outStagingTexture.GetAddressOf()));
+
+		// 데이터 복사 (Map/Unmap)
+		D3D11_MAPPED_SUBRESOURCE ms;
+		ThrowIfFailed(context->Map(outStagingTexture.Get(), 0, D3D11_MAP_WRITE, 0, &ms));
+
+		// 메모리 복사 (Row Pitch를 고려하여 한 줄씩 복사)
+		const uint8_t* srcPtr = imgData->pixels;
+		uint8_t* destPtr = static_cast<uint8_t*>(ms.pData);
+
+		// 복사할 높이만큼 반복
+		for (size_t h = 0; h < imgData->height; ++h)
+		{
+			// min(Source Pitch, Dest Pitch) 만큼 복사해야 안전함
+			// 보통 DirectXTex로 로드하면 포맷이 같아 Pitch도 비슷하지만, Dest가 더 클 수 있음
+			size_t copySize = std::min<size_t>(imgData->rowPitch, ms.RowPitch);
+			memcpy(destPtr, srcPtr, copySize);
+
+			srcPtr += imgData->rowPitch;
+			destPtr += ms.RowPitch;
+		}
+
+		context->Unmap(outStagingTexture.Get(), 0);
+	}
 
 	void D3D11Utils::CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest)
 	{

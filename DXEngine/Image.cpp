@@ -89,42 +89,6 @@ namespace DE {
 		return true;
 	}
 
-	bool Image::ResizeImage(int targetWidth, int targetHeight)
-	{
-		// 예외 처리: 원본 데이터가 없거나 타겟 크기가 잘못된 경우
-		if (m_image.empty() || m_width <= 0 || m_height <= 0) return false;
-		if (targetWidth <= 0 || targetHeight <= 0) return false;
-
-		// 리사이징된 데이터를 담을 메모리 할당
-		// Load()에서 채널을 무조건 4(RGBA)로 맞췄으므로 크기는 w * h * 4
-		std::vector<uint8_t> outputImage(targetWidth * targetHeight * 4);
-
-		// 리사이징 수행 (stb_image_resize2.h 사용)
-		// stbir_resize_uint8_srgb: 사람의 눈에 보이는 이미지(Color)를 리사이징할 때 감마 보정을 처리해줌
-		// 만약 Normal Map이나 Mask 같은 데이터라면 stbir_resize_uint8_linear 사용 권장
-		unsigned char* result = stbir_resize_uint8_srgb(
-			m_image.data(), m_width, m_height, 0,             // Input: 버퍼, w, h, stride(0=자동)
-			outputImage.data(), targetWidth, targetHeight, 0, // Output: 버퍼, w, h, stride(0=자동)
-			STBIR_RGBA                                        // Pixel Layout: RGBA (Load함수에서 4채널 고정했으므로)
-		);
-
-		if (!result) {
-			std::cerr << "Failed to resize image." << std::endl;
-			return false;
-		}
-
-		// 기존 데이터 교체 및 메타데이터 업데이트
-		// std::move를 사용하여 불필요한 복사 방지
-		m_image = std::move(outputImage);
-		m_width = targetWidth;
-		m_height = targetHeight;
-		// m_channels는 Load()에서 4로 고정했으므로 변경 없음
-
-		std::cout << "Image resized to: " << m_width << "x" << m_height << std::endl;
-
-		return true;
-	}
-
 	void Image::readImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat)
 	{
 		const std::wstring wFilename(filename.begin(), filename.end());

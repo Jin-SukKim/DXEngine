@@ -1,6 +1,7 @@
 #pragma once
 
 namespace DE {
+// The max shader resource slots is 128, and for feature level 11 the max texture array size is 2048.
 class AssetManager
 {
 public:

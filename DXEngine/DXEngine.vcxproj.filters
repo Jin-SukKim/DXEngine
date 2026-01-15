@@ -361,6 +361,7 @@
     <ClInclude Include="AssetManager.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Image2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -536,6 +537,9 @@
     </ClCompile>
     <ClCompile Include="AssetManager.cpp">
       <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Image2.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

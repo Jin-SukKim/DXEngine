@@ -1,7 +1,10 @@
 #pragma once
 //#include "Texture2D.h"
+//#include "Image2.h"
 
 namespace DE {
+	class Image2;
+
 	class Texture2D;
 	inline void ThrowIfFailed(HRESULT hr) {
 		if (FAILED(hr)) {
@@ -97,7 +100,13 @@ namespace DE {
 		static void CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture);
 		// Metal과 Roughness Texture를 하나의 Texture에서 사용하는 MetallicRoughness Texture 생성
 		static void CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
-
+		// Texture2D Array 생성
+		static void CreateTexture2DArray(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<std::string>& filenames, UINT targetWidth, UINT targetHeight, const bool useSRGB, ComPtr<ID3D11Texture2D>& outTextureArray, ComPtr<ID3D11ShaderResourceView>& outArraySRV);
+		// Image2를 사용해 Miamap을 위한 Stating Texture 생성
+		static void CreateStagingTexture(ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const Image2* image,
+			ComPtr<ID3D11Texture2D>& outStagingTexture);
 		static void CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest);
 
 		// Pixel Format에 따라 Pixel 색상의 범위가 다르기 때문에 같은 uint8_t를 쓰지만 대신 데이터 범위가 다름
