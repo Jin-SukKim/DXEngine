@@ -23,7 +23,7 @@ void main( uint3 dtID : SV_DispatchThreadID )
         float distSq = dot(dist, dist);
         // 거리값이 같으면 정렬 순서가 불안정해 깜빡거리는 것처럼 보이는걸
         // ID로 작은 가중치를 더해 Stable Sort를 유도
-        elem.key = distSq + ((float)id * 0.01f); 
+        elem.key = distSq + ((float)id + 0.01f); 
     } else
     {
         elem.key = -1.f;

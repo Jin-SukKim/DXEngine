@@ -62,7 +62,8 @@ cbuffer ParticleConsts : register(b4)
     float padding9;
 
     int textureIdx;
-    float3 padding10;
+    float2 frameTiles; // sprite sheet 격자 크기
+    uint frameCount; // 유효한 격자 수
 };
 
 struct SortElement

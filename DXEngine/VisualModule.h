@@ -21,6 +21,8 @@ public:
 	// Texture °ü¸®
 	std::string m_texturePath;
 	int m_textureIdx = -1;
+	Vector2 m_frameTiles = { 1, 1 };
+	UINT m_frameCount = 1;
 };
 }
 

@@ -57,7 +57,9 @@ namespace DE {
         float padding8;
         Vector3 maxRotSpeed;
         float padding9;
+
         int textureIdx;
-        Vector3 padding10;
+        Vector2 frameTiles;
+        UINT frameCount;
     };
 }

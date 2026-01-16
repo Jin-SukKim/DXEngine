@@ -5,6 +5,7 @@ struct GSInput
     float4 pos : SV_POSITION;
     float4 color : COLOR;
     float life : PSIZE0;
+    float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
 };
@@ -16,6 +17,7 @@ struct ParticlePSInput
     float4 center : POSITION1;
     float2 texcoord : TEXCOORD;
     float4 color : COLOR;
+    float lifeRatio : TEXCOORD1;
     uint primID : SV_PrimitiveID;
 };
 
@@ -38,6 +40,7 @@ void main(
     ParticlePSInput output;
     output.primID = primID;
     output.color = input[0].color;
+    output.lifeRatio = input[0].lifeRatio;
 
     output.posWorld = input[0].pos;
     output.center = input[0].pos;

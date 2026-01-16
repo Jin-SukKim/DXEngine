@@ -16,6 +16,8 @@ namespace DE {
 		consts.minRotSpeed = minRotSpeed;
 		consts.maxRotSpeed = maxRotSpeed;
 		consts.textureIdx = m_textureIdx;
+		consts.frameTiles = m_frameTiles;
+		consts.frameCount = m_frameCount;
 	}
 
 	void VisualModule::LoadFromJson(const json& data)
@@ -34,6 +36,11 @@ namespace DE {
 			const auto [path, idx] = AssetManager::Get().LoadParticleTexture(data["texture"]);
 			m_texturePath = path;
 			m_textureIdx = idx;
+		}
+		if (data.contains("sprite")) {
+			auto& sprite = data["sprite"];
+			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);
+			if (sprite.contains("frameCount")) m_frameCount = sprite["frameCount"];
 		}
 	}
 }

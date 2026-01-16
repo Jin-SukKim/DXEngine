@@ -9,6 +9,7 @@ struct GSInput
     float4 position : SV_POSITION;
     float4 color : COLOR;
     float life : PSIZE0;
+    float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
 };
@@ -42,6 +43,7 @@ GSInput main(uint vertexID : SV_VertexID)
     output.rotation = p.rotation.x;
     output.color = p.color;
     output.life = p.life;
+    output.lifeRatio = 1.0 - saturate(p.life / p.lifeMax);
     output.size = p.size;
 
     return output;
