@@ -8,7 +8,8 @@ class SpawnModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx);
-	void OnSpawn(SimulationContext& ctx) override;
+	void OnSpawn(SimulationContext& ctx) override; 
+	void OnUpdateCPU(SimulationContext& context) override;
 	void PreUpdate(SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;

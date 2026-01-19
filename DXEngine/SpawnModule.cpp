@@ -22,9 +22,9 @@ namespace DE {
 		ctx.frameConstBuffer.GetCpu().maxParticles = maxParticles;
 	}
 
-	void SpawnModule::PreUpdate(SimulationContext& ctx)
+	void SpawnModule::OnUpdateCPU(SimulationContext& ctx)
 	{
-		ParticleModule::PreUpdate(ctx);
+		ParticleModule::OnUpdateCPU(ctx);
 		spawnAccumulator += spawnRate * ctx.dt;
 
 		UINT spawnCycles = static_cast<int>(spawnAccumulator);
@@ -36,12 +36,14 @@ namespace DE {
 			m_totalSpawnCount = 0;
 
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
+	}
 
+	void SpawnModule::PreUpdate(SimulationContext& ctx)
+	{
+		ParticleModule::PreUpdate(ctx);
+		
 		if (m_totalSpawnCount == 0)
 			return;
-
-		ctx.frameConstBuffer.Upload();
-		ctx.context->CSSetConstantBuffers(4, 1, ctx.frameConstBuffer.GetAddressOf());
 
 		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);

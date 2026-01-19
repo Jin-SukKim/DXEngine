@@ -127,6 +127,12 @@ namespace DE {
 		};
 
 		for (auto& mod : m_modules)
+			mod->OnUpdateCPU(simCtx);
+
+		m_frameConsts.Upload();
+		context->CSSetConstantBuffers(4, 1, m_frameConsts.GetAddressOf());
+
+		for (auto& mod : m_modules)
 			mod->PreUpdate(simCtx);
 
 		UpdateArgsBuffers(context.Get());
