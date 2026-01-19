@@ -13,7 +13,7 @@ namespace DE {
 		Vector3 rotSpeed = Vector3(0.f);
 	};
 
-    struct ParticleConsts {
+    struct ParticleFrameConsts {
         float dt;
         float time;
         UINT spawnCount;
@@ -76,5 +76,13 @@ namespace DE {
         int textureIdx;
         UINT frameCount;
         Vector2 frameTiles;
+    };
+
+    struct ParticleConsts {
+        SpawnConsts spawn;
+        VisualConsts visual;
+        ForceConsts force;
+        RenderConsts render;
+        VortexConsts vortex;
     };
 }

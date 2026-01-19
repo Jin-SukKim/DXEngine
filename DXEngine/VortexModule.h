@@ -22,7 +22,6 @@ public:
 	Vector2 m_vortexPull = Vector2(0.f);
 
 	ComputeShader m_vortexCS;
-	ConstantBuffer<VortexConsts> m_vortexConsts;
 };
 
 }

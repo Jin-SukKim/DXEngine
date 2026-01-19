@@ -13,22 +13,22 @@ struct ParticlePSInput
 };
 
 float4 SpriteTexture(float lifeRatio, float2 uv) {
-    if (frameTiles.x > 1 || frameTiles.y > 1) {
+    if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
         // 현재 frame
-        uint currentFrame = floor(lifeRatio * frameCount);
-        currentFrame = min(currentFrame, frameCount - 1);
+        uint currentFrame = floor(lifeRatio * render.frameCount);
+        currentFrame = min(currentFrame, render.frameCount - 1);
 
         // Sprite Sheet의 col, row
-        uint width = frameTiles.x;
+        uint width = render.frameTiles.x;
         uint col = currentFrame % width;
         uint row = currentFrame / width;
 
-        float2 uvSize = 1.f / frameTiles; // Tile 1칸의 크기
+        float2 uvSize = 1.f / render.frameTiles; // Tile 1칸의 크기
 
         uv = (uv + float2(col, row)) * uvSize;
     }
 
-    return particleTex.Sample(linearClampSampler, float3(uv, textureIdx));
+    return particleTex.Sample(linearClampSampler, float3(uv, render.textureIdx));
 }
 
 float4 main(ParticlePSInput input) : SV_TARGET
@@ -38,7 +38,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
     // --------------------------------------------------------
     // Case 1: 텍스처가 있는 경우 (Sprite / Animation)
     // --------------------------------------------------------
-    if (textureIdx >= 0)
+    if (render.textureIdx >= 0)
     {
         float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
         finalColor *= texColor;

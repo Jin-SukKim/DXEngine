@@ -42,7 +42,6 @@ namespace DE {
 
 		// 업데이트 단계별 함수들
 		void UpdateArgsBuffers(ID3D11DeviceContext* context);
-		void UpdateSimulationStage(ID3D11DeviceContext* context);
 
 	private:
 		std::wstring m_name;
@@ -50,7 +49,7 @@ namespace DE {
 		AppendBuffer<Particle> m_consume;
 		AppendBuffer<Particle> m_append;
 
-		// 간접 디스패치 및 드로우 인수
+		// 간접 디스패치 및 드로우 인수.
 		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
 		IndirectArgsBuffer<DrawInstancedArgs> m_drawInstancedArgs;
 		
@@ -62,6 +61,7 @@ namespace DE {
 		ComputeShader m_argsUpdateCS;
 		
 		// 상수 버퍼
+		ConstantBuffer<ParticleFrameConsts> m_frameConsts;
 		ConstantBuffer<ParticleConsts> m_consts;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;

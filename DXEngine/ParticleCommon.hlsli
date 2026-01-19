@@ -15,14 +15,14 @@ struct Particle
     float3 rotSpeed;
 };
 
-cbuffer ParticleConsts : register(b4) {
+cbuffer ParticleFrameConsts : register(b4) {
     float dt;
     float time;
     uint spawnCount;
     uint maxParticles;
 };
 
-cbuffer SpawnConsts : register(b5) {
+struct SpawnConsts {
     float3 localPos;
     float padding;
 
@@ -34,7 +34,7 @@ cbuffer SpawnConsts : register(b5) {
     float padding1;
 };
 
-cbuffer VisualConsts : register(b6) {
+struct VisualConsts {
     float2 sizeRange;
     float2 padding2;
 
@@ -51,7 +51,7 @@ cbuffer VisualConsts : register(b6) {
     float padding6;
 };
 
-cbuffer ForceConsts : register(b7) {
+struct ForceConsts {
     float3 velocity;
     float padding7;
     float2 speedRange;
@@ -63,20 +63,28 @@ cbuffer ForceConsts : register(b7) {
     float padding9;
 };
 
-cbuffer RenderConsts : register(b8) {
+struct RenderConsts {
     int textureIdx;
     uint frameCount;
     float2 frameTiles;
 };
 
-cbuffer VortexConsts : register(b9) {
+struct VortexConsts {
     float vortexStrength;
     float3 vortexCenter;
     float3 vortexAxis;
     float vortexFalloff;
     float2 vortexPull;
     float2 padding10;
-}
+};
+
+cbuffer ParticleConsts : register(b5) {
+    SpawnConsts spawn;
+    VisualConsts visual;
+    ForceConsts force;
+    RenderConsts render;
+    VortexConsts vortex;
+};
 
 struct SortElement
 {

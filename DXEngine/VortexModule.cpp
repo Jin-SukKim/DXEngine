@@ -5,21 +5,18 @@
 namespace DE {
 	void VortexModule::Initialize(ParticleInitContext& ctx)
 	{
-		m_vortexConsts.Initialize();
 		m_vortexCS.Initialize(ctx.device, L"VortexCS.hlsl");
 	}
 
 	void VortexModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		VortexConsts& consts = m_vortexConsts.GetCpu();
+		VortexConsts& consts = ctx.constBuffer.GetCpu().vortex;
 		consts.vortexCenter = m_vortexCenter;
 		consts.vortexStrength = m_vortexStrength;
 		consts.vortexAxis = m_vortexAxis;
 		consts.vortexFalloff = m_vortexFalloff;
 		consts.vortexPull = m_vortexPull;
-		m_vortexConsts.Upload();
-		ctx.context->CSSetConstantBuffers(9, 1, m_vortexConsts.GetAddressOf());
 	}
 
 	void VortexModule::OnUpdate(const SimulationContext& ctx)

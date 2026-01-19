@@ -32,8 +32,13 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		
 		m_consts.Initialize();
+		m_frameConsts.Initialize();
 
-		ParticleInitContext initCtx = { device.Get(), m_consts.GetCpu() };
+		ParticleInitContext initCtx = { 
+			device.Get(), 
+			m_consts.GetCpu(),
+			m_frameConsts.GetCpu() 
+		};
 
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
@@ -49,6 +54,7 @@ namespace DE {
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts,
+			m_frameConsts,
 			0.f,
 			0.f,
 			m_consume,
@@ -59,6 +65,9 @@ namespace DE {
 
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
+
+		m_consts.Upload();
+		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 	}
 
 	void ParticleEmitter::Reset()
@@ -86,8 +95,8 @@ namespace DE {
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
 		// 핑퐁 업데이트를 위한 이중 버퍼 파티클 저장소
-		m_consume.Initialize(device.Get(), m_consts.GetCpu().maxParticles);
-		m_append.Initialize(device.Get(), m_consts.GetCpu().maxParticles);
+		m_consume.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
+		m_append.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 
 		// 간접 디스패치 및 드로우 인수
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 });
@@ -102,12 +111,13 @@ namespace DE {
 	{
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		m_consts.GetCpu().dt = dt;
-		m_consts.GetCpu().time = time;
+		m_frameConsts.GetCpu().dt = dt;
+		m_frameConsts.GetCpu().time = time;
 		
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts,
+			m_frameConsts,
 			dt,
 			time,
 			m_consume,
@@ -120,7 +130,6 @@ namespace DE {
 			mod->PreUpdate(simCtx);
 
 		UpdateArgsBuffers(context.Get());
-		context->CSSetConstantBuffers(4, 1, m_consts.GetAddressOf());
 
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
@@ -153,10 +162,12 @@ namespace DE {
 		RenderContext renderCtx = {
 			context,
 			m_consts,
+			m_frameConsts,
 			m_consume.GetSRV(),
 			m_drawInstancedArgs.GetBuffer()
 		};
 
+		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 		for (auto& mod : m_modules)
 			mod->OnRender(renderCtx);
 	}

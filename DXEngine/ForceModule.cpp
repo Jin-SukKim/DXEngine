@@ -5,21 +5,18 @@
 namespace DE {
 	void ForceModule::Initialize(ParticleInitContext& ctx)
 	{
-		m_forceConsts.Initialize();
 		m_particleCS.Initialize(ctx.device, L"ParticleCS.hlsl");
 	}
 
 	void ForceModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		ForceConsts& consts = m_forceConsts.GetCpu();
+		ForceConsts& consts = ctx.constBuffer.GetCpu().force;
 		consts.velocity = velocity;
 		consts.speedRange = speedRange;
 		consts.randomDir = randomDir;
 		consts.gravity = gravity;
 		consts.drag = drag;
-		m_forceConsts.Upload(); 
-		ctx.context->CSSetConstantBuffers(7, 1, m_forceConsts.GetAddressOf());
 	}
 
 	void ForceModule::OnUpdate(const SimulationContext& ctx)

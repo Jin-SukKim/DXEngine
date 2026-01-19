@@ -8,12 +8,14 @@ namespace DE {
 struct ParticleInitContext {
     ID3D11Device* device;
     ParticleConsts& consts;
+    ParticleFrameConsts& frameConsts;
 };
 
 // Base Context (공통 멤버)
 struct ParticleContext {
     ID3D11DeviceContext* context;
     ConstantBuffer<ParticleConsts>& constBuffer;
+    ConstantBuffer<ParticleFrameConsts>& frameConstBuffer;
 };
 
 // Simulation 단계

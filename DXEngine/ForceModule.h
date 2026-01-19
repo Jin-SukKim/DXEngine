@@ -22,7 +22,6 @@ public:
 	float drag = 0.f;
 
 	ComputeShader m_particleCS;
-	ConstantBuffer<ForceConsts> m_forceConsts;
 };
 
 }

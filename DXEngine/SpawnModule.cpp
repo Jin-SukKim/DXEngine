@@ -5,26 +5,21 @@
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
 	{
-		m_spawnConsts.Initialize();
-
-		ctx.consts.maxParticles = maxParticles;
+		ctx.frameConsts.maxParticles = maxParticles;
 		m_spawnCS.Initialize(ctx.device, L"SpawnCS.hlsl");
 	}
 
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		SpawnConsts& consts = m_spawnConsts.GetCpu();
+		SpawnConsts& consts = ctx.constBuffer.GetCpu().spawn;
 		consts.localPos = localPos;
 		consts.spawnVolume = spawnVolume;
 		consts.spawnInnerRatio = spawnInnerRatio;
 		consts.spawnShape = spawnShape;
 		consts.lifeRange = lifeRange;
 
-		m_spawnConsts.Upload();
-		ctx.context->CSSetConstantBuffers(5, 1, m_spawnConsts.GetAddressOf());
-
-		ctx.constBuffer.GetCpu().maxParticles = maxParticles;
+		ctx.frameConstBuffer.GetCpu().maxParticles = maxParticles;
 	}
 
 	void SpawnModule::PreUpdate(SimulationContext& ctx)
@@ -40,14 +35,13 @@ namespace DE {
 		if (m_totalSpawnCount < 0)
 			m_totalSpawnCount = 0;
 
-		ctx.constBuffer.GetCpu().spawnCount = m_totalSpawnCount;
+		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 
 		if (m_totalSpawnCount == 0)
 			return;
 
-		ctx.constBuffer.Upload();
-
-		m_spawnCS.UpdateConsts(ctx.context, 4, 1, ctx.constBuffer.GetAddressOf());
+		ctx.frameConstBuffer.Upload();
+		ctx.context->CSSetConstantBuffers(4, 1, ctx.frameConstBuffer.GetAddressOf());
 
 		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);

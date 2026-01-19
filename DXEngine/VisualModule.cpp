@@ -5,13 +5,12 @@
 namespace DE {
 	void VisualModule::Initialize(ParticleInitContext& ctx)
 	{
-		m_visualConsts.Initialize();
 	}
 
 	void VisualModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		VisualConsts& consts = m_visualConsts.GetCpu();
+		VisualConsts& consts = ctx.constBuffer.GetCpu().visual;
 		consts.startColor = startColor;
 		consts.endColor = endColor;
 		consts.sizeRange = sizeRange;
@@ -19,8 +18,6 @@ namespace DE {
 		consts.maxRotation = maxRotation;
 		consts.minRotSpeed = minRotSpeed;
 		consts.maxRotSpeed = maxRotSpeed;
-		m_visualConsts.Upload();
-		ctx.context->CSSetConstantBuffers(6, 1, m_visualConsts.GetAddressOf());
 	}
 
 	void VisualModule::LoadFromJson(const json& data)

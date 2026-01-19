@@ -47,15 +47,15 @@ void main(uint3 dtID : SV_DispatchThreadID)
     rPos.z = rand_hash_signed(seed + float2(2, 2));
 
     float3 rPosAbs = abs(rPos);
-    rPosAbs = lerp(spawnInnerRatio, 1.f, rPosAbs);
+    rPosAbs = lerp(spawn.spawnInnerRatio, 1.f, rPosAbs);
 
     // 1. Position 초기화 (Box Shape 기준)
-    if (spawnShape == 0) // BOX
+    if (spawn.spawnShape == 0) // BOX
     {
         // 기존 박스 로직 (Hollow 포함)
         float3 rPosAbs = abs(rPos);
-        rPosAbs = lerp(spawnInnerRatio, 1.0f, rPosAbs); // 안쪽 비우기
-        p.position = sign(rPos) * rPosAbs * spawnVolume;
+        rPosAbs = lerp(spawn.spawnInnerRatio, 1.0f, rPosAbs); // 안쪽 비우기
+        p.position = sign(rPos) * rPosAbs * spawn.spawnVolume;
     }
     else // SPHERE
     {
@@ -69,17 +69,17 @@ void main(uint3 dtID : SV_DispatchThreadID)
         float randomDist = abs(rPos.x);
 
         // 안쪽 비율(innerRatio) ~ 1.0 사이로 거리 보간
-        float distScale = lerp(spawnInnerRatio, 1.0f, randomDist);
+        float distScale = lerp(spawn.spawnInnerRatio, 1.0f, randomDist);
 
         // 3. 최종 위치 = 방향 * 반지름(volume) * 거리비율
         // spawnVolume의 x,y,z를 각각 곱해주면 "타원체(Ellipsoid)" 표현도 가능!
-        p.position = dir * (spawnVolume * distScale);
+        p.position = dir * (spawn.spawnVolume * distScale);
     }
-    p.position += localPos;
+    p.position += spawn.localPos;
 
     // 2. Life 초기화
     // lifeRange.x ~ lifeRange.y 사이 랜덤
-    p.life = rand_range(seed + float2(3, 3), lifeRange.x, lifeRange.y);
+    p.life = rand_range(seed + float2(3, 3), spawn.lifeRange.x, spawn.lifeRange.y);
     p.lifeMax = p.life;
 
     // 3. Velocity 초기화
@@ -89,20 +89,20 @@ void main(uint3 dtID : SV_DispatchThreadID)
     noiseDir.y = rand_hash_signed(seed + float2(0, 10));
     noiseDir.z = rand_hash_signed(seed + float2(5, 5));
 
-    float3 finalDir = normalize(velocity + noiseDir * randomDir);
+    float3 finalDir = normalize(force.velocity + noiseDir * force.randomDir);
 
     // 속력(Speed) 랜덤 설정
-    float speed = rand_range(seed + float2(4, 4), speedRange.x, speedRange.y);
+    float speed = rand_range(seed + float2(4, 4), force.speedRange.x, force.speedRange.y);
 
     p.velocity = finalDir * speed;
 
     // 4. Color & Size 초기화
-    p.color = startColor;
-    p.size = sizeRange.x; // Start Size
+    p.color = visual.startColor;
+    p.size = visual.sizeRange.x; // Start Size
 
     float toRad = 3.141592f / 180.f;
-    p.rotation = lerp(minRotation, maxRotation, rand3(seed + 4.0)) * toRad;
-    p.rotSpeed = lerp(minRotSpeed, maxRotSpeed, rand3(seed + 5.0));
+    p.rotation = lerp(visual.minRotation, visual.maxRotation, rand3(seed + 4.0)) * toRad;
+    p.rotSpeed = lerp(visual.minRotSpeed, visual.maxRotSpeed, rand3(seed + 5.0));
 
     outputParticles.Append(p);
 }

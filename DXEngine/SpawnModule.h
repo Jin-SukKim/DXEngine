@@ -26,8 +26,6 @@ public:
 private:
 	ComputeShader m_spawnCS;
 	UINT m_totalSpawnCount = 0;
-
-	ConstantBuffer<SpawnConsts> m_spawnConsts;
 };
 }
 

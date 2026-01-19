@@ -9,7 +9,7 @@ namespace DE {
 		ParticleModule::Initialize(ctx);
 
 		m_InitSortKeysCS.Initialize(ctx.device, L"InitBitonicSortCS.hlsl");
-		m_sort.Initialize(ctx.device, ctx.consts.maxParticles, L"BitonicSortCS.hlsl");
+		m_sort.Initialize(ctx.device, ctx.frameConsts.maxParticles, L"BitonicSortCS.hlsl");
 	}
 
 	void RenderModule::OnSpawn(SimulationContext& ctx)
@@ -27,7 +27,7 @@ namespace DE {
 			ctx.countSRV
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
-		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.constBuffer.GetCpu().maxParticles + 1023) / 1024, 1, 1);
+		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.frameConstBuffer.GetCpu().maxParticles + 1023) / 1024, 1, 1);
 
 		m_sort.Sort(ctx.context);
 	}
@@ -64,22 +64,14 @@ namespace DE {
 		}
 	}
 
-	void BillboardRenderModule::Initialize(ParticleInitContext& ctx)
-	{
-		RenderModule::Initialize(ctx);
-		m_renderConsts.Initialize();
-	}
-
 	void BillboardRenderModule::OnSpawn(SimulationContext& ctx)
 	{
 		RenderModule::OnSpawn(ctx);
 
-		RenderConsts& consts = m_renderConsts.GetCpu();
+		RenderConsts& consts = ctx.constBuffer.GetCpu().render;
 		consts.textureIdx = m_textureIdx;
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
-		m_renderConsts.Upload();
-		ctx.context->CSSetConstantBuffers(8, 1, m_renderConsts.GetAddressOf());
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -93,7 +85,6 @@ namespace DE {
 		};
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
-		ctx.context->PSSetConstantBuffers(8, 1, m_renderConsts.GetAddressOf());
 		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
 
 		// Á¤¸®
