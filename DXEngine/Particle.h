@@ -77,7 +77,8 @@ namespace DE {
         UINT frameCount;
         Vector2 frameTiles;
         UINT meshIndexCount = 0;
-        Vector3 padding11;
+        UINT meshCount = 0;
+        Vector2 padding11;
     };
 
     struct ParticleConsts {

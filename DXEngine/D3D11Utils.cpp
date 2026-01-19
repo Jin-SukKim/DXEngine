@@ -669,7 +669,7 @@ namespace DE {
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
 	}
 
-	void D3D11Utils::CreateIndirectBuffer(ID3D11Device* device, UINT byteWidth, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)
+	void D3D11Utils::CreateIndirectBuffer(ID3D11Device* device, UINT byteWidth, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)
 	{
 		D3D11_BUFFER_DESC desc = {};
 		desc.ByteWidth = byteWidth;
@@ -693,7 +693,7 @@ namespace DE {
 		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint로 읽기 위해 R32_UINT 사용
 		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		uavDesc.Buffer.FirstElement = 0;
-		uavDesc.Buffer.NumElements = byteWidth / 4; // UINT 개수 (Byte / 4)
+		uavDesc.Buffer.NumElements = byteWidth / argCount; // UINT 개수 (Byte / 4)
 		uavDesc.Buffer.Flags = 0;
 
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));

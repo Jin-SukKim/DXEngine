@@ -101,8 +101,8 @@ namespace DE {
 		m_append.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 
 		// 간접 디스패치 및 드로우 인수
-		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 });
-		m_indirectArgs.Initialize(device.Get(), { 0, 0, 0, 0, 0 });
+		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
+		m_indirectArgs.Initialize(device.Get(), { 0, 0, 0, 0, 0 }, 5);
 
 		// 활성 파티클 개수를 추적하는 카운터 버퍼
 		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), nullptr,
