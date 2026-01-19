@@ -71,6 +71,7 @@ namespace DE {
 
 		struct {
 			GraphicsPSO animPSO;
+			GraphicsPSO meshPSO;
 		} particle;
 
 		// Shader에서 공통으로 사용할 Sampler
@@ -158,6 +159,8 @@ namespace DE {
 		ComPtr<ID3D11BlendState> accumulateBS; // 색을 전부 더하면서 렌더링
 		ComPtr<ID3D11BlendState> alphaBS; 
 		ComPtr<ID3D11DepthStencilState> particleDDS;
+
+		ComPtr<ID3D11VertexShader> particleMeshVS;
 
 	};
 

@@ -14,7 +14,7 @@ class RenderModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
-	void OnUpdate(const SimulationContext& context) override;
+	void OnUpdate(const SimulationContext& ctx) override;
 	virtual void OnRender(const RenderContext& ctx) override;
 	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
@@ -31,7 +31,7 @@ class BillboardRenderModule : public RenderModule
 {
 public:
 	void OnSpawn(SimulationContext& ctx) override;
-	void OnRender(const RenderContext& context) override;
+	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 private:
 	// Texture 包府
@@ -39,6 +39,18 @@ private:
 	int m_textureIdx = -1;
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
+};
+
+class MeshRenderModule : public RenderModule
+{
+public:
+	void Initialize(ParticleInitContext& ctx) override;
+	void OnSpawn(SimulationContext& ctx) override;
+	void OnRender(const RenderContext& ctx) override;
+	void LoadFromJson(const json& data) override;
+private:
+	// Texture 包府
+	int m_modelIdx = -1;
 };
 }
 

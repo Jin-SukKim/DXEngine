@@ -2,15 +2,15 @@
 
 namespace DE {
 // The max shader resource slots is 128, and for feature level 11 the max texture array size is 2048.
-class AssetManager
+class TextureManager
 {
 public:
 	struct TextureEntity {
 		std::string path;
 		int idx;
 	};
-	static AssetManager& Get() {
-		static AssetManager instance;
+	static TextureManager& Get() {
+		static TextureManager instance;
 		return instance;
 	}
 

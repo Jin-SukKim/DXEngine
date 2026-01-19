@@ -190,7 +190,8 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="AppendBuffer.h" />
-    <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="BillboardActor.h" />
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="BloomEffect.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="DetailGui.h" />
     <ClInclude Include="FileWatcher.h" />
     <ClInclude Include="Image2.h" />
+    <ClInclude Include="Mesh2.h" />
     <ClInclude Include="ParticleContext.h" />
     <ClInclude Include="ParticleLoader.h" />
     <ClInclude Include="ParticleModuleFactory.h" />
@@ -265,7 +267,8 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AppBase.cpp" />
-    <ClCompile Include="AssetManager.cpp" />
+    <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="BillboardActor.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
     <ClCompile Include="BloomEffect.cpp" />
@@ -531,6 +534,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="ParticleMeshVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="ParticlePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

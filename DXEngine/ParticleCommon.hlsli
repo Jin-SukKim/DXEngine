@@ -67,6 +67,8 @@ struct RenderConsts {
     int textureIdx;
     uint frameCount;
     float2 frameTiles;
+    int modelIdx;
+    float3 padding11;
 };
 
 struct VortexConsts {

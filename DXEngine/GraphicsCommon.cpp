@@ -163,6 +163,9 @@ namespace DE {
 		D3D11Utils::CreateGS(device, L"NormalGS.hlsl", normalGS);
 		D3D11Utils::CreatePS(device, L"NormalPS.hlsl", normalPS);
 
+		// Particle
+		D3D11Utils::CreateVSAndIL(device, L"ParticleMeshVS.hlsl", basicIEs, particleMeshVS, basicIL);
+
 		// Skybox
 		std::vector<D3D11_INPUT_ELEMENT_DESC> skyboxIEs = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
@@ -450,5 +453,9 @@ namespace DE {
 		mirror.reflectEffectSolidPSO.depthStencilState = drawMaskedDSS;
 		mirror.reflectEffectSolidPSO.rasterizerState = solidCcwRS;
 		mirror.reflectEffectSolidPSO.stencilRef = 1;
+
+		particle.meshPSO = basic.solidPSO;
+		particle.meshPSO.vertexShader = particleMeshVS;
+		particle.meshPSO.pixelShader = colorPS;
 	}
 }

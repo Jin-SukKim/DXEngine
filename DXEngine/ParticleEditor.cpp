@@ -11,6 +11,8 @@
 #include "FileWatcher.h"
 #include "ParticleSystem.h"
 #include "TransformComponent.h"
+#include "GeometryGenerator.h"
+#include "ModelManager.h"
 
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
@@ -20,7 +22,10 @@ namespace DE {
 
 		effect = AddEffect<ParticleSystem>(L"Effect");
 		ParticleLoader::Load<ParticleSystem>(L"Particles\\FireEffect.json", effect);
- 	}
+ 		
+		MeshData box = GeometryGenerator::MakeBox();
+		ModelManager::Get().LoadModel("ParticleBox", box);
+	}
 
 	ParticleEditor::~ParticleEditor()
 	{

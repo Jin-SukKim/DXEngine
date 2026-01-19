@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "RenderModule.h"
 #include "ParticleEmitter.h"
-#include "AssetManager.h"
+#include "TextureManager.h"
+#include "ModelManager.h"
+#include "GeometryGenerator.h"
 
 namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
@@ -77,6 +79,7 @@ namespace DE {
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 
 		// IndirectDraw
 		ID3D11ShaderResourceView* sortSRVs[] = {
@@ -96,7 +99,7 @@ namespace DE {
 	{
 		RenderModule::LoadFromJson(data);
 		if (data.contains("texture")) {
-			const auto [path, idx] = AssetManager::Get().LoadParticleTexture(data["texture"]);
+			const auto [path, idx] = TextureManager::Get().LoadParticleTexture(data["texture"]);
 			m_texturePath = path;
 			m_textureIdx = idx;
 		}
@@ -104,6 +107,55 @@ namespace DE {
 			auto& sprite = data["sprite"];
 			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);
 			if (sprite.contains("frameCount")) m_frameCount = sprite["frameCount"];
+		}
+	}
+
+	void MeshRenderModule::Initialize(ParticleInitContext& ctx)
+	{
+		RenderModule::Initialize(ctx);
+
+	}
+
+	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
+	{
+		RenderModule::OnSpawn(ctx);
+		RenderConsts& consts = ctx.constBuffer.GetCpu().render;
+		consts.modelIdx = m_modelIdx;
+	}
+
+	void MeshRenderModule::OnRender(const RenderContext& ctx)
+	{
+		RenderModule::OnRender(ctx);
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
+
+		// IndirectDraw
+		ID3D11ShaderResourceView* sortSRVs[] = {
+			ctx.particleSRV,
+			m_sort.GetSRV()
+		};
+
+		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
+		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
+
+		// Á¤¸®
+		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
+	}
+
+	void MeshRenderModule::LoadFromJson(const json& data)
+	{
+		RenderModule::LoadFromJson(data);
+		if (data.contains("model")) 
+			m_modelIdx = ModelManager::Get().LoadModel(data["model"], data.value("isGLTF", false));
+		else if (data.contains("defaultMesh")) {
+			switch (static_cast<int>(data["defaultMesh"])) {
+			case 0:
+				m_modelIdx = ModelManager::Get().LoadModel("ParticleBox", GeometryGenerator::MakeBox());
+				break;
+			case 1:
+				m_modelIdx = ModelManager::Get().LoadModel("ParticleSphere", GeometryGenerator::MakeSphere(1.f, 10, 10));
+				break;
+			}
 		}
 	}
 }

@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "AssetManager.h"
+#include "TextureManager.h"
 #include "Image2.h"
 
 namespace DE {
     namespace fs = std::filesystem;
 
-void AssetManager::Initialize()
+void TextureManager::Initialize()
 {
     auto device = GET_SINGLE(RenderBase)->GetDevice();
     auto context = GET_SINGLE(RenderBase)->GetContext();
@@ -29,7 +29,7 @@ void AssetManager::Initialize()
     m_nextFreeIndex = 0;
 }
 
-AssetManager::TextureEntity AssetManager::LoadParticleTexture(const std::string& path)
+TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::string& path)
 {
     // TODO: 기본 Texture를 만들어서 없다면 기본 texture의 path와 idx를 반환
     std::string fullpath = presetPath + path;
@@ -38,7 +38,7 @@ AssetManager::TextureEntity AssetManager::LoadParticleTexture(const std::string&
         return { fullpath, it->second };
 
     if (m_nextFreeIndex >= MAX_PARTICLE_TEXTURES) {
-        std::cout << "[AssetManager] Error: Particle Texture Arry is full." << std::endl;
+        std::cout << "[TextureManager] Error: Particle Texture Arry is full." << std::endl;
         return { fullpath, -1 };
     }
 
@@ -65,7 +65,7 @@ AssetManager::TextureEntity AssetManager::LoadParticleTexture(const std::string&
     return { fullpath, m_nextFreeIndex++ };
 }
 
-void AssetManager::BindParticleTextures()
+void TextureManager::BindParticleTextures()
 {
     if (m_particleTextureArray == nullptr)
         return;

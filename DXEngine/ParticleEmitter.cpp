@@ -18,6 +18,7 @@ namespace DE {
 		ParticleModuleFactory::Register<ForceModule>("Force");
 		ParticleModuleFactory::Register<VortexModule>("Vortex");
 		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
+		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
 	}
 
 	ParticleEmitter::~ParticleEmitter()

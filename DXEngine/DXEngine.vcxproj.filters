@@ -143,6 +143,9 @@
     <Filter Include="public\ParticleSystem\Buffer">
       <UniqueIdentifier>{16fc1ed4-a236-4b98-ac3d-674784a3b25f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\ParticleSystem\Resource">
+      <UniqueIdentifier>{df639e14-4802-4783-a538-94edee4a25a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -358,19 +361,22 @@
     <ClInclude Include="ParticleModuleFactory.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="AssetManager.h">
+    <ClInclude Include="TextureManager.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Image2.h" />
     <ClInclude Include="VortexModule.h">
       <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
+    <ClInclude Include="Image2.h">
+      <Filter>public\ParticleSystem\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh2.h">
+      <Filter>public\ParticleSystem\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AppBase.cpp">
@@ -538,14 +544,20 @@
     <ClCompile Include="ParticleSystem.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
+    <ClCompile Include="TextureManager.cpp">
       <Filter>private\ParticleSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="Image2.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VortexModule.cpp">
       <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Image2.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -658,6 +670,9 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="VortexCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleMeshVS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>

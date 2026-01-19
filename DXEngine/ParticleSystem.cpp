@@ -2,7 +2,7 @@
 #include "ParticleSystem.h"
 #include "ParticleLoader.h"
 #include "TransformComponent.h"
-#include "AssetManager.h"
+#include "TextureManager.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Actor(name)
@@ -28,7 +28,7 @@ namespace DE {
 			emitter->OnSpawn();
 
 		ExecutePreWarm();
-		AssetManager::Get().BindParticleTextures();
+		TextureManager::Get().BindParticleTextures();
 	}
 
 	void ParticleSystem::Update(const float& dt)
