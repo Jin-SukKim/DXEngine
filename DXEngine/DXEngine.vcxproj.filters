@@ -362,6 +362,9 @@
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Image2.h" />
+    <ClInclude Include="VortexModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -541,6 +544,9 @@
     <ClCompile Include="Image2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VortexModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -649,6 +655,9 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="InitBitonicSortCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="VortexCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>

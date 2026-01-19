@@ -18,11 +18,6 @@ namespace DE {
 		consts.randomDir = randomDir;
 		consts.gravity = gravity;
 		consts.drag = drag;
-		consts.vortexCenter = vortexCenter;
-		consts.vortexStrength = vortexStrength;
-		consts.vortexAxis = vortexAxis;
-		consts.vortexFalloff = vortexFalloff;
-		consts.vortexPull = vortexPull;
 		m_forceConsts.Upload(); 
 		ctx.context->CSSetConstantBuffers(7, 1, m_forceConsts.GetAddressOf());
 	}
@@ -44,7 +39,6 @@ namespace DE {
 		};
 
 		ctx.context->CSSetUnorderedAccessViews(0, 2, particleUAVs, initCounts);
-		m_particleCS.UpdateConsts(ctx.context, 4, 1, ctx.constBuffer.GetAddressOf());
 
 		// Particle Simulation Compute Shader
 		m_particleCS.DispatchIndirect(ctx.context, ctx.dispatchArgs);
@@ -56,13 +50,5 @@ namespace DE {
 		if (data.contains("randomDir")) randomDir = JsonToVec3(data["randomDir"]);
 		if (data.contains("gravity")) gravity = JsonToVec3(data["gravity"]);
 		if (data.contains("drag")) drag = data["drag"];
-		if (data.contains("vortex")) {
-			auto& vortex = data["vortex"];
-			if (vortex.contains("center")) vortexCenter = JsonToVec3(vortex["center"]);
-			if (vortex.contains("strength")) vortexStrength = vortex["strength"];
-			if (vortex.contains("axis")) vortexAxis = JsonToVec3(vortex["axis"]);
-			if (vortex.contains("vortexFalloff")) vortexFalloff = vortex["vortexFalloff"];
-			if (vortex.contains("pull")) vortexPull = JsonToVec2(vortex["pull"]);
-		}
 	}
 }

@@ -60,20 +60,23 @@ cbuffer ForceConsts : register(b7) {
     float3 randomDir;
     float drag;
     float3 gravity;
-    float vortexStrength;
-    float3 vortexCenter;
     float padding9;
-    float3 vortexAxis;
-    float vortexFalloff;
-    float2 vortexPull;
-    float2 padding10;
 };
 
 cbuffer RenderConsts : register(b8) {
     int textureIdx;
-    float2 frameTiles;
     uint frameCount;
+    float2 frameTiles;
 };
+
+cbuffer VortexConsts : register(b9) {
+    float vortexStrength;
+    float3 vortexCenter;
+    float3 vortexAxis;
+    float vortexFalloff;
+    float2 vortexPull;
+    float2 padding10;
+}
 
 struct SortElement
 {

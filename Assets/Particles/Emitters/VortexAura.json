@@ -24,16 +24,14 @@
     "speedRange": [ 1.0, 2.0 ],
     "randomDir": [ 0.2, 0.5, 0.2 ],
     "gravity": [ 0.0, 5.0, 0.0 ],
-    "drag": 0.5,
-    "vortex": {
-      "strength": 15.0,
-      "pull": [ -15, 100 ],
-      "center": [ 0.0, 0.0, 0.0 ],
-      "vortexFalloff": 1.0,
-      "axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 1000.0,
-      "mode": 0
-    }
+    "drag": 0.5
+  },
+  "Vortex": {
+    "strength": 15.0,
+    "pull": [ -15, 100 ],
+    "center": [ 0.0, 0.0, 0.0 ],
+    "vortexFalloff": 1.0,
+    "axis": [ 0.0, 1.0, 0.0 ]
   },
   "BillboardRender": {
     "blendMode": "AlphaBlend",

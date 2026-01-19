@@ -58,18 +58,23 @@ namespace DE {
         Vector3 randomDir;
         float drag;
         Vector3 gravity;
-        float vortexStrength;
-        Vector3 vortexCenter;
         float padding9;
+    };
+
+    struct VortexConsts {
+        float vortexStrength;
+        Vector3 vortexCenter; 
+
         Vector3 vortexAxis;
-        float vortexFalloff;
+        float vortexFalloff;  
+
         Vector2 vortexPull;
-        Vector2 padding10;
+        Vector2 padding10;    
     };
 
     struct RenderConsts {
         int textureIdx;
-        Vector2 frameTiles;
         UINT frameCount;
+        Vector2 frameTiles;
     };
 }

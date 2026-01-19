@@ -7,8 +7,9 @@ class ParticleEmitter;
 enum class ModulePriority : uint8_t {
 	Spawn = 1,
 	Visual = 2,
-	Force = 3,
-	Render = 4
+	UpdateForce = 3,
+	Force = 4,
+	Render = 5
 };
 
 class ParticleModule

@@ -6,6 +6,7 @@
 #include "SpawnModule.h"
 #include "VisualModule.h"
 #include "ForceModule.h"
+#include "VortexModule.h"
 #include "RenderModule.h"	
 #include "ParticleContext.h"
 namespace DE {
@@ -15,6 +16,7 @@ namespace DE {
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
 		ParticleModuleFactory::Register<VisualModule>("Visual");
 		ParticleModuleFactory::Register<ForceModule>("Force");
+		ParticleModuleFactory::Register<VortexModule>("Vortex");
 		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
 	}
 
@@ -118,6 +120,7 @@ namespace DE {
 			mod->PreUpdate(simCtx);
 
 		UpdateArgsBuffers(context.Get());
+		context->CSSetConstantBuffers(4, 1, m_consts.GetAddressOf());
 
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
