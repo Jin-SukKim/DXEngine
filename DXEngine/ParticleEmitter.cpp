@@ -131,6 +131,7 @@ namespace DE {
 
 		m_frameConsts.Upload();
 		context->CSSetConstantBuffers(4, 1, m_frameConsts.GetAddressOf());
+		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 
 		for (auto& mod : m_modules)
 			mod->PreUpdate(simCtx);
