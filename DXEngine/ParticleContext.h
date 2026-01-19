@@ -21,8 +21,9 @@ struct SimulationContext : ParticleContext {
     float dt;
     float time;
     AppendBuffer<Particle>& consumeBuffer;
-    ID3D11ShaderResourceView* particleSRV;
+    AppendBuffer<Particle>& appendBuffer;
     ID3D11ShaderResourceView* countSRV;
+    ID3D11Buffer* dispatchArgs;
 };
 
 // Render ´Ü°è

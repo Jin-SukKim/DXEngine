@@ -30,9 +30,18 @@ protected:
 class BillboardRenderModule : public RenderModule
 {
 public:
+	void Initialize(ParticleInitContext& ctx) override;
+	void OnSpawn(SimulationContext& ctx) override;
 	void OnRender(const RenderContext& context) override;
+	void LoadFromJson(const json& data) override;
 private:
-	// TODO: Texture 추가
+	ConstantBuffer<RenderConsts> m_renderConsts;
+
+	// Texture 관리
+	std::string m_texturePath;
+	int m_textureIdx = -1;
+	Vector2 m_frameTiles = { 1, 1 };
+	UINT m_frameCount = 1;
 };
 }
 

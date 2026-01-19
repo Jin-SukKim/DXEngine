@@ -13,51 +13,61 @@ namespace DE {
 		Vector3 rotSpeed = Vector3(0.f);
 	};
 
-    __declspec(align(256)) struct ParticleConsts {
+    struct ParticleConsts {
         float dt;
         float time;
         UINT spawnCount;
         UINT maxParticles;
+    };
 
+    struct SpawnConsts {
         Vector3 localPos;
-        float padding0;
+        float padding;
+
         Vector3 spawnVolume;
         float spawnInnerRatio;
+        
         Vector2 lifeRange;
         int spawnShape = 0; // 0: Box, 1: Sphere
         float padding1;
+    };
 
-        Vector3 velocity;
-        float padding2;
-        Vector2 speedRange;
-        Vector2 padding3;
-
-        Vector3 randomDir;
-        float drag;
-
-        Vector3 gravity;
-
-        float vortexStrength;
-        Vector3 vortexCenter;
-        float padding4;
-        Vector3 vortexAxis;
-        float vortexFalloff;
-        Vector2 vortexPull;
-
+    struct VisualConsts {
         Vector2 sizeRange;
+        Vector2 padding2;
 
         Vector4 startColor;
         Vector4 endColor;
 
         Vector3 minRotation;
-        float padding6;
+        float padding3;
         Vector3 maxRotation;
-        float padding7;
+        float padding4;
         Vector3 minRotSpeed;
-        float padding8;
+        float padding5;
         Vector3 maxRotSpeed;
-        float padding9;
+        float padding6;
+    };
 
+    struct ForceConsts {
+        Vector3 velocity;
+        float padding7;
+        Vector2 speedRange;
+        Vector2 padding8;
+
+        Vector3 randomDir;
+        float drag;
+        Vector3 gravity;
+        float vortexStrength;
+        Vector3 vortexCenter;
+        float padding9;
+        Vector3 vortexAxis;
+        float vortexFalloff;
+        Vector2 vortexPull;
+        Vector2 padding10;
+    };
+
+    struct RenderConsts {
         int textureIdx;
         Vector2 frameTiles;
         UINT frameCount;

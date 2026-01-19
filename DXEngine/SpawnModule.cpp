@@ -5,7 +5,8 @@
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
 	{
-		ParticleModule::Initialize(ctx);
+		m_spawnConsts.Initialize();
+
 		ctx.consts.maxParticles = maxParticles;
 		m_spawnCS.Initialize(ctx.device, L"SpawnCS.hlsl");
 	}
@@ -13,13 +14,17 @@ namespace DE {
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		ParticleConsts& consts = ctx.constBuffer.GetCpu();
+		SpawnConsts& consts = m_spawnConsts.GetCpu();
 		consts.localPos = localPos;
 		consts.spawnVolume = spawnVolume;
 		consts.spawnInnerRatio = spawnInnerRatio;
 		consts.spawnShape = spawnShape;
 		consts.lifeRange = lifeRange;
-		consts.maxParticles = maxParticles;
+
+		m_spawnConsts.Upload();
+		ctx.context->CSSetConstantBuffers(5, 1, m_spawnConsts.GetAddressOf());
+
+		ctx.constBuffer.GetCpu().maxParticles = maxParticles;
 	}
 
 	void SpawnModule::PreUpdate(SimulationContext& ctx)
@@ -36,13 +41,11 @@ namespace DE {
 			m_totalSpawnCount = 0;
 
 		ctx.constBuffer.GetCpu().spawnCount = m_totalSpawnCount;
-	}
-	
-	void SpawnModule::OnUpdate(const SimulationContext& ctx)
-	{
-		ParticleModule::OnUpdate(ctx);
+
 		if (m_totalSpawnCount == 0)
 			return;
+
+		ctx.constBuffer.Upload();
 
 		m_spawnCS.UpdateConsts(ctx.context, 4, 1, ctx.constBuffer.GetAddressOf());
 

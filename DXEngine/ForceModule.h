@@ -1,11 +1,16 @@
 #pragma once
 #include "ParticleModule.h"
+#include "ComputeShader.h"
 
 namespace DE {
+
 class ForceModule : public ParticleModule
 {
 public:
-	void OnSpawn(SimulationContext& ctx) override;
+	void Initialize(ParticleInitContext& ctx) override;
+	void OnSpawn(SimulationContext& ctx) override; 
+	void OnUpdate(const SimulationContext& context) override;
+
 	ModulePriority GetPriority() override { return ModulePriority::Force; }
 
 	void LoadFromJson(const json& data) override;
@@ -21,6 +26,9 @@ public:
 	float vortexFalloff = 1.f;
 	Vector3 vortexAxis = Vector3(0.f, 1.f, 0.f);
 	Vector2 vortexPull = Vector2(0.f);
+
+	ComputeShader m_particleCS;
+	ConstantBuffer<ForceConsts> m_forceConsts;
 };
 
 }

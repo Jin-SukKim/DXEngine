@@ -49,7 +49,10 @@ namespace DE {
 			m_consts,
 			0.f,
 			0.f,
-			m_consume
+			m_consume,
+			m_append,
+			m_countSRV.Get(),
+			m_dispatchArgs.GetBuffer()
 		};
 
 		for (auto& mod : m_modules)
@@ -76,7 +79,6 @@ namespace DE {
 	{
 		// 셰이더 로드
 		m_argsUpdateCS.Initialize(device, L"ParticleArgsUpdateCS.hlsl");
-		m_particleCS.Initialize(device, L"ParticleCS.hlsl");
 	}
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
@@ -107,21 +109,18 @@ namespace DE {
 			dt,
 			time,
 			m_consume,
-			m_append.GetSRV(),
-			m_countSRV.Get()
+			m_append,
+			m_countSRV.Get(),
+			m_dispatchArgs.GetBuffer()
 		};
 
 		for (auto& mod : m_modules)
 			mod->PreUpdate(simCtx);
 
-		m_consts.Upload();
+		UpdateArgsBuffers(context.Get());
 
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
-
-		// GPU 파티클 업데이트 파이프라인 실행
-		UpdateArgsBuffers(context.Get());
-		UpdateSimulationStage(context.Get());
 
 		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);
@@ -142,27 +141,6 @@ namespace DE {
 
 		// Indirect Args Update
 		m_argsUpdateCS.Dispatch(context, 1, 1, 1);
-	}
-
-	void ParticleEmitter::UpdateSimulationStage(ID3D11DeviceContext* context)
-	{
-		// Counter buffer binding
-		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
-
-		// UAV 설정 (초기 카운트 지정)
-		// -1: consume 버퍼의 기존 카운트 유지
-		// 0: append 버퍼의 카운트 리셋
-		UINT initCounts[2] = { static_cast<UINT>(-1), 0 };
-		ID3D11UnorderedAccessView* particleUAVs[] = {
-			m_consume.GetUAV(),
-			m_append.GetUAV()
-		};
-
-		context->CSSetUnorderedAccessViews(0, 2, particleUAVs, initCounts);
-		m_particleCS.UpdateConsts(context, 4, 1, m_consts.GetAddressOf());
-
-		// Particle Simulation Compute Shader
-		m_particleCS.DispatchIndirect(context, m_dispatchArgs.GetBuffer());
 	}
 
 	void ParticleEmitter::Render()

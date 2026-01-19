@@ -60,7 +60,6 @@ namespace DE {
 
 		// 컴퓨트 셰이더들
 		ComputeShader m_argsUpdateCS;
-		ComputeShader m_particleCS;
 		
 		// 상수 버퍼
 		ConstantBuffer<ParticleConsts> m_consts;

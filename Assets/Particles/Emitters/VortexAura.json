@@ -17,8 +17,7 @@
     "rotation": {
       "minRotSpeed": [ -2.0, -2.0, -2.0 ],
       "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
-    },
-    "texture": "Textures\\glassParticle.png"
+    }
   },
   "Force": {
     "velocity": [ 0.0, 0.5, 0.0 ],
@@ -37,6 +36,7 @@
     }
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend"
+    "blendMode": "AlphaBlend",
+    "texture": "Textures\\glassParticle.png"
   }
 }

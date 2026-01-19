@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "RenderModule.h"
 #include "ParticleEmitter.h"
+#include "AssetManager.h"
 
 namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
@@ -22,7 +23,7 @@ namespace DE {
 		ID3D11UnorderedAccessView* uav[1] = { m_sort.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
-			ctx.particleSRV,
+			ctx.appendBuffer.GetSRV(),
 			ctx.countSRV
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
@@ -34,6 +35,7 @@ namespace DE {
 	void RenderModule::OnRender(const RenderContext& ctx)
 	{
 		ParticleModule::OnRender(ctx);
+		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 	}
 
 	void RenderModule::SetBlendState()
@@ -62,13 +64,28 @@ namespace DE {
 		}
 	}
 
+	void BillboardRenderModule::Initialize(ParticleInitContext& ctx)
+	{
+		RenderModule::Initialize(ctx);
+		m_renderConsts.Initialize();
+	}
+
+	void BillboardRenderModule::OnSpawn(SimulationContext& ctx)
+	{
+		RenderModule::OnSpawn(ctx);
+
+		RenderConsts& consts = m_renderConsts.GetCpu();
+		consts.textureIdx = m_textureIdx;
+		consts.frameTiles = m_frameTiles;
+		consts.frameCount = m_frameCount;
+		m_renderConsts.Upload();
+		ctx.context->CSSetConstantBuffers(8, 1, m_renderConsts.GetAddressOf());
+	}
+
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
 
-		//RenderBase& renderer = *GET_SINGLE(RenderBase);
-		//renderer.SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
-		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 		// IndirectDraw
 		ID3D11ShaderResourceView* sortSRVs[] = {
 			ctx.particleSRV,
@@ -76,11 +93,26 @@ namespace DE {
 		};
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
-		ctx.context->PSSetConstantBuffers(4, 1, ctx.constBuffer.GetAddressOf());
+		ctx.context->PSSetConstantBuffers(8, 1, m_renderConsts.GetAddressOf());
 		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
 
 		// Á¤¸®
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
+	}
+
+	void BillboardRenderModule::LoadFromJson(const json& data)
+	{
+		RenderModule::LoadFromJson(data);
+		if (data.contains("texture")) {
+			const auto [path, idx] = AssetManager::Get().LoadParticleTexture(data["texture"]);
+			m_texturePath = path;
+			m_textureIdx = idx;
+		}
+		if (data.contains("sprite")) {
+			auto& sprite = data["sprite"];
+			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);
+			if (sprite.contains("frameCount")) m_frameCount = sprite["frameCount"];
+		}
 	}
 }

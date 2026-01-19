@@ -10,7 +10,6 @@ public:
 	void Initialize(ParticleInitContext& ctx);
 	void OnSpawn(SimulationContext& ctx) override;
 	void PreUpdate(SimulationContext& ctx) override;
-	void OnUpdate(const SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
 public:
@@ -27,6 +26,8 @@ public:
 private:
 	ComputeShader m_spawnCS;
 	UINT m_totalSpawnCount = 0;
+
+	ConstantBuffer<SpawnConsts> m_spawnConsts;
 };
 }
 

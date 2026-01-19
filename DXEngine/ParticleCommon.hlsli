@@ -15,55 +15,64 @@ struct Particle
     float3 rotSpeed;
 };
 
-cbuffer ParticleConsts : register(b4)
-{
-    // Block 1: 기본 정보 (16 bytes)
+cbuffer ParticleConsts : register(b4) {
     float dt;
     float time;
     uint spawnCount;
     uint maxParticles;
+};
 
+cbuffer SpawnConsts : register(b5) {
     float3 localPos;
-    float padding0;
+    float padding;
+
     float3 spawnVolume;
     float spawnInnerRatio;
+
     float2 lifeRange;
-    int spawnShape; // 0: Box, 1: Sphere
+    int spawnShape;
     float padding1;
+};
 
-    float3 velocity;
-    float padding2;
-    float2 speedRange;
-    float2 padding3;
-
-    float3 randomDir;
-    float drag;
-
-    float3 gravity;
-    float vortexStrength;
-
-    float3 vortexCenter;
-    float padding4;
-    float3 vortexAxis;
-    float vortexFalloff;
-    float2 vortexPull;
+cbuffer VisualConsts : register(b6) {
     float2 sizeRange;
+    float2 padding2;
 
     float4 startColor;
     float4 endColor;
 
     float3 minRotation;
-    float padding6;
+    float padding3;
     float3 maxRotation;
-    float padding7;
+    float padding4;
     float3 minRotSpeed;
-    float padding8;
+    float padding5;
     float3 maxRotSpeed;
-    float padding9;
+    float padding6;
+};
 
+cbuffer ForceConsts : register(b7) {
+    float3 velocity;
+    float padding7;
+    float2 speedRange;
+    float2 padding8;
+
+    float3 randomDir;
+    float drag;
+    float3 gravity;
+    float vortexStrength;
+    float3 vortexCenter;
+    float padding9;
+    float3 vortexAxis;
+    float vortexFalloff;
+    float2 vortexPull;
+    float2 padding10;
+};
+
+cbuffer RenderConsts : register(b8) {
     int textureIdx;
-    float2 frameTiles; // sprite sheet 격자 크기
-    uint frameCount; // 유효한 격자 수
+    float2 frameTiles;
+    uint frameCount;
 };
 
 struct SortElement

@@ -5,6 +5,7 @@ namespace DE {
 class VisualModule : public ParticleModule
 {
 public:
+	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	ModulePriority GetPriority() override { return ModulePriority::Visual; }
@@ -18,11 +19,7 @@ public:
 	Vector3 minRotSpeed = Vector3(-1.f);
 	Vector3 maxRotSpeed = Vector3(1.f);
 
-	// Texture °ü¸®
-	std::string m_texturePath;
-	int m_textureIdx = -1;
-	Vector2 m_frameTiles = { 1, 1 };
-	UINT m_frameCount = 1;
+	ConstantBuffer<VisualConsts> m_visualConsts;
 };
 }
 
