@@ -38,8 +38,7 @@ namespace DE {
 		};
 
 		ctx.context->CSSetUnorderedAccessViews(0, 1, particleUAVs, initCounts);
-		m_vortexCS.UpdateConsts(ctx.context, 4, 1, ctx.constBuffer.GetAddressOf());
-
+		
 		// Particle Simulation Compute Shader
 		m_vortexCS.DispatchIndirect(ctx.context, ctx.dispatchArgs);
 	}
