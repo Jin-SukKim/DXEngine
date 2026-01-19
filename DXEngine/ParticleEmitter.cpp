@@ -61,7 +61,8 @@ namespace DE {
 			m_consume,
 			m_append,
 			m_countSRV.Get(),
-			m_dispatchArgs.GetBuffer()
+			m_dispatchArgs.GetBuffer(),
+			m_indirectArgs
 		};
 
 		for (auto& mod : m_modules)
@@ -101,7 +102,7 @@ namespace DE {
 
 		// 간접 디스패치 및 드로우 인수
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 });
-		m_drawInstancedArgs.Initialize(device.Get(), { 0, 1, 0, 0 });
+		m_indirectArgs.Initialize(device.Get(), { 0, 0, 0, 0, 0 });
 
 		// 활성 파티클 개수를 추적하는 카운터 버퍼
 		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), nullptr,
@@ -124,7 +125,8 @@ namespace DE {
 			m_consume,
 			m_append,
 			m_countSRV.Get(),
-			m_dispatchArgs.GetBuffer()
+			m_dispatchArgs.GetBuffer(),
+			m_indirectArgs
 		};
 
 		for (auto& mod : m_modules)
@@ -153,7 +155,7 @@ namespace DE {
 
 		ID3D11UnorderedAccessView* argUAVs[] = {
 			m_dispatchArgs.GetUAV(),
-			m_drawInstancedArgs.GetUAV()
+			m_indirectArgs.GetUAV()
 		};
 
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
@@ -172,7 +174,7 @@ namespace DE {
 			m_consts,
 			m_frameConsts,
 			m_consume.GetSRV(),
-			m_drawInstancedArgs.GetBuffer()
+			m_indirectArgs.GetBuffer()
 		};
 
 		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());

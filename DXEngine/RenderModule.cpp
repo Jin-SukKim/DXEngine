@@ -4,6 +4,7 @@
 #include "TextureManager.h"
 #include "ModelManager.h"
 #include "GeometryGenerator.h"
+#include "IndirectArgsBuffer.h"
 
 namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
@@ -110,17 +111,22 @@ namespace DE {
 		}
 	}
 
-	void MeshRenderModule::Initialize(ParticleInitContext& ctx)
-	{
-		RenderModule::Initialize(ctx);
-
-	}
-
 	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
 	{
 		RenderModule::OnSpawn(ctx);
+
+		Model* model = ModelManager::Get().GetModel(m_modelIdx);
+		auto& mesh = model->meshes[0];
+
+		DrawIndexedInstancedArgs& args = ctx.indirectArgs.GetCpu();
+		args.indexCountPerInstance = mesh.indexCount;
+		args.instanceCount = 0;
+		args.startIndexLocation = 0;
+		args.baseVertexLocation = 0;
+		args.startInstanceLocation = 0;
+
 		RenderConsts& consts = ctx.constBuffer.GetCpu().render;
-		consts.modelIdx = m_modelIdx;
+		consts.meshIndexCount = mesh.indexCount;
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)
@@ -135,7 +141,13 @@ namespace DE {
 		};
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
-		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
+
+		Model* model = ModelManager::Get().GetModel(m_modelIdx);
+		auto& mesh = model->meshes[0];
+		ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
+		ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		ctx.context->DrawIndexedInstancedIndirect(ctx.indirectArgsBuffer, 0);
 
 		// Á¤¸®
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };

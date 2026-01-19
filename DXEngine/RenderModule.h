@@ -44,7 +44,6 @@ private:
 class MeshRenderModule : public RenderModule
 {
 public:
-	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;

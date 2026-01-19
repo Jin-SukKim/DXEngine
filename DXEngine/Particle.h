@@ -76,7 +76,7 @@ namespace DE {
         int textureIdx;
         UINT frameCount;
         Vector2 frameTiles;
-        int modelIdx;
+        UINT meshIndexCount = 0;
         Vector3 padding11;
     };
 

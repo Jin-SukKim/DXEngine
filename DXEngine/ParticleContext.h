@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Particle.h"
 #include "AppendBuffer.h"
+#include "IndirectArgsBuffer.h"
 
 namespace DE {
 
@@ -26,6 +27,7 @@ struct SimulationContext : ParticleContext {
     AppendBuffer<Particle>& appendBuffer;
     ID3D11ShaderResourceView* countSRV;
     ID3D11Buffer* dispatchArgs;
+    IndirectArgsBuffer<DrawIndexedInstancedArgs>& indirectArgs;
 };
 
 // Render ´Ü°è

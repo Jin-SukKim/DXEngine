@@ -2,28 +2,28 @@
   "name": "Mesh",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ -0.0, 0.08, 0.0 ],
-    "spawnVolume": [ 0.3, 0.3, 0.3 ],
-    "spawnInnerRatio": 0.3,
-    "spawnRate": 3.0,
-    "particlesPerSpawn": 50,
-    "maxParticles": 500,
-    "lifeRange": [ 0.1, 0.15 ]
+    "localPos": [ 0.0, 0.0, 0.0 ],
+    "spawnVolume": [ 0.0, 0.0, 0.0 ],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 1.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 1000,
+    "lifeRange": [ 1.0, 1.0 ]
   },
   "Visual": {
-    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
-    "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
-    "sizeRange": [ 0.15, 0.05 ]
+    "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
+    "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
+    "sizeRange": [ 0.1, 0.1 ]
   },
   "Force": {
-    "velocity": [ 0.0, 0.0, 0.0 ],
-    "speedRange": [ 1.0, 2.0 ],
-    "randomDir": [ 1.0, 1.0, 1.0 ],
-    "gravity": [ 0.0, 0.0, 0.0 ],
-    "drag": 0.5
+    "velocity": [ 0.0, 0.1, 0.0 ],
+    "speedRange": [ 0.01, 0.01 ],
+    "randomDir": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 1.0, 0.0 ],
+    "drag": 0.0
   },
   "MeshRender": {
-    "blendMode": "Additive",
-    "defaultMesh": 0
+    "blendMode": "Opaque",
+    "defaultMesh": 1
   }
 }

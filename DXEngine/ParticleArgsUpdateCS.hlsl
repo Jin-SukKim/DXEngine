@@ -13,8 +13,19 @@ void main(uint3 DTid : SV_DispatchThreadID)
     dispatchArgs[1] = 1;
     dispatchArgs[2] = 1;
 
-    drawArgs[0] = count;
-    drawArgs[1] = 1;
-    drawArgs[2] = 0;
-    drawArgs[3] = 0;
+    if (render.meshIndexCount > 0) {
+        drawArgs[0] = render.meshIndexCount;
+        drawArgs[1] = count;
+        drawArgs[2] = 0;
+        drawArgs[3] = 0;
+        drawArgs[4] = 0;
+    }
+    else {
+        drawArgs[0] = count;
+        drawArgs[1] = 1;
+        drawArgs[2] = 0;
+        drawArgs[3] = 0;
+        drawArgs[4] = 0;
+    }
+    
 }

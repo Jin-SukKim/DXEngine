@@ -16,6 +16,14 @@ namespace DE {
         UINT startInstanceLocation;
     };
 
+    struct DrawIndexedInstancedArgs {
+        UINT indexCountPerInstance;
+        UINT instanceCount;
+        UINT startIndexLocation;
+        UINT baseVertexLocation;
+        UINT startInstanceLocation;
+    };
+
     template <typename T_ELEMENT>
     class IndirectArgsBuffer {
     public:
@@ -23,7 +31,7 @@ namespace DE {
 
         auto GetBuffer() const->ID3D11Buffer*;
         auto GetUAV() const->ID3D11UnorderedAccessView*;
-
+        auto& GetCpu() { return m_cpu; }
     private:
         T_ELEMENT m_cpu; 
         ComPtr<ID3D11Buffer> m_gpu;
