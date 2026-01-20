@@ -11,7 +11,6 @@ public:
 	virtual void OnRender(const RenderContext& ctx) override;
 
 	void LoadFromJson(const json& data) override;
-	void SaveToJson(json& data);
 
 	const std::string& GetMaterialName();
 	const int& GetMaterialIdx();

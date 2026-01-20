@@ -54,7 +54,6 @@ namespace DE {
 		}
 
 		if (!meshData.metallicTextureFilename.empty() && (meshData.metallicTextureFilename == meshData.roughnessTextureFilename)) {
-			// TODO: 분리
 			std::cout << meshData.metallicTextureFilename << std::endl;
 			std::cout << meshData.roughnessTextureFilename << std::endl;
 			auto [metallic, roughness] = TextureManager::Get().LoadMetallicRoughnessTexture(meshData.metallicTextureFilename);
@@ -76,11 +75,13 @@ namespace DE {
 		if (mat.roughnessTexture > -1) constants.GetCpu().useRoughnessMap = true;
 		
 		int index = static_cast<int>(m_materials.size());
-		m_materials.push_back(mat);
+		m_materials.emplace_back(mat);
 		m_materialMap[name] = index;
 
 		constants.Upload();
 		m_materialConsts.emplace_back(constants);
+
+		SaveToJson(index);
 
 		return index;
 	}
@@ -121,6 +122,10 @@ namespace DE {
 		if (texturePaths.size() > 5 && !texturePaths[5].empty()) {
 			mat.emissiveTexture = TextureManager::Get().LoadTexture(texturePaths[5], true);
 			if (mat.emissiveTexture >= 0) consts.GetCpu().useEmissiveMap = 1;
+		}
+		if (texturePaths.size() > 6 && !texturePaths[6].empty()) {
+			mat.heightTexture = TextureManager::Get().LoadTexture(texturePaths[6], true);
+			if (mat.heightTexture >= 0) consts.GetCpu().useHeightMap = 1;
 		}
 
 		int index = static_cast<int>(m_materials.size());
@@ -216,6 +221,10 @@ namespace DE {
 			mat.emissiveTexture = newTexture;
 			constants.useEmissiveMap = 1;
 			break;
+		case TexSlot::Height:
+			mat.heightTexture = newTexture;
+			constants.useHeightMap = 1;
+			break;
 		}
 	}
 
@@ -234,5 +243,55 @@ namespace DE {
 	ConstantBuffer<MaterialConstants>& MaterialSystem::GetMaterialConstBuffer(int materialIdx)
 	{
 		return m_materialConsts[materialIdx];
+	}
+
+	void MaterialSystem::SaveToJson(int materialIdx)
+	{
+		const Material* mat = GetMaterialData(materialIdx);
+		if (!mat) return;
+
+		nlohmann::ordered_json data;
+		data["Name"] = mat->name;
+
+		// Constants 저장
+		MaterialConstants& constants = m_materialConsts[materialIdx].GetCpu();
+		data["Albedo"] = { constants.albedoFactor.x, constants.albedoFactor.y, constants.albedoFactor.z };
+		data["Roughness"] = constants.roughnessFactor;
+		data["Metallic"] = constants.metallicFactor;
+		data["Emission"] = { constants.emissionFactor.x, constants.emissionFactor.y, constants.emissionFactor.z };
+
+		// Textures 저장 
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["albedo"] = TextureManager::Get().GetTexturePath(mat->albedoTexture);
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["normal"] = TextureManager::Get().GetTexturePath(mat->normalTexture);
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["metallic"] = TextureManager::Get().GetTexturePath(mat->metallicTexture);
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["roughness"] = TextureManager::Get().GetTexturePath(mat->roughnessTexture);
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["ao"] = TextureManager::Get().GetTexturePath(mat->aoTexture);
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["emissive"] = TextureManager::Get().GetTexturePath(mat->emissiveTexture);
+		if (mat->albedoTexture >= 0)
+			data["Textures"]["height"] = TextureManager::Get().GetTexturePath(mat->heightTexture);
+
+		std::filesystem::path baseDir = "../Assets/Materials/";
+		std::filesystem::path materialName = std::filesystem::path(mat->name).stem(); // 확장자 제거된 이름
+
+		// / 연산자가 자동으로 경로 구분자를 관리해줍니다.
+		std::filesystem::path fullPath = baseDir / materialName.replace_extension(".json");
+
+		std::ofstream file(fullPath);
+
+		if (file.is_open()) {
+			file << data.dump(4);
+			file.close();
+
+			std::cout << mat->name + "Material Saved." << std::endl;
+		}
+		else {
+			std::cout << "Cannot open file for Saving Material." + fullPath.string() << std::endl;
+		}
 	}
 }

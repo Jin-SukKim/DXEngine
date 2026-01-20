@@ -17,7 +17,8 @@ public:
 		Metallic = 2,
 		Roughness = 3,
 		AO = 4,
-		Emissive = 5
+		Emissive = 5,
+		Height = 6
 	};
 	void Initialize();
 	int CreateMaterial(const std::string& name, const MeshData& meshData, bool isGLTF = false);
@@ -30,6 +31,8 @@ public:
 	const Material* GetMaterialData(int materialIdx);
 	MaterialConstants& GetMaterialConst(int materialIdx);
 	ConstantBuffer<MaterialConstants>& GetMaterialConstBuffer(int materialIdx);
+
+	void SaveToJson(int materialIdx);
 private:
 	std::vector<Material> m_materials;
 	std::unordered_map<std::string, int> m_materialMap;

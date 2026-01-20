@@ -1,0 +1,24 @@
+{
+    "Name": "..\\Assets\\Models\\DamagedHelmet\\DamagedHelmet.gltf",
+    "Albedo": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+    ],
+    "Roughness": 1.0,
+    "Metallic": 0.5,
+    "Emission": [
+        1.0,
+        1.0,
+        1.0
+    ],
+    "Textures": {
+        "albedo": "..\\Assets\\Models\\DamagedHelmet\\Default_albedo.jpg",
+        "normal": "..\\Assets\\Models\\DamagedHelmet\\Default_normal.jpg",
+        "metallic": "",
+        "roughness": "",
+        "ao": "..\\Assets\\Models\\DamagedHelmet\\Default_AO.jpg",
+        "emissive": "..\\Assets\\Models\\DamagedHelmet\\Default_emissive.jpg",
+        "height": ""
+    }
+}

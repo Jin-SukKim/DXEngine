@@ -100,6 +100,7 @@ int TextureManager::LoadTexture(const std::string& path, bool isSRGB)
     int index = static_cast<int>(m_textures.size());
     m_textures.emplace_back(std::move(texture));
     m_texturePathToIdx[fullpath] = index;
+    m_indexToPathMap[index] = path;
 
     return index;
 }
@@ -181,5 +182,11 @@ ID3D11ShaderResourceView* TextureManager::GetTextureSRV(int index)
         return nullptr;
 
     return m_textures[index]->GetSRV();
+}
+std::string TextureManager::GetTexturePath(int index)
+{
+    if (m_indexToPathMap.find(index) != m_indexToPathMap.end())
+        return m_indexToPathMap[index];
+    return ""; // 찾지 못함
 }
 }

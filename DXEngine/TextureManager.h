@@ -23,7 +23,7 @@ public:
 	int LoadMetallicRoughnessTexture(const std::string& metallicPath, const std::string& roughnessPath);
 	std::pair<int, int> LoadMetallicRoughnessTexture(const std::string& path);
 	ID3D11ShaderResourceView* GetTextureSRV(int index);
-
+	std::string GetTexturePath(int index);
 private:
 	static const UINT PARTICLE_TEXTURE_WIDTH = 512;
 	static const UINT PARTICLE_TEXTURE_HEIGHT = 512;
@@ -36,6 +36,7 @@ private:
 
 	// 일반 Texture 관리
 	std::unordered_map<std::string, int> m_texturePathToIdx;
+	std::unordered_map<int, std::string> m_indexToPathMap;
 	std::vector<std::unique_ptr<Texture2D>> m_textures;
 
 	std::string presetPath = "..\\Assets\\";
