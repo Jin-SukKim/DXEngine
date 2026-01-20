@@ -628,7 +628,7 @@ namespace DE {
 			shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(),
 			NULL, &computeShader));
 	}
-	void D3D11Utils::CreateAppendBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav)
+	void D3D11Utils::CreateAppendBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav, ComPtr<ID3D11UnorderedAccessView>& rwUav)
 	{
 		// Structured Buffer 생성
 		D3D11_BUFFER_DESC bufferDesc = {};
@@ -667,6 +667,9 @@ namespace DE {
 		uavDesc.Buffer.NumElements = numElements;
 		uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+
+		uavDesc.Buffer.Flags = 0; // 플래그 없음! (RWStructuredBuffer 호환)
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, rwUav.GetAddressOf()));
 	}
 
 	void D3D11Utils::CreateIndirectBuffer(ID3D11Device* device, UINT byteWidth, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)

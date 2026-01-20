@@ -49,7 +49,7 @@ namespace DE {
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 		// Spawn Compute Shader
-		UINT groupCount = (m_totalSpawnCount + 255) / 256;
+		UINT groupCount = (m_totalSpawnCount + 1023) / 1024;
 		m_spawnCS.Dispatch(ctx.context, groupCount, 1, 1);
 	}
 

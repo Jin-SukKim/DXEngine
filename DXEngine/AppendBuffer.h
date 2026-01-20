@@ -19,6 +19,11 @@ public:
         std::swap(lhs.m_srv, rhs.m_srv);
         std::swap(lhs.m_uav, rhs.m_uav);
     }
+
+    auto GetRWuav() const->ID3D11UnorderedAccessView*;
+    auto GetAddressOfRWuav() const->ID3D11UnorderedAccessView* const*;
+protected:
+    ComPtr<ID3D11UnorderedAccessView> m_rwUav;
 };
 
 template<typename T_ELEMENT>
@@ -31,6 +36,19 @@ void AppendBuffer<T_ELEMENT>::Initialize(ID3D11Device* device, const UINT numEle
 template<typename T_ELEMENT>
 void AppendBuffer<T_ELEMENT>::Initialize(ID3D11Device* device)
 {
-    D3D11Utils::CreateAppendBuffer(device, static_cast<UINT>(Super::m_cpu.size()), static_cast<UINT>(sizeof(T_ELEMENT)), Super::m_cpu.data(), Super::m_gpu, Super::m_srv, Super::m_uav);
+    D3D11Utils::CreateAppendBuffer(device, static_cast<UINT>(Super::m_cpu.size()), static_cast<UINT>(sizeof(T_ELEMENT)), Super::m_cpu.data(), Super::m_gpu, Super::m_srv, Super::m_uav, m_rwUav);
 }
+template<typename T_ELEMENT>
+inline auto AppendBuffer<T_ELEMENT>::GetRWuav() const -> ID3D11UnorderedAccessView*
+{
+    return m_rwUav.Get();
+}
+
+template<typename T_ELEMENT>
+inline auto AppendBuffer<T_ELEMENT>::GetAddressOfRWuav() const -> ID3D11UnorderedAccessView* const*
+{
+    return m_rwUav.GetAddressOf();
+}
+
+
 }

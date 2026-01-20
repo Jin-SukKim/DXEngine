@@ -8,7 +8,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 {
     uint count = particleCountBuffer[0];
 
-    dispatchArgs[0] = (count + 255) / 256;
+    dispatchArgs[0] = (count + 1023) / 1024;
     dispatchArgs[1] = 1;
     dispatchArgs[2] = 1;
 }

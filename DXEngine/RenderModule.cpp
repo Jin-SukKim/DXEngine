@@ -81,6 +81,7 @@ namespace DE {
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
 
+		m_argsBuffer.Reset();
 		// DrawInstancedIndirectArgs ÃÊ±âÈ­
 		// (VertexCountPerInstance, InstanceCount, StartVertex, StartInstance)
 		DrawInstancedArgs args = {};
@@ -174,7 +175,7 @@ namespace DE {
 
 		ID3D11UnorderedAccessView* uavs[] = { m_meshArgs.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
-		UINT groupCount = (m_meshCount + 255) / 256;
+		UINT groupCount = (m_meshCount + 1023) / 1024;
 		m_argsUpdateCS.Dispatch(ctx.context, groupCount, 1, 1);
 
 	}

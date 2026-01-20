@@ -29,7 +29,7 @@ float3 rand3(float2 seed) {
         );
 }
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     // 이번 프레임 생성 할당량을 넘으면 종료

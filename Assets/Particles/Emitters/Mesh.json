@@ -2,7 +2,7 @@
   "name": "Mesh",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ 0.0, -0.15, 0.0 ],
+    "localPos": [ 0.25, -0.15, 0.0 ],
     "spawnVolume": [ 0.15, 0.1, 0.15 ],
     "spawnInnerRatio": 0.99,
     "spawnRate": 20.0,
@@ -13,7 +13,7 @@
   "Visual": {
     "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
     "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
-    "sizeRange": [ 0.5, 0.1 ],
+    "sizeRange": [ 0.4, 0.1 ],
     "rotation": {
       "minRotSpeed": [ -2.0, -2.0, -2.0 ],
       "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
@@ -29,7 +29,7 @@
   "Vortex": {
     "strength": 15.0,
     "pull": [ -15, 100 ],
-    "center": [ 0.0, 0.0, 0.0 ],
+    "center": [ 0.25, 0.0, 0.0 ],
     "vortexFalloff": 1.0,
     "axis": [ 0.0, 1.0, 0.0 ]
   },

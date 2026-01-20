@@ -30,11 +30,8 @@ namespace DE {
 		// -1: consume 버퍼의 기존 카운트 유지
 		// 0: append 버퍼의 카운트 리셋
 		UINT initCounts[1] = { static_cast<UINT>(-1) };
-		ID3D11UnorderedAccessView* particleUAVs[] = {
-			ctx.consumeBuffer.GetUAV()
-		};
 
-		ctx.context->CSSetUnorderedAccessViews(0, 1, particleUAVs, initCounts);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, ctx.consumeBuffer.GetAddressOfRWuav(), initCounts);
 		
 		// Particle Simulation Compute Shader
 		m_vortexCS.DispatchIndirect(ctx.context, ctx.dispatchArgs);

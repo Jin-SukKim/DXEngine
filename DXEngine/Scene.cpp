@@ -59,7 +59,7 @@ namespace DE {
 		{
 			std::vector<LightActor*> lights;
 			for (size_t i = m_lights.size(); i < MAX_LIGHTS; ++i) {
-				std::unique_ptr<PointLight> tempLight = std::make_unique<PointLight>(L"TempLight");
+				std::unique_ptr<SpotLight> tempLight = std::make_unique<SpotLight>(L"TempLight");
 				tempLight->TurnOff();
 				m_lights.emplace_back(std::move(tempLight));
 				lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));

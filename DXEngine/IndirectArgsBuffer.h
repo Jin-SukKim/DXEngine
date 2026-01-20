@@ -33,6 +33,11 @@ namespace DE {
         auto GetBuffer() const->ID3D11Buffer*;
         auto GetUAV() const->ID3D11UnorderedAccessView*;
         auto& GetCpu() { return m_cpu; }
+
+        void Reset() {
+            m_gpu.Reset();
+            m_uav.Reset();
+        }
     private:
         T_ELEMENT m_cpu; 
         ComPtr<ID3D11Buffer> m_gpu;
