@@ -211,7 +211,7 @@ namespace DE {
 	{
 		RenderModule::LoadFromJson(data);
 		if (data.contains("model")) 
-			m_modelIdx = ModelManager::Get().LoadModel(data["model"], data.value("isGLTF", false));
+			m_modelIdx = ModelManager::Get().LoadModel(data["model"], data.value("basePath", ""), data.value("isGLTF", false));
 		else if (data.contains("defaultMesh")) {
 			switch (static_cast<int>(data["defaultMesh"])) {
 			case 0:

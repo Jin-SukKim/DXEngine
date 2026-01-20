@@ -3,9 +3,9 @@
 #include "GeometryGenerator.h"
 
 namespace DE {
-	int ModelManager::LoadModel(const std::string& name, bool isGLTF)
+	int ModelManager::LoadModel(const std::string& name, const std::string& basePath, bool isGLTF)
 	{
-		std::string fullpath = presetPath + name;
+		std::string fullpath = presetPath + basePath + name;
 		auto it = m_pathToIdx.find(fullpath);
 
 		// 이미 Load되어 있는 Model
@@ -15,7 +15,7 @@ namespace DE {
 		auto newModel = std::make_unique<Model>();
 		newModel->name = fullpath;
 
-		Load(newModel->meshes, presetPath, name, isGLTF);
+		Load(newModel->meshes, presetPath + basePath, name, isGLTF);
 
 		int index = static_cast<int>(m_allModels.size());
 		m_allModels.emplace_back(std::move(newModel));

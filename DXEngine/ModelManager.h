@@ -18,7 +18,7 @@ public:
 		return instance;
 	}
 
-	int LoadModel(const std::string& name, bool isGLTF = false);
+	int LoadModel(const std::string& name, const std::string& basePath = "", bool isGLTF = false);
 	int LoadModel(const std::string& name, const MeshData& meshData);
 	
 
