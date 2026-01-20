@@ -77,6 +77,54 @@ namespace DE {
 		return index;
 	}
 
+	int MaterialSystem::CreateMaterial(const std::string& name, const MaterialConstants& constants, const std::vector<std::string>& texturePaths)
+	{
+		if (m_materialMap.find(name) != m_materialMap.end())
+			return m_materialMap[name];
+
+		ConstantBuffer<MaterialConstants> consts;
+		consts.Initialize();
+
+		consts.SetCpuData(constants);
+
+		Material mat;
+		mat.name = name;
+
+		if (texturePaths.size() > 0 && !texturePaths[0].empty()) {
+			mat.albedoTexture = TextureManager::Get().LoadTexture(texturePaths[0], true);
+			if (mat.albedoTexture >= 0) consts.GetCpu().useAlbedoMap = 1;
+		}
+		if (texturePaths.size() > 1 && !texturePaths[1].empty()) {
+			mat.normalTexture = TextureManager::Get().LoadTexture(texturePaths[1], false);
+			if (mat.normalTexture >= 0) consts.GetCpu().useNormalMap = 1;
+		}
+		if (texturePaths.size() > 2 && !texturePaths[2].empty()) {
+			mat.metallicRoughnessTexture = TextureManager::Get().LoadTexture(texturePaths[2], false);
+			if (mat.metallicRoughnessTexture >= 0) consts.GetCpu().useMetallicMap = 1;
+		}
+		if (texturePaths.size() > 3 && !texturePaths[3].empty()) {
+			mat.metallicRoughnessTexture = TextureManager::Get().LoadTexture(texturePaths[3], false);
+			if (mat.metallicRoughnessTexture >= 0) consts.GetCpu().useRoughnessMap = 1;
+		}
+		if (texturePaths.size() > 4 && !texturePaths[4].empty()) {
+			mat.aoTexture = TextureManager::Get().LoadTexture(texturePaths[4], false);
+			if (mat.aoTexture >= 0) consts.GetCpu().useAOMap = 1;
+		}
+		if (texturePaths.size() > 5 && !texturePaths[5].empty()) {
+			mat.emissiveTexture = TextureManager::Get().LoadTexture(texturePaths[5], true);
+			if (mat.emissiveTexture >= 0) consts.GetCpu().useEmissiveMap = 1;
+		}
+
+		int index = static_cast<int>(m_materials.size());
+		m_materials.push_back(mat);
+		m_materialMap[name] = index;
+
+		m_materialConsts.emplace_back(consts);
+		m_materialConsts.back().Upload();
+
+		return index;
+	}
+
 	void MaterialSystem::BindMaterial(int materialIdx)
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
@@ -124,10 +172,10 @@ namespace DE {
 		MaterialConstants& constants = GetMaterialConst(matIdx);
 
 		// 1. TextureManager를 통해 텍스처 로드 (이미 있다면 캐싱된 인덱스 반환)
-		int newTexIndex = TextureManager::Get().LoadTexture(texPath, isGLTF);
+		int newTexture = TextureManager::Get().LoadTexture(texPath, isGLTF);
 
 		// 로드 실패 시 처리 (옵션: -1이면 텍스처 제거로 처리할 수도 있음)
-		if (newTexIndex < 0) {
+		if (newTexture < 0) {
 			// 텍스처 제거를 원할 경우 아래 플래그를 0으로 설정하는 로직 추가 가능
 			return;
 		}
@@ -136,30 +184,37 @@ namespace DE {
 		switch (slot)
 		{
 		case TexSlot::Albedo:
-			mat.albedoTexture = newTexIndex;
+			mat.albedoTexture = newTexture;
 			constants.useAlbedoMap = 1; // 텍스처 사용 켜기
 			break;
 		case TexSlot::Normal:
-			mat.normalTexture = newTexIndex;
+			mat.normalTexture = newTexture;
 			constants.useNormalMap = 1;
 			break;
 		case TexSlot::Metallic:
-			mat.metallicRoughnessTexture = newTexIndex;
+			mat.metallicRoughnessTexture = newTexture;
 			constants.useMetallicMap = 1;
 			break;
 		case TexSlot::Roughness:
-			mat.metallicRoughnessTexture = newTexIndex;
+			mat.metallicRoughnessTexture = newTexture;
 			constants.useRoughnessMap = 1;
 			break;
 		case TexSlot::AO:
-			mat.aoTexture = newTexIndex;
+			mat.aoTexture = newTexture;
 			constants.useAOMap = 1;
 			break;
 		case TexSlot::Emissive:
-			mat.emissiveTexture = newTexIndex;
+			mat.emissiveTexture = newTexture;
 			constants.useEmissiveMap = 1;
 			break;
 		}
+	}
+
+	const Material* MaterialSystem::GetMaterialData(int materialIdx)
+	{
+		if (materialIdx < 0 || materialIdx >= m_materials.size())
+			return nullptr;
+		return &m_materials[materialIdx];
 	}
 
 	MaterialConstants& MaterialSystem::GetMaterialConst(int materialIdx)

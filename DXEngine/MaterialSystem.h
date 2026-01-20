@@ -21,11 +21,13 @@ public:
 	};
 	void Initialize();
 	int CreateMaterial(const std::string& name, const MeshData& meshData, bool isGLTF = false);
+	int CreateMaterial(const std::string& name, const MaterialConstants& constants, const std::vector<std::string>& texturePaths);
 	void BindMaterial(int materialIdx);
 
 	void SetTexture(const std::string& matName, TexSlot slot, const std::string& texPath, bool isGLTF = false);
 	void SetTexture(int matIdx, TexSlot slot, const std::string& texPath, bool isGLTF = false);
 
+	const Material* GetMaterialData(int materialIdx);
 	MaterialConstants& GetMaterialConst(int materialIdx);
 	ConstantBuffer<MaterialConstants>& GetMaterialConstBuffer(int materialIdx);
 private:

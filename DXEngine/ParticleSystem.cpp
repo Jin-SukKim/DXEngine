@@ -87,6 +87,10 @@ namespace DE {
 
 	void ParticleSystem::LoadFromJson(const json& data)
 	{
+		if (data.contains("Name")) {
+			std::wstring name = data["Name"];
+			this->SetName(name);
+		}
 		if (data.contains("Transform")) {
 			auto jsonTr = data["Transform"];
 			auto tr = this->GetComponent<TransformComponent>();
