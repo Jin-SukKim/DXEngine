@@ -27,13 +27,12 @@ struct SimulationContext : ParticleContext {
     AppendBuffer<Particle>& appendBuffer;
     ID3D11ShaderResourceView* countSRV;
     ID3D11Buffer* dispatchArgs;
-    IndirectArgsBuffer<DrawIndexedInstancedArgs>& indirectArgs;
+    ID3D11Device* device;
 };
 
 // Render ´Ü°è
 struct RenderContext : ParticleContext {
     ID3D11ShaderResourceView* particleSRV;
-    ID3D11Buffer* indirectArgsBuffer;
 };
 
 } // namespace DE

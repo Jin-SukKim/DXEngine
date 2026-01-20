@@ -49,9 +49,8 @@ namespace DE {
 		AppendBuffer<Particle> m_consume;
 		AppendBuffer<Particle> m_append;
 
-		// 간접 디스패치 및 드로우 인수.
+		// 간접 디스패치
 		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
-		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_indirectArgs;
 		
 		// 활성 파티클 개수 추적용 카운터 버퍼
 		ComPtr<ID3D11Buffer> m_countBuffer;

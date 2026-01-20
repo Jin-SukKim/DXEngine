@@ -675,6 +675,9 @@
     <FxCompile Include="ParticleMeshVS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
+    <FxCompile Include="ParticleMeshArgsUpdateCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BlinnPhong.hlsli">

@@ -67,7 +67,7 @@ struct RenderConsts {
     int textureIdx;
     uint frameCount;
     float2 frameTiles;
-    uint meshIndexCount;
+    uint numMeshes;
     float3 padding11;
 };
 

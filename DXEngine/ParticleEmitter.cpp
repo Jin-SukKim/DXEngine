@@ -50,6 +50,7 @@ namespace DE {
 
 	void ParticleEmitter::OnSpawn()
 	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		SimulationContext simCtx = {
@@ -62,7 +63,7 @@ namespace DE {
 			m_append,
 			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
-			m_indirectArgs
+			device.Get()
 		};
 
 		for (auto& mod : m_modules)
@@ -102,7 +103,6 @@ namespace DE {
 
 		// 간접 디스패치 및 드로우 인수
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
-		m_indirectArgs.Initialize(device.Get(), { 0, 0, 0, 0, 0 }, 5);
 
 		// 활성 파티클 개수를 추적하는 카운터 버퍼
 		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), nullptr,
@@ -111,6 +111,7 @@ namespace DE {
 
 	void ParticleEmitter::Update(const float& dt, const float& time)
 	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		m_frameConsts.GetCpu().dt = dt;
@@ -126,7 +127,7 @@ namespace DE {
 			m_append,
 			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
-			m_indirectArgs
+			device.Get(),
 		};
 
 		for (auto& mod : m_modules)
@@ -142,6 +143,9 @@ namespace DE {
 		UpdateArgsBuffers(context.Get());
 
 		for (auto& mod : m_modules)
+			mod->UpdateArgs(simCtx);
+
+		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
 
 		// 다음 프레임을 위한 버퍼 교환 
@@ -154,12 +158,11 @@ namespace DE {
 		context->CopyStructureCount(m_countBuffer.Get(), 0, m_consume.GetUAV());
 
 		ID3D11UnorderedAccessView* argUAVs[] = {
-			m_dispatchArgs.GetUAV(),
-			m_indirectArgs.GetUAV()
+			m_dispatchArgs.GetUAV()
 		};
 
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
-		context->CSSetUnorderedAccessViews(0, 2, argUAVs, nullptr);
+		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
 		// Indirect Args Update
 		m_argsUpdateCS.Dispatch(context, 1, 1, 1);
@@ -173,8 +176,7 @@ namespace DE {
 			context,
 			m_consts,
 			m_frameConsts,
-			m_consume.GetSRV(),
-			m_indirectArgs.GetBuffer()
+			m_consume.GetSRV()
 		};
 
 		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());

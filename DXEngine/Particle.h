@@ -76,9 +76,8 @@ namespace DE {
         int textureIdx;
         UINT frameCount;
         Vector2 frameTiles;
-        UINT meshIndexCount = 0;
-        UINT meshCount = 0;
-        Vector2 padding11;
+        UINT numMeshes;
+        Vector3 padding11;
     };
 
     struct ParticleConsts {

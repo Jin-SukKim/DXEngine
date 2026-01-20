@@ -699,6 +699,36 @@ namespace DE {
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
 	}
 
+	void D3D11Utils::CreateUnifiedIndirectBuffer(ID3D11Device* device, UINT arraySize, UINT elemSize, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)
+	{
+		D3D11_BUFFER_DESC desc = {};
+		desc.ByteWidth = arraySize * elemSize;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS | D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS; // Indirect Draw + Raw View
+		desc.StructureByteStride = 0;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			ThrowIfFailed(device->CreateBuffer(&desc, &data, buffer.GetAddressOf()));
+		}
+		else {
+			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
+		}
+
+		// UAV 생성 (R32_UINT 포맷 사용)
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint로 읽기 위해 R32_UINT 사용
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = arraySize * argCount;
+		uavDesc.Buffer.Flags = 0;
+
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+	}
+
 	void D3D11Utils::CreateBuffer(ID3D11Device* device, const UINT elementSize, const void* initData, DXGI_FORMAT format, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv)
 	{
 		D3D11_BUFFER_DESC bufferDesc = {};

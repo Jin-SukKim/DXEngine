@@ -21,6 +21,11 @@ namespace DE {
 		SetBlendState();
 	}
 
+	void RenderModule::UpdateArgs(const SimulationContext& ctx)
+	{
+		ParticleModule::UpdateArgs(ctx);
+	}
+
 	void RenderModule::OnUpdate(const SimulationContext& ctx)
 	{
 		ID3D11UnorderedAccessView* uav[1] = { m_sort.GetUAV() };
@@ -75,6 +80,23 @@ namespace DE {
 		consts.textureIdx = m_textureIdx;
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
+
+		// DrawInstancedIndirectArgs 초기화
+		// (VertexCountPerInstance, InstanceCount, StartVertex, StartInstance)
+		DrawInstancedArgs args = {};
+		args.vertexCountPerInstance = 0;  // 나중에 CopyStructureCount로 채워짐
+		args.instanceCount = 1;           
+		args.startVertexLocation = 0;
+		args.startInstanceLocation = 0;
+
+		m_argsBuffer.Initialize(ctx.device, args, 4);
+	}
+
+	void BillboardRenderModule::UpdateArgs(const SimulationContext& ctx)
+	{
+		RenderModule::UpdateArgs(ctx);
+
+		ctx.context->CopyStructureCount(m_argsBuffer.GetBuffer(), 0, ctx.consumeBuffer.GetUAV());
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -89,7 +111,7 @@ namespace DE {
 		};
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
-		ctx.context->DrawInstancedIndirect(ctx.indirectArgsBuffer, 0);
+		ctx.context->DrawInstancedIndirect(m_argsBuffer.GetBuffer(), 0);
 
 		// 정리
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
@@ -111,43 +133,74 @@ namespace DE {
 		}
 	}
 
+	void MeshRenderModule::Initialize(ParticleInitContext& ctx)
+	{
+		RenderModule::Initialize(ctx);
+
+		m_argsUpdateCS.Initialize(ctx.device, L"ParticleMeshArgsUpdateCS.hlsl");
+	}
+
 	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
 	{
 		RenderModule::OnSpawn(ctx);
 
+		if (m_modelIdx < 0)
+			return;
+
 		Model* model = ModelManager::Get().GetModel(m_modelIdx);
-		auto& mesh = model->meshes[0];
+		if (!model)
+			return;
 
-		DrawIndexedInstancedArgs& args = ctx.indirectArgs.GetCpu();
-		args.indexCountPerInstance = mesh.indexCount;
-		args.instanceCount = 0;
-		args.startIndexLocation = 0;
-		args.baseVertexLocation = 0;
-		args.startInstanceLocation = 0;
+		m_meshCount = static_cast<UINT>(model->meshes.size());
+		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
 
-		RenderConsts& consts = ctx.constBuffer.GetCpu().render;
-		consts.meshIndexCount = mesh.indexCount;
+		std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
+		for (size_t i = 0; i < model->meshes.size(); ++i) {
+			auto& mesh = model->meshes[i];
+
+			allArgs[i].indexCountPerInstance = mesh.indexCount;
+			allArgs[i].instanceCount = 0;
+			allArgs[i].startIndexLocation = 0;
+			allArgs[i].baseVertexLocation = 0;
+			allArgs[i].startInstanceLocation = 0;
+		}
+
+		m_meshArgs.Initialize(ctx.device, allArgs, m_meshCount, static_cast<UINT>(sizeof(DrawIndexedInstancedArgs)), 5);
+	}
+
+	void MeshRenderModule::UpdateArgs(const SimulationContext& ctx)
+	{
+		ctx.context->CSSetShaderResources(0, 1, &ctx.countSRV);
+
+		ID3D11UnorderedAccessView* uavs[] = { m_meshArgs.GetUAV() };
+		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
+		UINT groupCount = (m_meshCount + 255) / 256;
+		m_argsUpdateCS.Dispatch(ctx.context, groupCount, 1, 1);
+
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
+
+		Model* model = ModelManager::Get().GetModel(m_modelIdx);
+		if (!model) return;
+
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 
 		// IndirectDraw
-		ID3D11ShaderResourceView* sortSRVs[] = {
-			ctx.particleSRV,
-			m_sort.GetSRV()
-		};
-
+		ID3D11ShaderResourceView* sortSRVs[] = { ctx.particleSRV, m_sort.GetSRV() };
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
 
-		Model* model = ModelManager::Get().GetModel(m_modelIdx);
-		auto& mesh = model->meshes[0];
-		ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
-		ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		for (UINT i = 0; i < model->meshes.size(); ++i) {
+			auto& mesh = model->meshes[i];
+			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
+			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		ctx.context->DrawIndexedInstancedIndirect(ctx.indirectArgsBuffer, 0);
+			// Args 구조체는 20 byte (5 * 4byte)
+			UINT argsOffset = i * 20;
+			ctx.context->DrawIndexedInstancedIndirect(m_meshArgs.GetBuffer(), argsOffset);
+		}
 
 		// 정리
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };

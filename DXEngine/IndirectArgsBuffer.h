@@ -28,6 +28,7 @@ namespace DE {
     class IndirectArgsBuffer {
     public:
         void Initialize(ID3D11Device* device, const T_ELEMENT& initData, UINT argCount);
+        void Initialize(ID3D11Device* device, const std::vector<T_ELEMENT>& initData, UINT arraySize, UINT elemSize, UINT argCount);
 
         auto GetBuffer() const->ID3D11Buffer*;
         auto GetUAV() const->ID3D11UnorderedAccessView*;
@@ -44,6 +45,12 @@ namespace DE {
         m_cpu = initData;
 
         D3D11Utils::CreateIndirectBuffer(device, static_cast<UINT>(sizeof(T_ELEMENT)), argCount, &m_cpu, m_gpu, m_uav);
+    }
+
+    template<typename T_ELEMENT>
+    inline void IndirectArgsBuffer<T_ELEMENT>::Initialize(ID3D11Device* device, const std::vector<T_ELEMENT>& initData, UINT arraySize, UINT elemSize, UINT argCount)
+    {
+        D3D11Utils::CreateUnifiedIndirectBuffer(device, arraySize, elemSize, argCount, initData.data(), m_gpu, m_uav);
     }
 
     template<typename T_ELEMENT>
