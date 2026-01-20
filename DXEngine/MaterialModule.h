@@ -12,6 +12,12 @@ public:
 
 	void LoadFromJson(const json& data) override;
 
+	const std::string& GetMaterialName() const;
+
+	int GetMaterialIdx() const;
+
+	void BindMaterialByIdx(int materialIdx) const;
+
 	const std::string& GetMaterialName();
 	const int& GetMaterialIdx();
 	ModulePriority GetPriority() { return ModulePriority::Material; }

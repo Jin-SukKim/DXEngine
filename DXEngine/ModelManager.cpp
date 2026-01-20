@@ -6,74 +6,75 @@
 namespace DE {
 	int ModelManager::LoadModel(const std::string& name, const std::string& basePath, bool isGLTF)
 	{
-		std::string fullpath = presetPath + basePath + name;
-		auto it = m_pathToIdx.find(fullpath);
+		// 상대 경로 조합 (예: "Models/Chair.obj")
+		std::string relativePath = basePath + name;
+		auto it = m_pathToIdx.find(relativePath);
 
-		// 이미 Load되어 있는 Model
 		if (it != m_pathToIdx.end())
 			return it->second;
 
 		auto newModel = std::make_unique<Model>();
-		newModel->name = fullpath;
+		newModel->name = relativePath;  // 상대 경로 저장
 
-		Load(newModel->meshes, fullpath, presetPath + basePath, name, isGLTF);
+		// 실제 로드는 presetPath 추가
+		std::string fullpath = presetPath + relativePath;
+		Load(newModel->meshes, relativePath, presetPath + basePath, name, isGLTF);
 
 		int index = static_cast<int>(m_allModels.size());
 		m_allModels.emplace_back(std::move(newModel));
-		m_pathToIdx[fullpath] = index;
+		m_pathToIdx[relativePath] = index;
 
 		return index;
 	}
 
 	int ModelManager::LoadModel(const std::string& name, const MeshData& meshData)
 	{
-		std::string fullpath = presetPath + name;
-		auto it = m_pathToIdx.find(fullpath);
+		// name은 이미 상대 경로 (예: "ParticleBox")
+		auto it = m_pathToIdx.find(name);
 
-		// 이미 Load되어 있는 Model
 		if (it != m_pathToIdx.end())
 			return it->second;
 
 		auto newModel = std::make_unique<Model>();
-		newModel->name = fullpath;
+		newModel->name = name;
 
-		Load(newModel->meshes, fullpath, meshData, false);
+		Load(newModel->meshes, name, meshData, false);
 
 		int index = static_cast<int>(m_allModels.size());
 		m_allModels.emplace_back(std::move(newModel));
-		m_pathToIdx[fullpath] = index;
+		m_pathToIdx[name] = index;
 
 		return index;
 	}
 
 	Model* ModelManager::GetModel(int index)
 	{
-		// 유효성 검사 (매우 중요)
 		if (index < 0 || index >= m_allModels.size())
-			return nullptr; // 혹은 Default Missing Model 반환
+			return nullptr;
 
 		return m_allModels[index].get();
 	}
 
-	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& fullpath, const std::string& basePath, const std::string& filename, bool isGLTF)
+	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& modelName, const std::string& basePath, const std::string& filename, bool isGLTF)
 	{
 		std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
-		Load(outMeshes, fullpath, meshes, isGLTF);
+		Load(outMeshes, modelName, meshes, isGLTF);
 	}
 
-	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& fullpath, const MeshData& mesh, bool isGLTF)
+	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& modelName, const MeshData& mesh, bool isGLTF)
 	{
-		Load(outMeshes, fullpath, std::vector<MeshData>{mesh}, isGLTF);
+		Load(outMeshes, modelName, std::vector<MeshData>{mesh}, isGLTF);
 	}
 	
-	// TODO: MaterialManager를 만들면 Model을 Load할때 함께 Loading되는 Material을 Manager에 저장
-	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& fullpath, const std::vector<MeshData>& meshes, bool isGLTF)
+	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& modelName, const std::vector<MeshData>& meshes, bool isGLTF)
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		for (const auto& meshData : meshes) {
+		for (size_t i = 0; i < meshes.size(); ++i) {
+			const auto& meshData = meshes[i];
 			Mesh2 newMesh;
+			
 			D3D11Utils::CreateVertexBuffer(device, meshData.vertices, newMesh.vertexBuffer);
 			D3D11Utils::CreateIndexBuffer(device, meshData.indices, newMesh.indexBuffer);
 
@@ -81,11 +82,11 @@ namespace DE {
 			newMesh.vertexCount = UINT(meshData.vertices.size());
 			newMesh.stride = UINT(sizeof(Vertex));
 
-			newMesh.materialIdx = MaterialSystem::Get().CreateMaterial(fullpath, meshData, isGLTF);
+			// Material 이름: "ModelName_MeshIndex" (예: "Chair.obj_0")
+			std::string materialName = modelName + "_" + std::to_string(i);
+			newMesh.materialIdx = MaterialSystem::Get().CreateMaterial(materialName, meshData, isGLTF);
 
 			outMeshes.emplace_back(newMesh);
 		}
 	}
-
-
 }

@@ -34,11 +34,11 @@ public:
 
 	void SaveToJson(int materialIdx);
 private:
+	std::string SimplifyTexturePath(const std::string& fullPath);
+	
 	std::vector<Material> m_materials;
 	std::unordered_map<std::string, int> m_materialMap;
-
 	std::vector<ConstantBuffer<MaterialConstants>> m_materialConsts;
-
 };
 }
 
