@@ -97,9 +97,9 @@ namespace DE {
 
 		views[0] = TextureManager::Get().GetTextureSRV(mat.albedoTexture);
 		views[1] = TextureManager::Get().GetTextureSRV(mat.normalTexture);
-		views[4] = TextureManager::Get().GetTextureSRV(mat.aoTexture);
-		views[2] = TextureManager::Get().GetTextureSRV(mat.metallicRoughnessTexture);
-		views[3] = TextureManager::Get().GetTextureSRV(mat.emissiveTexture);
+		views[2] = TextureManager::Get().GetTextureSRV(mat.aoTexture);
+		views[3] = TextureManager::Get().GetTextureSRV(mat.metallicRoughnessTexture);
+		views[4] = TextureManager::Get().GetTextureSRV(mat.emissiveTexture);
 
 		// 슬롯 0번부터 5개 바인딩 (쉐이더 코드와 일치시켜야 함 t0 ~ t4)
 		context->PSSetShaderResources(0, 5, views);

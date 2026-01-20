@@ -224,7 +224,7 @@ PSOutput main(PSInput input)
                                       : roughnessFactor;
     //float metallic = metallicFactor;
     //float roughness = roughnessFactor;
-    float3 emission = useEmissiveMap ? emissiveTex.SampleLevel(linearWrapSampler, input.texcoord, lod).rgb
+    float3 emission = useEmissiveMap ? emissiveTex.SampleLevel(linearWrapSampler, input.texcoord, lod).rgb * emissionFactor
                                      : emissionFactor;
 
     // °£Á¢±¤ (È¯°æ¸ÊÀ¸·ÎºÎÅÍ ¹Þ´Â ºû)

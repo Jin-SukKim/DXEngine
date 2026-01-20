@@ -66,7 +66,7 @@ namespace DE {
 				m_lights.emplace_back(std::move(tempLight));
 				lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));
 			}
-			//lights[0]->TurnOn();
+			lights[0]->TurnOn();
 
 			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(lights);
 			// IBL은 그림자를 구현하지 않고 AO를 사용해 그림자 효과를 비슷하게 구현함
