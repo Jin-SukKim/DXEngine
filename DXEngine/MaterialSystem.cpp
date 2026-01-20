@@ -263,17 +263,17 @@ namespace DE {
 		// Textures ÀúÀå 
 		if (mat->albedoTexture >= 0)
 			data["Textures"]["albedo"] = TextureManager::Get().GetTexturePath(mat->albedoTexture);
-		if (mat->albedoTexture >= 0)
+		if (mat->normalTexture >= 0) 
 			data["Textures"]["normal"] = TextureManager::Get().GetTexturePath(mat->normalTexture);
-		if (mat->albedoTexture >= 0)
+		if (mat->metallicTexture >= 0) 
 			data["Textures"]["metallic"] = TextureManager::Get().GetTexturePath(mat->metallicTexture);
-		if (mat->albedoTexture >= 0)
+		if (mat->roughnessTexture >= 0) 
 			data["Textures"]["roughness"] = TextureManager::Get().GetTexturePath(mat->roughnessTexture);
-		if (mat->albedoTexture >= 0)
+		if (mat->aoTexture >= 0) 
 			data["Textures"]["ao"] = TextureManager::Get().GetTexturePath(mat->aoTexture);
-		if (mat->albedoTexture >= 0)
+		if (mat->emissiveTexture >= 0) 
 			data["Textures"]["emissive"] = TextureManager::Get().GetTexturePath(mat->emissiveTexture);
-		if (mat->albedoTexture >= 0)
+		if (mat->heightTexture >= 0) 
 			data["Textures"]["height"] = TextureManager::Get().GetTexturePath(mat->heightTexture);
 
 		std::filesystem::path baseDir = "../Assets/Materials/";
