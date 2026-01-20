@@ -72,6 +72,7 @@ namespace DE {
 		m_materials.push_back(mat);
 		m_materialMap[name] = index;
 
+		constants.Upload();
 		m_materialConsts.emplace_back(constants);
 
 		return index;
@@ -119,8 +120,8 @@ namespace DE {
 		m_materials.push_back(mat);
 		m_materialMap[name] = index;
 
+		consts.Upload();
 		m_materialConsts.emplace_back(consts);
-		m_materialConsts.back().Upload();
 
 		return index;
 	}

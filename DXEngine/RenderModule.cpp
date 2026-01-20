@@ -153,9 +153,6 @@ namespace DE {
 		if (!model)
 			return;
 
-		ConstantBuffer<MaterialConstants>& consts = MaterialSystem::Get().GetMaterialConstBuffer(m_modelIdx);
-		consts.Upload();
-
 		m_meshCount = static_cast<UINT>(model->meshes.size());
 		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
 
