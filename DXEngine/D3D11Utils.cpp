@@ -123,6 +123,52 @@ namespace DE {
 		CreateTextureHelper(device, context, img.GetWidth(), img.GetHeight(), img.GetImage(), pixelFormat, texture);
 	}
 
+	// 1. [핵심 구현] ScratchImage를 받아 텍스처를 생성하는 함수
+	void D3D11Utils::CreateTexture(ID3D11Device* device, ID3D11DeviceContext* context, const DirectX::ScratchImage& image, const DXGI_FORMAT& format, Texture2D& texture)
+	{
+		const DirectX::Image* imgData = image.GetImages(); // Mip0, Slice0
+
+		// 1. Texture 설정
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = static_cast<UINT>(imgData->width);
+		desc.Height = static_cast<UINT>(imgData->height);
+		desc.MipLevels = 0; // 전체 Mipmap 생성
+		desc.ArraySize = 1;
+		desc.Format = format;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		desc.CPUAccessFlags = 0;
+
+		// 2. Texture 생성
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
+
+		// 3. 데이터 업로드 (UpdateSubresource 사용)
+		context->UpdateSubresource(
+			texture.GetTexture(),
+			0,
+			nullptr,
+			imgData->pixels,
+			static_cast<UINT>(imgData->rowPitch),
+			static_cast<UINT>(imgData->slicePitch)
+		);
+
+		// 4. SRV 생성
+		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
+
+		// 5. Mipmap 생성
+		context->GenerateMips(texture.GetSRV());
+	}
+
+	// 2. [Wrapper] Image2를 받아 위 함수를 호출
+	void D3D11Utils::CreateTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, const DXGI_FORMAT& format, Texture2D& texture)
+	{
+		if (image == nullptr) return;
+		// Image2 내부의 ScratchImage를 꺼내서 전달
+		CreateTexture(device, context, image->GetBuffer(), format, texture);
+	}
+
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture)
 	{
 		D3D11_TEXTURE2D_DESC desc;
@@ -398,6 +444,96 @@ namespace DE {
 
 			CreateTextureHelper(device, context, width, height, combinedImage, DXGI_FORMAT_R8G8B8A8_UNORM, texture);
 		}
+	}
+
+	void D3D11Utils::CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture)
+	{
+		// 1. Image2를 사용하여 텍스처 로드 및 포맷 통일 (R8G8B8A8_UNORM)
+		Image2 metalImg;
+		bool hasMetal = !metallicFilename.empty() && metalImg.Load(metallicFilename);
+		if (hasMetal) metalImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
+
+		Image2 roughImg;
+		bool hasRough = !roughnessFilename.empty() && roughImg.Load(roughnessFilename);
+		if (hasRough) roughImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
+
+		// 둘 다 없으면 생성하지 않음
+		if (!hasMetal && !hasRough) return;
+
+		// 2. 최종 텍스처 크기 결정 (둘 중 큰 사이즈 기준)
+		size_t width = 1;
+		size_t height = 1;
+		if (hasMetal) {
+			width = metalImg.GetWidth();
+			height = metalImg.GetHeight();
+		}
+		if (hasRough) {
+			width = std::max(width, (size_t)roughImg.GetWidth());
+			height = std::max(height, (size_t)roughImg.GetHeight());
+		}
+
+		// 3. 크기가 다르다면 리사이즈 (Image2::Resize 활용)
+		if (hasMetal && (metalImg.GetWidth() != width || metalImg.GetHeight() != height)) {
+			metalImg.Resize(width, height);
+		}
+		if (hasRough && (roughImg.GetWidth() != width || roughImg.GetHeight() != height)) {
+			roughImg.Resize(width, height);
+		}
+
+		// 4. 병합 결과를 담을 ScratchImage 생성
+		DirectX::ScratchImage resultImg;
+		HRESULT hr = resultImg.Initialize2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1);
+		ThrowIfFailed(hr);
+
+		// 데이터 포인터 획득
+		const DirectX::Image* resImage = resultImg.GetImages();
+		uint8_t* destPtr = resImage->pixels;
+		size_t destPitch = resImage->rowPitch;
+
+		const uint8_t* metalPtr = hasMetal ? metalImg.GetBuffer().GetImages()->pixels : nullptr;
+		size_t metalPitch = hasMetal ? metalImg.GetBuffer().GetImages()->rowPitch : 0;
+
+		const uint8_t* roughPtr = hasRough ? roughImg.GetBuffer().GetImages()->pixels : nullptr;
+		size_t roughPitch = hasRough ? roughImg.GetBuffer().GetImages()->rowPitch : 0;
+
+		// 5. 픽셀 순회하며 채널 병합
+		// glTF PBR Standard: R=AO, G=Roughness, B=Metallic
+		for (size_t y = 0; y < height; ++y)
+		{
+			uint32_t* destRow = reinterpret_cast<uint32_t*>(destPtr + y * destPitch);
+			const uint32_t* metalRow = metalPtr ? reinterpret_cast<const uint32_t*>(metalPtr + y * metalPitch) : nullptr;
+			const uint32_t* roughRow = roughPtr ? reinterpret_cast<const uint32_t*>(roughPtr + y * roughPitch) : nullptr;
+
+			for (size_t x = 0; x < width; ++x)
+			{
+				float m = 0.0f; // Default Metallic (비금속)
+				float r = 1.0f; // Default Roughness (거침)
+
+				// 각 텍스처의 Red 채널 값을 가져옴 (흑백 이미지라고 가정)
+				if (metalRow) {
+					uint32_t pixel = metalRow[x];
+					m = (pixel & 0xFF) / 255.0f;
+				}
+				if (roughRow) {
+					uint32_t pixel = roughRow[x];
+					r = (pixel & 0xFF) / 255.0f;
+				}
+
+				// 채널 매핑
+				uint8_t ao = 255; // AO 정보가 없으므로 1.0 (Full White)
+				uint8_t g = static_cast<uint8_t>(r * 255.0f); // Roughness
+				uint8_t b = static_cast<uint8_t>(m * 255.0f); // Metallic
+				uint8_t a = 255;
+
+				// Little Endian Packing (A B G R 순서)
+				// 0xAABBGGRR
+				uint32_t packed = (a << 24) | (b << 16) | (g << 8) | ao;
+				destRow[x] = packed;
+			}
+		}
+
+		// 6. 텍스처 및 SRV 생성 (Mipmap 포함)
+		CreateTexture(device, context, resultImg, DXGI_FORMAT_R8G8B8A8_UNORM, texture);
 	}
 
 	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, UINT width, UINT height, UINT arraySize, bool useSRGB, ComPtr<ID3D11Texture2D>& outTexture, ComPtr<ID3D11ShaderResourceView>& outSRV)

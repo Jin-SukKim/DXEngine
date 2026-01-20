@@ -374,6 +374,10 @@
       <Filter>public\ParticleSystem\Resource</Filter>
     </ClInclude>
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="Material.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -557,6 +561,9 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ModelManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ModelManager.h"
 #include "GeometryGenerator.h"
+#include "MaterialSystem.h"
 
 namespace DE {
 	int ModelManager::LoadModel(const std::string& name, const std::string& basePath, bool isGLTF)
@@ -15,7 +16,7 @@ namespace DE {
 		auto newModel = std::make_unique<Model>();
 		newModel->name = fullpath;
 
-		Load(newModel->meshes, presetPath + basePath, name, isGLTF);
+		Load(newModel->meshes, fullpath, presetPath + basePath, name, isGLTF);
 
 		int index = static_cast<int>(m_allModels.size());
 		m_allModels.emplace_back(std::move(newModel));
@@ -36,7 +37,7 @@ namespace DE {
 		auto newModel = std::make_unique<Model>();
 		newModel->name = fullpath;
 
-		Load(newModel->meshes, meshData, false);
+		Load(newModel->meshes, fullpath, meshData, false);
 
 		int index = static_cast<int>(m_allModels.size());
 		m_allModels.emplace_back(std::move(newModel));
@@ -54,19 +55,19 @@ namespace DE {
 		return m_allModels[index].get();
 	}
 
-	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& basePath, const std::string& filename, bool isGLTF)
+	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& fullpath, const std::string& basePath, const std::string& filename, bool isGLTF)
 	{
 		std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
-		Load(outMeshes, meshes, isGLTF);
+		Load(outMeshes, fullpath, meshes, isGLTF);
 	}
 
-	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const MeshData& mesh, bool isGLTF)
+	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& fullpath, const MeshData& mesh, bool isGLTF)
 	{
-		Load(outMeshes, std::vector<MeshData>{mesh}, isGLTF);
+		Load(outMeshes, fullpath, std::vector<MeshData>{mesh}, isGLTF);
 	}
 	
 	// TODO: MaterialManager를 만들면 Model을 Load할때 함께 Loading되는 Material을 Manager에 저장
-	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::vector<MeshData>& meshes, bool isGLTF)
+	void ModelManager::Load(std::vector<Mesh2>& outMeshes, const std::string& fullpath, const std::vector<MeshData>& meshes, bool isGLTF)
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
@@ -79,6 +80,8 @@ namespace DE {
 			newMesh.indexCount = UINT(meshData.indices.size());
 			newMesh.vertexCount = UINT(meshData.vertices.size());
 			newMesh.stride = UINT(sizeof(Vertex));
+
+			newMesh.materialIdx = MaterialSystem::Get().CreateMaterial(fullpath, meshData, isGLTF);
 
 			outMeshes.emplace_back(newMesh);
 		}

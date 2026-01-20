@@ -35,7 +35,8 @@
   },
   "MeshRender": {
     "blendMode": "Opaque",
-    "model": "rose.fbx",
-    "basePath": "rose\\"
+    "model": "DamagedHelmet.gltf",
+    "basePath": "DamagedHelmet\\",
+    "isGLTF": true
   }
 }

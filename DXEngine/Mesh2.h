@@ -11,5 +11,7 @@ namespace DE {
 		UINT vertexCount = 0;
 		UINT stride = 0;
 		UINT offset = 0;
+
+		int materialIdx;
 	};
 }

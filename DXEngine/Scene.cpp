@@ -18,6 +18,7 @@
 #include "SpotLight.h"
 #include "PointLight.h"
 #include "TextureManager.h"
+#include "MaterialSystem.h"
 
 namespace DE {
 	Scene::Scene() : xAxis(InputAxis::XAxis)
@@ -29,6 +30,7 @@ namespace DE {
 		// 공통으로 쓰이는 Constant buffer
 		D3D11Utils::CreateConstantBuffer(device.Get(), m_globalConstsCPU, m_globalConstsGPU);
 		TextureManager::Get().Initialize();
+		MaterialSystem::Get().Initialize();
 		// Scene 공통 Actor
 		{
 			m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");
@@ -64,7 +66,7 @@ namespace DE {
 				m_lights.emplace_back(std::move(tempLight));
 				lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));
 			}
-			lights[0]->TurnOn();
+			//lights[0]->TurnOn();
 
 			GET_SINGLE(RenderBase)->CreateShadowArrayBuffer(lights);
 			// IBL은 그림자를 구현하지 않고 AO를 사용해 그림자 효과를 비슷하게 구현함

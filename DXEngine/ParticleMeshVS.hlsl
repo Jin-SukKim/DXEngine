@@ -1,10 +1,10 @@
 #include "Common.hlsli"
 #include "ParticleCommon.hlsli"
 
-StructuredBuffer<Particle> particles : register(t0);
-StructuredBuffer<SortElement> sortedElements : register(t1);
+Texture2D g_heightTexture : register(t0); // Height Map
+StructuredBuffer<Particle> particles : register(t1);
+StructuredBuffer<SortElement> sortedElements : register(t2);
 
-Texture2D g_heightTexture : register(t2); // Height Map
 
 // [중요] SV_InstanceID를 인자로 받아야 합니다.
 PSInput main(VSInput input, uint instanceID : SV_InstanceID)

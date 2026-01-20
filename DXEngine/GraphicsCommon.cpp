@@ -456,6 +456,5 @@ namespace DE {
 
 		particle.meshPSO = basic.solidPSO;
 		particle.meshPSO.vertexShader = particleMeshVS;
-		particle.meshPSO.pixelShader = colorPS;
 	}
 }

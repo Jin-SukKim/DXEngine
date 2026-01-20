@@ -1,6 +1,6 @@
 #pragma once
 //#include "Texture2D.h"
-//#include "Image2.h"
+#include "Image2.h"
 
 namespace DE {
 	class Image2;
@@ -84,6 +84,23 @@ namespace DE {
 
 		// Texture2D 생성
 		static void CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, const bool usSRGB, Texture2D& texture);
+		// [신규] ScratchImage를 직접 받는 버전 (실제 구현부)
+		static void CreateTexture(
+			ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const DirectX::ScratchImage& image, // Image2* 대신 ScratchImage& 사용
+			const DXGI_FORMAT& format,
+			Texture2D& texture
+		);
+
+		// [기존] Image2 포인터를 받는 버전 (Wrapper)
+		static void CreateTexture(
+			ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const Image2* image,
+			const DXGI_FORMAT& format,
+			Texture2D& texture
+		);
 		// Resource Texture의 설정을 가져와서 Texture, SRV, RTV 생성
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture);
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const D3D11_TEXTURE2D_DESC& desc, Texture2D& texture);
@@ -100,6 +117,7 @@ namespace DE {
 		static void CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture);
 		// Metal과 Roughness Texture를 하나의 Texture에서 사용하는 MetallicRoughness Texture 생성
 		static void CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
+		static void CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
 		// Texture2D Array 생성
 		static void CreateTexture2DArray(ID3D11Device* device,
 			UINT width, UINT height, UINT arraySize,

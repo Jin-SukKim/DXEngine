@@ -5,6 +5,7 @@
 #include "ModelManager.h"
 #include "GeometryGenerator.h"
 #include "IndirectArgsBuffer.h"
+#include "MaterialSystem.h"
 
 namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
@@ -152,6 +153,9 @@ namespace DE {
 		if (!model)
 			return;
 
+		ConstantBuffer<MaterialConstants>& consts = MaterialSystem::Get().GetMaterialConstBuffer(m_modelIdx);
+		consts.Upload();
+
 		m_meshCount = static_cast<UINT>(model->meshes.size());
 		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
 
@@ -191,10 +195,12 @@ namespace DE {
 
 		// IndirectDraw
 		ID3D11ShaderResourceView* sortSRVs[] = { ctx.particleSRV, m_sort.GetSRV() };
-		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
+		ctx.context->VSSetShaderResources(1, 2, sortSRVs);
+
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {
 			auto& mesh = model->meshes[i];
+			MaterialSystem::Get().BindMaterial(mesh.materialIdx);
 			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
