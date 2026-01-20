@@ -223,6 +223,7 @@ namespace DE {
 		D3D11Utils::CreateVSAndIL(device, L"ParticleVS.hlsl", particleIEs, particleVS, particleIL);
 		D3D11Utils::CreateGS(device, L"ParticleGS.hlsl", particleGS);
 		D3D11Utils::CreatePS(device, L"ParticlePS.hlsl", particlePS);
+		D3D11Utils::CreatePS(device, L"ParticlePBR.hlsl", particlePbrPS);
 	}
 	
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
@@ -456,5 +457,6 @@ namespace DE {
 
 		particle.meshPSO = basic.solidPSO;
 		particle.meshPSO.vertexShader = particleMeshVS;
+		particle.meshPSO.pixelShader = particlePbrPS;
 	}
 }

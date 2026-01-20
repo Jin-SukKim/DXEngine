@@ -53,21 +53,28 @@ namespace DE {
 			if (mat.aoTexture > -1) constants.GetCpu().useAOMap = true;
 		}
 
-		// GLTF 방식으로 metallic과 roughness를 한 Texture에 넣은 (MetalRoughness Texture)
-		if (!meshData.metallicTextureFilename.empty() ||
-			!meshData.roughnessTextureFilename.empty()) {
+		if (!meshData.metallicTextureFilename.empty() && (meshData.metallicTextureFilename == meshData.roughnessTextureFilename)) {
+			// TODO: 분리
 			std::cout << meshData.metallicTextureFilename << std::endl;
 			std::cout << meshData.roughnessTextureFilename << std::endl;
-
-			mat.metallicRoughnessTexture = TextureManager::Get().LoadMetallicRoughnessTexture(meshData.metallicTextureFilename, meshData.roughnessTextureFilename);
+			auto [metallic, roughness] = TextureManager::Get().LoadMetallicRoughnessTexture(meshData.metallicTextureFilename);
+			mat.metallicTexture = metallic;
+			mat.roughnessTexture = roughness;
 		}
+		else {
+			if (!meshData.metallicTextureFilename.empty()) {
+				std::cout << meshData.metallicTextureFilename << std::endl;
+				mat.metallicTexture = TextureManager::Get().LoadTexture(meshData.metallicTextureFilename, false);
+			}
 
-		if (!meshData.metallicTextureFilename.empty())
-			constants.GetCpu().useMetallicMap = true;
-
-		if (!meshData.roughnessTextureFilename.empty())
-			constants.GetCpu().useRoughnessMap = true;
-
+			if (!meshData.roughnessTextureFilename.empty()) {
+				std::cout << meshData.roughnessTextureFilename << std::endl;
+				mat.roughnessTexture = TextureManager::Get().LoadTexture(meshData.roughnessTextureFilename, false);
+			}
+		}
+		if (mat.metallicTexture > -1) constants.GetCpu().useMetallicMap = true;
+		if (mat.roughnessTexture > -1) constants.GetCpu().useRoughnessMap = true;
+		
 		int index = static_cast<int>(m_materials.size());
 		m_materials.push_back(mat);
 		m_materialMap[name] = index;
@@ -100,12 +107,12 @@ namespace DE {
 			if (mat.normalTexture >= 0) consts.GetCpu().useNormalMap = 1;
 		}
 		if (texturePaths.size() > 2 && !texturePaths[2].empty()) {
-			mat.metallicRoughnessTexture = TextureManager::Get().LoadTexture(texturePaths[2], false);
-			if (mat.metallicRoughnessTexture >= 0) consts.GetCpu().useMetallicMap = 1;
+			mat.metallicTexture = TextureManager::Get().LoadTexture(texturePaths[2], false);
+			if (mat.metallicTexture >= 0) consts.GetCpu().useMetallicMap = 1;
 		}
 		if (texturePaths.size() > 3 && !texturePaths[3].empty()) {
-			mat.metallicRoughnessTexture = TextureManager::Get().LoadTexture(texturePaths[3], false);
-			if (mat.metallicRoughnessTexture >= 0) consts.GetCpu().useRoughnessMap = 1;
+			mat.roughnessTexture = TextureManager::Get().LoadTexture(texturePaths[3], false);
+			if (mat.roughnessTexture >= 0) consts.GetCpu().useRoughnessMap = 1;
 		}
 		if (texturePaths.size() > 4 && !texturePaths[4].empty()) {
 			mat.aoTexture = TextureManager::Get().LoadTexture(texturePaths[4], false);
@@ -142,16 +149,17 @@ namespace DE {
 
 		// 2. 텍스처 바인딩
 		// TextureManager에서 SRV를 가져와서 바인딩
-		ID3D11ShaderResourceView* views[5] = { nullptr, };
+		ID3D11ShaderResourceView* views[6] = { nullptr, };
 
 		views[0] = TextureManager::Get().GetTextureSRV(mat.albedoTexture);
 		views[1] = TextureManager::Get().GetTextureSRV(mat.normalTexture);
 		views[2] = TextureManager::Get().GetTextureSRV(mat.aoTexture);
-		views[3] = TextureManager::Get().GetTextureSRV(mat.metallicRoughnessTexture);
-		views[4] = TextureManager::Get().GetTextureSRV(mat.emissiveTexture);
+		views[3] = TextureManager::Get().GetTextureSRV(mat.metallicTexture);
+		views[4] = TextureManager::Get().GetTextureSRV(mat.roughnessTexture);
+		views[5] = TextureManager::Get().GetTextureSRV(mat.emissiveTexture);
 
 		// 슬롯 0번부터 5개 바인딩 (쉐이더 코드와 일치시켜야 함 t0 ~ t4)
-		context->PSSetShaderResources(0, 5, views);
+		context->PSSetShaderResources(0, 6, views);
 		context->PSSetConstantBuffers(3, 1, m_materialConsts[materialIdx].GetAddressOf());
 	}
 
@@ -193,11 +201,11 @@ namespace DE {
 			constants.useNormalMap = 1;
 			break;
 		case TexSlot::Metallic:
-			mat.metallicRoughnessTexture = newTexture;
+			mat.metallicTexture = newTexture;
 			constants.useMetallicMap = 1;
 			break;
 		case TexSlot::Roughness:
-			mat.metallicRoughnessTexture = newTexture;
+			mat.roughnessTexture = newTexture;
 			constants.useRoughnessMap = 1;
 			break;
 		case TexSlot::AO:

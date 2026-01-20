@@ -156,6 +156,7 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> particleVS;
 		ComPtr<ID3D11GeometryShader> particleGS;
 		ComPtr<ID3D11PixelShader> particlePS;
+		ComPtr<ID3D11PixelShader> particlePbrPS;
 		ComPtr<ID3D11BlendState> accumulateBS; // 색을 전부 더하면서 렌더링
 		ComPtr<ID3D11BlendState> alphaBS; 
 		ComPtr<ID3D11DepthStencilState> particleDDS;

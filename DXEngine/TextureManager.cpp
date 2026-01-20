@@ -141,6 +141,40 @@ int TextureManager::LoadMetallicRoughnessTexture(const std::string& metallicPath
     return index;
 }
 
+std::pair<int, int>  TextureManager::LoadMetallicRoughnessTexture(const std::string& path)
+{
+    if (path.empty())
+        return { -1, -1 };
+
+    std::string fullpath = presetPath + path;
+
+    auto device = GET_SINGLE(RenderBase)->GetDevice();
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    std::unique_ptr<Texture2D> metallic = std::make_unique<Texture2D>();
+    std::unique_ptr<Texture2D> roughness = std::make_unique<Texture2D>();
+    D3D11Utils::CreateTexturesFromGLTFCombined(device.Get(), context.Get(), path, *metallic.get(), *roughness.get());
+
+    std::pair<int, int> index = { 0, 0 };
+    if (metallic->GetSRV() == nullptr)
+        index.first = -1;
+    if (roughness->GetSRV() == nullptr)
+        index.second = -1;
+
+    if (index.first > -1) {
+        index.first = static_cast<int>(m_textures.size());
+        m_textures.emplace_back(std::move(metallic));
+        m_texturePathToIdx[fullpath + "metallic"] = index.first;
+    }
+
+    if (index.second > -1) {
+        index.second = static_cast<int>(m_textures.size());
+        m_textures.emplace_back(std::move(roughness));
+        m_texturePathToIdx[fullpath + "roughness"] = index.second;
+    }
+
+    return index;
+}
+
 ID3D11ShaderResourceView* TextureManager::GetTextureSRV(int index)
 {
     if (index < 0 || index >= m_textures.size())

@@ -118,6 +118,13 @@ namespace DE {
 		// Metal과 Roughness Texture를 하나의 Texture에서 사용하는 MetallicRoughness Texture 생성
 		static void CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
 		static void CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
+		static void CreateTexturesFromGLTFCombined(
+			ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const std::string& gltfTexturePath,
+			Texture2D& outMetallicTex,
+			Texture2D& outRoughnessTex
+		);
 		// Texture2D Array 생성
 		static void CreateTexture2DArray(ID3D11Device* device,
 			UINT width, UINT height, UINT arraySize,

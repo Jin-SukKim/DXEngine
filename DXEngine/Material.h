@@ -11,6 +11,7 @@ namespace DE {
 		int heightTexture = -1;
 		int normalTexture = -1;
 		int aoTexture = -1;
-		int metallicRoughnessTexture = -1;
+		int metallicTexture = -1;
+		int roughnessTexture = -1;
 	};
 }

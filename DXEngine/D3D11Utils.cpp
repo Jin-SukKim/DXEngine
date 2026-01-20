@@ -536,6 +536,64 @@ namespace DE {
 		CreateTexture(device, context, resultImg, DXGI_FORMAT_R8G8B8A8_UNORM, texture);
 	}
 
+	void D3D11Utils::CreateTexturesFromGLTFCombined(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& gltfTexturePath, Texture2D& outMetallicTex, Texture2D& outRoughnessTex)
+	{
+		// 1. 원본(Combined) 이미지 로드
+		Image2 sourceImg;
+		if (!sourceImg.Load(gltfTexturePath))
+			return;
+
+		// 데이터 처리를 쉽게 하기 위해 RGBA 포맷으로 변환
+		sourceImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
+
+		size_t width = sourceImg.GetWidth();
+		size_t height = sourceImg.GetHeight();
+
+		// 2. 분리된 데이터를 담을 ScratchImage 2개 생성 (1채널 포맷 사용: R8_UNORM)
+		DirectX::ScratchImage metalScratch;
+		DirectX::ScratchImage roughScratch;
+
+		ThrowIfFailed(metalScratch.Initialize2D(DXGI_FORMAT_R8_UNORM, width, height, 1, 1));
+		ThrowIfFailed(roughScratch.Initialize2D(DXGI_FORMAT_R8_UNORM, width, height, 1, 1));
+
+		// 3. 픽셀 데이터 포인터 획득
+		const uint8_t* srcPixels = sourceImg.GetBuffer().GetImages()->pixels;
+		size_t srcPitch = sourceImg.GetBuffer().GetImages()->rowPitch;
+
+		uint8_t* metalPixels = metalScratch.GetImages()->pixels;
+		size_t metalPitch = metalScratch.GetImages()->rowPitch;
+
+		uint8_t* roughPixels = roughScratch.GetImages()->pixels;
+		size_t roughPitch = roughScratch.GetImages()->rowPitch;
+
+		// 4. 채널 분리 (glTF: R=Occlusion, G=Roughness, B=Metallic)
+		for (size_t y = 0; y < height; ++y)
+		{
+			const uint32_t* srcRow = reinterpret_cast<const uint32_t*>(srcPixels + y * srcPitch);
+			uint8_t* metalRow = metalPixels + y * metalPitch;
+			uint8_t* roughRow = roughPixels + y * roughPitch;
+
+			for (size_t x = 0; x < width; ++x)
+			{
+				uint32_t pixel = srcRow[x];
+
+				// Little Endian: 0xAABBGGRR
+				// Green Channel = Roughness
+				uint8_t g = (pixel >> 8) & 0xFF;
+				// Blue Channel = Metallic
+				uint8_t b = (pixel >> 16) & 0xFF;
+
+				// 각각의 텍스처에 저장 (1채널이므로 값 그대로 대입)
+				roughRow[x] = g;
+				metalRow[x] = b;
+			}
+		}
+
+		// 5. 각각 텍스처 생성 (기존에 작성한 CreateTexture 오버로딩 활용)
+		CreateTexture(device, context, metalScratch, DXGI_FORMAT_R8_UNORM, outMetallicTex);
+		CreateTexture(device, context, roughScratch, DXGI_FORMAT_R8_UNORM, outRoughnessTex);
+	}
+
 	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, UINT width, UINT height, UINT arraySize, bool useSRGB, ComPtr<ID3D11Texture2D>& outTexture, ComPtr<ID3D11ShaderResourceView>& outSRV)
 	{
 		DXGI_FORMAT pixelFormat = useSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용

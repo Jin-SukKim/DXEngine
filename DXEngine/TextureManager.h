@@ -21,6 +21,7 @@ public:
 	// ¿œπ› Texture
 	int LoadTexture(const std::string& path, bool isSRGB);
 	int LoadMetallicRoughnessTexture(const std::string& metallicPath, const std::string& roughnessPath);
+	std::pair<int, int> LoadMetallicRoughnessTexture(const std::string& path);
 	ID3D11ShaderResourceView* GetTextureSRV(int index);
 
 private:

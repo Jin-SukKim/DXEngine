@@ -33,8 +33,8 @@ namespace DE {
 	};
 
 	__declspec(align(256)) struct MaterialConstants {
-		Vector3 albedoFactor = Vector3(0.5f); // 기본 색이라 생각할 수 있음
-		float roughnessFactor = 0.5f; // 물체 표면의 거칠기
+		Vector3 albedoFactor = Vector3(0.3f); // 기본 색이라 생각할 수 있음
+		float roughnessFactor = 1.0f; // 물체 표면의 거칠기
 		float metallicFactor = 0.5f; // 금속에 가까운지 비금속에 가까운지 결정하는 값
 		Vector3 emissionFactor = Vector3(1.0f);
 
