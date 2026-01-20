@@ -4,8 +4,9 @@
 Texture2D albedoTex : register(t0);
 Texture2D normalTex : register(t1);
 Texture2D aoTex : register(t2);
-Texture2D metallicRoughnessTex : register(t3);
-Texture2D emissiveTex : register(t4);
+Texture2D metallicTex : register(t3);
+Texture2D roughnessTex : register(t4);
+Texture2D emissiveTex : register(t5);
 
 // 물체의 재질에 따라 F0을 결정하는데 metallic 값에 따라 Fdielectric와 albedo의 lerp 범위로 조정
 static const float3 Fdielectric = 0.04; // 비금속 재질의 F0이 최소가 0이 아닌 0.04
@@ -218,9 +219,9 @@ PSOutput main(PSInput input)
     float ao = useAOMap ? aoTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r : 1.0;
     
     // Metal Texture와 Roughness Texture는 한 Texture로 통합해서 각각 b와 g값을 가져와 사용
-    float metallic = useMetallicMap ? metallicRoughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).b * metallicFactor
+    float metallic = useMetallicMap ? metallicTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r * metallicFactor
                                     : metallicFactor;
-    float roughness = useRoughnessMap ? metallicRoughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).g * roughnessFactor
+    float roughness = useRoughnessMap ? roughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r * roughnessFactor
                                       : roughnessFactor;
     //float metallic = metallicFactor;
     //float roughness = roughnessFactor;

@@ -68,17 +68,27 @@ namespace DE {
 				m_material.GetCpu().useAOMap = true;
 			}
 
-			// GLTF 방식으로 metallic과 roughness를 한 Texture에 넣은 (MetalRoughness Texture)
-			if (!meshData.metallicTextureFilename.empty() ||
-				!meshData.roughnessTextureFilename.empty()) {
+			if (!meshData.metallicTextureFilename.empty() && (meshData.metallicTextureFilename == meshData.roughnessTextureFilename)) {
+				// TODO: 분리
 				std::cout << meshData.metallicTextureFilename << std::endl;
 				std::cout << meshData.roughnessTextureFilename << std::endl;
+				D3D11Utils::CreateTexturesFromGLTFCombined(
+					device.Get(), context.Get(),
+					meshData.metallicTextureFilename,
+					newMesh.metallicTexture,
+					newMesh.roughnessTexture);
+			}
+			else {
+				if (!meshData.metallicTextureFilename.empty()) {
+					std::cout << meshData.metallicTextureFilename << std::endl;
+					D3D11Utils::CreateTexture(device, context, meshData.metallicTextureFilename, false, newMesh.metallicTexture);
 
-				D3D11Utils::CreateMetallicRoughnessTexture(
-					device, context, 
-					meshData.metallicTextureFilename, 
-					meshData.roughnessTextureFilename, 
-					newMesh.metallicRoughnessTexture);
+				}
+
+				if (!meshData.roughnessTextureFilename.empty()) {
+					std::cout << meshData.roughnessTextureFilename << std::endl;
+					D3D11Utils::CreateTexture(device, context, meshData.roughnessTextureFilename, false, newMesh.roughnessTexture);
+				}
 			}
 
 			if (!meshData.metallicTextureFilename.empty())
@@ -138,7 +148,8 @@ namespace DE {
 				mesh.albedoTexture.GetSRV(),
 				mesh.normalTexture.GetSRV(),
 				mesh.aoTexture.GetSRV(),
-				mesh.metallicRoughnessTexture.GetSRV(),
+				mesh.metallicTexture.GetSRV(),
+				mesh.roughnessTexture.GetSRV(),
 				mesh.emissiveTexture.GetSRV()
 			};
 			context->PSSetShaderResources(0, UINT(resViews.size()), resViews.data());

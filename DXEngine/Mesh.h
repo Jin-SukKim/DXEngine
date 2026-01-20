@@ -18,7 +18,8 @@ namespace DE {
 		Texture2D heightTexture;
 		Texture2D normalTexture;
 		Texture2D aoTexture;
-		Texture2D metallicRoughnessTexture;
+		Texture2D metallicTexture;
+		Texture2D roughnessTexture;
 
 		UINT indexCount = 0;
 		UINT vertexCount = 0; // Normal Vector ·»´õ¸µ¿ë
