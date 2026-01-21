@@ -1,13 +1,13 @@
 {
   "Name": "FireEffect",
   "Spawn": {
-    "shape": "Surface",
+    "shape": "Vertex",
     "localPos": [ 2.0, 0.0, 0.0 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 60.0,
+    "spawnRate": 30.0,
     "particlesPerSpawn": 10000,
-    "maxParticles": 10000000,
+    "maxParticles": 100000,
     "lifeRange": [ 0.1, 0.1 ]
   },
   "Visual": {
