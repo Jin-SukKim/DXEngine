@@ -31,7 +31,9 @@ struct SpawnConsts {
 
     float2 lifeRange;
     int spawnShape;
-    float padding1;
+    uint vertexCount;
+    uint indexCount;
+    float3 padding1;
 };
 
 struct VisualConsts {

@@ -3,6 +3,7 @@
 #include "ParticleLoader.h"
 #include "TransformComponent.h"
 #include "TextureManager.h"
+#include "SpawnModule.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Component(name, ComponentType::ParticleSystem)
@@ -20,6 +21,10 @@ namespace DE {
 		Component::Initialize();
 		for (auto& emitter : m_emitters)
 			emitter->Initialize();
+
+		if (m_state == ParticleState::Playing) Restart();
+		else if (m_state == ParticleState::Paused) Pause();
+		else if (m_state == ParticleState::Stopped) Stop();
 	}
 
 	void ParticleSystem::OnSpawn()
@@ -123,9 +128,13 @@ namespace DE {
 		
 		if (data.contains("State")) {
 			std::string state = data["State"];
-			if (state == "Play") Restart();
-			else if (state == "Pause") Pause();
-			else if (state == "Stop") Stop();
+			//if (state == "Play")  Restart();
+			//else if (state == "Pause") Pause();
+			//else if (state == "Stop") Stop();
+
+			if (state == "Play") m_state = ParticleState::Playing;
+			else if (state == "Pause") m_state = ParticleState::Paused;
+			else if (state == "Stop") m_state = ParticleState::Stopped;
 		}
 	}
 	
@@ -155,6 +164,16 @@ namespace DE {
 	{
 		Stop();
 		Play();
+	}
+
+	void ParticleSystem::SetTargetMesh(const MeshData& meshe)
+	{
+		for (auto& emitter : m_emitters) {
+			SpawnModule* sp = emitter->GetModule<SpawnModule>();
+			if (sp) {
+				sp->SetTarget(meshe);
+			}
+		}
 	}
 
 	void ParticleSystem::Reset()

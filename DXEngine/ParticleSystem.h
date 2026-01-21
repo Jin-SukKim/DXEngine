@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "ParticleEmitter.h"
+#include "MeshData.h"
 
 namespace DE {
 
@@ -38,7 +39,7 @@ public:
 	void SetDuration(float duration) { m_duration = duration; }
 	void SetPlayRate(float rate) { m_playRate = rate; }
 	void SetPreWarmTime(float time) { m_preWarmTime = time; }
-
+	void SetTargetMesh(const MeshData& meshe);
 private:
 	void Reset();
 	void ExecutePreWarm();

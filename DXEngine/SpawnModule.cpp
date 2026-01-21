@@ -18,6 +18,8 @@ namespace DE {
 		consts.spawnInnerRatio = spawnInnerRatio;
 		consts.spawnShape = spawnShape;
 		consts.lifeRange = lifeRange;
+		consts.vertexCount = vertexCount;
+		consts.indexCount = indexCount;
 
 		ctx.frameConstBuffer.GetCpu().maxParticles = maxParticles;
 	}
@@ -27,13 +29,14 @@ namespace DE {
 		ParticleModule::OnUpdateCPU(ctx);
 		spawnAccumulator += spawnRate * ctx.dt;
 
-		UINT spawnCycles = static_cast<int>(spawnAccumulator);
-		m_totalSpawnCount = spawnCycles * particlesPerSpawn;
+		m_totalSpawnCount = 1;
+		//UINT spawnCycles = static_cast<int>(spawnAccumulator);
+		//m_totalSpawnCount = spawnCycles * particlesPerSpawn;
 
-		if (spawnCycles > 0)
-			spawnAccumulator -= static_cast<float>(spawnCycles);
-		if (m_totalSpawnCount < 0)
-			m_totalSpawnCount = 0;
+		//if (spawnCycles > 0)
+		//	spawnAccumulator -= static_cast<float>(spawnCycles);
+		//if (m_totalSpawnCount < 0)
+		//	m_totalSpawnCount = 0;
 
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}
@@ -48,6 +51,14 @@ namespace DE {
 		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
+		if (spawnShape == 2 || spawnShape == 3) {
+			ID3D11ShaderResourceView* srvs[] = {
+				m_meshVertex.GetSRV(),
+				m_meshIndices.GetSRV()
+			};
+			ctx.context->CSSetShaderResources(0, 2, srvs);
+		}
+
 		// Spawn Compute Shader
 		UINT groupCount = (m_totalSpawnCount + 1023) / 1024;
 		m_spawnCS.Dispatch(ctx.context, groupCount, 1, 1);
@@ -60,12 +71,37 @@ namespace DE {
 		if (data.contains("spawnInnerRatio")) spawnInnerRatio = data["spawnInnerRatio"];
 		if (data.contains("shape")) {
 			std::string shape = data["shape"];
-			if (shape == "Sphere") spawnShape = 1;
-			else if (shape == "Box") spawnShape = 0;
+			if (shape == "Box") spawnShape = 0;
+			else if (shape == "Sphere") spawnShape = 1;
+			else if (shape == "Vertex") spawnShape = 2;
+			else if (shape == "Surface") spawnShape = 3;
 		}
 		if (data.contains("spawnRate")) spawnRate = data["spawnRate"];
 		if (data.contains("particlesPerSpawn")) particlesPerSpawn = data["particlesPerSpawn"];
 		if (data.contains("maxParticles")) maxParticles = data["maxParticles"];
 		if (data.contains("lifeRange")) lifeRange = JsonToVec2(data["lifeRange"]);
+	}
+
+	void SpawnModule::SetTarget(const MeshData& meshes)
+	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		vertexCount = static_cast<UINT>(meshes.vertices.size());
+		indexCount = static_cast<UINT>(meshes.indices.size());
+
+		std::vector<Vector3> positions;
+		positions.reserve(vertexCount);
+		for (const auto& pos : meshes.vertices)
+			positions.emplace_back(pos.position);
+
+		m_meshVertex.Initialize(device.Get(), vertexCount);
+		m_meshIndices.Initialize(device.Get(), indexCount);
+
+		m_meshVertex.SetData(positions);
+		m_meshIndices.SetData(meshes.indices);
+
+		m_meshVertex.Upload(context.Get());
+		m_meshIndices.Upload(context.Get());
 	}
 }

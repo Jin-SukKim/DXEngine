@@ -1,7 +1,7 @@
 #pragma once
 #include "ParticleModule.h"
 #include "ComputeShader.h"
-
+#include "MeshData.h"
 namespace DE {
 
 class SpawnModule : public ParticleModule
@@ -13,6 +13,8 @@ public:
 	void PreUpdate(SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
+
+	void SetTarget(const MeshData& meshes);
 public:
 	Vector3 localPos = Vector3(0.f);
 	Vector3 spawnVolume = Vector3(0.05f, 0.15f, 0.05f);
@@ -23,10 +25,13 @@ public:
 	UINT maxParticles = 1024;
 	Vector2 lifeRange = { 0.1f, 1.5f };
 	float spawnAccumulator = 0.f;
-
+	UINT vertexCount = 0;
+	UINT indexCount = 0;
 private:
 	ComputeShader m_spawnCS;
 	UINT m_totalSpawnCount = 0;
+	StructuredBuffer<Vector3> m_meshVertex;
+	StructuredBuffer<uint32_t> m_meshIndices;
 };
 }
 
