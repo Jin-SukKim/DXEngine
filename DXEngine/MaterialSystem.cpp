@@ -251,14 +251,14 @@ namespace DE {
 		// "Models/DamagedHelmet/Default_albedo.jpg" → "DamagedHelmet/Default_albedo.jpg"
 		// "Models/" 부분 제거
 		
-		size_t modelsPos = fullPath.find("Models/");
+		size_t modelsPos = fullPath.find("Assets/");
 		if (modelsPos != std::string::npos) {
 			// "Models/" 이후 부분 반환
 			return fullPath.substr(modelsPos + 7); // "Models/" 길이 = 7
 		}
 		
 		// "Models\"로 저장된 경우 (Windows 경로)
-		modelsPos = fullPath.find("Models\\");
+		modelsPos = fullPath.find("Assets\\");
 		if (modelsPos != std::string::npos) {
 			return fullPath.substr(modelsPos + 7);
 		}
@@ -331,5 +331,49 @@ namespace DE {
 		else {
 			std::cout << "[MaterialSystem] Failed to save: " << fullPath.string() << std::endl;
 		}
+	}
+
+	int MaterialSystem::CreateMaterialFromJson(const std::string& jsonPath)
+	{
+		std::ifstream file("..\\Assets\\" + jsonPath);
+		if (!file.is_open()) {
+			// 로그: 파일 열기 실패
+			return 0; // Default 재질
+		}
+
+		json data;
+		file >> data;
+		file.close();
+
+		// 2. JSON 데이터 파싱
+		std::string matName = data.value("Name", "Unnamed_Material");
+
+		// 이름으로 중복 확인
+		if (m_materialMap.find(matName) != m_materialMap.end())
+			return m_materialMap[matName];
+
+		MaterialConstants constants;
+		std::vector<std::string> texPaths(7); // Albedo, Normal, Metallic, Roughness, AO, Emissive, Height
+
+		// 값 로드
+		if (data.contains("AlbedoFactor")) constants.albedoFactor = JsonToVec3(data["AlbedoFactor"]);
+		if (data.contains("RoughnessFactor")) constants.roughnessFactor = data["RoughnessFactor"];
+		if (data.contains("MetallicFactor")) constants.metallicFactor = data["MetallicFactor"];
+		if (data.contains("EmissionFactor")) constants.emissionFactor = JsonToVec3(data["EmissionFactor"]);
+
+		// 텍스처 경로 로드
+		if (data.contains("Textures")) {
+			auto& tex = data["Textures"];
+			if (tex.contains("albedo")) texPaths[0] = tex["albedo"];
+			if (tex.contains("normal")) texPaths[1] = tex["normal"];
+			if (tex.contains("metallic")) texPaths[2] = tex["metallic"];
+			if (tex.contains("roughness")) texPaths[3] = tex["roughness"];
+			if (tex.contains("ao")) texPaths[4] = tex["ao"];
+			if (tex.contains("emissive")) texPaths[5] = tex["emissive"];
+			if (tex.contains("height")) texPaths[6] = tex["height"];
+		}
+
+		// 3. 재질 생성 호출
+		return CreateMaterial(matName, constants, texPaths);
 	}
 }

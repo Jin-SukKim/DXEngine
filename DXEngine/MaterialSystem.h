@@ -33,6 +33,7 @@ public:
 	ConstantBuffer<MaterialConstants>& GetMaterialConstBuffer(int materialIdx);
 
 	void SaveToJson(int materialIdx);
+	int CreateMaterialFromJson(const std::string& jsonPath);
 private:
 	std::string SimplifyTexturePath(const std::string& fullPath);
 	

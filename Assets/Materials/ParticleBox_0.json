@@ -1,15 +1,20 @@
 {
-    "Name": "ParticleBox_0",
-    "Albedo": [
-        0.30000001192092896,
-        0.30000001192092896,
-        0.30000001192092896
-    ],
-    "Roughness": 1.0,
-    "Metallic": 0.5,
-    "Emission": [
-        1.0,
-        1.0,
-        1.0
-    ]
+  "Name": "ParticleBox_0",
+  "Albedo": [
+    0.30000001192092896,
+    0.30000001192092896,
+    0.30000001192092896
+  ],
+  "Roughness": 0.5,
+  "Metallic": 0.5,
+  "Emission": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "Textures": {
+    "albedo": "Models\\rose\\grass_texture225.jpg",
+    "metallic": "Models\\rose\\texture-green-paper-pattern-scratch-background-photo-hd-wallpaper.jpg",
+    "emissive": "Models\\rose\\wildtextures-leather-Campo-rose.jpg"
+  }
 }

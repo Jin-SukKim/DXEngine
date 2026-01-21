@@ -13,7 +13,6 @@ public:
 	void BindMaterialForMesh(int subMeshIndex);
 
 	void LoadFromJson(const json& data) override;
-	void LoadMaterialFromJson(const json& data);
 
 	ModulePriority GetPriority() { return ModulePriority::Material; }
 private:
@@ -21,7 +20,6 @@ private:
 	std::vector<int> m_materialIndices;
 
 	// JSON에서 로드된 재질 이름들 (저장/복원용)
-	std::vector<std::string> m_materialNames;
 	bool m_isLoadedFromJson = false;
 };
 }

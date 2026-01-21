@@ -69,6 +69,7 @@ inline void ParticleLoader::Load(const std::wstring& filePath, T* target)
 
 	json j;
 	file >> j;
+	file.close();
 
 	std::wstring name = L"Particle";
 	if (j.contains("Name")) {
