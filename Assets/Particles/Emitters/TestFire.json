@@ -1,0 +1,29 @@
+{
+  "Name": "FireEffect",
+  "Spawn": {
+    "shape": "Sphere",
+    "localPos": [ 0.0, 0.0, 0.0 ],
+    "spawnVolume": [ 0.5, 0.5, 0.5],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 50,
+    "maxParticles": 5000,
+    "lifeRange": [ 0.8, 1.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
+    "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
+    "sizeRange": [ 0.25, 0.05 ]
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.1, 0.0 ],
+    "speedRange": [ 0.01, 0.02 ],
+    "randomDir": [ 0.2, 0.5, 0.2 ],
+    "gravity": [ 0.0, 1.0, 0.0 ],
+    "drag": 0.0
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "texture": "Textures\\flame.png"
+  }
+}

@@ -1,5 +1,5 @@
 #pragma once
-#include "Actor.h"
+#include "Component.h"
 #include "ParticleEmitter.h"
 
 namespace DE {
@@ -10,7 +10,7 @@ enum class ParticleState {
 	Stopped // Not Visible인것처럼 처리
 };
 
-class ParticleSystem : public Actor
+class ParticleSystem : public Component
 {
 public:
 	ParticleSystem(const std::wstring& name);

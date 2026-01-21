@@ -241,6 +241,9 @@ namespace DE {
 		// 주의: 마지막 shadowDSV를 RenderTarget에서 해제한 후 설정
 		renderer.SetShadowSRVs();
 
+		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		m_skybox->Render();
+
 		// 거울 없이 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 		for (auto& actor : m_actorList[0])
@@ -251,11 +254,8 @@ namespace DE {
 			billboard->Render();
 
 
-		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		m_skybox->Render();
-
-		for (auto& effect : m_actorList[2])
-			effect->Render();
+		//for (auto& effect : m_actorList[2])
+		//	effect->Render();
 
 		// Bounding Volume 그리기
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);

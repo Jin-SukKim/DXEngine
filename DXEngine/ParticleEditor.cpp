@@ -9,7 +9,7 @@
 #include "RenderModule.h"
 #include "ParticleLoader.h"
 #include "FileWatcher.h"
-#include "ParticleSystem.h"
+#include "SampleActor.h"
 #include "TransformComponent.h"
 #include "GeometryGenerator.h"
 #include "ModelManager.h"
@@ -20,11 +20,7 @@ namespace DE {
 	{
 		ground = AddObject<SquareActor>(L"Ground");
 
-		effect = AddEffect<ParticleSystem>(L"Effect");
-		ParticleLoader::Load<ParticleSystem>(L"Particles\\FireEffect.json", effect);
- 		
-		MeshData box = GeometryGenerator::MakeBox();
-		ModelManager::Get().LoadModel("ParticleBox", box);
+		effect = AddObject<SampleActor>(L"Effect");
 	}
 
 	ParticleEditor::~ParticleEditor()

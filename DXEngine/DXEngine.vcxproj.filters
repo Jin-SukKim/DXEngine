@@ -373,12 +373,18 @@
     <ClInclude Include="Mesh2.h">
       <Filter>public\ParticleSystem\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="ModelManager.h" />
     <ClInclude Include="Material.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="MaterialSystem.h" />
-    <ClInclude Include="MaterialModule.h" />
+    <ClInclude Include="MaterialModule.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialSystem.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -561,14 +567,14 @@
     <ClCompile Include="Image2.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="ModelManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="MaterialModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="MaterialSystem.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialModule.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

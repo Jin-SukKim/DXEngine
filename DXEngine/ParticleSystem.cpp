@@ -5,7 +5,7 @@
 #include "TextureManager.h"
 
 namespace DE {
-	ParticleSystem::ParticleSystem(const std::wstring& name) : Actor(name)
+	ParticleSystem::ParticleSystem(const std::wstring& name) : Component(name, ComponentType::ParticleSystem)
 	{
 	}
 
@@ -17,7 +17,7 @@ namespace DE {
 
 	void ParticleSystem::Initialize()
 	{
-		Actor::Initialize();
+		Component::Initialize();
 		for (auto& emitter : m_emitters)
 			emitter->Initialize();
 	}
@@ -36,7 +36,7 @@ namespace DE {
 		if (m_state != ParticleState::Playing)
 			return;
 
-		Actor::Update(dt);
+		Component::Update(dt);
 
 		float newDt = dt * m_playRate;
 		m_time += newDt;
@@ -62,7 +62,7 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		Actor::Render();
+		Component::Render();
 		for (auto& emitter : m_emitters)
 			emitter->Render();
 	}
@@ -93,7 +93,7 @@ namespace DE {
 			this->SetName(wname);
 		}
 		if (data.contains("Transform")) {
-			auto jsonTr = data["Transform"];
+			/*auto jsonTr = data["Transform"];
 			auto tr = this->GetComponent<TransformComponent>();
 			if (tr) {
 				if (jsonTr.contains("position"))
@@ -102,7 +102,7 @@ namespace DE {
 					tr->SetRotation(JsonToVec3(jsonTr["rotation"]));
 				if (jsonTr.contains("size"))
 					tr->SetScale(JsonToVec3(jsonTr["size"]));
-			}
+			}*/
 		}
 
 		ClearEmitters();

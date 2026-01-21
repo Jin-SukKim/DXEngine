@@ -29,7 +29,7 @@
   "Vortex": {
     "strength": 15.0,
     "pull": [ -15, 100 ],
-    "center": [ 0.25, 0.0, 0.0 ],
+    "center": [ -0.25, 0.0, 0.0 ],
     "vortexFalloff": 1.0,
     "axis": [ 0.0, 1.0, 0.0 ]
   },

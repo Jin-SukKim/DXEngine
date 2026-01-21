@@ -5,7 +5,7 @@ namespace DE {
 
 	class ParticleEmitter;
 	class SquareActor;
-	class ParticleSystem;
+	class SampleActor;
 class ParticleEditor : public Scene
 {
 public:
@@ -20,7 +20,7 @@ public:
 private:
 	SquareActor* ground;
 
-	ParticleSystem* effect;
+	SampleActor* effect;
 };
 
 
