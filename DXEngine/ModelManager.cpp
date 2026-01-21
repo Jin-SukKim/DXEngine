@@ -82,7 +82,7 @@ namespace DE {
 			newMesh.vertexCount = UINT(meshData.vertices.size());
 			newMesh.stride = UINT(sizeof(Vertex));
 
-			outMeshes.emplace_back(newMesh);
+			outMeshes.emplace_back(std::move(newMesh));
 
 			// Material ¿Ã∏ß: "ModelName_MeshIndex" (øπ: "Chair.obj_0")
 			std::string materialName = modelName + "_" + std::to_string(i);
