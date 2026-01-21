@@ -376,14 +376,14 @@
     <ClInclude Include="Material.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="MaterialModule.h">
-      <Filter>public\ParticleSystem\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="MaterialSystem.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
     <ClInclude Include="ModelManager.h">
       <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

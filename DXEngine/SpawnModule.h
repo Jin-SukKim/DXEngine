@@ -4,6 +4,8 @@
 #include "MeshData.h"
 namespace DE {
 
+	struct Mesh;
+
 class SpawnModule : public ParticleModule
 {
 public:
@@ -14,7 +16,7 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
 
-	void SetTarget(const MeshData& meshes);
+	void SetTarget(const MeshData& meshes, const Mesh* mesh = nullptr);
 public:
 	Vector3 localPos = Vector3(0.f);
 	Vector3 spawnVolume = Vector3(0.05f, 0.15f, 0.05f);
@@ -27,11 +29,16 @@ public:
 	float spawnAccumulator = 0.f;
 	UINT vertexCount = 0;
 	UINT indexCount = 0;
+	UINT useTexture = 0;
+	float textureThreshold = 0.f;
+	Vector4 channelMask = Vector4(0.f);
+	std::string textureType = "emissive";
 private:
 	ComputeShader m_spawnCS;
 	UINT m_totalSpawnCount = 0;
-	StructuredBuffer<Vector3> m_meshVertex;
+	StructuredBuffer<Vertex> m_meshVertex;
 	StructuredBuffer<uint32_t> m_meshIndices;
+	const Texture2D* m_texture;
 };
 }
 

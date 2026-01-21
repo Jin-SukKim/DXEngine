@@ -4,6 +4,7 @@
 #include "TransformComponent.h"
 #include "TextureManager.h"
 #include "SpawnModule.h"
+#include "Mesh.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Component(name, ComponentType::ParticleSystem)
@@ -166,12 +167,12 @@ namespace DE {
 		Play();
 	}
 
-	void ParticleSystem::SetTargetMesh(const MeshData& meshe)
+	void ParticleSystem::SetTargetMesh(const MeshData& meshData, const Mesh* mesh)
 	{
 		for (auto& emitter : m_emitters) {
 			SpawnModule* sp = emitter->GetModule<SpawnModule>();
 			if (sp) {
-				sp->SetTarget(meshe);
+				sp->SetTarget(meshData, mesh);
 			}
 		}
 	}

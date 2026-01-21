@@ -25,7 +25,8 @@ namespace DE {
 
 			m_particles = AddComponent<ParticleSystem>(L"Particles");
 			ParticleLoader::Load<ParticleSystem>(L"Particles\\TestEffect.json", m_particles);
-			m_particles->SetTargetMesh(meshes[0]);
+			m_particles->SetTargetMesh(meshes[0], m_sample->GetMesh());
+			
 			//MeshData box = GeometryGenerator::MakeBox();
 			//ModelManager::Get().LoadModel("ParticleBox", box);
 		}

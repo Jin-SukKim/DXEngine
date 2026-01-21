@@ -33,7 +33,11 @@ struct SpawnConsts {
     int spawnShape;
     uint vertexCount;
     uint indexCount;
-    float3 padding1;
+    float padding1;
+    uint useTexture;
+
+    float textureThreshold;
+    float4 channelMask;
 };
 
 struct VisualConsts {

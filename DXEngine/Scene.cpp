@@ -163,6 +163,8 @@ namespace DE {
 			RenderBase::graphicsCommon.sampleStates.data());
 		context->PSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
 			RenderBase::graphicsCommon.sampleStates.data());
+		context->CSSetSamplers(0, UINT(RenderBase::graphicsCommon.sampleStates.size()),
+			RenderBase::graphicsCommon.sampleStates.data());
 
 		RenderDepthOnly();
 		RenderShadowMap();

@@ -31,7 +31,11 @@ namespace DE {
         int spawnShape = 0; // 0: Box, 1: Sphere
         UINT vertexCount = 0;
         UINT indexCount = 0;
-        Vector3 padding1;
+        float padding1;
+        UINT useTexture = 0;
+
+        float textureThreshold = 0.f;
+        Vector4 channelMask = Vector4(0.f);
     };
 
     struct VisualConsts {

@@ -2,7 +2,12 @@
   "Name": "FireEffect",
   "Spawn": {
     "shape": "Surface",
-    "localPos": [ 2.0, 0.0, 0.0 ],
+    "texture": {
+      "type": "emissive",
+      "threshold": 0.00,
+      "channelMask": [ 1.0, 1.0, 1.0, 0.0 ]
+    },
+    "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
     "spawnRate": 30.0,
