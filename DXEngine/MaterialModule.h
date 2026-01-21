@@ -7,25 +7,22 @@ class MaterialModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnSpawn(SimulationContext& ctx) override;
-	virtual void OnRender(const RenderContext& ctx) override;
+	void OnSpawn(SimulationContext& context) override;
+
+	// 특정 서브 메쉬(SubMesh) 인덱스에 해당하는 재질 바인딩
+	void BindMaterialForMesh(int subMeshIndex);
 
 	void LoadFromJson(const json& data) override;
+	void LoadMaterialFromJson(const json& data);
 
-	const std::string& GetMaterialName() const;
-
-	int GetMaterialIdx() const;
-
-	void BindMaterialByIdx(int materialIdx) const;
-
-	const std::string& GetMaterialName();
-	const int& GetMaterialIdx();
 	ModulePriority GetPriority() { return ModulePriority::Material; }
 private:
-	int m_materialIdx = -1;
-	std::string m_materialName;
+	// 모델의 각 Mesh에 대응하는 재질 인덱스들
+	std::vector<int> m_materialIndices;
 
-	static std::string presetPath;
+	// JSON에서 로드된 재질 이름들 (저장/복원용)
+	std::vector<std::string> m_materialNames;
+	bool m_isLoadedFromJson = false;
 };
 }
 

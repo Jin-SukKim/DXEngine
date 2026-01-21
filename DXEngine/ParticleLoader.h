@@ -71,8 +71,8 @@ inline void ParticleLoader::Load(const std::wstring& filePath, T* target)
 	file >> j;
 
 	std::wstring name = L"Particle";
-	if (j.contains("name")) {
-		std::string n = j["name"];
+	if (j.contains("Name")) {
+		std::string n = j["Name"];
 		name = std::wstring(n.begin(), n.end());
 		target->SetName(name);
 	}

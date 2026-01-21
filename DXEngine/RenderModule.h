@@ -20,6 +20,7 @@ public:
 	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
+	virtual int GetModelIndex() const { return -1; };
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
@@ -52,6 +53,7 @@ public:
 	void UpdateArgs(const SimulationContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
+	int GetModelIndex() const override { return m_modelIdx; }
 private:
 	// Texture °ü¸®
 	int m_modelIdx = -1;

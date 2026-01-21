@@ -6,6 +6,8 @@
 
 namespace DE {
 
+    class RenderModule;
+    class MaterialModule;
 struct ParticleInitContext {
     ID3D11Device* device;
     ParticleConsts& consts;
@@ -28,11 +30,13 @@ struct SimulationContext : ParticleContext {
     ID3D11ShaderResourceView* countSRV;
     ID3D11Buffer* dispatchArgs;
     ID3D11Device* device;
+    RenderModule* renderModule;
 };
 
 // Render ´Ü°è
 struct RenderContext : ParticleContext {
     ID3D11ShaderResourceView* particleSRV;
+    MaterialModule* materialModule;
 };
 
 } // namespace DE

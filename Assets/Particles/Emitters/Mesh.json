@@ -1,5 +1,5 @@
 {
-  "name": "Mesh",
+  "Name": "Mesh",
   "Spawn": {
     "shape": "Sphere",
     "localPos": [ 0.25, -0.15, 0.0 ],
@@ -32,6 +32,9 @@
     "center": [ 0.25, 0.0, 0.0 ],
     "vortexFalloff": 1.0,
     "axis": [ 0.0, 1.0, 0.0 ]
+  },
+  "Material" {
+
   },
   "MeshRender": {
     "blendMode": "Opaque",

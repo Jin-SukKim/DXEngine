@@ -6,6 +6,15 @@ namespace DE {
 	void MaterialSystem::Initialize()
 	{
 		auto device = GET_SINGLE(RenderBase)->GetDevice();
+
+		static MaterialConstants constant;
+		constant.albedoFactor = Vector3(0.5f);
+		constant.roughnessFactor = 0.5f;
+		constant.metallicFactor = 0.5f;
+		constant.emissionFactor = Vector3(0.f);
+
+		static std::vector<std::string> textures = { "Materials\\default.png"};
+		CreateMaterial("DefaultMaterial", constant, textures);
 	}
 
 	int MaterialSystem::CreateMaterial(const std::string& name, const MeshData& meshData, bool isGLTF)

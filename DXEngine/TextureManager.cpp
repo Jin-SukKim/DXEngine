@@ -178,8 +178,7 @@ std::pair<int, int> TextureManager::LoadMetallicRoughnessTexture(const std::stri
         index.first = static_cast<int>(m_textures.size());
         m_textures.emplace_back(std::move(metallic));
         
-        // "_metallic" 접미사로 구분
-        std::string metallicKey = path + "_metallic";
+        std::string metallicKey = path;
         m_texturePathToIdx[metallicKey] = index.first;
         m_indexToPathMap[index.first] = metallicKey;
     }
@@ -188,8 +187,7 @@ std::pair<int, int> TextureManager::LoadMetallicRoughnessTexture(const std::stri
         index.second = static_cast<int>(m_textures.size());
         m_textures.emplace_back(std::move(roughness));
         
-        // "_roughness" 접미사로 구분
-        std::string roughnessKey = path + "_roughness";
+        std::string roughnessKey = path;
         m_texturePathToIdx[roughnessKey] = index.second;
         m_indexToPathMap[index.second] = roughnessKey;
     }

@@ -15,8 +15,8 @@
     "Textures": {
         "albedo": "DamagedHelmet\\Default_albedo.jpg",
         "normal": "DamagedHelmet\\Default_normal.jpg",
-        "metallic": "DamagedHelmet\\Default_metalRoughness.jpg_metallic",
-        "roughness": "DamagedHelmet\\Default_metalRoughness.jpg_roughness",
+        "metallic": "DamagedHelmet\\Default_metalRoughness.jpg",
+        "roughness": "DamagedHelmet\\Default_metalRoughness.jpg",
         "ao": "DamagedHelmet\\Default_AO.jpg",
         "emissive": "DamagedHelmet\\Default_emissive.jpg"
     }

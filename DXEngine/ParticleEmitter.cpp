@@ -8,6 +8,7 @@
 #include "ForceModule.h"
 #include "VortexModule.h"
 #include "RenderModule.h"	
+#include "MaterialModule.h"	
 #include "ParticleContext.h"
 namespace DE {
 
@@ -18,6 +19,7 @@ namespace DE {
 		ParticleModuleFactory::Register<ForceModule>("Force");
 		ParticleModuleFactory::Register<VortexModule>("Vortex");
 		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
+		ParticleModuleFactory::Register<MaterialModule>("Material");
 		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
 	}
 
@@ -63,7 +65,8 @@ namespace DE {
 			m_append,
 			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
-			device.Get()
+			device.Get(),
+			this->GetModule<RenderModule>()
 		};
 
 		for (auto& mod : m_modules)
@@ -176,7 +179,8 @@ namespace DE {
 			context,
 			m_consts,
 			m_frameConsts,
-			m_consume.GetSRV()
+			m_consume.GetSRV(),
+			this->GetModule<MaterialModule>()
 		};
 
 		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());

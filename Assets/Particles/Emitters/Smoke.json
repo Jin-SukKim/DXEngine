@@ -1,5 +1,5 @@
 {
-  "name": "SmokeEffect",
+  "Name": "SmokeEffect",
   "Spawn": {
     "shape": "Sphere",
     "localPos": [ -1.0, 0.08, 0.0],

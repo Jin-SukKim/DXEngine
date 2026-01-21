@@ -1,5 +1,5 @@
 {
-  "name": "Fire",
+  "Name": "Fire",
   "Transform": {
     "position": [ 0.0, 0.0, 0.0 ],
     "rotation": [ 0.0, 0.0, 0.0 ],

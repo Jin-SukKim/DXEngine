@@ -1,5 +1,5 @@
 {
-  "name": "FireEffect",
+  "Name": "FireEffect",
   "Spawn": {
     "shape": "Sphere",
     "localPos": [ 1.0, 0.0, 0.0 ],

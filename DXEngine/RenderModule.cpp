@@ -6,6 +6,7 @@
 #include "GeometryGenerator.h"
 #include "IndirectArgsBuffer.h"
 #include "MaterialSystem.h"
+#include "MaterialModule.h"
 
 namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
@@ -197,7 +198,12 @@ namespace DE {
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {
 			auto& mesh = model->meshes[i];
-			MaterialSystem::Get().BindMaterial(mesh.materialIdx);
+
+			if (ctx.materialModule)
+				ctx.materialModule->BindMaterialForMesh(i);
+			else
+				MaterialSystem::Get().BindMaterial(0);
+
 			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
