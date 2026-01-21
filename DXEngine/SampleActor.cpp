@@ -39,6 +39,7 @@ namespace DE {
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
 			//tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
+			//tr->SetScale(Vector3(5.f));
 		}
 	}
 

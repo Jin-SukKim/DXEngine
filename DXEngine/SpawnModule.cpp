@@ -29,14 +29,13 @@ namespace DE {
 		ParticleModule::OnUpdateCPU(ctx);
 		spawnAccumulator += spawnRate * ctx.dt;
 
-		m_totalSpawnCount = 1;
-		//UINT spawnCycles = static_cast<int>(spawnAccumulator);
-		//m_totalSpawnCount = spawnCycles * particlesPerSpawn;
+		UINT spawnCycles = static_cast<int>(spawnAccumulator);
+		m_totalSpawnCount = spawnCycles * particlesPerSpawn;
 
-		//if (spawnCycles > 0)
-		//	spawnAccumulator -= static_cast<float>(spawnCycles);
-		//if (m_totalSpawnCount < 0)
-		//	m_totalSpawnCount = 0;
+		if (spawnCycles > 0)
+			spawnAccumulator -= static_cast<float>(spawnCycles);
+		if (m_totalSpawnCount < 0)
+			m_totalSpawnCount = 0;
 
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}

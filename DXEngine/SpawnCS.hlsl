@@ -15,6 +15,19 @@ float rand_hash_signed(float2 uv)
     return h * 2.0f - 1.0f;
 }
 
+float rand_hash_improved(float2 uv)
+{
+    // 더 나은 분포를 위한 개선된 해시
+    return frac(sin(dot(uv, float2(127.1, 311.7))) * 43758.5453123);
+}
+
+uint rand_int_range(float2 seed, uint maxVal)
+{
+    if (maxVal == 0) return 0;
+    float r = rand_hash_improved(seed);
+    return min(uint(r * float(maxVal)), maxVal - 1);
+}
+
 float rand_hash(float2 uv)
 {
     return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
@@ -74,7 +87,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
         return;
 
     // 1. 기본 시드 생성
-    float2 seed = float2(float(dtID.x), time); // time도 ConstantBuffer에 있다고 가정
+    float2 seed = float2(dtID.xy) + time; // time도 ConstantBuffer에 있다고 가정
     Particle p;
 
     // 0~1 사이 랜덤 3개
@@ -100,7 +113,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
         uint vCount = spawn.vertexCount;
         if (vCount > 0)
         {
-            uint vIdx = uint(rand_hash(float2(seed.x, 4.0)) * vCount) % vCount;
+            uint vIdx = uint(rand_hash(float2(seed.x, 4.0)) * float(vCount)) % vCount;
             p.position = meshVertexPositions[vIdx];
         }
         else
@@ -110,34 +123,40 @@ void main(uint3 dtID : SV_DispatchThreadID)
     }
     else if (spawn.spawnShape == 3) // Surface
     {
-        // 수정: 변수명 일치 (g_IndexCount -> spawn.indexCount 혹은 계산)
-        uint iCount = spawn.indexCount; // ConstantBuffer에 있다고 가정
+        uint iCount = spawn.indexCount;
 
         if (iCount > 0)
         {
             uint triCount = iCount / 3;
-            // 수정: rand() -> rand_hash(), 변수명 g_MeshIndices -> meshIndices
-            uint triIdx = uint(rand_hash(float2(seed.x, 5.0)) * triCount) % triCount;
+
+            // [수정 핵심] seed.x(ID)만 쓰지 않고 seed(ID + Time) 전체를 사용하여 랜덤성 확보
+            // seed.x 와 seed.y를 모두 섞어야 매 프레임 다른 삼각형이 선택됨
+            float randomVal = rand_hash(seed + float2(123.0, 456.0));
+
+            uint triIdx = uint(randomVal * float(triCount)) % triCount;
 
             uint i0 = meshIndices[triIdx * 3 + 0];
             uint i1 = meshIndices[triIdx * 3 + 1];
             uint i2 = meshIndices[triIdx * 3 + 2];
 
-            // 수정: g_MeshPositions -> meshVertexPositions
             float3 p0 = meshVertexPositions[i0];
             float3 p1 = meshVertexPositions[i1];
             float3 p2 = meshVertexPositions[i2];
 
-            // 무게중심 좌표 계산
-            float u = rand_hash(float2(seed.x, 6.0)); // seed.x, y 혼용 주의 (여기선 seed 전체가 float2라 가정)
-            float v = rand_hash(float2(seed.y, 7.0));
+            // 평행사변형 접기 (Parallelogram Fold) - Surface 균일 분포
+            // 삼각형 선택과는 다른 Seed 오프셋을 사용하여 상관관계 제거
+            float ra = rand_hash(seed + float2(13.0, 41.0));
+            float rb = rand_hash(seed + float2(29.0, 73.0));
 
-            if (u + v > 1.0)
+            if (ra + rb > 1.0f)
             {
-                u = 1.0 - u;
-                v = 1.0 - v;
+                ra = 1.0f - ra;
+                rb = 1.0f - rb;
             }
-            p.position = p0 + u * (p1 - p0) + v * (p2 - p0);
+
+            float3 pos = p0 + ra * (p1 - p0) + rb * (p2 - p0);
+
+            p.position = pos;
         }
         else
         {
