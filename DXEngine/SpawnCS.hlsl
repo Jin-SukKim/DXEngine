@@ -29,7 +29,8 @@ float rand_signed(inout uint state)
 
 // --- [Spawn Functions] ---
 
-float3 BoxSpawn(inout uint rngState, float3 volume, float innerRatio) {
+float3 BoxSpawn(inout uint rngState, float3 volume, float innerRatio)
+{
     float3 pos;
     pos.x = rand_signed(rngState);
     pos.y = rand_signed(rngState);
@@ -41,7 +42,8 @@ float3 BoxSpawn(inout uint rngState, float3 volume, float innerRatio) {
     return sign(pos) * hollowScale * volume;
 }
 
-float3 SphereSpawn(inout uint rngState, float3 volume, float innerRatio) {
+float3 SphereSpawn(inout uint rngState, float3 volume, float innerRatio)
+{
     // 균일 구면 분포
     float theta = rand_float(rngState) * 6.28318530718f; // 2 * PI
     float z = rand_float(rngState) * 2.0f - 1.0f;
@@ -55,6 +57,54 @@ float3 SphereSpawn(inout uint rngState, float3 volume, float innerRatio) {
     return dir * dist * volume;
 }
 
+float3 VertexSpawn(inout uint rngState, uint vCount)
+{
+    if (vCount > 0)
+    {
+        rngState = wang_hash(rngState);
+        uint vIdx = rngState % vCount;
+        return meshVertexPositions[vIdx];
+    }
+    else
+    {
+        return float3(0, 0, 0);
+    }
+}
+
+float3 SurfaceSpawn(inout uint rngState, uint iCount) // 쉼표 제거
+{
+    if (iCount > 0)
+    {
+        uint triCount = iCount / 3;
+
+        rngState = wang_hash(rngState);
+        uint triIdx = rngState % triCount;
+
+        uint i0 = meshIndices[triIdx * 3 + 0];
+        uint i1 = meshIndices[triIdx * 3 + 1];
+        uint i2 = meshIndices[triIdx * 3 + 2];
+
+        float3 p0 = meshVertexPositions[i0];
+        float3 p1 = meshVertexPositions[i1];
+        float3 p2 = meshVertexPositions[i2];
+
+        float ra = rand_float(rngState);
+        float rb = rand_float(rngState);
+
+        if (ra + rb > 1.0f)
+        {
+            ra = 1.0f - ra;
+            rb = 1.0f - rb;
+        }
+
+        return p0 + ra * (p1 - p0) + rb * (p2 - p0);
+    }
+    else
+    {
+        return float3(0, 0, 0);
+    }
+}
+
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
@@ -64,7 +114,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // 정수형 시드 초기화
     uint rngState = dtID.x * 1973 + uint(time * 10000.0f);
 
-    // 초기 워밍업 (수정)
+    // 초기 워밍업
     rngState = wang_hash(rngState);
 
     Particle p;
@@ -80,52 +130,11 @@ void main(uint3 dtID : SV_DispatchThreadID)
     }
     else if (spawn.spawnShape == 2) // Vertex
     {
-        uint vCount = spawn.vertexCount;
-        if (vCount > 0)
-        {
-            rngState = wang_hash(rngState); // 수정
-            uint vIdx = rngState % vCount;
-            p.position = meshVertexPositions[vIdx];
-        }
-        else
-        {
-            p.position = float3(0, 0, 0);
-        }
+        p.position = VertexSpawn(rngState, spawn.vertexCount);
     }
     else if (spawn.spawnShape == 3) // Surface
     {
-        uint iCount = spawn.indexCount;
-
-        if (iCount > 0)
-        {
-            uint triCount = iCount / 3;
-
-            rngState = wang_hash(rngState);
-            uint triIdx = rngState % triCount;
-
-            uint i0 = meshIndices[triIdx * 3 + 0];
-            uint i1 = meshIndices[triIdx * 3 + 1];
-            uint i2 = meshIndices[triIdx * 3 + 2];
-
-            float3 p0 = meshVertexPositions[i0];
-            float3 p1 = meshVertexPositions[i1];
-            float3 p2 = meshVertexPositions[i2];
-
-            float ra = rand_float(rngState);
-            float rb = rand_float(rngState);
-
-            if (ra + rb > 1.0f)
-            {
-                ra = 1.0f - ra;
-                rb = 1.0f - rb;
-            }
-
-            p.position = p0 + ra * (p1 - p0) + rb * (p2 - p0);
-        }
-        else
-        {
-            p.position = float3(0, 0, 0);
-        }
+        p.position = SurfaceSpawn(rngState, spawn.indexCount);
     }
     else
     {
