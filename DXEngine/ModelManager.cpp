@@ -78,6 +78,9 @@ namespace DE {
 			D3D11Utils::CreateVertexBuffer(device, meshData.vertices, newMesh.vertexBuffer);
 			D3D11Utils::CreateIndexBuffer(device, meshData.indices, newMesh.indexBuffer);
 
+			newMesh.vertexCPU = meshData.vertices;
+			newMesh.indexCPU = meshData.indices;
+
 			newMesh.indexCount = UINT(meshData.indices.size());
 			newMesh.vertexCount = UINT(meshData.vertices.size());
 			newMesh.stride = UINT(sizeof(Vertex));

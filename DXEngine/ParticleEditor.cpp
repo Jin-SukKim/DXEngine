@@ -14,13 +14,15 @@
 #include "GeometryGenerator.h"
 #include "ModelManager.h"
 
+#include "ModelComponent.h"
+#include "TextureSpawnBake.h"
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
-		ground = AddObject<SquareActor>(L"Ground");
+		//ground = AddObject<SquareActor>(L"Ground");
 
-		effect = AddObject<SampleActor>(L"Effect");
+		//effect = AddObject<SampleActor>(L"Effect");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -29,6 +31,15 @@ namespace DE {
 
 	void ParticleEditor::Initialize()
 	{	
+		BakeConsts consts = {};
+		consts.threshold = 0.1f;
+		consts.channelMask = Vector4(0.299f, 0.587f, 0.114f, 0.f);
+		TextureSpawnBake::Get().Bake(
+			"DamagedHelmet.gltf", "DamagedHelmet\\", true, 
+			"Materials\\DamagedHelmet.json", 
+			"emissive", consts, "Models\\DamagedHelmet\\emissive.bin");
+		exit(0);
+
 		Scene::Initialize();
 	}
 

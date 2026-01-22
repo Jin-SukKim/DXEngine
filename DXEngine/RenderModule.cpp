@@ -37,7 +37,7 @@ namespace DE {
 			ctx.countSRV
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
-		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.frameConstBuffer.GetCpu().maxParticles + 1023) / 1024, 1, 1);
+		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.frameConstBuffer.GetCpu().maxParticles + 255) / 256, 1, 1);
 
 		m_sort.Sort(ctx.context);
 	}
@@ -177,7 +177,7 @@ namespace DE {
 
 		ID3D11UnorderedAccessView* uavs[] = { m_meshArgs.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
-		UINT groupCount = (m_meshCount + 1023) / 1024;
+		UINT groupCount = (m_meshCount + 255) / 256;
 		m_argsUpdateCS.Dispatch(ctx.context, groupCount, 1, 1);
 
 	}

@@ -21,7 +21,6 @@ public:
 
 	int LoadModel(const std::string& name, const std::string& basePath = "", bool isGLTF = false);
 	int LoadModel(const std::string& name, const MeshData& meshData);
-	
 
 	Model* GetModel(int index);
 

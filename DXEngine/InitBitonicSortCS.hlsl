@@ -8,7 +8,7 @@ Buffer<uint> activeCount : register(t1);
 
 RWStructuredBuffer<SortElement> sortedElements : register(u0);
 
-[numthreads(1024, 1, 1)]
+[numthreads(256, 1, 1)]
 void main( uint3 dtID : SV_DispatchThreadID )
 {
     uint id = dtID.x;

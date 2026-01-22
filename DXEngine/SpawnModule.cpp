@@ -69,7 +69,7 @@ namespace DE {
 		}
 
 		// Spawn Compute Shader
-		UINT groupCount = (m_totalSpawnCount + 1023) / 1024;
+		UINT groupCount = (m_totalSpawnCount + 255) / 256;
 		m_spawnCS.Dispatch(ctx.context, groupCount, 1, 1);
 	}
 

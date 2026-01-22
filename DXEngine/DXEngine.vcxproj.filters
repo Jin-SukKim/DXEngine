@@ -385,6 +385,9 @@
     <ClInclude Include="MaterialModule.h">
       <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
+    <ClInclude Include="TextureSpawnBake.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -576,6 +579,9 @@
     <ClCompile Include="ModelManager.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="TextureSpawnBake.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPS.hlsl">
@@ -696,6 +702,9 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="ParticlePBR.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="TextureSpawnBakeCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>
