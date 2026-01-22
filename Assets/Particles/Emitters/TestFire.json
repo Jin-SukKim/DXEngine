@@ -6,21 +6,21 @@
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 60.0,
-    "particlesPerSpawn": 10000,
-    "maxParticles": 100000,
-    "lifeRange": [ 0.4, 0.5 ]
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 1000,
+    "maxParticles": 1000000,
+    "lifeRange": [ 0.5, 0.5 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
     "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
-    "sizeRange": [ 0.1, 0.01 ]
+    "sizeRange": [ 0.02, 0.02 ]
   },
   "Force": {
-    "velocity": [ 0.0, 0.0, -1.0 ],
-    "speedRange": [ 0.1, 0.1 ],
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
     "randomDir": [ 0.0, 0.0, 0.0 ],
-    "gravity": [ 0.0, 1.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
     "drag": 0.0
   },
   "BillboardRender": {
