@@ -1,9 +1,9 @@
 #pragma once
 #include "Component.h"
 #include "Mesh.h"
+#include "MeshData.h"
 
 namespace DE {
-	struct MeshData;
 
 	class ModelComponent : public Component
 	{
@@ -32,9 +32,11 @@ namespace DE {
 		const void SetBasicMaterial(const BasicMaterialConstants& consts);
 		const void SetMaterial(const MaterialConstants& consts);
 		const Mesh* GetMesh() { return &m_meshes[0]; }
+		const MeshData* GetMeshData() { return &m_mesheDatas[0]; }
 	private:
 		//Mesh triangle;
 		std::vector<Mesh> m_meshes; // 하나의 모델이 내부적으로는 여러개의 메쉬로 구성
+		std::vector<MeshData> m_mesheDatas;
 
 		ConstantBuffer<BasicMaterialConstants> m_basicMaterial;
 		ConstantBuffer<MaterialConstants> m_material;

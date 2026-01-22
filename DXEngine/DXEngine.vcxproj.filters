@@ -388,6 +388,7 @@
     <ClInclude Include="TextureSpawnBake.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSystemFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -581,6 +582,9 @@
     </ClCompile>
     <ClCompile Include="TextureSpawnBake.cpp">
       <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystemFactory.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
