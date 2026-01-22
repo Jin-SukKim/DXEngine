@@ -24,7 +24,9 @@
     "drag": 0.0
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
+    "blendMode": "Additive",
+    "useMaterial": false,
+    "useSingleTexture": false,
     "texture": "Textures\\flame.png"
   }
 }

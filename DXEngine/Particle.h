@@ -80,7 +80,9 @@ namespace DE {
         UINT frameCount;
         Vector2 frameTiles;
         UINT numMeshes;
-        Vector3 padding11;
+        UINT textureMode;
+        int singleTextureIdx;
+        float padding11;
     };
 
     struct ParticleConsts {

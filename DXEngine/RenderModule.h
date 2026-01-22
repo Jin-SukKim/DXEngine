@@ -31,15 +31,26 @@ protected:
 
 class BillboardRenderModule : public RenderModule
 {
+	enum class BillboardTextureMode {
+		Material, SingleTexture, TextureArray
+	};
 public:
 	void OnSpawn(SimulationContext& ctx) override;
 	void UpdateArgs(const SimulationContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 private:
+	// 0 : TextureArray (Size가 고정되어 있음)
+	// 1 : Single Texture (개별 Texture 1개, 다양한 해상도 가능)
+	// 2 : MaterialModule을 사용 (PBR)
+	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
 	// Texture 관리
 	std::string m_texturePath;
 	int m_textureIdx = -1;
+
+	// 다양한 해상도의 Texture 1개만 사용할때
+	int m_singleTextureIdx = -1;
+
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
 	IndirectArgsBuffer<DrawInstancedArgs> m_argsBuffer;

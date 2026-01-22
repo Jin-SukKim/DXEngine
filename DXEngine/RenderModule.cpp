@@ -82,6 +82,9 @@ namespace DE {
 		consts.textureIdx = m_textureIdx;
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
+		consts.textureMode = static_cast<UINT>(m_textureMode);
+		consts.singleTextureIdx = m_singleTextureIdx;
+		
 
 		m_argsBuffer.Reset();
 		// DrawInstancedIndirectArgs 초기화
@@ -114,6 +117,32 @@ namespace DE {
 		};
 
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
+		
+		ID3D11ShaderResourceView* texSRV = nullptr;
+		switch (m_textureMode)
+		{
+		case BillboardTextureMode::Material:
+			// Material 사용 시: MaterialModule에게 바인딩 위임 (t0 ~ t4 등 사용)
+			if (ctx.materialModule) {
+				ctx.materialModule->BindMaterialForMesh(0);
+			}
+			break;
+
+		case BillboardTextureMode::SingleTexture:
+			// 개별 텍스처 사용 시: t15 슬롯에 바인딩 (ParticleCommon.hlsli와 일치)
+			if (m_singleTextureIdx >= 0) {
+				texSRV = TextureManager::Get().GetTextureSRV(m_singleTextureIdx);
+				ctx.context->PSSetShaderResources(6, 1, &texSRV);
+			}
+			break;
+
+		case BillboardTextureMode::TextureArray:
+		default:
+			// Texture Array는 보통 Global하게 t14에 바인딩되어 있다고 가정
+			// 만약 여기서 명시적으로 바인딩해야 한다면 TextureManager::Get().BindParticleTextures() 호출
+			break;
+		}
+
 		ctx.context->DrawInstancedIndirect(m_argsBuffer.GetBuffer(), 0);
 
 		// 정리
@@ -124,11 +153,23 @@ namespace DE {
 	void BillboardRenderModule::LoadFromJson(const json& data)
 	{
 		RenderModule::LoadFromJson(data);
-		if (data.contains("texture")) {
-			const auto [path, idx] = TextureManager::Get().LoadParticleTexture(data["texture"]);
-			m_texturePath = path;
-			m_textureIdx = idx;
+
+		if (data.contains("useMaterial") && data["useMaterial"] == true)
+			m_textureMode = BillboardTextureMode::Material;
+		else if (data.contains("useSingleTexture") && data["useSingleTexture"] == true) {
+			m_textureMode = BillboardTextureMode::SingleTexture;
+			if (data.contains("texture"))
+				m_singleTextureIdx = TextureManager::Get().LoadTexture(data["texture"], data.value("isSRGB", true));
 		}
+		else {
+			m_textureMode = BillboardTextureMode::Material;
+			if (data.contains("texture")) {
+				const auto [path, idx] = TextureManager::Get().LoadParticleTexture(data["texture"]);
+				m_texturePath = path;
+				m_textureIdx = idx;
+			}
+		}
+
 		if (data.contains("sprite")) {
 			auto& sprite = data["sprite"];
 			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);

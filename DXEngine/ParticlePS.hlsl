@@ -1,6 +1,15 @@
 #include "Common.hlsli"
 #include "ParticleCommon.hlsli"
 
+Texture2D albedoTex : register(t0);
+Texture2D normalTex : register(t1);
+Texture2D aoTex : register(t2);
+Texture2D metallicTex : register(t3);
+Texture2D roughnessTex : register(t4);
+Texture2D emissiveTex : register(t5);
+
+Texture2D singleTex : register(t6);
+
 struct ParticlePSInput
 {
     float4 pos : SV_POSITION;
@@ -11,6 +20,36 @@ struct ParticlePSInput
     float lifeRatio : TEXCOORD1;
     uint primID : SV_PrimitiveID;
 };
+
+float4 SampleParticleTexture(float3 uvw)
+{
+    float4 color = float4(1, 1, 1, 1);
+
+    // [Mode 0: Material]
+    if (render.textureMode == 0)
+    {
+        // Albedo 샘플링
+        color = albedoTex.Sample(linearClampSampler, uvw.xy);
+
+        // Emissive 추가 (선택 사항 - 파티클은 주로 Emissive 속성이 강하므로 더해주는 경우가 많음)
+        // float4 emissive = materialEmissiveMap.SampleLevel(samp, uvw.xy, lod);
+        // color.rgb += emissive.rgb; 
+    }
+    // [Mode 1: Single Texture]
+    else if (render.textureMode == 1)
+    {
+        // 개별 텍스처 샘플링 (uvw.z 인덱스 무시)
+        color = singleTex.Sample(linearClampSampler, uvw.xy);
+    }
+    // [Mode 2: Texture Array (Default)]
+    else
+    {
+        // 텍스처 배열 샘플링 (uvw.z = Array Index)
+        color = particleTex.Sample(linearClampSampler, uvw);
+    }
+
+    return color;
+}
 
 float4 SpriteTexture(float lifeRatio, float2 uv) {
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
@@ -28,17 +67,18 @@ float4 SpriteTexture(float lifeRatio, float2 uv) {
         uv = (uv + float2(col, row)) * uvSize;
     }
 
-    return particleTex.Sample(linearClampSampler, float3(uv, render.textureIdx));
+    return SampleParticleTexture(float3(uv, render.textureIdx));
 }
 
 float4 main(ParticlePSInput input) : SV_TARGET
 {
     float4 finalColor = input.color;
 
+    bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
     // Case 1: 텍스처가 있는 경우 (Sprite / Animation)
     // --------------------------------------------------------
-    if (render.textureIdx >= 0)
+    if (hasTexture)
     {
         float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
         finalColor *= texColor;
