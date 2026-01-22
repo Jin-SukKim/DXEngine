@@ -1,8 +1,8 @@
 {
   "Name": "FireEffect",
   "Spawn": {
-    "space": "Local",
-    "localPos": [ 0.0, 0.0, 0.0 ],
+    "space": "World",
+    "localPos": [ 0.0, 0.0, -0.1 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
     "shape": "Texture",
@@ -10,12 +10,18 @@
     "spawnRate": 30.0,
     "particlesPerSpawn": 1000,
     "maxParticles": 1000000,
-    "lifeRange": [ 0.5, 0.1 ]
+    "lifeRange": [ 0.1, 0.5 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
     "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
-    "sizeRange": [ 0.02, 0.02 ]
+    "sizeRange": [ 0.02, 0.02 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ], 
+      "maxRotation": [ 6.28, 0.0, 0.0 ],
+      "minRotSpeed": [ 1.0, 0.0, 0.0 ], 
+      "maxRotSpeed": [ 5.0, 0.0, 0.0 ]
+    }
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
