@@ -110,6 +110,21 @@ namespace DE {
 		UINT triangleCount = m_consts.GetCpu().indexCount / 3;
 		UINT groupCount = (triangleCount + 255) / 256;
 		m_bakeCS.Dispatch(context, groupCount, 1, 1);
+
+		// SRV 해제 (기존 코드)
+		ID3D11ShaderResourceView* nullSRV[3] = { nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(0, 3, nullSRV);
+
+		// Sampler 해제 (기존 코드)
+		ID3D11SamplerState* nullSampler = nullptr;
+		context->CSSetSamplers(0, 1, &nullSampler);
+
+		// [!!! 필수 추가 !!!] UAV 바인딩 해제
+		// 해제하지 않으면 이후 Download()에서 GPU->Staging 복사가 실패합니다.
+		ID3D11UnorderedAccessView* nullUAV = nullptr;
+		UINT cleanCount = 0;
+		// AppendBuffer가 u0 슬롯을 사용하므로 0번 슬롯 해제
+		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, &cleanCount);
 	}
 
 	void TextureSpawnBake::downloadResult(ID3D11Device* device, ID3D11DeviceContext* context)
@@ -129,8 +144,9 @@ namespace DE {
 		m_validCount = *reinterpret_cast<UINT*>(mappedCount.pData);
 		context->Unmap(countStagingBuffer.Get(), 0);
 
-		// 데이터 다운로드 (StructuredBuffer의 Download 함수 활용)
-		m_outputBuffer.Download(context);
+		if (m_validCount)
+			// 데이터 다운로드 (StructuredBuffer의 Download 함수 활용)
+			m_outputBuffer.Download(context);
 	}
 
 	void TextureSpawnBake::saveToBin(ID3D11DeviceContext* context, const std::string& outputPath)
