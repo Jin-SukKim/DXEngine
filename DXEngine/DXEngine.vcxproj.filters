@@ -119,11 +119,32 @@
     <Filter Include="private\Actor\Light">
       <UniqueIdentifier>{a3d78322-c03b-4938-9774-9a5a6f30ac4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="private\Renderer\GUI">
+    <Filter Include="public\GUI">
+      <UniqueIdentifier>{640b8908-4a36-4c05-a47b-4613db5dd34a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\GUI">
       <UniqueIdentifier>{e6595f02-6323-4fb6-825d-4b99a1d9dcb0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="public\Renderer\GUI">
-      <UniqueIdentifier>{f8dd685a-2991-43f1-b6e4-c95fb3273691}</UniqueIdentifier>
+    <Filter Include="private\ParticleSystem">
+      <UniqueIdentifier>{fb4d68a9-4cff-4934-bf21-fdc87278d63b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem">
+      <UniqueIdentifier>{0e8b8d7c-d1e0-40bc-bc0e-c26b1ad716c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Particle">
+      <UniqueIdentifier>{3dd797af-74ba-42d5-8170-2550af713f39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem\Module">
+      <UniqueIdentifier>{32594ed6-85a3-431c-9708-5b3022f51583}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem\Utils">
+      <UniqueIdentifier>{13706464-1672-4e96-94fb-c5a7d74781c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem\Buffer">
+      <UniqueIdentifier>{16fc1ed4-a236-4b98-ac3d-674784a3b25f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="public\ParticleSystem\Resource">
+      <UniqueIdentifier>{df639e14-4802-4783-a538-94edee4a25a7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -262,22 +283,114 @@
     <ClInclude Include="SpotLight.h">
       <Filter>public\Actor\Light</Filter>
     </ClInclude>
-    <ClInclude Include="Gui.h">
-      <Filter>public\Renderer\GUI</Filter>
+    <ClInclude Include="DetailGui.h">
+      <Filter>public\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="Outliner.h">
-      <Filter>public\Renderer\GUI</Filter>
+    <ClInclude Include="Gui.h">
+      <Filter>public\GUI</Filter>
     </ClInclude>
     <ClInclude Include="GuiBase.h">
-      <Filter>public\Renderer\GUI</Filter>
+      <Filter>public\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="DetailGui.h" />
+    <ClInclude Include="Outliner.h">
+      <Filter>public\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="SampleScene.h">
+      <Filter>public\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEditor.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="SpawnModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="ForceModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="VisualModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleLoader.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="FileWatcher.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="AppendBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="IndirectArgsBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeShader.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="BitonicSort.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleContext.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputePSO.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleProperties.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="StagingBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="StructuredBuffer.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleModuleFactory.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="VortexModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="Image2.h">
+      <Filter>public\ParticleSystem\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh2.h">
+      <Filter>public\ParticleSystem\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialSystem.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureSpawnBake.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AppBase.cpp">
@@ -383,16 +496,91 @@
       <Filter>private\Actor\Light</Filter>
     </ClCompile>
     <ClCompile Include="Gui.cpp">
-      <Filter>private\Renderer\GUI</Filter>
+      <Filter>private\GUI</Filter>
     </ClCompile>
     <ClCompile Include="Outliner.cpp">
-      <Filter>private\Renderer\GUI</Filter>
+      <Filter>private\GUI</Filter>
     </ClCompile>
     <ClCompile Include="GuiBase.cpp">
-      <Filter>private\Renderer\GUI</Filter>
+      <Filter>private\GUI</Filter>
     </ClCompile>
     <ClCompile Include="DetailGui.cpp">
+      <Filter>private\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleProperties.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEditor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SampleScene.cpp">
+      <Filter>private\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ComputePSO.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ComputeShader.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SpawnModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="VisualModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="BitonicSort.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="FileWatcher.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleLoader.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleModuleFactory.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="VortexModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Image2.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialSystem.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureSpawnBake.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -480,6 +668,45 @@
     <FxCompile Include="HaloPS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
+    <FxCompile Include="SpawnCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleArgsUpdateCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleVS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleGS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlePS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="BitonicSortCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="InitBitonicSortCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="VortexCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleMeshVS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleMeshArgsUpdateCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlePBR.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="TextureSpawnBakeCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BlinnPhong.hlsli">
@@ -496,6 +723,9 @@
     </None>
     <None Include="DiskSamples.hlsli">
       <Filter>Shaders\Shadow</Filter>
+    </None>
+    <None Include="ParticleCommon.hlsli">
+      <Filter>Shaders\Particle</Filter>
     </None>
   </ItemGroup>
 </Project>

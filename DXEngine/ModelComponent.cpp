@@ -24,7 +24,6 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
-		m_constant.Initialize();
 		m_basicMaterial.Initialize();
 		m_material.Initialize();
 
@@ -52,7 +51,7 @@ namespace DE {
 			if (!meshData.heightTextureFilename.empty()) {
 				std::cout << meshData.heightTextureFilename << std::endl;
 				D3D11Utils::CreateTexture(device, context, meshData.heightTextureFilename, false, newMesh.heightTexture);
-				m_constant.GetCpu().useHeightMap = true;
+				m_material.GetCpu().useHeightMap = true;
 			}
 			
 			if (!meshData.normalTextureFilename.empty()) {
@@ -69,17 +68,27 @@ namespace DE {
 				m_material.GetCpu().useAOMap = true;
 			}
 
-			// GLTF 방식으로 metallic과 roughness를 한 Texture에 넣은 (MetalRoughness Texture)
-			if (!meshData.metallicTextureFilename.empty() ||
-				!meshData.roughnessTextureFilename.empty()) {
+			if (!meshData.metallicTextureFilename.empty() && (meshData.metallicTextureFilename == meshData.roughnessTextureFilename)) {
+				// TODO: 분리
 				std::cout << meshData.metallicTextureFilename << std::endl;
 				std::cout << meshData.roughnessTextureFilename << std::endl;
+				D3D11Utils::CreateTexturesFromGLTFCombined(
+					device.Get(), context.Get(),
+					meshData.metallicTextureFilename,
+					newMesh.metallicTexture,
+					newMesh.roughnessTexture);
+			}
+			else {
+				if (!meshData.metallicTextureFilename.empty()) {
+					std::cout << meshData.metallicTextureFilename << std::endl;
+					D3D11Utils::CreateTexture(device, context, meshData.metallicTextureFilename, false, newMesh.metallicTexture);
 
-				D3D11Utils::CreateMetallicRoughnessTexture(
-					device, context, 
-					meshData.metallicTextureFilename, 
-					meshData.roughnessTextureFilename, 
-					newMesh.metallicRoughnessTexture);
+				}
+
+				if (!meshData.roughnessTextureFilename.empty()) {
+					std::cout << meshData.roughnessTextureFilename << std::endl;
+					D3D11Utils::CreateTexture(device, context, meshData.roughnessTextureFilename, false, newMesh.roughnessTexture);
+				}
 			}
 
 			if (!meshData.metallicTextureFilename.empty())
@@ -89,7 +98,6 @@ namespace DE {
 				m_material.GetCpu().useRoughnessMap = true;
 
 			// 모델의 모든 Mesh가 같은 Buffer를 사용
-			newMesh.meshConstGPU = m_constant.Get();
 			newMesh.basicMaterialConstGPU = m_basicMaterial.Get();
 			newMesh.materialConstGPU = m_material.Get();
 
@@ -109,17 +117,9 @@ namespace DE {
 		if (m_meshes.empty())
 			return;
 
-		if (updateWorldCpu()) {
-			// 현재 모델의 모든 Mesh가 buffer를 공유하기 때문에 하나만 복사
-			m_constant.Upload();
-			m_basicMaterial.Upload();
-			m_material.Upload();
-		}
-	}
-
-	const void ModelComponent::SetConsts(MeshConstants& consts)
-	{
-		m_constant.GetCpu() = consts;
+		// 현재 모델의 모든 Mesh가 buffer를 공유하기 때문에 하나만 복사
+		m_basicMaterial.Upload();
+		m_material.Upload();
 	}
 
 	const void ModelComponent::SetBasicMaterial(const BasicMaterialConstants& consts)
@@ -132,34 +132,15 @@ namespace DE {
 		m_material.GetCpu() = consts;
 	}
 
-	bool ModelComponent::updateWorldCpu()
-	{
-		Actor* owner = dynamic_cast<Actor*>(GetOwner());
-		if (!owner)
-			return false;
-
-		TransformComponent* tr = owner->GetComponent<TransformComponent>();
-		if (tr) {
-			Matrix world = tr->GetTransformMatrix();
-			m_constant.GetCpu().world = world.Transpose();
-			world.Translation(Vector3(0.f));
-			world = world.Invert().Transpose();
-			m_constant.GetCpu().worldIT = world.Transpose();
-		}
-
-		return true;
-	}
-
 	void ModelComponent::Render() {
 		Super::Render();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[3] = {
+			ID3D11Buffer* constBuffers[2] = {
 				mesh.basicMaterialConstGPU.Get(),
-				mesh.meshConstGPU.Get(),
 				mesh.materialConstGPU.Get(),
 			};
-			context->VSSetConstantBuffers(1, 3, constBuffers);
+			context->VSSetConstantBuffers(2, 2, constBuffers);
 			ID3D11ShaderResourceView* heightResView[1] = { mesh.heightTexture.GetSRV() };
 			context->VSSetShaderResources(0, 1, heightResView);
 
@@ -167,11 +148,12 @@ namespace DE {
 				mesh.albedoTexture.GetSRV(),
 				mesh.normalTexture.GetSRV(),
 				mesh.aoTexture.GetSRV(),
-				mesh.metallicRoughnessTexture.GetSRV(),
+				mesh.metallicTexture.GetSRV(),
+				mesh.roughnessTexture.GetSRV(),
 				mesh.emissiveTexture.GetSRV()
 			};
 			context->PSSetShaderResources(0, UINT(resViews.size()), resViews.data());
-			context->PSSetConstantBuffers(1, 3, constBuffers);
+			context->PSSetConstantBuffers(2, 2, constBuffers);
 
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -185,12 +167,12 @@ namespace DE {
 			return;
 		// Normal Vector 그리기
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-
+		
 		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[3] = {mesh.basicMaterialConstGPU.Get(),
-											 mesh.meshConstGPU.Get(),
+			ID3D11Buffer* constBuffers[2] = {
+										     mesh.basicMaterialConstGPU.Get(),
 											 mesh.materialConstGPU.Get()};
-			context->GSSetConstantBuffers(1, 3, constBuffers);
+			context->GSSetConstantBuffers(2, 2, constBuffers);
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->Draw(mesh.vertexCount, 0);
 		}
@@ -201,12 +183,9 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[3] = {
-				mesh.basicMaterialConstGPU.Get(),
-				mesh.meshConstGPU.Get(),
-				mesh.materialConstGPU.Get()
-			};
-			context->VSSetConstantBuffers(1, 3, constBuffers);
+			ID3D11Buffer* constBuffers[2] = {mesh.basicMaterialConstGPU.Get(),
+											 mesh.materialConstGPU.Get() };
+			context->VSSetConstantBuffers(2, 2, constBuffers);
 
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->Draw(mesh.indexCount, 0);

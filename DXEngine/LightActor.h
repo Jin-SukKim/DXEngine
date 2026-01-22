@@ -24,6 +24,8 @@ namespace DE {
         virtual Matrix GetLightViewMatrix();
         virtual Matrix GetLightProjMatrix();
         virtual void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
+        void TurnOff();
+        void TurnOn();
         
 		Vector3 GetPos() const { return m_light.position; }
         Light& GetLight() { return m_light; }

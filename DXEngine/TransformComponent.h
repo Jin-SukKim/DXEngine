@@ -9,6 +9,10 @@ namespace DE {
 		TransformComponent(const std::wstring& name) : Super(name, ComponentType::Transform) {}
 		~TransformComponent() override {}
 
+		void Initialize() override;
+		void Update(const float& deltaTime) override;
+		void Render() override;
+
 		void SetPos(const Vector3& pos) { m_pos = pos; }
 		Vector3& GetPos() { return m_pos; }
 		void Translate(const Vector3& pos) { m_pos += pos; }
@@ -19,6 +23,7 @@ namespace DE {
 		void SetLocalRotation(const float& yaw, const float& pitch, const float roll);
 		void SetLocalRotation(const Quaternion& q);
 		void SetRotation(const float& yaw, const float& pitch, const float roll);
+		void SetRotation(const Vector3& rot);
 		void SetRotation(const Quaternion& q);
 		void Rotate(const float& yaw, const float& pitch, const float roll);
 		Vector3& GetRotation() { return m_worldRotation; }
@@ -31,6 +36,7 @@ namespace DE {
 		Matrix GetRotationMatrix();
 		Matrix GetTransformMatrix(); // 변환 행렬
 		Matrix GetInvTransformMatrix(); // 역변환 행렬
+		ID3D11Buffer* GetConstBuffer() { return m_constant.Get(); }
 
 		void UpdateGui() override;
 	private:
@@ -52,5 +58,7 @@ namespace DE {
 		float pos[3] = { 0.f, 0.f, 0.f };
 		float rotate[3] = { 0.f, 0.f, 0.f };
 		float scale[3] = { 0.f, 0.f, 0.f };
+
+		ConstantBuffer<MeshConstants> m_constant;
 	};
 }

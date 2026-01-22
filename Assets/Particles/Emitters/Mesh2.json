@@ -1,0 +1,47 @@
+{
+  "Name": "Mesh",
+  "Spawn": {
+    "shape": "Vertex",
+    "localPos": [ 0, 0, 0.0 ],
+    "spawnVolume": [ 0.15, 0.1, 0.15 ],
+    "spawnInnerRatio": 0.99,
+    "spawnRate": 20.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 1024,
+    "lifeRange": [ 0.5, 0.55 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
+    "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
+    "sizeRange": [ 0.1, 0.01 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 6.28, 6.28, 6.28 ],
+      "minRotSpeed": [ -2.0, -2.0, -2.0 ],
+      "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
+    }
+  },
+  "Vortex": {
+    "strength": 15.0,
+    "pull": [ -15, 100 ],
+    "center": [ 0.0, 0.0, 0.0 ],
+    "vortexFalloff": 1.0,
+    "axis": [ 0.0, 1.0, 0.0 ]
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.5, 0.0 ],
+    "speedRange": [ 1.0, 2.0 ],
+    "randomDir": [ 0.2, 0.5, 0.2 ],
+    "gravity": [ 0.0, 5.0, 0.0 ],
+    "drag": 0.5
+  },
+  "Material": {
+    "materials": [ "Materials\\DamagedHelmet.json" ]
+  },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "model": "DamagedHelmet.gltf",
+    "basePath": "DamagedHelmet\\",
+    "isGLTF": true
+  }
+}

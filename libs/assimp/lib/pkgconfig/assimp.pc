@@ -1,0 +1,9 @@
+libdir=C:/Users/jskim10/Desktop/Project/DXEngine/Libraries/assimp/installed/lib
+includedir=C:/Users/jskim10/Desktop/Project/DXEngine/Libraries/assimp/installed/include
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 6.0.2
+Libs: -L${libdir} -lassimp
+Libs.private:  
+Cflags: -I${includedir}

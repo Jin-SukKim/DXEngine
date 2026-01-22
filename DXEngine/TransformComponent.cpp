@@ -6,6 +6,33 @@
 namespace DE {
 	using namespace DirectX;
 	
+	void TransformComponent::Initialize()
+	{
+		Super::Initialize();
+		m_constant.Initialize();
+	}
+
+	void TransformComponent::Update(const float& deltaTime)
+	{
+		Super::Update(deltaTime);
+		Matrix world = this->GetTransformMatrix();
+		m_constant.GetCpu().world = world.Transpose();
+		world.Translation(Vector3(0.f));
+		world = world.Invert().Transpose();
+		m_constant.GetCpu().worldIT = world.Transpose();
+
+		m_constant.Upload();
+	}
+
+	void TransformComponent::Render()
+	{
+		Super::Render();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+		context->VSSetConstantBuffers(1, 1, m_constant.GetAddressOf());
+		context->PSSetConstantBuffers(1, 1, m_constant.GetAddressOf());
+		context->CSSetConstantBuffers(1, 1, m_constant.GetAddressOf());
+	}
+
 	void TransformComponent::SetLocalRotation(const float& yaw, const float& pitch, const float roll)
 	{
 		m_localRotation = Vector3(yaw, pitch, roll);
@@ -24,6 +51,12 @@ namespace DE {
 	{
 		m_worldRotation = Vector3(yaw, pitch, roll);
 		m_worldQuaternion = createRotationQuaternion(yaw, pitch, roll);
+	}
+
+	void TransformComponent::SetRotation(const Vector3& rot)
+	{
+		m_worldRotation = rot;
+		m_worldQuaternion = createRotationQuaternion(rot.x, rot.y, rot.z);
 	}
 
 	void TransformComponent::SetRotation(const Quaternion& q)

@@ -21,9 +21,9 @@ namespace DE {
 
 		TransformComponent* tr = GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetPos(Vector3(2.0f, 1.f, -1.0f));
-			tr->SetRotation(-90.f, 45.f, 0.f);
-			tr->SetScale(Vector3(0.02f));
+			tr->SetPos(Vector3(0.0f, 1.f, -1.0f));
+			tr->SetRotation(0.f, 70.f, 0.f);
+			tr->SetScale(Vector3(0.2f));
 		}
 	}
 

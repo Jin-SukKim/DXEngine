@@ -37,14 +37,14 @@ namespace DE {
 		if (IsVisible() == false)
 			return;
 
-		RenderComponent(ComponentType::Model);
+		//RenderComponent(ComponentType::Model);
 		
 
-		//for (std::unique_ptr<Component>& component : m_components) {
-		//	Component* comp = component.get();
-		//	if (comp)
-		//		comp->Render(context);
-		//}
+		for (std::unique_ptr<Component>& component : m_components) {
+			Component* comp = component.get();
+			if (comp)
+				comp->Render();
+		}
 	}
 
 	void Actor::RenderBoundingVolume()

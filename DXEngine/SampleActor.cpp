@@ -7,25 +7,15 @@
 #include "ModelComponent.h"
 #include "BoundComponent.h"
 #include "RenderBase.h"
+#include "ParticleSystem.h"
+#include "ParticleLoader.h"
 
 namespace DE {
 	SampleActor::SampleActor(const std::wstring& name) : Super(name)
 	{
 		// main object
 		{
-			//std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Characters/Zelda/source/", "zeldaPosed001.fbx");
 			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Models/DamagedHelmet/", "DamagedHelmet.gltf");
-			//MeshData mesh = GeometryGenerator::MakeSquare(1.f);
-
-			// HDRI Å×½ºÆ®
-			{
-				//auto meshes = GeometryGenerator::MakeSquare();
-				//std::string basePath = "../Assets/Textures/Cubemaps/HDRI/";
-				//meshes.albedoTextureFilename = basePath + "DaySkyHDRI015A_4K-HDR.exr";
-				//meshes.normalTextureFilename = basePath + "Bricks075A_1K-PNG_NormalDX.png";
-				//meshes.aoTextureFilename = basePath + "Bricks075A_1K-PNG_AmbientOcclusion.png";
-				//meshes.heightTextureFilename = basePath + "Bricks075A_1K-PNG_Displacement.png";
-			}
 
 			m_sample = AddComponent<ModelComponent>(L"Model");
 			m_sample->SetModel(meshes, true);
@@ -33,11 +23,12 @@ namespace DE {
 			m_boundVolume = AddComponent<BoundComponent>(L"BoundingVolume");
 			m_boundVolume->SetBoundingVolume(meshes);
 
-			//MaterialConstants consts = m_sample->GetMaterialCpu();
-			//consts.albedoFactor = Vector3(0.3f);
-			//consts.emissionFactor = Vector3(0.0f);
-			//consts.metallicFactor = 0.7f;
-			//consts.roughnessFactor = 0.2f;
+			m_particles = AddComponent<ParticleSystem>(L"Particles");
+			ParticleLoader::Load<ParticleSystem>(L"Particles\\TestEffect.json", m_particles);
+			m_particles->SetTargetMesh(meshes[0]);
+			
+			//MeshData box = GeometryGenerator::MakeBox();
+			//ModelManager::Get().LoadModel("ParticleBox", box);
 		}
 	}
 	void SampleActor::Initialize() {
@@ -45,6 +36,12 @@ namespace DE {
 
 		m_sample->SetDrawNormal(false);
 		m_boundVolume->SetVisibility(false);
+
+		TransformComponent* tr = this->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
+			//tr->SetScale(Vector3(5.f));
+		}
 	}
 
 	void SampleActor::Update(const float& deltaTime) {

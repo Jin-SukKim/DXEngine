@@ -85,10 +85,15 @@ namespace DE {
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectBillboardSolidPSO);
 		for (auto& billboard : actorList[1])
 			billboard->Render();
-			
+
 		// 반사된 세상의 환경맵 렌더링
 		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectSkyboxSolidPSO);
 		cubeMap->Render();
+
+		renderer.SetPipelineState(RenderBase::graphicsCommon.mirror.reflectEffectSolidPSO);
+		for (auto& effect : actorList[2])
+			effect->Render();
+
 
 		// 거울 자체의 재질을 Blend로 렌더링
 		const float t = 1.f - m_mirrorAlpha;

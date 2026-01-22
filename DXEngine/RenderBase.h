@@ -6,6 +6,7 @@
 namespace DE {
 	class GraphicsCommon;
 	class GraphicsPSO;
+	class ComputePSO;
 	class PostProcess;
 	class ToneMappingFilter;
 
@@ -30,7 +31,7 @@ namespace DE {
 		void CreateDepthStencilBuffer();
 		void SetDepthOnlyRender();
 
-		void CreateShadowArrayBuffer(const std::vector<std::shared_ptr<Actor>>& lights);
+		void CreateShadowArrayBuffer(const std::vector<LightActor*>& lights);
 
 		ComPtr<ID3D11Device>& GetDevice() {	return m_device; }
 		ComPtr<ID3D11DeviceContext>& GetContext() {	return m_context; }
@@ -38,6 +39,7 @@ namespace DE {
 		void ResizeSwapChain(const WindowInfo& window);
 
 		void SetPipelineState(const GraphicsPSO& pso);
+		void SetPipelineState(const ComputePSO& pso);
 		
 		void SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso);
 

@@ -2,6 +2,7 @@
 #include "D3D11Utils.h"
 #include "Image.h"
 #include "Texture2D.h"
+#include "Image2.h"
 
 #include <directxtk/DDSTextureLoader.h>
 
@@ -106,7 +107,7 @@ namespace DE {
 		Image img(L"Image");
 
 		std::string ext(filename.end() - 3, filename.end());
-		std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
+		std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
 
 		// HDRI pipeline으로 float을 사용하는데 일반적인 이미지는 UNORM이므로 UNORM을 쓰면 일반적인 Texture가 너무 밝아지는 문제가 발생하기 떄문에 SRGB 포맷을 사용
 		// SRGB는 내부적으로 Gamma Correction을 해주기 때문에 HDR하고 같은 공간에서 작업 가능
@@ -120,6 +121,52 @@ namespace DE {
 			if (!img.Load(filename)) throw std::exception();
 		
 		CreateTextureHelper(device, context, img.GetWidth(), img.GetHeight(), img.GetImage(), pixelFormat, texture);
+	}
+
+	// 1. [핵심 구현] ScratchImage를 받아 텍스처를 생성하는 함수
+	void D3D11Utils::CreateTexture(ID3D11Device* device, ID3D11DeviceContext* context, const DirectX::ScratchImage& image, const DXGI_FORMAT& format, Texture2D& texture)
+	{
+		const DirectX::Image* imgData = image.GetImages(); // Mip0, Slice0
+
+		// 1. Texture 설정
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = static_cast<UINT>(imgData->width);
+		desc.Height = static_cast<UINT>(imgData->height);
+		desc.MipLevels = 0; // 전체 Mipmap 생성
+		desc.ArraySize = 1;
+		desc.Format = format;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		desc.CPUAccessFlags = 0;
+
+		// 2. Texture 생성
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
+
+		// 3. 데이터 업로드 (UpdateSubresource 사용)
+		context->UpdateSubresource(
+			texture.GetTexture(),
+			0,
+			nullptr,
+			imgData->pixels,
+			static_cast<UINT>(imgData->rowPitch),
+			static_cast<UINT>(imgData->slicePitch)
+		);
+
+		// 4. SRV 생성
+		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
+
+		// 5. Mipmap 생성
+		context->GenerateMips(texture.GetSRV());
+	}
+
+	// 2. [Wrapper] Image2를 받아 위 함수를 호출
+	void D3D11Utils::CreateTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, const DXGI_FORMAT& format, Texture2D& texture)
+	{
+		if (image == nullptr) return;
+		// Image2 내부의 ScratchImage를 꺼내서 전달
+		CreateTexture(device, context, image->GetBuffer(), format, texture);
 	}
 
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture)
@@ -399,6 +446,255 @@ namespace DE {
 		}
 	}
 
+	void D3D11Utils::CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture)
+	{
+		// 1. Image2를 사용하여 텍스처 로드 및 포맷 통일 (R8G8B8A8_UNORM)
+		Image2 metalImg;
+		bool hasMetal = !metallicFilename.empty() && metalImg.Load(metallicFilename);
+		if (hasMetal) metalImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
+
+		Image2 roughImg;
+		bool hasRough = !roughnessFilename.empty() && roughImg.Load(roughnessFilename);
+		if (hasRough) roughImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
+
+		// 둘 다 없으면 생성하지 않음
+		if (!hasMetal && !hasRough) return;
+
+		// 2. 최종 텍스처 크기 결정 (둘 중 큰 사이즈 기준)
+		size_t width = 1;
+		size_t height = 1;
+		if (hasMetal) {
+			width = metalImg.GetWidth();
+			height = metalImg.GetHeight();
+		}
+		if (hasRough) {
+			width = std::max(width, (size_t)roughImg.GetWidth());
+			height = std::max(height, (size_t)roughImg.GetHeight());
+		}
+
+		// 3. 크기가 다르다면 리사이즈 (Image2::Resize 활용)
+		if (hasMetal && (metalImg.GetWidth() != width || metalImg.GetHeight() != height)) {
+			metalImg.Resize(width, height);
+		}
+		if (hasRough && (roughImg.GetWidth() != width || roughImg.GetHeight() != height)) {
+			roughImg.Resize(width, height);
+		}
+
+		// 4. 병합 결과를 담을 ScratchImage 생성
+		DirectX::ScratchImage resultImg;
+		HRESULT hr = resultImg.Initialize2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1);
+		ThrowIfFailed(hr);
+
+		// 데이터 포인터 획득
+		const DirectX::Image* resImage = resultImg.GetImages();
+		uint8_t* destPtr = resImage->pixels;
+		size_t destPitch = resImage->rowPitch;
+
+		const uint8_t* metalPtr = hasMetal ? metalImg.GetBuffer().GetImages()->pixels : nullptr;
+		size_t metalPitch = hasMetal ? metalImg.GetBuffer().GetImages()->rowPitch : 0;
+
+		const uint8_t* roughPtr = hasRough ? roughImg.GetBuffer().GetImages()->pixels : nullptr;
+		size_t roughPitch = hasRough ? roughImg.GetBuffer().GetImages()->rowPitch : 0;
+
+		// 5. 픽셀 순회하며 채널 병합
+		// glTF PBR Standard: R=AO, G=Roughness, B=Metallic
+		for (size_t y = 0; y < height; ++y)
+		{
+			uint32_t* destRow = reinterpret_cast<uint32_t*>(destPtr + y * destPitch);
+			const uint32_t* metalRow = metalPtr ? reinterpret_cast<const uint32_t*>(metalPtr + y * metalPitch) : nullptr;
+			const uint32_t* roughRow = roughPtr ? reinterpret_cast<const uint32_t*>(roughPtr + y * roughPitch) : nullptr;
+
+			for (size_t x = 0; x < width; ++x)
+			{
+				float m = 0.0f; // Default Metallic (비금속)
+				float r = 1.0f; // Default Roughness (거침)
+
+				// 각 텍스처의 Red 채널 값을 가져옴 (흑백 이미지라고 가정)
+				if (metalRow) {
+					uint32_t pixel = metalRow[x];
+					m = (pixel & 0xFF) / 255.0f;
+				}
+				if (roughRow) {
+					uint32_t pixel = roughRow[x];
+					r = (pixel & 0xFF) / 255.0f;
+				}
+
+				// 채널 매핑
+				uint8_t ao = 255; // AO 정보가 없으므로 1.0 (Full White)
+				uint8_t g = static_cast<uint8_t>(r * 255.0f); // Roughness
+				uint8_t b = static_cast<uint8_t>(m * 255.0f); // Metallic
+				uint8_t a = 255;
+
+				// Little Endian Packing (A B G R 순서)
+				// 0xAABBGGRR
+				uint32_t packed = (a << 24) | (b << 16) | (g << 8) | ao;
+				destRow[x] = packed;
+			}
+		}
+
+		// 6. 텍스처 및 SRV 생성 (Mipmap 포함)
+		CreateTexture(device, context, resultImg, DXGI_FORMAT_R8G8B8A8_UNORM, texture);
+	}
+
+	void D3D11Utils::CreateTexturesFromGLTFCombined(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& gltfTexturePath, Texture2D& outMetallicTex, Texture2D& outRoughnessTex)
+	{
+		// 1. 원본(Combined) 이미지 로드
+		Image2 sourceImg;
+		if (!sourceImg.Load(gltfTexturePath))
+			return;
+
+		// 데이터 처리를 쉽게 하기 위해 RGBA 포맷으로 변환
+		sourceImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
+
+		size_t width = sourceImg.GetWidth();
+		size_t height = sourceImg.GetHeight();
+
+		// 2. 분리된 데이터를 담을 ScratchImage 2개 생성 (1채널 포맷 사용: R8_UNORM)
+		DirectX::ScratchImage metalScratch;
+		DirectX::ScratchImage roughScratch;
+
+		ThrowIfFailed(metalScratch.Initialize2D(DXGI_FORMAT_R8_UNORM, width, height, 1, 1));
+		ThrowIfFailed(roughScratch.Initialize2D(DXGI_FORMAT_R8_UNORM, width, height, 1, 1));
+
+		// 3. 픽셀 데이터 포인터 획득
+		const uint8_t* srcPixels = sourceImg.GetBuffer().GetImages()->pixels;
+		size_t srcPitch = sourceImg.GetBuffer().GetImages()->rowPitch;
+
+		uint8_t* metalPixels = metalScratch.GetImages()->pixels;
+		size_t metalPitch = metalScratch.GetImages()->rowPitch;
+
+		uint8_t* roughPixels = roughScratch.GetImages()->pixels;
+		size_t roughPitch = roughScratch.GetImages()->rowPitch;
+
+		// 4. 채널 분리 (glTF: R=Occlusion, G=Roughness, B=Metallic)
+		for (size_t y = 0; y < height; ++y)
+		{
+			const uint32_t* srcRow = reinterpret_cast<const uint32_t*>(srcPixels + y * srcPitch);
+			uint8_t* metalRow = metalPixels + y * metalPitch;
+			uint8_t* roughRow = roughPixels + y * roughPitch;
+
+			for (size_t x = 0; x < width; ++x)
+			{
+				uint32_t pixel = srcRow[x];
+
+				// Little Endian: 0xAABBGGRR
+				// Green Channel = Roughness
+				uint8_t g = (pixel >> 8) & 0xFF;
+				// Blue Channel = Metallic
+				uint8_t b = (pixel >> 16) & 0xFF;
+
+				// 각각의 텍스처에 저장 (1채널이므로 값 그대로 대입)
+				roughRow[x] = g;
+				metalRow[x] = b;
+			}
+		}
+
+		// 5. 각각 텍스처 생성 (기존에 작성한 CreateTexture 오버로딩 활용)
+		CreateTexture(device, context, metalScratch, DXGI_FORMAT_R8_UNORM, outMetallicTex);
+		CreateTexture(device, context, roughScratch, DXGI_FORMAT_R8_UNORM, outRoughnessTex);
+	}
+
+	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, UINT width, UINT height, UINT arraySize, bool useSRGB, ComPtr<ID3D11Texture2D>& outTexture, ComPtr<ID3D11ShaderResourceView>& outSRV)
+	{
+		DXGI_FORMAT pixelFormat = useSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // 일반적인 이미지 파일의 형식은 uint8_t이기에 R8G8B8A8_UNORM 사용
+
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = 0; // Mipmap Level 최대
+		desc.ArraySize = arraySize; // Texture Array이므로 사용할 Texture 개수
+		desc.Format = pixelFormat;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture로부터 복사 가능
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap 사용
+
+		// 초기 데이터 없이 생성
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outTexture.GetAddressOf()));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		ZeroMemory(&srvDesc, sizeof(srvDesc));
+		srvDesc.Format = desc.Format;
+		// Array로 사용하겠다는 설정 핵심
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.MostDetailedMip = 0;
+		srvDesc.Texture2DArray.MipLevels = -1;
+		srvDesc.Texture2DArray.FirstArraySlice = 0;
+		// 얼만큼 큰 Array를 사용할건지 설정해주는 핵심
+		srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
+		ThrowIfFailed(device->CreateShaderResourceView(outTexture.Get(), &srvDesc, outSRV.GetAddressOf()));
+	}
+
+	void D3D11Utils::UpdateTextureArraySlice(ID3D11DeviceContext* context, ID3D11Texture2D* textureArray, const Image2* image, UINT sliceIndex)
+	{
+		const auto& buffer = image->GetBuffer();
+		const DirectX::Image* imgData = buffer.GetImages();
+
+		D3D11_TEXTURE2D_DESC desc;
+		textureArray->GetDesc(&desc);
+
+		UINT mipLevels = desc.MipLevels;
+		if (mipLevels == 0)
+			// DX11에서 MipLevels=0으로 생성시 실제 개수는 Log2(max(w,h)) + 1 
+			mipLevels = 1 + static_cast<UINT>(std::floor(std::log2(std::max(desc.Width, desc.Height))));
+
+		UINT subresourceIndex = D3D11CalcSubresource(0, sliceIndex, mipLevels);
+		
+		// 데이터 갱신
+		context->UpdateSubresource(
+			textureArray,
+			subresourceIndex,
+			nullptr,
+			imgData->pixels,
+			static_cast<UINT>(imgData->rowPitch),
+			static_cast<UINT>(imgData->slicePitch)
+		);
+	}
+
+	void D3D11Utils::CreateStagingTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, ComPtr<ID3D11Texture2D>& outStagingTexture)
+	{
+		// Image2 내부의 DirectXTex 데이터 가져오기
+		const DirectX::ScratchImage& scratchImg = image->GetBuffer();
+		const DirectX::Image* imgData = scratchImg.GetImages(); // 첫 번째 이미지(Mip0, Slice0)
+
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = static_cast<UINT>(imgData->width);
+		desc.Height = static_cast<UINT>(imgData->height);
+		desc.MipLevels = 1; // Staging은 복사 용도이므로 MipMap 불필요 (원본 1장만)
+		desc.ArraySize = 1;
+		desc.Format = imgData->format;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_STAGING;
+		desc.BindFlags = 0; // Staging은 Bind Flag 없음
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outStagingTexture.GetAddressOf()));
+
+		// 데이터 복사 (Map/Unmap)
+		D3D11_MAPPED_SUBRESOURCE ms;
+		ThrowIfFailed(context->Map(outStagingTexture.Get(), 0, D3D11_MAP_WRITE, 0, &ms));
+
+		// 메모리 복사 (Row Pitch를 고려하여 한 줄씩 복사)
+		const uint8_t* srcPtr = imgData->pixels;
+		uint8_t* destPtr = static_cast<uint8_t*>(ms.pData);
+
+		// 복사할 높이만큼 반복
+		for (size_t h = 0; h < imgData->height; ++h)
+		{
+			// min(Source Pitch, Dest Pitch) 만큼 복사해야 안전함
+			// 보통 DirectXTex로 로드하면 포맷이 같아 Pitch도 비슷하지만, Dest가 더 클 수 있음
+			size_t copySize = std::min<size_t>(imgData->rowPitch, ms.RowPitch);
+			memcpy(destPtr, srcPtr, copySize);
+
+			srcPtr += imgData->rowPitch;
+			destPtr += ms.RowPitch;
+		}
+
+		context->Unmap(outStagingTexture.Get(), 0);
+	}
 
 	void D3D11Utils::CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest)
 	{
@@ -430,5 +726,240 @@ namespace DE {
 		std::cout << "PixelFormat not implemented " << pixelFormat << std::endl;
 
 		return sizeof(uint8_t) * 4;
+	}
+	void D3D11Utils::CreateStructuredBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav)
+	{
+		// Structured Buffer 생성
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = numElements * elementSize;
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | 
+						D3D11_BIND_UNORDERED_ACCESS;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		bufferDesc.StructureByteStride = elementSize;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else 
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+		
+		// SRV 생성
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.FirstElement = 0;
+		srvDesc.Buffer.NumElements = numElements;
+		ThrowIfFailed(device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf()));
+
+		// UAV 생성
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = numElements;
+		uavDesc.Buffer.Flags = 0;
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+	}
+
+	void D3D11Utils::CreateStagingBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer)
+	{
+		// StagingBuffer 생성
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = numElements * elementSize;
+		bufferDesc.Usage = D3D11_USAGE_STAGING;
+		bufferDesc.BindFlags = 0;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = elementSize;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+
+	}
+	void D3D11Utils::CopyToStagingBuffer(ID3D11DeviceContext* context, ID3D11Buffer* dest, UINT size, void* src)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms = {};
+		context->Map(dest, NULL, D3D11_MAP_WRITE, NULL, &ms);
+		memcpy(ms.pData, src, size);
+		context->Unmap(dest, NULL);
+	}
+	void D3D11Utils::CopyFromStagingBuffer(ID3D11DeviceContext* context, void* dest, UINT size, ID3D11Buffer* src)
+	{
+		D3D11_MAPPED_SUBRESOURCE ms = {};
+		context->Map(src, NULL, D3D11_MAP_READ, NULL, &ms);
+		memcpy(dest, ms.pData, size);
+		context->Unmap(src, NULL);
+	}
+	void D3D11Utils::CreateCS(ID3D11Device* device, const std::wstring& filename, ComPtr<ID3D11ComputeShader>& computeShader)
+	{
+		ComPtr<ID3DBlob> shaderBlob;
+		ComPtr<ID3DBlob> errorBlob;
+
+		UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+		compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+		ThrowIfFailed(D3DCompileFromFile(
+			filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
+			"main", "cs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
+
+		ThrowIfFailed(device->CreateComputeShader(
+			shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(),
+			NULL, &computeShader));
+	}
+	void D3D11Utils::CreateAppendBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav, ComPtr<ID3D11UnorderedAccessView>& rwUav)
+	{
+		// Structured Buffer 생성
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = numElements * elementSize;
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE |
+			D3D11_BIND_UNORDERED_ACCESS;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		bufferDesc.StructureByteStride = elementSize;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+
+		// SRV 생성
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.FirstElement = 0;
+		srvDesc.Buffer.NumElements = numElements;
+		ThrowIfFailed(device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf()));
+
+		// UAV 생성
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = numElements;
+		uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+
+		uavDesc.Buffer.Flags = 0; // 플래그 없음! (RWStructuredBuffer 호환)
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, rwUav.GetAddressOf()));
+	}
+
+	void D3D11Utils::CreateIndirectBuffer(ID3D11Device* device, UINT byteWidth, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)
+	{
+		D3D11_BUFFER_DESC desc = {};
+		desc.ByteWidth = byteWidth;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
+		desc.StructureByteStride = 0; 
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			ThrowIfFailed(device->CreateBuffer(&desc, &data, buffer.GetAddressOf()));
+		}
+		else {
+			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
+		}
+
+		// UAV 생성 (R32_UINT 포맷 사용)
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint로 읽기 위해 R32_UINT 사용
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = byteWidth / argCount; // UINT 개수 (Byte / 4)
+		uavDesc.Buffer.Flags = 0;
+
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+	}
+
+	void D3D11Utils::CreateUnifiedIndirectBuffer(ID3D11Device* device, UINT arraySize, UINT elemSize, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav)
+	{
+		D3D11_BUFFER_DESC desc = {};
+		desc.ByteWidth = arraySize * elemSize;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS | D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS; // Indirect Draw + Raw View
+		desc.StructureByteStride = 0;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			ThrowIfFailed(device->CreateBuffer(&desc, &data, buffer.GetAddressOf()));
+		}
+		else {
+			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
+		}
+
+		// UAV 생성 (R32_UINT 포맷 사용)
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint로 읽기 위해 R32_UINT 사용
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = arraySize * argCount;
+		uavDesc.Buffer.Flags = 0;
+
+		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
+	}
+
+	void D3D11Utils::CreateBuffer(ID3D11Device* device, const UINT elementSize, const void* initData, DXGI_FORMAT format, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv)
+	{
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = elementSize;
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.BindFlags =  D3D11_BIND_SHADER_RESOURCE;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = 0;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.NumElements = 1;
+		device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf());
+
+		/*D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = format; 
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = 1;
+		uavDesc.Buffer.Flags = 0;
+
+		device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf());*/
 	}
 }

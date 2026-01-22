@@ -5,10 +5,10 @@
 #define MAX_LIGHTS 3 // 보통 조명의 개수는 고정되어 있고 사용하지 않으면 OFF로 설정 (Particle System과 비슷)
 #define MAX_SPOT 2
 #define MAX_POINT 1
-#define LIGHT_OFF 0x00
 #define LIGHT_DIRECTIONAL 0x01
 #define LIGHT_POINT 0x02
 #define LIGHT_SPOT 0x04
+#define LIGHT_OFF 0x08
 #define LIGHT_SHADOW 0x10
 
 namespace DE {
@@ -18,9 +18,6 @@ namespace DE {
 	__declspec(align(256)) struct MeshConstants {
 		Matrix world;
 		Matrix worldIT; // World Inverse Transpose (Normal 변환에 사용)
-		int useHeightMap = 0; 
-		float heightScale = 1.f;
-		float dummy[2];
 	};
 	
 	__declspec(align(256)) struct BasicMaterialConstants {
@@ -36,10 +33,10 @@ namespace DE {
 	};
 
 	__declspec(align(256)) struct MaterialConstants {
-		Vector3 albedoFactor = Vector3(1.f); // 기본 색이라 생각할 수 있음
-		float roughnessFactor = 0.0f; // 물체 표면의 거칠기
-		float metallicFactor = 1.0f; // 금속에 가까운지 비금속에 가까운지 결정하는 값
-		Vector3 emissionFactor = Vector3(0.f);
+		Vector3 albedoFactor = Vector3(0.3f); // 기본 색이라 생각할 수 있음
+		float roughnessFactor = 0.5f; // 물체 표면의 거칠기
+		float metallicFactor = 0.5f; // 금속에 가까운지 비금속에 가까운지 결정하는 값
+		Vector3 emissionFactor = Vector3(0.5f);
 
 		// 여러 옵션들에 uint32를 flag로 하나만 사용할 수도 있음
 		int useAlbedoMap = 0;
@@ -49,7 +46,9 @@ namespace DE {
 		int useMetallicMap = 0;
 		int useRoughnessMap = 0;
 		int useEmissiveMap = 0;
-		float dummy = 0.f;
+		int useHeightMap = 0;
+		float heightScale = 1.f;
+		float dummy[3];
 	};
 
 	struct Light {

@@ -10,6 +10,8 @@ namespace DE {
 		const auto GetAddressOfTexture() { return m_texture.GetAddressOf(); }
 		const auto GetAddressOfRTV() { return m_rtv.GetAddressOf(); }
 		const auto GetAddressOfSRV() { return m_srv.GetAddressOf(); }
+
+		void SetResource(const ComPtr<ID3D11Texture2D>& texture, const ComPtr<ID3D11ShaderResourceView>& srv);
 	private:
 		ComPtr<ID3D11Texture2D> m_texture;
 		ComPtr<ID3D11ShaderResourceView> m_srv;

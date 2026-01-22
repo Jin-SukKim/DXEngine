@@ -5,6 +5,7 @@
 #include "MeshData.h"
 #include "PostProcess.h"
 #include "ToneMappingFilter.h"
+#include "ComputePSO.h"
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
@@ -39,7 +40,7 @@ namespace DE {
 		sd.BufferDesc.Height = m_screenHeight;
 		sd.BufferDesc.Format = m_backBufferFormat;
 		sd.BufferCount = 2; // double-buffering
-		sd.BufferDesc.RefreshRate.Numerator = 60;
+		sd.BufferDesc.RefreshRate.Numerator = 0;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
 		sd.BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering용
 			// Compute Shader 용(CS에서 Back-Buffer를 사용할게 아니라면 필요없지만 후처리때 사용할 수 있으므로 설정)
@@ -123,7 +124,7 @@ namespace DE {
 
 	void RenderBase::Present()
 	{
-		m_swapChain->Present(1, 0);
+		m_swapChain->Present(0, 0);
 	}
 
 	void RenderBase::SetRender()
@@ -245,16 +246,16 @@ namespace DE {
 		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
 	}
 
-	void RenderBase::CreateShadowArrayBuffer(const std::vector<std::shared_ptr<Actor>>& lights)
+	void RenderBase::CreateShadowArrayBuffer(const std::vector<LightActor*>& lights)
 	{
 		if (lights[0] == nullptr)
 			return;
 
 		int arraySize = 0;
-		std::shared_ptr<LightActor> light;
+		LightActor* light;
 		for (const auto& actor : lights) {
-			light = std::dynamic_pointer_cast<LightActor>(actor);
-			if (light != nullptr) {
+			if (actor != nullptr) {
+				light = actor;
 				if (light->GetLight().type & (LIGHT_SPOT | LIGHT_DIRECTIONAL))
 					++arraySize;
 				else if (light->GetLight().type & LIGHT_POINT)
@@ -262,7 +263,7 @@ namespace DE {
 			}
 		}
 
-		light = std::dynamic_pointer_cast<LightActor>(lights[0]);
+		light = lights[0];
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = light->GetShadowWidth();
@@ -336,6 +337,16 @@ namespace DE {
 		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // 마지막 parameter는 multi-sample을 사용할때 사용
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
+	}
+
+	void RenderBase::SetPipelineState(const ComputePSO& pso)
+	{
+		m_context->VSSetShader(NULL, 0, 0);
+		m_context->PSSetShader(NULL, 0, 0);
+		m_context->HSSetShader(NULL, 0, 0);
+		m_context->DSSetShader(NULL, 0, 0);
+		m_context->GSSetShader(NULL, 0, 0);
+		m_context->CSSetShader(pso.computeShader.Get(), 0, 0);
 	}
 
 	void RenderBase::SetPostProcess(PostProcess& postProcess, const GraphicsPSO& pso)

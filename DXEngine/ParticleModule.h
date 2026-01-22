@@ -1,0 +1,36 @@
+#pragma once
+#include "ParticleContext.h"
+
+namespace DE {
+class ParticleEmitter;
+
+enum class ModulePriority : uint8_t {
+	Spawn = 1,
+	Visual = 2,
+	UpdateForce = 3,
+	Force = 4,
+	Material = 5,
+	Render = 6
+};
+
+class ParticleModule
+{
+public:
+	virtual ~ParticleModule() {}
+
+	virtual void Initialize(ParticleInitContext& ctx) {}
+	virtual void OnSpawn(SimulationContext& context) { if (!m_isEnabled) return; }
+	virtual void OnUpdateCPU(SimulationContext& context) { if (!m_isEnabled) return; }
+	virtual void PreUpdate(SimulationContext& context) { if (!m_isEnabled) return; }
+	virtual void UpdateArgs(const SimulationContext& ctx) { if (!m_isEnabled) return; };
+	virtual void OnUpdate(const SimulationContext& context) { if (!m_isEnabled) return; }
+	virtual void OnRender(const RenderContext& context) { if (!m_isEnabled) return; }
+	//virtual void LoadFromJson();
+	virtual ModulePriority GetPriority() = 0;
+	virtual void LoadFromJson(const json& data) = 0;
+	void SetEnable(const bool& enable) { m_isEnabled = enable; }
+protected:
+	bool m_isEnabled = true;
+};
+
+}

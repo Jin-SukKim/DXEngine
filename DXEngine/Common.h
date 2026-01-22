@@ -60,6 +60,7 @@ namespace DE {
 		Transform,
 		Model,
 		BoundingVolume,
+		ParticleSystem,
 		MaxComponentType
 	};
 }

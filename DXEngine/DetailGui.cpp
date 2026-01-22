@@ -16,17 +16,17 @@ namespace DE
 			1000.0f / ImGui::GetIO().Framerate,
 			ImGui::GetIO().Framerate);
 
-		if (auto& actor = GetSelectedActor()) {
+		if (auto* actor = GetSelectedActor()) {
 			ImGui::Text("Name: %ls", actor->GetName().c_str());
 
 			TransformComponent* tr = GetSelectedActor()->GetComponent<TransformComponent>();
 			if (tr)
 				tr->UpdateGui();
 
-			if (auto camera = std::dynamic_pointer_cast<CameraActor>(actor)) {
+			if (auto camera = dynamic_cast<CameraActor*>(actor)) {
 				UpdateCamera();
 			}
-			else if (auto light = std::dynamic_pointer_cast<LightActor>(actor)) {
+			else if (auto light = dynamic_cast<LightActor*>(actor)) {
 				UpdateLight();
 			}
 			else {

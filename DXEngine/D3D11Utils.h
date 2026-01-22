@@ -1,7 +1,10 @@
 #pragma once
 //#include "Texture2D.h"
+#include "Image2.h"
 
 namespace DE {
+	class Image2;
+
 	class Texture2D;
 	inline void ThrowIfFailed(HRESULT hr) {
 		if (FAILED(hr)) {
@@ -37,7 +40,7 @@ namespace DE {
 		
 		// ConstantBuffer는 보통 Update에서 값을 매 프레임 바꿔주므로 CPU에서 쓰기, GPU에서 읽기가 가능한 Buffer를 생성
 		template<typename T_CONSTANT>
-		static void CreateConstantBuffer(ComPtr<ID3D11Device>& device, const T_CONSTANT& constantData, ComPtr<ID3D11Buffer>& constantBuffer) {
+		static void CreateConstantBuffer(ID3D11Device* device, const T_CONSTANT& constantData, ComPtr<ID3D11Buffer>& constantBuffer) {
 			D3D11_BUFFER_DESC desc = {};
 			ZeroMemory(&desc, sizeof(desc));
 			desc.Usage = D3D11_USAGE_DYNAMIC; // CPU에서 쓰기, GPU에서 읽기 가능
@@ -81,6 +84,23 @@ namespace DE {
 
 		// Texture2D 생성
 		static void CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, const bool usSRGB, Texture2D& texture);
+		// [신규] ScratchImage를 직접 받는 버전 (실제 구현부)
+		static void CreateTexture(
+			ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const DirectX::ScratchImage& image, // Image2* 대신 ScratchImage& 사용
+			const DXGI_FORMAT& format,
+			Texture2D& texture
+		);
+
+		// [기존] Image2 포인터를 받는 버전 (Wrapper)
+		static void CreateTexture(
+			ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const Image2* image,
+			const DXGI_FORMAT& format,
+			Texture2D& texture
+		);
 		// Resource Texture의 설정을 가져와서 Texture, SRV, RTV 생성
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture);
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const D3D11_TEXTURE2D_DESC& desc, Texture2D& texture);
@@ -97,10 +117,46 @@ namespace DE {
 		static void CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture);
 		// Metal과 Roughness Texture를 하나의 Texture에서 사용하는 MetallicRoughness Texture 생성
 		static void CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
-
+		static void CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
+		static void CreateTexturesFromGLTFCombined(
+			ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const std::string& gltfTexturePath,
+			Texture2D& outMetallicTex,
+			Texture2D& outRoughnessTex
+		);
+		// Texture2D Array 생성
+		static void CreateTexture2DArray(ID3D11Device* device,
+			UINT width, UINT height, UINT arraySize,
+			bool useSRGB,
+			ComPtr<ID3D11Texture2D>& outTexture,
+			ComPtr<ID3D11ShaderResourceView>& outSRV);
+		// Texture2D Array에 데이터를 복사
+		static void UpdateTextureArraySlice(
+			ID3D11DeviceContext* context,
+			ID3D11Texture2D* textureArray,
+			const Image2* image,
+			UINT sliceIndex);
+		// Image2를 사용해 Miamap을 위한 Stating Texture 생성
+		static void CreateStagingTexture(ID3D11Device* device,
+			ID3D11DeviceContext* context,
+			const Image2* image,
+			ComPtr<ID3D11Texture2D>& outStagingTexture);
 		static void CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest);
 
 		// Pixel Format에 따라 Pixel 색상의 범위가 다르기 때문에 같은 uint8_t를 쓰지만 대신 데이터 범위가 다름
 		static size_t GetPixelSize(const DXGI_FORMAT& pixelFormat);
+
+
+		// Particle System
+		static void CreateStructuredBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav);
+		static void CreateStagingBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer);
+		static void CopyToStagingBuffer(ID3D11DeviceContext* context, ID3D11Buffer* dest, UINT size, void* src);
+		static void CopyFromStagingBuffer(ID3D11DeviceContext* context, void* dest, UINT size, ID3D11Buffer* src);
+		static void CreateCS(ID3D11Device* device, const std::wstring& filename, ComPtr<ID3D11ComputeShader>& computeShader);
+		static void CreateAppendBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav, ComPtr<ID3D11UnorderedAccessView>& rwUav);
+		static void CreateIndirectBuffer(ID3D11Device* device, UINT byteWidth, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav);
+		static void CreateUnifiedIndirectBuffer(ID3D11Device* device, UINT arraySize, UINT elemSize, UINT argCount, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11UnorderedAccessView>& uav);
+		static void CreateBuffer(ID3D11Device* device, const UINT elementSize, const void* initData, DXGI_FORMAT format, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv);
 	};
 }

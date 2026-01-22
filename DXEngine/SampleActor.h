@@ -4,6 +4,7 @@
 namespace DE {
 	class ModelComponent;
 	class BoundComponent;
+	class ParticleSystem;
 
 	class SampleActor : public Actor
 	{
@@ -18,5 +19,6 @@ namespace DE {
 	private:
 		ModelComponent* m_sample;
 		BoundComponent* m_boundVolume;
+		ParticleSystem* m_particles;
 	};
 }

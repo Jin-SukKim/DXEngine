@@ -8,9 +8,9 @@ namespace DE {
         void Initialize() override;
         void Update() override;
     
-        void SetActorLists(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists);
+        void SetActorLists(const std::vector<std::vector<Actor*>>& actorLists);
     
     private:
-        std::vector<std::shared_ptr<Actor>> m_actors;
+        std::vector<Actor*> m_actors;
     };
 }

@@ -131,6 +131,13 @@ namespace DE {
 		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL; // 원하는 Masking 숫자와 값이 같은 경우
 
 		ThrowIfFailed(device->CreateDepthStencilState(&dsDesc, drawMaskedDSS.GetAddressOf()));
+
+		dsDesc.DepthEnable = true;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 중요: 0으로 설정하여 기록 방지
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		dsDesc.StencilEnable = false;
+
+		ThrowIfFailed(device->CreateDepthStencilState(&dsDesc, particleDDS.GetAddressOf()));
 	}
 	
 	void GraphicsCommon::initShaders(ComPtr<ID3D11Device>& device)
@@ -155,6 +162,9 @@ namespace DE {
 		D3D11Utils::CreateVSAndIL(device, L"NormalVS.hlsl", basicIEs, normalVS, basicIL);
 		D3D11Utils::CreateGS(device, L"NormalGS.hlsl", normalGS);
 		D3D11Utils::CreatePS(device, L"NormalPS.hlsl", normalPS);
+
+		// Particle
+		D3D11Utils::CreateVSAndIL(device, L"ParticleMeshVS.hlsl", basicIEs, particleMeshVS, basicIL);
 
 		// Skybox
 		std::vector<D3D11_INPUT_ELEMENT_DESC> skyboxIEs = {
@@ -204,6 +214,16 @@ namespace DE {
 		D3D11Utils::CreateHS(device, L"tessellationQuadHS.hlsl", tessellationQuadHS);
 		D3D11Utils::CreateDS(device, L"tessellationQuadDS.hlsl", tessellationQuadDS);
 		D3D11Utils::CreatePS(device, L"tessellationQuadPS.hlsl", tessellationQuadPS);
+
+
+		// Particle
+		std::vector<D3D11_INPUT_ELEMENT_DESC> particleIEs = {
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		}; // Dummy (실제로는 Structured Buffer 사용)
+		D3D11Utils::CreateVSAndIL(device, L"ParticleVS.hlsl", particleIEs, particleVS, particleIL);
+		D3D11Utils::CreateGS(device, L"ParticleGS.hlsl", particleGS);
+		D3D11Utils::CreatePS(device, L"ParticlePS.hlsl", particlePS);
+		D3D11Utils::CreatePS(device, L"ParticlePBR.hlsl", particlePbrPS);
 	}
 	
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
@@ -287,6 +307,29 @@ namespace DE {
 		mirrorBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 		ThrowIfFailed(device->CreateBlendState(&mirrorBlendDesc, mirrorBS.GetAddressOf()));
+
+		D3D11_BLEND_DESC blendDesc;
+		ZeroMemory(&blendDesc, sizeof(blendDesc));
+		blendDesc.AlphaToCoverageEnable = false; // MSAA
+		blendDesc.IndependentBlendEnable = false;
+		blendDesc.RenderTarget[0].BlendEnable = true;
+		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE; // INV 아님
+		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].RenderTargetWriteMask =
+			D3D11_COLOR_WRITE_ENABLE_ALL;
+		ThrowIfFailed(
+			device->CreateBlendState(&blendDesc, accumulateBS.GetAddressOf()));
+
+		
+		// SrcBlend를 ONE으로 변경 (이미 쉐이더에서 알파를 곱해올 것이므로)
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		ThrowIfFailed(
+			device->CreateBlendState(&blendDesc, alphaBS.GetAddressOf()));
 	}
 	
 	void GraphicsCommon::initPipelineStates(ComPtr<ID3D11Device>& device)
@@ -396,5 +439,24 @@ namespace DE {
 		basic.tessellationQuadPSO.pixelShader = tessellationQuadPS;
 		// 약간 다른 Topology를 사용 (POINTLIST이므로 렌더링시 Draw()를 사용)
 		basic.tessellationQuadPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;;
+
+		// Particle System
+		particle.animPSO = basic.solidPSO;
+		particle.animPSO.vertexShader = particleVS;
+		particle.animPSO.geometryShader = particleGS;
+		particle.animPSO.pixelShader = particlePS;
+		particle.animPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+		particle.animPSO.rasterizerState = solidBothRS;
+		particle.animPSO.blendState = accumulateBS;
+		particle.animPSO.depthStencilState = particleDDS;
+
+		mirror.reflectEffectSolidPSO = particle.animPSO;
+		mirror.reflectEffectSolidPSO.depthStencilState = drawMaskedDSS;
+		mirror.reflectEffectSolidPSO.rasterizerState = solidCcwRS;
+		mirror.reflectEffectSolidPSO.stencilRef = 1;
+
+		particle.meshPSO = basic.solidPSO;
+		particle.meshPSO.vertexShader = particleMeshVS;
+		//particle.meshPSO.pixelShader = particlePbrPS;
 	}
 }

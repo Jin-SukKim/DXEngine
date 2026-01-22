@@ -7,7 +7,6 @@ namespace DE {
 		ComPtr<ID3D11Buffer> vertexBuffer;
 		ComPtr<ID3D11Buffer> indexBuffer;
 
-		ComPtr<ID3D11Buffer> meshConstGPU;
 		ComPtr<ID3D11Buffer> basicMaterialConstGPU;
 		ComPtr<ID3D11Buffer> materialConstGPU;
 
@@ -19,7 +18,8 @@ namespace DE {
 		Texture2D heightTexture;
 		Texture2D normalTexture;
 		Texture2D aoTexture;
-		Texture2D metallicRoughnessTexture;
+		Texture2D metallicTexture;
+		Texture2D roughnessTexture;
 
 		UINT indexCount = 0;
 		UINT vertexCount = 0; // Normal Vector ·»´õ¸µ¿ë

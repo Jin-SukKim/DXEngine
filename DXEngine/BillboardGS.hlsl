@@ -91,5 +91,4 @@ void main(point GSInput input[1] : SV_POSITION, uint primID : SV_PrimitiveID,
     // GS는 Triangle Strips으로 출력
     // https://learn.microsoft.com/en-us/windows/win32/direct3d9/triangle-strips
     outputStream.RestartStrip(); // Strip을 다시 시작
-
 }

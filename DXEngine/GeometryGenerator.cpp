@@ -714,7 +714,7 @@ namespace DE {
         modelLoader.Load(basePath, filename, revertNormals, calculateNormals);
 
         // 읽어온 모델의 크기는 제각각 이므로 정규화
-        GeometryGenerator::Normalize(Vector3(0.f), 1.f, modelLoader.GetMeshes());
+        //GeometryGenerator::Normalize(Vector3(0.f), 1.f, modelLoader.GetMeshes());
 
         return modelLoader.GetMeshes();
     }

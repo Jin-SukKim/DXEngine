@@ -16,12 +16,12 @@ namespace DE {
 		m_sky->SetModel(cubeMap);
 
 		// 기본으로 적용할 Cubemap
-		//SetCubeMaps(device, L"../Assets/Textures/Cubemaps/HDRI/", 
-		//	L"SampleEnvHDR.dds",	L"SampleSpecularHDR.dds", 
-		//	L"SampleDiffuseHDR.dds",	L"SampleBrdf.dds");
 		SetCubeMaps(L"../Assets/Textures/Cubemaps/HDRI/", 
-			L"MyCubesEnvHDR.dds",	L"MyCubesSpecularHDR.dds", 
-			L"MyCubesDiffuseHDR.dds",	L"MyCubesBrdf.dds");
+			L"SampleEnvHDR.dds",	L"SampleSpecularHDR.dds", 
+			L"SampleDiffuseHDR.dds",	L"SampleBrdf.dds");
+		//SetCubeMaps(L"../Assets/Textures/Cubemaps/HDRI/", 
+		//	L"clear_pureskyEnvHDR.dds",	L"clear_pureskySpecularHDR.dds", 
+		//	L"clear_pureskyDiffuseHDR.dds",	L"clear_pureskyBrdf.dds");
 	}
 
 	void SkyboxActor::Initialize()

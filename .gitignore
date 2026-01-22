@@ -1,4 +1,9 @@
 .vs/
 Intermediate/
 Binaries/
-Assets/
+Assets/Textures/
+Assets/Characters/
+Assets/Foliage/
+Assets/Models/
+Assets/Sound/
+Assets/Terrain/

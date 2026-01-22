@@ -19,10 +19,10 @@ namespace DE {
 			m_sample->SetModel(mesh);
 
 			MaterialConstants consts = m_sample->GetMaterialCpu();
-			consts.albedoFactor = Vector3(0.3f);
+			consts.albedoFactor = Vector3(0.01f);
 			consts.emissionFactor = Vector3(0.0f);
-			consts.metallicFactor = 0.8f;
-			consts.roughnessFactor = 0.2f;
+			consts.metallicFactor = 0.2f;
+			consts.roughnessFactor = 0.8f;
 			m_sample->SetMaterial(consts);
 		}
 	}
@@ -34,7 +34,7 @@ namespace DE {
 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetPos({ 0.f, -1.f, 0.f });
+			tr->SetPos({ 0.f, -2.5f, 0.f });
 			tr->SetLocalRotation(0.f, 90.f, 0.f);
 		}
 	}

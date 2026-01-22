@@ -4,8 +4,9 @@
 Texture2D albedoTex : register(t0);
 Texture2D normalTex : register(t1);
 Texture2D aoTex : register(t2);
-Texture2D metallicRoughnessTex : register(t3);
-Texture2D emissiveTex : register(t4);
+Texture2D metallicTex : register(t3);
+Texture2D roughnessTex : register(t4);
+Texture2D emissiveTex : register(t5);
 
 // 물체의 재질에 따라 F0을 결정하는데 metallic 값에 따라 Fdielectric와 albedo의 lerp 범위로 조정
 static const float3 Fdielectric = 0.04; // 비금속 재질의 F0이 최소가 0이 아닌 0.04
@@ -218,13 +219,13 @@ PSOutput main(PSInput input)
     float ao = useAOMap ? aoTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r : 1.0;
     
     // Metal Texture와 Roughness Texture는 한 Texture로 통합해서 각각 b와 g값을 가져와 사용
-    float metallic = useMetallicMap ? metallicRoughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).b * metallicFactor
+    float metallic = useMetallicMap ? metallicTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r * metallicFactor
                                     : metallicFactor;
-    float roughness = useRoughnessMap ? metallicRoughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).g * roughnessFactor
+    float roughness = useRoughnessMap ? roughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r * roughnessFactor
                                       : roughnessFactor;
     //float metallic = metallicFactor;
     //float roughness = roughnessFactor;
-    float3 emission = useEmissiveMap ? emissiveTex.SampleLevel(linearWrapSampler, input.texcoord, lod).rgb
+    float3 emission = useEmissiveMap ? emissiveTex.SampleLevel(linearWrapSampler, input.texcoord, lod).rgb * emissionFactor
                                      : emissionFactor;
 
     // 간접광 (환경맵으로부터 받는 빛)
@@ -237,7 +238,7 @@ PSOutput main(PSInput input)
     // 임시로 unroll 사용
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
-        if (lights[i].type) {
+        if (!(lights[i].type & LIGHT_OFF)) {
             float3 radiance = DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness, shadowIdx);
             // TODO: radiance가 (0, 0, 0)인 경우 DirectLighting += ... 인데도 direfctLight이 (0, 0, 0)이 되어 버리는 오류 임시 수정
             if (abs(dot(float3(1, 1, 1), radiance)) > 1e-5) // radiance가 (0, 0, 0)일 경우 더하지 않음

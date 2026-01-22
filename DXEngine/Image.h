@@ -18,7 +18,6 @@ namespace DE {
 		const int& GetHeight() { return m_height; }
 		const int& GetChannels() { return m_channels; }
 		const size_t GetSize() { return m_image.size(); }
-	
 	private:
 		void readImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat);
 	private:
