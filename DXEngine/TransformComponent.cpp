@@ -30,6 +30,7 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		context->VSSetConstantBuffers(1, 1, m_constant.GetAddressOf());
 		context->PSSetConstantBuffers(1, 1, m_constant.GetAddressOf());
+		context->CSSetConstantBuffers(1, 1, m_constant.GetAddressOf());
 	}
 
 	void TransformComponent::SetLocalRotation(const float& yaw, const float& pitch, const float roll)

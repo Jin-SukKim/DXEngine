@@ -28,11 +28,12 @@ namespace DE {
         float spawnInnerRatio;
         
         Vector2 lifeRange;
-        int spawnShape = 0; // 0: Box, 1: Sphere
+        int spawnShape = 0; // 0: Box, 1: Sphere, 2 : Vertex, 3: Surface
         UINT vertexCount = 0;
         UINT indexCount = 0;
         UINT bakedCount = 0;
-        Vector2 padding1;
+        UINT simulationSpace = 0; // 0 : Local, 1 : world
+        float padding1;
     };
 
     struct VisualConsts {

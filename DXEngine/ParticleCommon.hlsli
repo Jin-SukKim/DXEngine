@@ -34,7 +34,8 @@ struct SpawnConsts {
     uint vertexCount;
     uint indexCount;
     uint bakedCount;
-    float2 padding1;
+    uint simulationSpace;
+    float padding1;
 };
 
 struct VisualConsts {

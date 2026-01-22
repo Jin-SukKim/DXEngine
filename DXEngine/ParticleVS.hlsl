@@ -35,7 +35,20 @@ GSInput main(uint vertexID : SV_VertexID)
 
     GSInput output;
 
-    output.position = mul(float4(p.position.xyz, 1.0), world);
+    // 로컬/월드 모드에 따라 렌더링 위치 결정
+    if (spawn.simulationSpace == 1)
+    {
+        // 이미 World 좌표이므로 View-Projection 변환만 적용하면 됨
+        // 하지만 VS에서는 World 행렬 곱을 생략하고, float4(p.position, 1.0)을 넘김
+        // (Pixel Shader나 Geometry Shader 단계에서 View/Proj가 적용될 것임)
+        // 이 코드는 VSInput -> GSInput 단계이므로 World 변환 여부만 제어
+        output.position = float4(p.position.xyz, 1.0);
+    }
+    else
+    {
+        // 기존: Local 좌표이므로 World 행렬 곱셈 필요
+        output.position = mul(float4(p.position.xyz, 1.0), world);
+    }
 
     /*float3x3 rotMatrix = GetRotationMatrix(p.rotation);
     output.position = float4(mul(rotMatrix, p.position.xyz), 1.0);*/

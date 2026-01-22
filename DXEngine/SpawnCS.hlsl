@@ -148,13 +148,8 @@ void main(uint3 dtID : SV_DispatchThreadID)
     }
 
     // 성공한 위치 적용
-    p.position = spawnPos + spawn.localPos;
-
-    // --- Life, Velocity, etc. ---
-
-    // Life
-    p.life = lerp(spawn.lifeRange.x, spawn.lifeRange.y, rand_float(rngState));
-    p.lifeMax = p.life;
+    // 로컬 기준 위치 및 속도 계산
+    float3 localPos = spawnPos + spawn.localPos;
 
     // Velocity
     float3 noiseDir;
@@ -165,7 +160,30 @@ void main(uint3 dtID : SV_DispatchThreadID)
     float3 finalDir = normalize(force.velocity + noiseDir * force.randomDir + 1e-5f);
     float speed = lerp(force.speedRange.x, force.speedRange.y, rand_float(rngState));
 
-    p.velocity = finalDir * speed;
+    float3 localVel = finalDir * speed;
+
+    // 시뮬레이션 공간에 따른 변환 적용
+    if (spawn.simulationSpace == 1) // World Space Simulation
+    {
+        // 위치: World 행렬 적용
+        // Common.hlsli에 정의된 'world' 행렬 사용 (MeshConstants)
+        p.position = mul(float4(localPos, 1.0f), world).xyz;
+
+        // 속도: World 회전만 적용 (3x3)
+        // 만약 Scale도 속도에 영향을 주고 싶다면 (float3x3)world 대신 다른 방식 고려 필요
+        p.velocity = mul(localVel, (float3x3)world);
+    }
+    else // Local Space Simulation (기존 방식)
+    {
+        p.position = localPos;
+        p.velocity = localVel;
+    }
+
+    // --- Life, etc. ---
+
+    // Life
+    p.life = lerp(spawn.lifeRange.x, spawn.lifeRange.y, rand_float(rngState));
+    p.lifeMax = p.life;
 
     // Color & Size
     p.color = visual.startColor;

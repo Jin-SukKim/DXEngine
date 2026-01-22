@@ -46,6 +46,7 @@ namespace DE {
 	{
 		ParticleModule::OnRender(ctx);
 		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
+		ctx.context->VSSetConstantBuffers(5, 1, ctx.constBuffer.GetAddressOf());
 	}
 
 	void RenderModule::SetBlendState()
@@ -162,7 +163,7 @@ namespace DE {
 				m_singleTextureIdx = TextureManager::Get().LoadTexture(data["texture"], data.value("isSRGB", true));
 		}
 		else {
-			m_textureMode = BillboardTextureMode::Material;
+			m_textureMode = BillboardTextureMode::TextureArray;
 			if (data.contains("texture")) {
 				const auto [path, idx] = TextureManager::Get().LoadParticleTexture(data["texture"]);
 				m_texturePath = path;
