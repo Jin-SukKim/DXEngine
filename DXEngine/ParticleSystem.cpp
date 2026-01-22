@@ -167,12 +167,12 @@ namespace DE {
 		Play();
 	}
 
-	void ParticleSystem::SetTargetMesh(const MeshData& meshData, const Mesh* mesh)
+	void ParticleSystem::SetTargetMesh(const MeshData& meshData)
 	{
 		for (auto& emitter : m_emitters) {
 			SpawnModule* sp = emitter->GetModule<SpawnModule>();
 			if (sp) {
-				sp->SetTarget(meshData, mesh);
+				sp->SetTarget(meshData);
 			}
 		}
 	}

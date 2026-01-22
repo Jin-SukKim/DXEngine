@@ -2,6 +2,7 @@
 #include "SpawnModule.h"
 #include "ParticleEmitter.h"
 #include "Mesh.h"
+#include "TextureSpawnBake.h"
 
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
@@ -21,9 +22,7 @@ namespace DE {
 		consts.lifeRange = lifeRange;
 		consts.vertexCount = vertexCount;
 		consts.indexCount = indexCount;
-		consts.useTexture = useTexture;
-		consts.textureThreshold = textureThreshold;
-		consts.channelMask = channelMask;
+		consts.bakedCount = m_bakedCount;
 
 		ctx.frameConstBuffer.GetCpu().maxParticles = maxParticles;
 	}
@@ -33,14 +32,14 @@ namespace DE {
 		ParticleModule::OnUpdateCPU(ctx);
 		spawnAccumulator += spawnRate * ctx.dt;
 
-		//m_totalSpawnCount = 1;
-		UINT spawnCycles = static_cast<int>(spawnAccumulator);
-		m_totalSpawnCount = spawnCycles * particlesPerSpawn;
+		m_totalSpawnCount = 1;
+		//UINT spawnCycles = static_cast<int>(spawnAccumulator);
+		//m_totalSpawnCount = spawnCycles * particlesPerSpawn;
 
-		if (spawnCycles > 0)
-			spawnAccumulator -= static_cast<float>(spawnCycles);
-		if (m_totalSpawnCount < 0)
-			m_totalSpawnCount = 0;
+		//if (spawnCycles > 0)
+		//	spawnAccumulator -= static_cast<float>(spawnCycles);
+		//if (m_totalSpawnCount < 0)
+		//	m_totalSpawnCount = 0;
 
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}
@@ -61,11 +60,10 @@ namespace DE {
 				m_meshIndices.GetSRV()
 			};
 			ctx.context->CSSetShaderResources(0, 2, srvs);
-
-			if (useTexture) {
-				ID3D11ShaderResourceView* srv[] = { m_texture->GetSRV() };
-				ctx.context->CSSetShaderResources(2, 1, srv); 
-			}
+		}
+		else if (spawnShape == 4) {
+			ID3D11ShaderResourceView* srv[] = { m_spawnPos.GetSRV() };
+			ctx.context->CSSetShaderResources(2, 1, srv);
 		}
 
 		// Spawn Compute Shader
@@ -83,19 +81,15 @@ namespace DE {
 			if (shape == "Box") spawnShape = 0;
 			else if (shape == "Sphere") spawnShape = 1;
 			else if (shape == "Vertex") spawnShape = 2;
-			else if (shape == "Surface") {
-				spawnShape = 3;
-				if (data.contains("texture")) {
-					useTexture = true;
-					const auto& j = data["texture"];
-
-					if (j.contains("type")) textureType = j["type"];
-					if (j.contains("threshold")) textureThreshold = j["threshold"];
-					if (j.contains("channelMask")) channelMask = JsonToVec4(j["channelMask"]);
+			else if (shape == "Surface") spawnShape = 3;
+			else if (shape == "Texture") {
+				if (data.contains("bakedPath")) {
+					spawnShape = 4;
+					std::string path = data["bakedPath"];
+					TextureSpawnBake::Get().LoadBakedData(path, m_spawnPos, m_bakedCount);
 				}
-				else {
-					useTexture = false;
-				}
+				else
+					spawnShape = 1;
 			}
 		}
 		if (data.contains("spawnRate")) spawnRate = data["spawnRate"];
@@ -104,7 +98,7 @@ namespace DE {
 		if (data.contains("lifeRange")) lifeRange = JsonToVec2(data["lifeRange"]);
 	}
 
-	void SpawnModule::SetTarget(const MeshData& meshes, const Mesh* mesh)
+	void SpawnModule::SetTarget(const MeshData& meshes)
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
@@ -120,18 +114,5 @@ namespace DE {
 
 		m_meshVertex.Upload(context.Get());
 		m_meshIndices.Upload(context.Get());
-
-		if (textureType == "emissive") 
-			m_texture = &mesh->emissiveTexture;
-		else if (textureType == "albedo") 
-			m_texture = &mesh->albedoTexture;
-		else if (textureType == "metallic") 
-			m_texture = &mesh->metallicTexture;
-		else if (textureType == "roughness") 
-			m_texture = &mesh->roughnessTexture;
-		else if (textureType == "normal") 
-			m_texture = &mesh->normalTexture;
-		else if (textureType == "ao") 
-			m_texture = &mesh->aoTexture;
 	}
 }

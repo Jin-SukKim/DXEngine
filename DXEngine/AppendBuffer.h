@@ -37,6 +37,8 @@ template<typename T_ELEMENT>
 void AppendBuffer<T_ELEMENT>::Initialize(ID3D11Device* device)
 {
     D3D11Utils::CreateAppendBuffer(device, static_cast<UINT>(Super::m_cpu.size()), static_cast<UINT>(sizeof(T_ELEMENT)), Super::m_cpu.data(), Super::m_gpu, Super::m_srv, Super::m_uav, m_rwUav);
+    // StagingBuffer »ý¼º
+    D3D11Utils::CreateStagingBuffer(device, static_cast<UINT>(Super::m_cpu.size()), sizeof(T_ELEMENT), Super::m_cpu.data(), Super::m_staging);
 }
 template<typename T_ELEMENT>
 inline auto AppendBuffer<T_ELEMENT>::GetRWuav() const -> ID3D11UnorderedAccessView*

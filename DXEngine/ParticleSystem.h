@@ -40,7 +40,7 @@ public:
 	void SetDuration(float duration) { m_duration = duration; }
 	void SetPlayRate(float rate) { m_playRate = rate; }
 	void SetPreWarmTime(float time) { m_preWarmTime = time; }
-	void SetTargetMesh(const MeshData& meshData, const Mesh* mesh = nullptr);
+	void SetTargetMesh(const MeshData& meshData);
 private:
 	void Reset();
 	void ExecutePreWarm();

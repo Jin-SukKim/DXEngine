@@ -1,33 +1,30 @@
 {
   "Name": "FireEffect",
   "Spawn": {
-    "shape": "Surface",
-    "texture": {
-      "type": "emissive",
-      "threshold": 0.00,
-      "channelMask": [ 1.0, 1.0, 1.0, 0.0 ]
-    },
+    "shape": "Texture",
+    "bakedPath": "Models\\DamagedHelmet\\emissive.bin",
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 30.0,
-    "particlesPerSpawn": 1000,
+    "spawnRate": 60.0,
+    "particlesPerSpawn": 10000,
     "maxParticles": 100000,
-    "lifeRange": [ 0.5, 1.0 ]
+    "lifeRange": [ 0.4, 0.5 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
     "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
-    "sizeRange": [ 0.01, 0.01 ]
+    "sizeRange": [ 0.1, 0.01 ]
   },
   "Force": {
-    "velocity": [ 0.0, 0.0, 0.0 ],
-    "speedRange": [ 0.00, 0.00 ],
+    "velocity": [ 0.0, 0.0, -1.0 ],
+    "speedRange": [ 0.1, 0.1 ],
     "randomDir": [ 0.0, 0.0, 0.0 ],
-    "gravity": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 1.0, 0.0 ],
     "drag": 0.0
   },
   "BillboardRender": {
-    "blendMode": "Addictive"
+    "blendMode": "AlphaBlend",
+    "texture": "Textures\\flame.png"
   }
 }

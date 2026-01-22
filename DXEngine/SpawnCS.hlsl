@@ -11,7 +11,7 @@ struct Vertex {
 AppendStructuredBuffer<Particle> outputParticles : register(u0);
 StructuredBuffer<Vertex> meshVertex : register(t0);
 StructuredBuffer<uint> meshIndices : register(t1);
-Texture2D spawnTexture : register(t2);
+StructuredBuffer<float3> bakedSpawnPos : register(t2);
 
 // --- [Robust Random Functions (Wang Hash)] ---
 
@@ -34,20 +34,6 @@ float rand_float(inout uint state)
 float rand_signed(inout uint state)
 {
     return rand_float(state) * 2.0f - 1.0f;
-}
-
-// --- [Helper Functions] ---
-
-// 텍스처 조건 검사
-bool CheckTextureCondition(float2 uv)
-{
-    if (spawn.useTexture == 0) return true;
-
-    float4 color = spawnTexture.SampleLevel(linearClampSampler, uv, 0);
-
-    float value = dot(color, spawn.channelMask);
-
-    return value >= spawn.textureThreshold;
 }
 
 // --- [Spawn Functions] ---
@@ -78,7 +64,7 @@ float3 SphereSpawn(inout uint rngState, float3 volume, float innerRatio)
 }
 
 // Vertex 스폰: 위치와 UV를 모두 반환
-void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos, out float2 outUV)
+void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos)
 {
     if (vCount > 0)
     {
@@ -87,17 +73,15 @@ void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos, out float2
 
         Vertex v = meshVertex[vIdx];
         outPos = v.position;
-        outUV = v.texcoord;
     }
     else
     {
         outPos = float3(0, 0, 0);
-        outUV = float2(0, 0);
     }
 }
 
 // Surface 스폰: 위치와 UV를 모두 반환
-void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos, out float2 outUV)
+void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
 {
     if (iCount > 0)
     {
@@ -125,14 +109,10 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos, out float
 
         // Position Interpolation
         outPos = v0.position + ra * (v1.position - v0.position) + rb * (v2.position - v0.position);
-
-        // UV Interpolation
-        outUV = v0.texcoord + ra * (v1.texcoord - v0.texcoord) + rb * (v2.texcoord - v0.texcoord);
     }
     else
     {
         outPos = float3(0, 0, 0);
-        outUV = float2(0, 0);
     }
 }
 
@@ -150,60 +130,22 @@ void main(uint3 dtID : SV_DispatchThreadID)
     float3 spawnPos = float3(0, 0, 0);
     bool validSpawn = false;
 
-    // [Rejection Sampling Loop]
-    // 텍스처 스폰이 켜져있으면 조건에 맞을 때까지 최대 10번 재시도
-    // 텍스처 스폰이 꺼져있으면 1번만 수행
-    int maxAttempts = (spawn.useTexture != 0 && spawn.spawnShape >= 2) ? 10 : 1;
+    // 매 시도마다 시드 갱신
+    rngState = wang_hash(rngState);
 
-    for (int i = 0; i < maxAttempts; ++i)
+    if (spawn.spawnShape == 0) // BOX
+        spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
+    else if (spawn.spawnShape == 1) // SPHERE
+        spawnPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
+    else if (spawn.spawnShape == 2) // VERTEX
+        VertexSpawn(rngState, spawn.vertexCount, spawnPos);
+    else if (spawn.spawnShape == 3) // SURFACE
+        SurfaceSpawn(rngState, spawn.indexCount, spawnPos);
+    else if (spawn.spawnShape == 4) // BAKED POS
     {
-        // 매 시도마다 시드 갱신
-        rngState = wang_hash(rngState);
-        float3 tempPos = float3(0, 0, 0);
-        float2 tempUV = float2(0, 0);
-        bool needsCheck = false;
-
-        if (spawn.spawnShape == 0) // BOX
-        {
-            tempPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
-            validSpawn = true;
-        }
-        else if (spawn.spawnShape == 1) // SPHERE
-        {
-            tempPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
-            validSpawn = true;
-        }
-        else if (spawn.spawnShape == 2) // VERTEX
-        {
-            VertexSpawn(rngState, spawn.vertexCount, tempPos, tempUV);
-            needsCheck = true;
-        }
-        else if (spawn.spawnShape == 3) // SURFACE
-        {
-            SurfaceSpawn(rngState, spawn.indexCount, tempPos, tempUV);
-            needsCheck = true;
-        }
-
-        // 텍스처 조건 검사 (Mesh 타입일 경우에만)
-        if (needsCheck)
-        {
-            if (CheckTextureCondition(tempUV))
-            {
-                spawnPos = tempPos;
-                validSpawn = true;
-                break; // 성공! 루프 탈출
-            }
-            // 실패하면 continue (다음 시도)
-        }
-        else
-        {
-            spawnPos = tempPos;
-            break; // Mesh 타입이 아니면 바로 성공
-        }
+        uint idx = rngState % spawn.bakedCount;
+        spawnPos = bakedSpawnPos[idx];
     }
-
-    // 조건 만족 실패 시 (너무 어두운 부분 등) 파티클을 생성하지 않음
-    if (!validSpawn) return;
 
     // 성공한 위치 적용
     p.position = spawnPos + spawn.localPos;

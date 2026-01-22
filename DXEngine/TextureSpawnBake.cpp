@@ -30,29 +30,80 @@ namespace DE {
 
 	void TextureSpawnBake::LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount)
 	{
-		std::ifstream fin(m_presetPath + path, std::ios::binary);
+		std::string fullPath = m_presetPath + path;
+
+		std::cout << "[Debug] Loading from: " << fullPath << std::endl;
+
+		std::ifstream fin(fullPath, std::ios::binary);
 		if (!fin.is_open()) {
+			std::cout << "[Error] Cannot open file: " << fullPath << std::endl;
 			outCount = 0;
 			return;
 		}
 
-		// 개수 읽기
+		// 파일 크기 확인
+		fin.seekg(0, std::ios::end);
+		size_t fileSize = fin.tellg();
+		fin.seekg(0, std::ios::beg);
+		std::cout << "[Debug] File size: " << fileSize << " bytes" << std::endl;
+
+		// 1. 개수 읽기
 		fin.read(reinterpret_cast<char*>(&outCount), sizeof(UINT));
+		std::cout << "[Debug] Read count: " << outCount << std::endl;
 
-		if (outCount > 0) {
-			std::vector<Vector3> positions(outCount);
-			fin.read(reinterpret_cast<char*>(positions.data()), sizeof(Vector3) * outCount);
+		// 유효성 검사
+		size_t expectedSize = sizeof(UINT) + sizeof(Vector3) * outCount;
+		if (fileSize != expectedSize) {
+			std::cout << "[Error] File size mismatch! Expected: " << expectedSize
+				<< ", Actual: " << fileSize << std::endl;
+			outCount = 0;
+			fin.close();
+			return;
+		}
 
-			// 버퍼 생성 및 데이터 전송
-			auto device = GET_SINGLE(RenderBase)->GetDevice();
-			auto context = GET_SINGLE(RenderBase)->GetContext();
+		if (outCount == 0) {
+			std::cout << "[Warning] Count is 0, nothing to load" << std::endl;
+			fin.close();
+			return;
+		}
 
-			outBuffer.Initialize(device.Get(), outCount);
-			outBuffer.SetData(positions);
-			outBuffer.Upload(context.Get());
+		if (outCount > 1000000) {  // 100만 개 초과는 비정상
+			std::cout << "[Error] Count is abnormally large: " << outCount << std::endl;
+			outCount = 0;
+			fin.close();
+			return;
+		}
+
+		// 2. 데이터 읽기
+		std::vector<Vector3> positions(outCount);
+		fin.read(reinterpret_cast<char*>(positions.data()), sizeof(Vector3) * outCount);
+
+		// 읽기 성공 확인
+		if (!fin) {
+			std::cout << "[Error] Failed to read data from file" << std::endl;
+			outCount = 0;
+			fin.close();
+			return;
+		}
+
+		// 첫 5개 출력 (디버깅)
+		for (UINT i = 0; i < std::min(5u, outCount); ++i) {
+			std::cout << "[Debug] Loaded point " << i << ":  "
+				<< positions[i].x << ", "
+				<< positions[i].y << ", "
+				<< positions[i].z << std::endl;
 		}
 
 		fin.close();
+
+		// 3. GPU 버퍼 생성 및 업로드
+		auto device = GET_SINGLE(RenderBase)->GetDevice();
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		outBuffer.Initialize(device.Get(), outCount);
+		outBuffer.SetData(positions);
+		outBuffer.Upload(context.Get());
+		std::cout << "[Success] Loaded " << outCount << " points to GPU" << std::endl;
 	}
 
 	void TextureSpawnBake::initBuffers(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, BakeConsts& consts)
@@ -111,20 +162,20 @@ namespace DE {
 		UINT groupCount = (triangleCount + 255) / 256;
 		m_bakeCS.Dispatch(context, groupCount, 1, 1);
 
-		// SRV 해제 (기존 코드)
-		ID3D11ShaderResourceView* nullSRV[3] = { nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(0, 3, nullSRV);
+		//// SRV 해제 (기존 코드)
+		//ID3D11ShaderResourceView* nullSRV[3] = { nullptr, nullptr, nullptr };
+		//context->CSSetShaderResources(0, 3, nullSRV);
 
-		// Sampler 해제 (기존 코드)
-		ID3D11SamplerState* nullSampler = nullptr;
-		context->CSSetSamplers(0, 1, &nullSampler);
+		//// Sampler 해제 (기존 코드)
+		//ID3D11SamplerState* nullSampler = nullptr;
+		//context->CSSetSamplers(0, 1, &nullSampler);
 
-		// [!!! 필수 추가 !!!] UAV 바인딩 해제
-		// 해제하지 않으면 이후 Download()에서 GPU->Staging 복사가 실패합니다.
-		ID3D11UnorderedAccessView* nullUAV = nullptr;
-		UINT cleanCount = 0;
-		// AppendBuffer가 u0 슬롯을 사용하므로 0번 슬롯 해제
-		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, &cleanCount);
+		//// [!!! 필수 추가 !!!] UAV 바인딩 해제
+		//// 해제하지 않으면 이후 Download()에서 GPU->Staging 복사가 실패합니다.
+		//ID3D11UnorderedAccessView* nullUAV = nullptr;
+		//UINT cleanCount = 0;
+		//// AppendBuffer가 u0 슬롯을 사용하므로 0번 슬롯 해제
+		//context->CSSetUnorderedAccessViews(0, 1, &nullUAV, &cleanCount);
 	}
 
 	void TextureSpawnBake::downloadResult(ID3D11Device* device, ID3D11DeviceContext* context)
@@ -151,26 +202,60 @@ namespace DE {
 
 	void TextureSpawnBake::saveToBin(ID3D11DeviceContext* context, const std::string& outputPath)
 	{
+		std::string fullPath = m_presetPath + outputPath;
 
-		// 실제 데이터보다 validCount가 클 수 없도록 클램핑 (AppendBuffer 크기 초과 방지)
-		if (m_validCount > m_maxPoints) m_validCount = m_maxPoints;
+		std::cout << "[Debug] Saving to:  " << fullPath << std::endl;
+		std::cout << "[Debug] Valid count: " << m_validCount << std::endl;
 
-		std::ofstream fout(m_presetPath + outputPath, std::ios::binary);
-
-		if (!fout.is_open())
-		{
-			std::cout << "Failed to open file: " << m_presetPath + outputPath << std::endl;
+		if (m_validCount == 0) {
+			std::cout << "[Error] Cannot save:  validCount is 0" << std::endl;
 			return;
 		}
-		// 개수 먼저 저장
-		fout.write(reinterpret_cast<const char*>(&m_validCount), sizeof(UINT));
 
-		// 유효한 개수만큼 데이터 저장
-		for (UINT i = 0; i < m_validCount; ++i)
-		{
+		// 유효성 재검사
+		if (m_validCount > m_maxPoints) {
+			std::cout << "[Warning] Clamping validCount from " << m_validCount
+				<< " to " << m_maxPoints << std::endl;
+			m_validCount = m_maxPoints;
+		}
+
+		std::ofstream fout(fullPath, std::ios::binary);
+		if (!fout.is_open()) {
+			std::cout << "[Error] Failed to open file: " << fullPath << std::endl;
+			return;
+		}
+
+		// 1. 개수 저장
+		fout.write(reinterpret_cast<const char*>(&m_validCount), sizeof(UINT));
+		std::cout << "[Debug] Wrote count: " << m_validCount << std::endl;
+
+		// 2. 데이터 저장
+		for (UINT i = 0; i < m_validCount; ++i) {
 			Vector3 pos = m_outputBuffer.Get(i);
 			fout.write(reinterpret_cast<const char*>(&pos), sizeof(Vector3));
+
+			// 첫 5개만 출력 (디버깅)
+			if (i < 5) {
+				std::cout << "[Debug] Point " << i << ": "
+					<< pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+			}
 		}
+
 		fout.close();
+
+		// 파일 크기 확인
+		std::ifstream checkFile(fullPath, std::ios::binary | std::ios::ate);
+		size_t fileSize = checkFile.tellg();
+		checkFile.close();
+
+		size_t expectedSize = sizeof(UINT) + sizeof(Vector3) * m_validCount;
+		std::cout << "[Debug] File size: " << fileSize << " bytes (expected: " << expectedSize << ")" << std::endl;
+
+		if (fileSize == expectedSize) {
+			std::cout << "[Success] File saved correctly!" << std::endl;
+		}
+		else {
+			std::cout << "[Error] File size mismatch!" << std::endl;
+		}
 	}
 }

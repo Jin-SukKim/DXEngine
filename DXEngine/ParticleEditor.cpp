@@ -20,9 +20,9 @@
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
-		//ground = AddObject<SquareActor>(L"Ground");
+		ground = AddObject<SquareActor>(L"Ground");
 
-		//effect = AddObject<SampleActor>(L"Effect");
+		effect = AddObject<SampleActor>(L"Effect");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -31,6 +31,14 @@ namespace DE {
 
 	void ParticleEditor::Initialize()
 	{	
+		//BakeConsts consts = {};
+		//consts.threshold = 0.1f;
+		//consts.channelMask = Vector4(0.299f, 0.587f, 0.114f, 0.f);
+		//TextureSpawnBake::Get().Bake(
+		//	"DamagedHelmet.gltf", "DamagedHelmet\\", true,
+		//	"Materials\\DamagedHelmet.json",
+		//	"emissive", consts, "Models\\DamagedHelmet\\emissive.bin");
+		//exit(0);
 		Scene::Initialize();
 	}
 
@@ -38,20 +46,12 @@ namespace DE {
 	{
 		Scene::Update(dt);
 
-		//TransformComponent* tr = effect->GetComponent<TransformComponent>();
-		//if (tr) {
-		//	Vector3 pos = tr->GetPos();
-		//	pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
-		//	tr->SetPos(pos);
-		//}
-
-		BakeConsts consts = {};
-		consts.threshold = 0.1f;
-		consts.channelMask = Vector4(0.299f, 0.587f, 0.114f, 0.f);
-		TextureSpawnBake::Get().Bake(
-			"DamagedHelmet.gltf", "DamagedHelmet\\", true,
-			"Materials\\DamagedHelmet.json",
-			"emissive", consts, "Models\\DamagedHelmet\\emissive.bin");
+		TransformComponent* tr = effect->GetComponent<TransformComponent>();
+		if (tr) {
+			Vector3 pos = tr->GetPos();
+			pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
+			tr->SetPos(pos);
+		}
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
