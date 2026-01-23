@@ -15,6 +15,7 @@ public:
 	void LoadFromJson(const json& data) override;
 
 	ModulePriority GetPriority() { return ModulePriority::Material; }
+	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	// 모델의 각 Mesh에 대응하는 재질 인덱스들
 	std::vector<int> m_materialIndices;

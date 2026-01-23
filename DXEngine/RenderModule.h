@@ -21,6 +21,8 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
 	virtual int GetModelIndex() const { return -1; };
+	virtual std::unique_ptr<ParticleModule> Clone() const override = 0;
+	void CopyBasicSettings(RenderModule* cloned) const;
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
@@ -39,6 +41,7 @@ public:
 	void UpdateArgs(const SimulationContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
+	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	// 0 : TextureArray (Size가 고정되어 있음)
 	// 1 : Single Texture (개별 Texture 1개, 다양한 해상도 가능)
@@ -65,6 +68,7 @@ public:
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	int GetModelIndex() const override { return m_modelIdx; }
+	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	// Texture 관리
 	int m_modelIdx = -1;

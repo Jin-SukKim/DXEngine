@@ -18,6 +18,10 @@ public:
 	ParticleSystem(const std::wstring& name);
 	~ParticleSystem() override;
 
+	ParticleSystem(const ParticleSystem& other);
+	UINT GetEmitterCount() const { return static_cast<UINT>(m_emitters.size()); }
+	ParticleEmitter* GetEmitter(UINT index) const;
+
 	void Initialize() override;
 	void OnSpawn();
 	void Update(const float& dt) override;

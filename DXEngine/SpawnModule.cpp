@@ -117,4 +117,38 @@ namespace DE {
 		m_meshVertex.Upload(context.Get());
 		m_meshIndices.Upload(context.Get());
 	}
+	// SpawnModule.cpp (공유 방식 - 더 간단)
+	std::unique_ptr<ParticleModule> SpawnModule::Clone() const
+	{
+		auto cloned = std::make_unique<SpawnModule>();
+
+		// 기본 설정값 복사
+		cloned->m_localPos = this->m_localPos;
+		cloned->m_spawnVolume = this->m_spawnVolume;
+		cloned->m_spawnInnerRatio = this->m_spawnInnerRatio;
+		cloned->m_spawnShape = this->m_spawnShape;
+		cloned->m_spawnRate = this->m_spawnRate;
+		cloned->m_particlesPerSpawn = this->m_particlesPerSpawn;
+		cloned->m_maxParticles = this->m_maxParticles;
+		cloned->m_lifeRange = this->m_lifeRange;
+		cloned->m_vertexCount = this->m_vertexCount;
+		cloned->m_indexCount = this->m_indexCount;
+		cloned->m_simulationSpace = this->m_simulationSpace;
+		cloned->m_bakedCount = this->m_bakedCount;
+		cloned->m_isEnabled = this->m_isEnabled;
+
+		// StructuredBuffer 전체 복사 (ComPtr는 참조 카운트 증가)
+		// CPU 데이터(m_cpu)도 복사되고, GPU 버퍼(m_gpu, m_srv)는 공유됨
+		if (m_spawnShape == 2 || m_spawnShape == 3) {
+			// StructuredBuffer의 기본 복사 생성자 사용
+			cloned->m_meshVertex = this->m_meshVertex;
+			cloned->m_meshIndices = this->m_meshIndices;
+		}
+
+		if (m_spawnShape == 4) {
+			cloned->m_spawnPos = this->m_spawnPos;
+		}
+
+		return cloned;
+	}
 }

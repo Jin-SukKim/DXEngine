@@ -14,6 +14,7 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Force; }
 
 	void LoadFromJson(const json& data) override;
+	std::unique_ptr<ParticleModule> Clone() const override;
 public:
 	Vector3 velocity = { 0.0f, 0.1f, 0.0f };; // 속도와 방향
 	Vector2 speedRange = { 0.01f, 0.02f }; // 속도 범위

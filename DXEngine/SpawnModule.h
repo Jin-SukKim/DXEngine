@@ -17,6 +17,8 @@ public:
 	void LoadFromJson(const json& data) override;
 
 	void SetTarget(const MeshData& meshes);
+
+	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	Vector3 m_localPos = Vector3(0.f);
 	Vector3 m_spawnVolume = Vector3(0.05f, 0.15f, 0.05f);

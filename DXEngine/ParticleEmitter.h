@@ -15,6 +15,8 @@ namespace DE {
 		ParticleEmitter(const std::wstring& name);
 		~ParticleEmitter();
 
+		ParticleEmitter(const ParticleEmitter& other);
+
 		void Initialize();
 		void OnSpawn();
 		void Update(const float& dt, const float& time);
@@ -33,6 +35,7 @@ namespace DE {
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 
 		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
+		ParticleFrameConsts& GetFrameConstsData() { return m_frameConsts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
 		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
 	private:

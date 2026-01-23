@@ -9,6 +9,7 @@ public:
 	void OnSpawn(SimulationContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	ModulePriority GetPriority() override { return ModulePriority::Visual; }
+	std::unique_ptr<ParticleModule> Clone() const override;
 public:
 	Vector4 startColor = { 1.0f, 0.1f, 0.0f, 1.f };
 	Vector4 endColor = { 1.0f, 0.8f, 0.1f, 1.f };

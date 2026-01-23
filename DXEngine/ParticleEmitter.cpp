@@ -29,6 +29,36 @@ namespace DE {
 			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
 	}
 
+	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
+		: m_jsonPath(other.m_jsonPath)
+		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+	{
+		// Factory 등록 (필요시)
+		ParticleModuleFactory::Register<SpawnModule>("Spawn");
+		ParticleModuleFactory::Register<VisualModule>("Visual");
+		ParticleModuleFactory::Register<ForceModule>("Force");
+		ParticleModuleFactory::Register<VortexModule>("Vortex");
+		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
+		ParticleModuleFactory::Register<MaterialModule>("Material");
+		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
+
+		//  Module 복제
+		for (const auto& mod : other.m_modules) {
+			if (mod) {
+				auto clonedModule = mod->Clone();
+				if (clonedModule) {
+					m_modules.push_back(std::move(clonedModule));
+				}
+			}
+		}
+
+		// Constant Buffer 데이터 복사
+		m_consts = other.m_consts;
+		m_frameConsts = other.m_frameConsts;
+
+		// GPU 버퍼는 Initialize()에서 재생성
+	}
+
 	void ParticleEmitter::Initialize()
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();

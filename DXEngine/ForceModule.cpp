@@ -48,4 +48,17 @@ namespace DE {
 		if (data.contains("gravity")) gravity = JsonToVec3(data["gravity"]);
 		if (data.contains("drag")) drag = data["drag"];
 	}
+	std::unique_ptr<ParticleModule> ForceModule::Clone() const
+	{
+		auto cloned = std::make_unique<ForceModule>();
+
+		cloned->velocity = this->velocity;
+		cloned->speedRange = this->speedRange;
+		cloned->randomDir = this->randomDir;
+		cloned->drag = this->drag;
+		cloned->gravity = this->gravity;
+		cloned->m_isEnabled = this->m_isEnabled;
+
+		return std::move(cloned);
+	}
 }

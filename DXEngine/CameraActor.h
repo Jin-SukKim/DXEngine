@@ -38,7 +38,6 @@ namespace DE {
 		float m_speed = 1.f;
 		float m_rotateSpeed = 35.f;
 
-
 		Vector2 m_prevMousePos = Vector2(0.f, 0.f);
 		InputAxis zAxis = InputAxis::ZAxis;
 		InputAxis xAxis = InputAxis::XAxis;

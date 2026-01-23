@@ -17,6 +17,29 @@ namespace DE {
 			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
 	}
 
+	ParticleSystem::ParticleSystem(const ParticleSystem& other)
+		: Object(other.m_watcherID + L"_Clone")
+		, m_looping(other.m_looping)
+		, m_duration(other.m_duration)
+		, m_playRate(other.m_playRate)
+		, m_time(0.0f)  // 시간은 0으로 초기화
+		, m_preWarmTime(other.m_preWarmTime)
+		, m_state(other.m_state)
+		, m_jsonPath(other.m_jsonPath)
+		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+	{
+		// Emitter 복제
+		for (const auto& emitter : other.m_emitters) {
+			if (emitter) {
+				auto clonedEmitter = std::make_unique<ParticleEmitter>(*emitter);
+				m_emitters.push_back(std::move(clonedEmitter));
+			}
+		}
+
+		// Transform 복사
+		m_transform = other.m_transform;
+	}
+
 	void ParticleSystem::Initialize()
 	{
 		m_transform.Initialize();

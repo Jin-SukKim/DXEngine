@@ -3,6 +3,12 @@
 
 namespace DE {
 
+struct ParticlePreset {
+	std::unique_ptr<ParticleSystem> prototype; // ¿øº»
+	std::wstring filePath;
+	FileWatcher::CallbackID watcherID = 0;
+};
+
 class ParticleManager
 {
 public:

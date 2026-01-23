@@ -33,4 +33,19 @@ namespace DE {
 			if (rot.contains("maxRotSpeed")) maxRotSpeed = JsonToVec3(rot["maxRotSpeed"]);
 		}
 	}
+	std::unique_ptr<ParticleModule> VisualModule::Clone() const
+	{
+		auto cloned = std::make_unique<VisualModule>();
+
+		cloned->startColor = this->startColor;
+		cloned->endColor = this->endColor;
+		cloned->sizeRange = this->sizeRange;
+		cloned->minRotation = this->minRotation;
+		cloned->maxRotation = this->maxRotation;
+		cloned->minRotSpeed = this->minRotSpeed;
+		cloned->maxRotSpeed = this->maxRotSpeed;
+		cloned->m_isEnabled = this->m_isEnabled;
+
+		return std::move(cloned);
+	}
 }

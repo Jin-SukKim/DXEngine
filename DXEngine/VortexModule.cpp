@@ -45,4 +45,17 @@ namespace DE {
 		if (data.contains("vortexFalloff")) m_vortexFalloff = data["vortexFalloff"];
 		if (data.contains("pull")) m_vortexPull = JsonToVec2(data["pull"]);
 	}
+	std::unique_ptr<ParticleModule> VortexModule::Clone() const
+	{
+		auto cloned = std::make_unique<VortexModule>();
+
+		cloned->m_vortexStrength = this->m_vortexStrength;
+		cloned->m_vortexCenter = this->m_vortexCenter;
+		cloned->m_vortexAxis = this->m_vortexAxis;
+		cloned->m_vortexFalloff = this->m_vortexFalloff;
+		cloned->m_vortexPull = this->m_vortexPull;
+		cloned->m_isEnabled = this->m_isEnabled;
+
+		return std::move(cloned);
+	}
 }
