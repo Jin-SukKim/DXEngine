@@ -16,7 +16,7 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
 
-	void SetTarget(const MeshData& meshes);
+	void SetTarget(const int& modelIdx);
 
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:

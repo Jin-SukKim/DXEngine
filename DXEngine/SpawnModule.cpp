@@ -3,6 +3,7 @@
 #include "ParticleEmitter.h"
 #include "Mesh.h"
 #include "TextureSpawnBake.h"
+#include "MaterialSystem.h"
 
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
@@ -100,10 +101,12 @@ namespace DE {
 		if (data.contains("lifeRange")) m_lifeRange = JsonToVec2(data["lifeRange"]);
 	}
 
-	void SpawnModule::SetTarget(const MeshData& meshes)
+	void SpawnModule::SetTarget(const int& modelIdx)
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		Model* target = ModelMa
 
 		m_vertexCount = static_cast<UINT>(meshes.vertices.size());
 		m_indexCount = static_cast<UINT>(meshes.indices.size());
