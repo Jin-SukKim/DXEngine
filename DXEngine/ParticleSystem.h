@@ -1,5 +1,5 @@
 #pragma once
-#include "Component.h"
+#include "Object.h"
 #include "ParticleEmitter.h"
 #include "MeshData.h"
 
@@ -12,7 +12,7 @@ enum class ParticleState {
 	Stopped // Not Visible인것처럼 처리
 };
 
-class ParticleSystem : public Component
+class ParticleSystem : public Object
 {
 public:
 	ParticleSystem(const std::wstring& name);
@@ -41,6 +41,9 @@ public:
 	void SetPlayRate(float rate) { m_playRate = rate; }
 	void SetPreWarmTime(float time) { m_preWarmTime = time; }
 	void SetTargetMesh(const MeshData& meshData);
+
+	void SetTransform(const MeshConstants& transform);
+
 private:
 	void Reset();
 	void ExecutePreWarm();
@@ -56,6 +59,7 @@ private:
 	std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 	std::wstring m_jsonPath;
 	FileWatcher::CallbackID m_watcherID = 0;
+	ConstantBuffer<MeshConstants> m_transform;
 };
 
 }

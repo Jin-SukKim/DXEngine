@@ -33,7 +33,7 @@
   "BillboardRender": {
     "blendMode": "Additive",
     "useMaterial": false,
-    "useSingleTexture": false,
+    "useSingleTexture": true,
     "texture": "Textures\\flame.png"
   }
 }

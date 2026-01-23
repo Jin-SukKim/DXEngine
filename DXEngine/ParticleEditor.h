@@ -20,7 +20,7 @@ public:
 private:
 	SquareActor* ground;
 
-	SampleActor* effect;
+	std::vector<SampleActor*> effects;
 };
 
 

@@ -21,8 +21,13 @@ namespace DE {
 	ParticleEditor::ParticleEditor() : Scene()
 	{
 		ground = AddObject<SquareActor>(L"Ground");
-
-		effect = AddObject<SampleActor>(L"Effect");
+		
+		for (int y = 0; y < 1; ++y) {
+			for (int x = 0; x < 3; ++x) {
+				SampleActor* effect = AddObject<SampleActor>(L"Effect" + x);
+				effects.emplace_back(effect);
+			}
+		}
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -40,18 +45,28 @@ namespace DE {
 		//	"emissive", consts, "Models\\DamagedHelmet\\emissive.bin");
 		//exit(0);
 		Scene::Initialize();
+
+		for (int y = 0; y < 1; ++y) {
+			for (int x = 0; x < 3; ++x) {
+				TransformComponent* tr = effects[x]->GetComponent<TransformComponent>();
+				if (tr) {
+					Vector3 pos = tr->GetPos() + Vector3(x, y, 0.f);
+					tr->SetPos(pos);
+				}
+			}
+		}
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
 
-		TransformComponent* tr = effect->GetComponent<TransformComponent>();
-		if (tr) {
-			Vector3 pos = tr->GetPos();
-			pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
-			tr->SetPos(pos);
-		}
+		//TransformComponent* tr = effect->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	Vector3 pos = tr->GetPos();
+		//	pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
+		//	tr->SetPos(pos);
+		//}
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}

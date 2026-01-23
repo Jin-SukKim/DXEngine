@@ -194,7 +194,8 @@
     <ClInclude Include="MaterialModule.h" />
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="ModelManager.h" />
-    <ClInclude Include="ParticleSystemFactory.h" />
+    <ClInclude Include="ParticleManager.h" />
+    <ClInclude Include="ParticleSystemComponent.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="BillboardActor.h" />
     <ClInclude Include="BitonicSort.h" />
@@ -275,7 +276,8 @@
     <ClCompile Include="MaterialModule.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="ModelManager.cpp" />
-    <ClCompile Include="ParticleSystemFactory.cpp" />
+    <ClCompile Include="ParticleManager.cpp" />
+    <ClCompile Include="ParticleSystemComponent.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="BillboardActor.cpp" />
     <ClCompile Include="BitonicSort.cpp" />

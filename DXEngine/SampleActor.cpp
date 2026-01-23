@@ -7,8 +7,7 @@
 #include "ModelComponent.h"
 #include "BoundComponent.h"
 #include "RenderBase.h"
-#include "ParticleSystem.h"
-#include "ParticleLoader.h"
+#include "ParticleSystemComponent.h"
 
 namespace DE {
 	SampleActor::SampleActor(const std::wstring& name) : Super(name)
@@ -23,9 +22,8 @@ namespace DE {
 			m_boundVolume = AddComponent<BoundComponent>(L"BoundingVolume");
 			m_boundVolume->SetBoundingVolume(meshes);
 
-			m_particles = AddComponent<ParticleSystem>(L"Particles");
-			ParticleLoader::Load<ParticleSystem>(L"Particles\\TestEffect.json", m_particles);
-			m_particles->SetTargetMesh(meshes[0]);
+			m_particles = AddComponent<ParticleSystemComponent>(L"Particles");
+			m_particles->SetSystem(L"Particles\\TestEffect.json", &meshes[0]);
 			
 			//MeshData box = GeometryGenerator::MakeBox();
 			//ModelManager::Get().LoadModel("ParticleBox", box);

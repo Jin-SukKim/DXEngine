@@ -7,7 +7,7 @@
 #include "Mesh.h"
 
 namespace DE {
-	ParticleSystem::ParticleSystem(const std::wstring& name) : Component(name, ComponentType::ParticleSystem)
+	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
 	{
 	}
 
@@ -19,7 +19,7 @@ namespace DE {
 
 	void ParticleSystem::Initialize()
 	{
-		Component::Initialize();
+		m_transform.Initialize();
 		for (auto& emitter : m_emitters)
 			emitter->Initialize();
 
@@ -41,8 +41,6 @@ namespace DE {
 	{
 		if (m_state != ParticleState::Playing)
 			return;
-
-		Component::Update(dt);
 
 		float newDt = dt * m_playRate;
 		m_time += newDt;
@@ -68,7 +66,6 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		Component::Render();
 		for (auto& emitter : m_emitters)
 			emitter->Render();
 	}
@@ -175,6 +172,12 @@ namespace DE {
 				sp->SetTarget(meshData);
 			}
 		}
+	}
+
+	void ParticleSystem::SetTransform(const MeshConstants& transform)
+	{
+		m_transform.SetCpuData(transform);
+		m_transform.Upload();
 	}
 
 	void ParticleSystem::Reset()
