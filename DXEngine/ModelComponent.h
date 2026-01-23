@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.h"
-#include "Mesh.h"
-#include "MeshData.h"
+#include "ModelManager.h"   // ModelManager 포함
+#include "MaterialSystem.h" // MaterialSystem 포함
 
 namespace DE {
 
@@ -17,30 +17,24 @@ namespace DE {
 		void Render() override;
 		void RenderNormal();
 		void RenderPoints();
-		
-		void SetModel(const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF = false);
-		void SetModel(const std::vector<MeshData>& meshes, bool isGLTF = false);
-		void SetModel(const MeshData& mesh, bool isGLTF = false);
+
+		// ModelManager를 통해 로드하고 인덱스만 저장
+		void SetModel(const std::string& name, const std::string& basePath = "", bool isGLTF = false);
+		void SetModel(const std::string& name, const MeshData& meshData);
+
 		void SetDrawNormal(bool draw) { m_drawNormal = draw; }
 		bool IsDrawNormal() { return m_drawNormal; }
 
-		const ComPtr<ID3D11Buffer> GetBasicMaterial() { return m_basicMaterial.Get(); }
-		const ComPtr<ID3D11Buffer> GetMaterial() { return m_material.Get(); }
-		const MaterialConstants GetMaterialCpu() { return m_material.GetCpu(); }
-		MaterialConstants& GetMaterialCpuRef() { return m_material.GetCpu(); }
-
+		// BasicMaterial은 Actor별 고유 데이터(HashID 등)이므로 유지
 		const void SetBasicMaterial(const BasicMaterialConstants& consts);
-		const void SetMaterial(const MaterialConstants& consts);
-		const Mesh* GetMesh() { return &m_meshes[0]; }
-		const MeshData* GetMeshData() { return &m_mesheDatas[0]; }
+
+		// 모델 정보 접근
+		int GetModelIndex() const { return m_modelIndex; }
+
 	private:
-		//Mesh triangle;
-		std::vector<Mesh> m_meshes; // 하나의 모델이 내부적으로는 여러개의 메쉬로 구성
-		std::vector<MeshData> m_mesheDatas;
+		int m_modelIndex = -1; // ModelManager에서 관리하는 모델의 인덱스
 
-		ConstantBuffer<BasicMaterialConstants> m_basicMaterial;
-		ConstantBuffer<MaterialConstants> m_material;
-
+		ConstantBuffer<BasicMaterialConstants> m_basicMaterial; // HashID 등 기본 정보
 		bool m_drawNormal = true;
 	};
 }

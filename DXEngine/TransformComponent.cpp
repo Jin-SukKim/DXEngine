@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TransformComponent.h"
 #include "Actor.h"
-#include "BoundComponent.h"
+
 
 namespace DE {
 	using namespace DirectX;
@@ -165,13 +165,5 @@ namespace DE {
 		);
 		rot.Normalize();
 		return rot;
-	}
-
-	void TransformComponent::SetBoundingVolumeScale()
-	{
-		BoundComponent* bound = static_cast<Actor*>(GetOwner())->GetComponent<BoundComponent>();
-		if (bound) {
-			bound->SetScale(m_scale);
-		}
 	}
 }

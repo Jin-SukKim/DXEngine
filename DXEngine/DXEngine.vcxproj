@@ -197,10 +197,8 @@
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ParticleSystemComponent.h" />
     <ClInclude Include="TextureManager.h" />
-    <ClInclude Include="BillboardActor.h" />
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="BloomEffect.h" />
-    <ClInclude Include="BoundComponent.h" />
     <ClInclude Include="CameraActor.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Component.h" />
@@ -225,7 +223,6 @@
     <ClInclude Include="ImageFilter.h" />
     <ClInclude Include="IndirectArgsBuffer.h" />
     <ClInclude Include="LightActor.h" />
-    <ClInclude Include="MirrorActor.h" />
     <ClInclude Include="Outliner.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ComputeShader.h" />
@@ -263,7 +260,6 @@
     <ClInclude Include="ToneMappingFilter.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="SampleActor.h" />
-    <ClInclude Include="TreeBillboard.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VisualModule.h" />
@@ -279,10 +275,8 @@
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ParticleSystemComponent.cpp" />
     <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="BillboardActor.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
     <ClCompile Include="BloomEffect.cpp" />
-    <ClCompile Include="BoundComponent.cpp" />
     <ClCompile Include="CameraActor.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComputePSO.cpp" />
@@ -302,7 +296,6 @@
     <ClCompile Include="Gui.cpp" />
     <ClCompile Include="ImageFilter.cpp" />
     <ClCompile Include="LightActor.cpp" />
-    <ClCompile Include="MirrorActor.cpp" />
     <ClCompile Include="Outliner.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
@@ -339,7 +332,6 @@
     <ClCompile Include="ToneMappingFilter.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="SampleActor.cpp" />
-    <ClCompile Include="TreeBillboard.cpp" />
     <ClCompile Include="VisualModule.cpp" />
     <ClCompile Include="VortexModule.cpp" />
   </ItemGroup>

@@ -98,12 +98,6 @@
     <Filter Include="Shaders\PostProcess\ToneMapping">
       <UniqueIdentifier>{feb21421-3802-4d3b-a399-5bdf6efd3535}</UniqueIdentifier>
     </Filter>
-    <Filter Include="private\Actor\Billboard">
-      <UniqueIdentifier>{20033ab4-4cb0-4f84-a5bc-d6ddebbaadb7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="public\Actor\Billboard">
-      <UniqueIdentifier>{75cdb1fb-1085-48b6-8546-dd57f2c36dcb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\Mirror">
       <UniqueIdentifier>{84da814c-8161-4de0-80fa-b1e0f368f798}</UniqueIdentifier>
     </Filter>
@@ -238,29 +232,17 @@
     <ClInclude Include="SampleActor.h">
       <Filter>public\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="BoundComponent.h">
-      <Filter>public\Component</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsCommon.h">
       <Filter>public\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsPSO.h">
       <Filter>public\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="BillboardActor.h">
-      <Filter>public\Actor\Billboard</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeBillboard.h">
-      <Filter>public\Actor\Billboard</Filter>
-    </ClInclude>
     <ClInclude Include="ToneMappingFilter.h">
       <Filter>public\PostProcess</Filter>
     </ClInclude>
     <ClInclude Include="CopyFilter.h">
       <Filter>public\PostProcess</Filter>
-    </ClInclude>
-    <ClInclude Include="MirrorActor.h">
-      <Filter>public\Actor</Filter>
     </ClInclude>
     <ClInclude Include="DepthFilter.h">
       <Filter>public\PostProcess</Filter>
@@ -455,9 +437,6 @@
     <ClCompile Include="SampleActor.cpp">
       <Filter>private\Actor</Filter>
     </ClCompile>
-    <ClCompile Include="BoundComponent.cpp">
-      <Filter>private\Component</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsCommon.cpp">
       <Filter>private\Renderer</Filter>
     </ClCompile>
@@ -466,15 +445,6 @@
     </ClCompile>
     <ClCompile Include="ToneMappingFilter.cpp">
       <Filter>private\PostProcess</Filter>
-    </ClCompile>
-    <ClCompile Include="BillboardActor.cpp">
-      <Filter>private\Actor\Billboard</Filter>
-    </ClCompile>
-    <ClCompile Include="TreeBillboard.cpp">
-      <Filter>private\Actor\Billboard</Filter>
-    </ClCompile>
-    <ClCompile Include="MirrorActor.cpp">
-      <Filter>private\Actor</Filter>
     </ClCompile>
     <ClCompile Include="CopyFilter.cpp">
       <Filter>private\PostProcess</Filter>

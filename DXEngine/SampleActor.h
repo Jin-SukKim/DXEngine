@@ -3,7 +3,6 @@
 
 namespace DE {
 	class ModelComponent;
-	class BoundComponent;
 	class ParticleSystemComponent;
 
 	class SampleActor : public Actor
@@ -18,7 +17,6 @@ namespace DE {
 		void Render() override;
 	private:
 		ModelComponent* m_sample;
-		BoundComponent* m_boundVolume;
 		ParticleSystemComponent* m_particles;
 	};
 }

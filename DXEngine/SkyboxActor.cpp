@@ -13,7 +13,7 @@ namespace DE {
 		// IBL용 Cube는 박스 안에서 바라보기 때문에 Index 순서를 뒤집어주기
 		std::reverse(cubeMap.indices.begin(), cubeMap.indices.end());
 		m_sky = AddComponent<ModelComponent>(name);
-		m_sky->SetModel(cubeMap);
+		m_sky->SetModel("Cubemap", cubeMap);
 
 		// 기본으로 적용할 Cubemap
 		SetCubeMaps(L"../Assets/Textures/Cubemaps/HDRI/", 

@@ -5,7 +5,7 @@
 #include "D3D11Utils.h"
 #include "TransformComponent.h"
 #include "ModelComponent.h"
-#include "BoundComponent.h"
+
 #include "RenderBase.h"
 #include "ParticleSystemComponent.h"
 
@@ -14,13 +14,8 @@ namespace DE {
 	{
 		// main object
 		{
-			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Models/DamagedHelmet/", "DamagedHelmet.gltf");
-
 			m_sample = AddComponent<ModelComponent>(L"Model");
-			m_sample->SetModel(meshes, true);
-
-			m_boundVolume = AddComponent<BoundComponent>(L"BoundingVolume");
-			m_boundVolume->SetBoundingVolume(meshes);
+			m_sample->SetModel("DamagedHelmet.gltf", "../Assets/Models/DamagedHelmet/", true);
 
 			m_particles = AddComponent<ParticleSystemComponent>(L"Particles");
 			m_particles->SetSystem(L"Particles\\TestEffect.json", &meshes[0]);
@@ -33,7 +28,6 @@ namespace DE {
 		Super::Initialize();
 
 		m_sample->SetDrawNormal(false);
-		m_boundVolume->SetVisibility(false);
 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {

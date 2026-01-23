@@ -26,8 +26,6 @@ namespace DE {
 		virtual void Render();
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
-
-		uint8_t* GetPickColor() { return m_pickColor; }
 	protected:
 		template<class T>
 		T* AddObject(const std::wstring& name);
@@ -46,7 +44,6 @@ namespace DE {
 		virtual void UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
 		// Rendering
 		virtual void RenderOpaqueObjects(); // 불투명한 물체 렌더링
-		virtual void RenderMirror(); // 거울 렌더링
 		// Depth값만 추출하기 위한 Depth Only Pass
 		virtual void RenderDepthOnly();
 		// 그림자를 위한 그림자 맵
@@ -54,10 +51,6 @@ namespace DE {
 
 	private:
 		void enableCamFpv();
-		void pickingRay(float click);
-		// Ray와 충돌한 가장 가까운 Actor
-		Actor* pickClosest(const DirectX::SimpleMath::Ray& pickingRay, float& minDist);
-		void pickingGpu(float click);
 	protected:
 		// Shader에서 공통으로 사용되는 Constant Buffer Data
 		GlobalConstants m_globalConstsCPU;
@@ -73,18 +66,11 @@ namespace DE {
 
 	private:
 		std::shared_ptr<SkyboxActor> m_skybox;
-		//std::shared_ptr<TreeBillboard> m_billboard;
-		//// 거울 반사
-		//std::shared_ptr<MirrorActor> m_mirror;
-
 		std::shared_ptr<CopyFilter> m_copyPostProcess;
 		std::shared_ptr<FogEffect> m_depthPP;
 		
 		// 0 row는 일반 actor, 1 row는 billboard
 		std::vector<std::shared_ptr<Actor>> m_actorList[3];
-		Actor* m_pickedActor = nullptr;
-
-		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
 
 		std::vector<std::unique_ptr<Actor>> m_lights;
 

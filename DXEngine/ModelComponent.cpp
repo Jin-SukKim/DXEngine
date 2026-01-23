@@ -1,161 +1,69 @@
 #include "pch.h"
 #include "ModelComponent.h"
-#include "GeometryGenerator.h"
-#include "TransformComponent.h"
 #include "Actor.h"
 #include "RenderBase.h"
-#include <filesystem>
 
 namespace DE {
-	void ModelComponent::SetModel(const std::wstring& name, const std::string& basePath, const std::string& filename, bool isGLTF)
-	{
-		std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
-		SetModel(meshes, isGLTF);
-	}
-
-	void ModelComponent::SetModel(const MeshData& mesh, bool isGLTF)
-	{
-		SetModel(std::vector<MeshData>{mesh}, isGLTF);
-	}
-
-	void ModelComponent::SetModel(const std::vector<MeshData>& meshes, bool isGLTF)
-	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-
-		m_mesheDatas = meshes;
-		// 일반적으로는 각 Mesh가 각각의 mesh/materialConsts를 각자 가질 수 있는데 여기서는 하나의 Constant Buffer를 공유
-		m_basicMaterial.Initialize();
-		m_material.Initialize();
-
-		for (const auto& meshData : meshes) {
-			Mesh newMesh;
-			D3D11Utils::CreateVertexBuffer(device, meshData.vertices, newMesh.vertexBuffer);
-			D3D11Utils::CreateIndexBuffer(device, meshData.indices, newMesh.indexBuffer);
-			
-			newMesh.indexCount = UINT(meshData.indices.size());
-			newMesh.vertexCount = UINT(meshData.vertices.size());
-			newMesh.stride = UINT(sizeof(Vertex));
-			
-			if (!meshData.albedoTextureFilename.empty()) {
-				std::cout << meshData.albedoTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.albedoTextureFilename, true, newMesh.albedoTexture);
-				m_material.GetCpu().useAlbedoMap = true;
-			}
-			
-			if (!meshData.emissiveTextureFilename.empty()) {
-				std::cout << meshData.emissiveTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.emissiveTextureFilename, true, newMesh.emissiveTexture);
-				m_material.GetCpu().useEmissiveMap = true;
-			}
-			
-			if (!meshData.heightTextureFilename.empty()) {
-				std::cout << meshData.heightTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.heightTextureFilename, false, newMesh.heightTexture);
-				m_material.GetCpu().useHeightMap = true;
-			}
-			
-			if (!meshData.normalTextureFilename.empty()) {
-				std::cout << meshData.normalTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.normalTextureFilename, false, newMesh.normalTexture);
-				m_material.GetCpu().useNormalMap = true;
-				// GLTF는 Y를 뒤집어줘야함
-				m_material.GetCpu().invertNormalMapY = isGLTF;
-			}
-			
-			if (!meshData.aoTextureFilename.empty()) {
-				std::cout << meshData.aoTextureFilename << std::endl;
-				D3D11Utils::CreateTexture(device, context, meshData.aoTextureFilename, false, newMesh.aoTexture);
-				m_material.GetCpu().useAOMap = true;
-			}
-
-			if (!meshData.metallicTextureFilename.empty() && (meshData.metallicTextureFilename == meshData.roughnessTextureFilename)) {
-				// TODO: 분리
-				std::cout << meshData.metallicTextureFilename << std::endl;
-				std::cout << meshData.roughnessTextureFilename << std::endl;
-				D3D11Utils::CreateTexturesFromGLTFCombined(
-					device.Get(), context.Get(),
-					meshData.metallicTextureFilename,
-					newMesh.metallicTexture,
-					newMesh.roughnessTexture);
-			}
-			else {
-				if (!meshData.metallicTextureFilename.empty()) {
-					std::cout << meshData.metallicTextureFilename << std::endl;
-					D3D11Utils::CreateTexture(device, context, meshData.metallicTextureFilename, false, newMesh.metallicTexture);
-
-				}
-
-				if (!meshData.roughnessTextureFilename.empty()) {
-					std::cout << meshData.roughnessTextureFilename << std::endl;
-					D3D11Utils::CreateTexture(device, context, meshData.roughnessTextureFilename, false, newMesh.roughnessTexture);
-				}
-			}
-
-			if (!meshData.metallicTextureFilename.empty())
-				m_material.GetCpu().useMetallicMap = true;
-
-			if (!meshData.roughnessTextureFilename.empty())
-				m_material.GetCpu().useRoughnessMap = true;
-
-			// 모델의 모든 Mesh가 같은 Buffer를 사용
-			newMesh.basicMaterialConstGPU = m_basicMaterial.Get();
-			newMesh.materialConstGPU = m_material.Get();
-
-			m_meshes.emplace_back(newMesh);
-		}
-
-		m_basicMaterial.GetCpu().hashID = static_cast<Actor*>(GetOwner())->GetHashID();
-	}
 
 	void ModelComponent::Initialize() {
 		Super::Initialize();
+		// BasicMaterial 버퍼 초기화
+		m_basicMaterial.Initialize();
 	}
-	
+
 	void ModelComponent::Update(const float& deltaTime) {
 		Super::Update(deltaTime);
-		// Constant Data를 CPU -> GPU
-		if (m_meshes.empty())
-			return;
 
-		// 현재 모델의 모든 Mesh가 buffer를 공유하기 때문에 하나만 복사
+		// HashID 업데이트 (Picking 등을 위해 필요)
+		if (GetOwner()) {
+			m_basicMaterial.GetCpu().hashID = static_cast<Actor*>(GetOwner())->GetHashID();
+		}
 		m_basicMaterial.Upload();
-		m_material.Upload();
+	}
+
+	void ModelComponent::SetModel(const std::string& name, const std::string& basePath, bool isGLTF)
+	{
+		// ModelManager에 로드 위임
+		m_modelIndex = ModelManager::Get().LoadModel(name, basePath, isGLTF);
+	}
+
+	void ModelComponent::SetModel(const std::string& name, const MeshData& meshData)
+	{
+		// ModelManager에 로드 위임
+		m_modelIndex = ModelManager::Get().LoadModel(name, meshData);
 	}
 
 	const void ModelComponent::SetBasicMaterial(const BasicMaterialConstants& consts)
 	{
 		m_basicMaterial.GetCpu() = consts;
-	}
-
-	const void ModelComponent::SetMaterial(const MaterialConstants& consts)
-	{
-		m_material.GetCpu() = consts;
+		m_basicMaterial.Upload();
 	}
 
 	void ModelComponent::Render() {
 		Super::Render();
+
+		if (m_modelIndex < 0) return;
+
+		// 1. 모델 데이터 가져오기
+		Model* model = ModelManager::Get().GetModel(m_modelIndex);
+		if (!model) return;
+
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[2] = {
-				mesh.basicMaterialConstGPU.Get(),
-				mesh.materialConstGPU.Get(),
-			};
-			context->VSSetConstantBuffers(2, 2, constBuffers);
-			ID3D11ShaderResourceView* heightResView[1] = { mesh.heightTexture.GetSRV() };
-			context->VSSetShaderResources(0, 1, heightResView);
 
-			std::vector<ID3D11ShaderResourceView*> resViews = { 
-				mesh.albedoTexture.GetSRV(),
-				mesh.normalTexture.GetSRV(),
-				mesh.aoTexture.GetSRV(),
-				mesh.metallicTexture.GetSRV(),
-				mesh.roughnessTexture.GetSRV(),
-				mesh.emissiveTexture.GetSRV()
-			};
-			context->PSSetShaderResources(0, UINT(resViews.size()), resViews.data());
-			context->PSSetConstantBuffers(2, 2, constBuffers);
+		// 2. BasicMaterial (HashID) 바인딩 - Slot 2
+		// VS, PS 모두에 바인딩 (기존 로직 유지)
+		context->VSSetConstantBuffers(2, 1, m_basicMaterial.GetAddressOf());
+		context->PSSetConstantBuffers(2, 1, m_basicMaterial.GetAddressOf());
 
+		// 3. 모델의 각 메쉬에 대해 렌더링
+		for (size_t i = 0; i < model->meshes.size(); ++i) {
+			const auto& mesh = model->meshes[i];
+			int materialIndex = model->materialIndices[i];
+
+			// 4. MaterialSystem을 통해 재질 바인딩 (Texture, 상수버퍼 등) - Slot 3
+			MaterialSystem::Get().BindMaterial(materialIndex);
+
+			// 5. Mesh 버퍼 바인딩 및 그리기
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			context->DrawIndexed(mesh.indexCount, 0, 0);
@@ -164,16 +72,26 @@ namespace DE {
 
 	void ModelComponent::RenderNormal()
 	{
-		if (!m_drawNormal)
-			return;
-		// Normal Vector 그리기
+		if (!m_drawNormal || m_modelIndex < 0) return;
+
+		Model* model = ModelManager::Get().GetModel(m_modelIndex);
+		if (!model) return;
+
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-		
-		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[2] = {
-										     mesh.basicMaterialConstGPU.Get(),
-											 mesh.materialConstGPU.Get()};
-			context->GSSetConstantBuffers(2, 2, constBuffers);
+
+		// GS를 사용하는 Normal Vector 렌더링
+		for (size_t i = 0; i < model->meshes.size(); ++i) {
+			const auto& mesh = model->meshes[i];
+
+			// BasicMaterial 바인딩 (GS)
+			context->GSSetConstantBuffers(2, 1, m_basicMaterial.GetAddressOf());
+
+			// Material 상수 버퍼 가져와서 바인딩 (GS Slot 3)
+			// MaterialSystem::BindMaterial은 PS/VS만 처리하므로 직접 가져옴
+			int materialIdx = model->materialIndices[i];
+			auto& matBuffer = MaterialSystem::Get().GetMaterialConstBuffer(materialIdx);
+			context->GSSetConstantBuffers(3, 1, matBuffer.GetAddressOf());
+
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->Draw(mesh.vertexCount, 0);
 		}
@@ -181,16 +99,26 @@ namespace DE {
 
 	void ModelComponent::RenderPoints()
 	{
+		if (m_modelIndex < 0) return;
+
+		Model* model = ModelManager::Get().GetModel(m_modelIndex);
+		if (!model) return;
+
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		for (const auto& mesh : m_meshes) {
-			ID3D11Buffer* constBuffers[2] = {mesh.basicMaterialConstGPU.Get(),
-											 mesh.materialConstGPU.Get() };
-			context->VSSetConstantBuffers(2, 2, constBuffers);
+		for (size_t i = 0; i < model->meshes.size(); ++i) {
+			const auto& mesh = model->meshes[i];
+
+			// BasicMaterial 바인딩
+			context->VSSetConstantBuffers(2, 1, m_basicMaterial.GetAddressOf());
+
+			// Material 바인딩
+			int materialIdx = model->materialIndices[i];
+			auto& matBuffer = MaterialSystem::Get().GetMaterialConstBuffer(materialIdx);
+			context->VSSetConstantBuffers(3, 1, matBuffer.GetAddressOf());
 
 			context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			context->Draw(mesh.indexCount, 0);
 		}
 	}
-
 }
