@@ -6,7 +6,7 @@
     "spawnVolume": [ 0.15, 0.1, 0.15 ],
     "spawnInnerRatio": 0.99,
     "spawnRate": 20.0,
-    "particlesPerSpawn": 5,
+    "particlesPerSpawn": 10,
     "maxParticles": 1024,
     "lifeRange": [ 0.5, 0.55 ]
   },

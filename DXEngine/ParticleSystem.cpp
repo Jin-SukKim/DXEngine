@@ -13,8 +13,15 @@ namespace DE {
 
 	ParticleSystem::~ParticleSystem()
 	{
-		if (m_watcherID)
-			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+		if (m_watcherID != 0 && !m_jsonPath.empty()) {
+			try {
+				// FileWatcher가 유효한지 확인
+				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+			}
+			catch (...) {
+				// 프로그램 종료 시 무시
+			}
+		}	
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
@@ -80,6 +87,10 @@ namespace DE {
 			}
 		}
 
+		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->CSSetConstantBuffers(1, 1, m_transform.GetAddressOf());
+
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt, m_time);
 	}
@@ -88,6 +99,10 @@ namespace DE {
 	{
 		if (m_state == ParticleState::Stopped)
 			return;
+
+		// Transform Constant Buffer 바인딩 (Slot 1)
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->VSSetConstantBuffers(1, 1, m_transform.GetAddressOf());
 
 		for (auto& emitter : m_emitters)
 			emitter->Render();

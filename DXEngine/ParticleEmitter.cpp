@@ -25,8 +25,14 @@ namespace DE {
 
 	ParticleEmitter::~ParticleEmitter()
 	{
-		if (m_watcherID)
-			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+		if (m_watcherID != 0 && !m_jsonPath.empty()) {
+			try {
+				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+			}
+			catch (...) {
+				// 프로그램 종료 시 무시
+			}
+		}
 	}
 
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)

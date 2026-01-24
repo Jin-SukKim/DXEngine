@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "TextureSpawnBake.h"
 #include "MaterialSystem.h"
+#include "ModelManager.h"
 
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
@@ -106,16 +107,21 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		Model* target = ModelMa
+		Model* target = ModelManager::Get().GetModel(modelIdx);
+		if (!target || target->meshes.empty())
+			return;
 
-		m_vertexCount = static_cast<UINT>(meshes.vertices.size());
-		m_indexCount = static_cast<UINT>(meshes.indices.size());
+		// 첫 번째 메시의 정점/인덱스 데이터 사용
+		const Mesh2& meshes = target->meshes[0];
+
+		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
+		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
 
 		m_meshVertex.Initialize(device.Get(), m_vertexCount);
 		m_meshIndices.Initialize(device.Get(), m_indexCount);
 
-		m_meshVertex.SetData(meshes.vertices);
-		m_meshIndices.SetData(meshes.indices);
+		m_meshVertex.SetData(meshes.vertexCPU);
+		m_meshIndices.SetData(meshes.indexCPU);
 
 		m_meshVertex.Upload(context.Get());
 		m_meshIndices.Upload(context.Get());

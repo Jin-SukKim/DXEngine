@@ -3,22 +3,26 @@
 
 namespace DE {
 	class ParticleSystem;
-	struct MeshData;
 
-class ParticleSystemComponent : public Component
-{
-public:
-	ParticleSystemComponent(const std::wstring& name);
-	~ParticleSystemComponent() override;
+	class ParticleSystemComponent : public Component
+	{
+		using Super = Component;
+	public:
+		ParticleSystemComponent(const std::wstring& name);
+		~ParticleSystemComponent() override;
 
-	void Initialize() override;
-	void Update(const float& dt) override;
-	void Render() override;
+		void Initialize() override;
+		void Update(const float& dt) override;
+		void Render() override;
 
-	void SetSystem(const std::wstring& path, const int& modelIdx = -1);
-	ParticleSystem* GetSystem();
-private:
-	ParticleSystem* m_system;
-};
+		void SetSystem(const std::wstring& path, const int& modelIdx = -1);
+		ParticleSystem* GetSystem();
+
+	private:
+		void UpdateTransform(); // Transform 업데이트 함수 추가
+
+	private:
+		ParticleSystem* m_system;
+	};
 }
 
