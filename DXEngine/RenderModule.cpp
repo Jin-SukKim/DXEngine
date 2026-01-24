@@ -14,8 +14,8 @@ namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		ParticleModule::Initialize(ctx);
-
-		m_InitSortKeysCS.Initialize(ctx.device, L"InitBitonicSortCS.hlsl");
+		
+		// BitonicSort만 초기화 (ComputeShader는 ComputeCommon에서 공유)
 		m_sort.Initialize(ctx.device, ctx.frameConsts.maxParticles, L"BitonicSortCS.hlsl");
 	}
 
@@ -39,9 +39,18 @@ namespace DE {
 			ctx.countSRV
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
-		m_InitSortKeysCS.Dispatch(ctx.context, (ctx.frameConstBuffer.GetCpu().maxParticles + 255) / 256, 1, 1);
-
-		//m_sort.Sort(ctx.context);
+		
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& initSortKeysCS = RenderBase::computeCommon.particle.initSortKeysCS;
+		ctx.context->CSSetShader(initSortKeysCS.computeShader.Get(), 0, 0);
+		ctx.context->Dispatch((ctx.frameConstBuffer.GetCpu().maxParticles + 255) / 256, 1, 1);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		ctx.context->CSSetShaderResources(0, 2, nullSRVs);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void RenderModule::OnRender(const RenderContext& ctx)
@@ -77,13 +86,11 @@ namespace DE {
 		}
 	}
 
-	//  공통 복사 메서드 추가
 	void RenderModule::CopyBasicSettings(RenderModule* cloned) const
 	{
 		cloned->blendMode = this->blendMode;
 		cloned->m_blendState = this->m_blendState;
 		cloned->m_isEnabled = this->m_isEnabled;
-		// m_sort, m_InitSortKeysCS는 Initialize()에서 재생성
 	}
 
 	// ===== BillboardRenderModule =====
@@ -207,7 +214,7 @@ namespace DE {
 	void MeshRenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		RenderModule::Initialize(ctx);
-		m_argsUpdateCS.Initialize(ctx.device, L"ParticleMeshArgsUpdateCS.hlsl");
+		// ComputeShader는 ComputeCommon에서 공유
 	}
 
 	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
@@ -227,7 +234,6 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
 		for (size_t i = 0; i < model->meshes.size(); ++i) {
 			auto& mesh = model->meshes[i];
-
 			allArgs[i].indexCountPerInstance = mesh.indexCount;
 			allArgs[i].instanceCount = 0;
 			allArgs[i].startIndexLocation = 0;
@@ -241,11 +247,21 @@ namespace DE {
 	void MeshRenderModule::UpdateArgs(const SimulationContext& ctx)
 	{
 		ctx.context->CSSetShaderResources(0, 1, &ctx.countSRV);
-
 		ID3D11UnorderedAccessView* uavs[] = { m_meshArgs.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
+		
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& meshArgsUpdateCS = RenderBase::computeCommon.particle.meshArgsUpdateCS;
+		ctx.context->CSSetShader(meshArgsUpdateCS.computeShader.Get(), 0, 0);
 		UINT groupCount = (m_meshCount + 255) / 256;
-		m_argsUpdateCS.Dispatch(ctx.context, groupCount, 1, 1);
+		ctx.context->Dispatch(groupCount, 1, 1);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)

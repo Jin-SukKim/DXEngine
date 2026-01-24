@@ -190,6 +190,7 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="AppendBuffer.h" />
+    <ClInclude Include="ComputeCommon.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialModule.h" />
     <ClInclude Include="MaterialSystem.h" />
@@ -269,6 +270,7 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AppBase.cpp" />
+    <ClCompile Include="ComputeCommon.cpp" />
     <ClCompile Include="MaterialModule.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="ModelManager.cpp" />

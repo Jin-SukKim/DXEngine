@@ -17,7 +17,7 @@ public:
 	void UpdateArgs(const SimulationContext& ctx) override;
 	void OnUpdate(const SimulationContext& ctx) override;
 	virtual void OnRender(const RenderContext& ctx) override;
-	void SetBlendState();
+ void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
 	virtual int GetModelIndex() const { return -1; };
@@ -27,8 +27,8 @@ public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
 	BitonicSort m_sort;
-	ComputeShader m_InitSortKeysCS;
 	ID3D11BlendState* m_blendState = NULL;
+	// ComputeShader 제거 - ComputeCommon 사용
 };
 
 class BillboardRenderModule : public RenderModule
@@ -70,12 +70,10 @@ public:
 	int GetModelIndex() const override { return m_modelIdx; }
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
-	// Texture 관리
 	int m_modelIdx = -1;
-
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>  m_meshArgs;
-	ComputeShader m_argsUpdateCS;
 	UINT m_meshCount = 0;
+	// ComputeShader 제거 - ComputeCommon 사용
 };
 }
 

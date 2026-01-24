@@ -5,7 +5,7 @@
 namespace DE {
 	void ForceModule::Initialize(ParticleInitContext& ctx)
 	{
-		m_particleCS.Initialize(ctx.device, L"ParticleCS.hlsl");
+		// ComputeShader는 ComputeCommon에서 공유
 	}
 
 	void ForceModule::OnSpawn(SimulationContext& ctx)
@@ -22,13 +22,10 @@ namespace DE {
 	void ForceModule::OnUpdate(const SimulationContext& ctx)
 	{
 		ParticleModule::OnUpdate(ctx);
-		// Counter buffer binding
+		
 		ID3D11ShaderResourceView* srvs[] = { ctx.countSRV };
 		ctx.context->CSSetShaderResources(0, 1, srvs);
 
-		// UAV 설정 (초기 카운트 지정)
-		// -1: consume 버퍼의 기존 카운트 유지
-		// 0: append 버퍼의 카운트 리셋
 		UINT initCounts[2] = { static_cast<UINT>(-1), 0 };
 		ID3D11UnorderedAccessView* particleUAVs[] = {
 			ctx.consumeBuffer.GetUAV(),
@@ -37,9 +34,19 @@ namespace DE {
 
 		ctx.context->CSSetUnorderedAccessViews(0, 2, particleUAVs, initCounts);
 
-		// Particle Simulation Compute Shader
-		m_particleCS.DispatchIndirect(ctx.context, ctx.dispatchArgs);
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
+		ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[2] = { nullptr, nullptr };
+		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
+		ctx.context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
+		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
+
 	void ForceModule::LoadFromJson(const json& data)
 	{
 		if (data.contains("velocity")) velocity = JsonToVec3(data["velocity"]);
@@ -48,6 +55,7 @@ namespace DE {
 		if (data.contains("gravity")) gravity = JsonToVec3(data["gravity"]);
 		if (data.contains("drag")) drag = data["drag"];
 	}
+
 	std::unique_ptr<ParticleModule> ForceModule::Clone() const
 	{
 		auto cloned = std::make_unique<ForceModule>();
@@ -59,6 +67,6 @@ namespace DE {
 		cloned->gravity = this->gravity;
 		cloned->m_isEnabled = this->m_isEnabled;
 
-		return std::move(cloned);
+		return cloned;
 	}
 }

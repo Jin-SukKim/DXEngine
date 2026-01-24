@@ -1,6 +1,5 @@
 #pragma once
 #include "ParticleModule.h"
-#include "ComputeShader.h"
 
 namespace DE {
 
@@ -22,7 +21,7 @@ public:
 	Vector3 m_vortexAxis = Vector3(0.f, 1.f, 0.f);
 	Vector2 m_vortexPull = Vector2(0.f);
 
-	ComputeShader m_vortexCS;
+	// ComputeShader 제거 - ComputeCommon 사용
 };
 
 }

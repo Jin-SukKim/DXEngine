@@ -372,6 +372,7 @@
     </ClInclude>
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ParticleSystemComponent.h" />
+    <ClInclude Include="ComputeCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -558,6 +559,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParticleSystemComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ComputeCommon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

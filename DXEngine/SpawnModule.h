@@ -1,10 +1,10 @@
 #pragma once
 #include "ParticleModule.h"
-#include "ComputeShader.h"
 #include "MeshData.h"
+
 namespace DE {
 
-	struct Mesh;
+struct Mesh;
 
 class SpawnModule : public ParticleModule
 {
@@ -33,7 +33,7 @@ private:
 	UINT m_indexCount = 0;
 	UINT m_simulationSpace = 0; // 0 : local, 1 : world
 
-	ComputeShader m_spawnCS;
+	// ComputeShader 제거 - ComputeCommon 사용
 	UINT m_totalSpawnCount = 0;
 	StructuredBuffer<Vertex> m_meshVertex;
 	StructuredBuffer<uint32_t> m_meshIndices;

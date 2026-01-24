@@ -82,7 +82,6 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
 
-		InitializeShaders(device.Get());
 		InitializeBuffers(device);
 	}
 
@@ -126,12 +125,6 @@ namespace DE {
 	{
 		m_jsonPath = path;
 		m_watcherID = id;
-	}
-
-	void ParticleEmitter::InitializeShaders(ID3D11Device* device)
-	{
-		// 셰이더 로드
-		m_argsUpdateCS.Initialize(device, L"ParticleArgsUpdateCS.hlsl");
 	}
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
@@ -203,8 +196,17 @@ namespace DE {
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
-		// Indirect Args Update
-		m_argsUpdateCS.Dispatch(context, 1, 1, 1);
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
+		context->CSSetShader(argsUpdateCS.computeShader.Get(), 0, 0);
+		context->Dispatch(1, 1, 1);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		context->CSSetShaderResources(0, 1, nullSRVs);
+		context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void ParticleEmitter::Render()

@@ -10,7 +10,7 @@ namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
-		m_spawnCS.Initialize(ctx.device, L"SpawnCS.hlsl");
+		// ComputeShader는 ComputeCommon에서 공유
 	}
 
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
@@ -35,7 +35,6 @@ namespace DE {
 		ParticleModule::OnUpdateCPU(ctx);
 		m_spawnAccumulator += m_spawnRate * ctx.dt;
 
-		//m_totalSpawnCount = 1;
 		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
 		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
@@ -69,9 +68,18 @@ namespace DE {
 			ctx.context->CSSetShaderResources(2, 1, srv);
 		}
 
-		// Spawn Compute Shader
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
+		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
 		UINT groupCount = (m_totalSpawnCount + 255) / 256;
-		m_spawnCS.Dispatch(ctx.context, groupCount, 1, 1);
+		ctx.context->Dispatch(groupCount, 1, 1);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		ctx.context->CSSetShaderResources(0, 2, nullSRVs);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void SpawnModule::LoadFromJson(const json& data)
@@ -111,7 +119,6 @@ namespace DE {
 		if (!target || target->meshes.empty())
 			return;
 
-		// 첫 번째 메시의 정점/인덱스 데이터 사용
 		const Mesh2& meshes = target->meshes[0];
 
 		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
@@ -126,12 +133,11 @@ namespace DE {
 		m_meshVertex.Upload(context.Get());
 		m_meshIndices.Upload(context.Get());
 	}
-	// SpawnModule.cpp (공유 방식 - 더 간단)
+
 	std::unique_ptr<ParticleModule> SpawnModule::Clone() const
 	{
 		auto cloned = std::make_unique<SpawnModule>();
 
-		// 기본 설정값 복사
 		cloned->m_localPos = this->m_localPos;
 		cloned->m_spawnVolume = this->m_spawnVolume;
 		cloned->m_spawnInnerRatio = this->m_spawnInnerRatio;
@@ -146,10 +152,7 @@ namespace DE {
 		cloned->m_bakedCount = this->m_bakedCount;
 		cloned->m_isEnabled = this->m_isEnabled;
 
-		// StructuredBuffer 전체 복사 (ComPtr는 참조 카운트 증가)
-		// CPU 데이터(m_cpu)도 복사되고, GPU 버퍼(m_gpu, m_srv)는 공유됨
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			// StructuredBuffer의 기본 복사 생성자 사용
 			cloned->m_meshVertex = this->m_meshVertex;
 			cloned->m_meshIndices = this->m_meshIndices;
 		}

@@ -40,7 +40,6 @@ namespace DE {
 		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
 	private:
 		// 초기화 헬퍼 함수들
-		void InitializeShaders(ID3D11Device* device);
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
 
 		// 업데이트 단계별 함수들
@@ -59,9 +58,6 @@ namespace DE {
 		ComPtr<ID3D11Buffer> m_countBuffer;
 		ComPtr<ID3D11ShaderResourceView> m_countSRV;
 
-		// 컴퓨트 셰이더들
-		ComputeShader m_argsUpdateCS;
-		
 		// 상수 버퍼
 		ConstantBuffer<ParticleFrameConsts> m_frameConsts;
 		ConstantBuffer<ParticleConsts> m_consts;
