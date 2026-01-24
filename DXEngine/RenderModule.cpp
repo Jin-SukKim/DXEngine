@@ -15,8 +15,8 @@ namespace DE {
 	{
 		ParticleModule::Initialize(ctx);
 		
-		// BitonicSort만 초기화 (ComputeShader는 ComputeCommon에서 공유)
-		m_sort.Initialize(ctx.device, ctx.frameConsts.maxParticles, L"BitonicSortCS.hlsl");
+		// BitonicSort 초기화 (ComputeShader는 ComputeCommon에서 공유)
+		m_sort.Initialize(ctx.device, ctx.frameConsts.maxParticles);
 	}
 
 	void RenderModule::OnSpawn(SimulationContext& ctx)
@@ -51,6 +51,9 @@ namespace DE {
 		ctx.context->CSSetShaderResources(0, 2, nullSRVs);
 		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
+
+		// BitonicSort 실행
+		m_sort.Sort(ctx.context);
 	}
 
 	void RenderModule::OnRender(const RenderContext& ctx)
