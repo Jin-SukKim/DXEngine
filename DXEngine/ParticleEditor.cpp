@@ -50,7 +50,7 @@ namespace DE {
 			for (int x = 0; x < 3; ++x) {
 				TransformComponent* tr = effects[x]->GetComponent<TransformComponent>();
 				if (tr) {
-					Vector3 pos = tr->GetPos() + Vector3(x * 2, y, 0.f);
+					Vector3 pos = tr->GetPos() + Vector3(float(x) * 2.f, float(y), 0.f);
 					tr->SetPos(pos);
 				}
 			}
