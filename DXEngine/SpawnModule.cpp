@@ -73,7 +73,7 @@ namespace DE {
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
 		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
-		UINT groupCount = (m_totalSpawnCount + 255) / 256;
+		UINT groupCount = (m_totalSpawnCount + 1023) / 1024;
 		ctx.context->Dispatch(groupCount, 1, 1);
 		
 		// Barrier

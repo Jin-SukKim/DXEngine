@@ -83,7 +83,7 @@ namespace DE {
         UINT numMeshes;
         UINT textureMode;
         int singleTextureIdx;
-        float padding11;
+        UINT useSorting; // Ãß°¡
     };
 
     struct ParticleConsts {

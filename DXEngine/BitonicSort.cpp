@@ -41,7 +41,7 @@ namespace DE {
                 context->CSSetConstantBuffers(0, 1, m_constsGpu[constCount++].GetAddressOf());
                 context->CSSetShader(bitonicSortCS.computeShader.Get(), 0, 0);
                 context->CSSetUnorderedAccessViews(0, 1, m_array.GetAddressOfUAV(), NULL);
-                context->Dispatch(UINT(ceil(m_numElements / 256)), 1, 1);
+                context->Dispatch(UINT(ceil(m_numElements / 1024)), 1, 1);
             }
 
         // UAV Barrier

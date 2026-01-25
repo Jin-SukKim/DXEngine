@@ -21,6 +21,10 @@ namespace DE {
 	{
 		ParticleModule::OnSpawn(ctx);
 		SetBlendState();
+		
+		// 정렬 플래그 설정
+		ctx.constBuffer.GetCpu().render.useSorting = 
+			(blendMode == BlendMode::AlphaBlend) ? 1 : 0;
 	}
 
 	void RenderModule::UpdateArgs(const SimulationContext& ctx)
@@ -30,9 +34,13 @@ namespace DE {
 
 	void RenderModule::OnUpdate(const SimulationContext& ctx)
 	{
-		if (!ctx.sortBuffer)
+		ParticleModule::OnUpdate(ctx);
+
+		// AlphaBlend가 아니면 완전히 스킵
+		if (blendMode != BlendMode::AlphaBlend || !ctx.sortBuffer)
 			return;
 
+		// 정렬 초기화 + BitonicSort
 		ID3D11UnorderedAccessView* uav[1] = { ctx.sortBuffer->GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
@@ -41,10 +49,9 @@ namespace DE {
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
 		
-		// ComputeCommon의 공유 ComputePSO 사용
 		auto& initSortKeysCS = RenderBase::computeCommon.particle.initSortKeysCS;
 		ctx.context->CSSetShader(initSortKeysCS.computeShader.Get(), 0, 0);
-		ctx.context->Dispatch((ctx.frameConstBuffer.GetCpu().maxParticles + 255) / 256, 1, 1);
+		ctx.context->Dispatch((ctx.frameConstBuffer.GetCpu().maxParticles + 1023) / 1024, 1, 1);
 		
 		// Barrier
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
@@ -53,7 +60,6 @@ namespace DE {
 		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
 
-		// BitonicSort 실행
 		ctx.sortBuffer->Sort(ctx.context);
 	}
 
@@ -269,7 +275,7 @@ namespace DE {
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& meshArgsUpdateCS = RenderBase::computeCommon.particle.meshArgsUpdateCS;
 		ctx.context->CSSetShader(meshArgsUpdateCS.computeShader.Get(), 0, 0);
-		UINT groupCount = (m_meshCount + 255) / 256;
+		UINT groupCount = (m_meshCount + 1023) / 1024;
 		ctx.context->Dispatch(groupCount, 1, 1);
 		
 		// Barrier

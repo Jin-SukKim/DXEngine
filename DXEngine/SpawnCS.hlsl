@@ -116,7 +116,7 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
     }
 }
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     if (dtID.x >= spawnCount)

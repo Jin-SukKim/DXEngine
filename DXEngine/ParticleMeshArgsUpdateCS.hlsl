@@ -9,7 +9,7 @@ Buffer<uint> activeCount : register(t0);
 // ±¸Á¶: { IndexCount, InstanceCount, StartIndex, BaseVertex, StartInstance }
 RWBuffer<uint> drawArgs : register(u0);
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
     if (DTid.x >= render.numMeshes) return;

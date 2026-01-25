@@ -74,7 +74,7 @@ struct RenderConsts {
     uint numMeshes;
     uint textureMode;
     int singleTextureIdx;
-    float padding11;
+    uint useSorting;
 };
 
 struct VortexConsts {

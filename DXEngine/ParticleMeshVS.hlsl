@@ -23,7 +23,17 @@ float3x3 GetRotationMatrix(float3 rot) {
 PSInput main(VSInput input, uint instanceID : SV_InstanceID)
 {
     // 1. 현재 그릴 파티클의 인덱스를 가져옵니다.
-    uint particleIdx = sortedElements[instanceID].value;
+    uint particleIdx;
+    
+    // useSorting 플래그에 따라 분기
+    if (render.useSorting)
+    {
+        particleIdx = sortedElements[instanceID].value;
+    }
+    else
+    {
+        particleIdx = instanceID; // 순차 접근
+    }
     Particle p = particles[particleIdx];
 
     PSInput output;
