@@ -31,11 +31,9 @@ struct SpawnConsts {
 
     float2 lifeRange;
     int spawnShape;
-    uint vertexCount;
-    uint indexCount;
     uint bakedCount;
     uint simulationSpace;
-    float padding1;
+    float3 padding1;
 };
 
 struct VisualConsts {
@@ -93,6 +91,16 @@ cbuffer ParticleConsts : register(b5) {
     RenderConsts render;
     VortexConsts vortex;
 };
+
+cbuffer ParticleMeshConsts : register(b6)
+{
+    matrix pWorld;
+    matrix pWorldIT; // World Inverse Transpose (Normal 변환에 사용)
+    uint vertexCount;
+    uint indexCount;
+    float2 padding;
+};
+
 
 struct SortElement
 {

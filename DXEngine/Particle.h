@@ -29,11 +29,9 @@ namespace DE {
         
         Vector2 lifeRange;
         int spawnShape = 0; // 0: Box, 1: Sphere, 2 : Vertex, 3: Surface
-        UINT vertexCount = 0;
-        UINT indexCount = 0;
         UINT bakedCount = 0;
         UINT simulationSpace = 0; // 0 : Local, 1 : world
-        float padding1;
+        float padding1[3];
     };
 
     struct VisualConsts {

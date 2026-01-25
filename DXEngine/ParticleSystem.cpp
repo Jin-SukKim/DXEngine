@@ -45,12 +45,12 @@ namespace DE {
 		}
 
 		// Transform 복사
-		m_transform = other.m_transform;
+		m_meshConsts = other.m_meshConsts;
 	}
 
 	void ParticleSystem::Initialize()
 	{
-		m_transform.Initialize();
+		m_meshConsts.Initialize();
 		for (auto& emitter : m_emitters)
 			emitter->Initialize();
 
@@ -90,14 +90,14 @@ namespace DE {
 
 		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(1, 1, m_transform.GetAddressOf());
+		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
 		if (m_vertexCount && m_indexCount) {
 			ID3D11ShaderResourceView* srvs[] = {
 				m_meshVertex.GetSRV(),
 				m_meshIndices.GetSRV()
 			};
-			context->CSSetShaderResources(0, 2, srvs);
+			context->CSSetShaderResources(9, 2, srvs);
 		}
 
 		for (auto& emitter : m_emitters)
@@ -111,7 +111,7 @@ namespace DE {
 
 		// Transform Constant Buffer 바인딩 (Slot 1)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->VSSetConstantBuffers(1, 1, m_transform.GetAddressOf());
+		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
 		for (auto& emitter : m_emitters)
 			emitter->Render();
@@ -236,14 +236,21 @@ namespace DE {
 		m_meshVertex.SetData(vertices);
 		m_meshIndices.SetData(meshes.indexCPU);
 
+		auto& cpuData = m_meshConsts.GetCpu();
+		cpuData.vertexCount = m_vertexCount;
+		cpuData.indexCount = m_indexCount;
+
 		m_meshVertex.Upload(context.Get());
 		m_meshIndices.Upload(context.Get());
+		m_meshConsts.Upload();
 	}
 
 	void ParticleSystem::SetTransform(const MeshConstants& transform)
 	{
-		m_transform.SetCpuData(transform);
-		m_transform.Upload();
+		auto& cpuData = m_meshConsts.GetCpu();
+		cpuData.world = transform.world;
+		cpuData.worldIT = transform.worldIT;
+		m_meshConsts.Upload();
 	}
 
 	void ParticleSystem::Reset()

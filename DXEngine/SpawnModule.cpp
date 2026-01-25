@@ -29,6 +29,7 @@ namespace DE {
 		ParticleModule::OnUpdateCPU(ctx);
 		m_spawnAccumulator += m_spawnRate * ctx.dt;
 
+		//m_totalSpawnCount = 1;
 		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
 		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
@@ -58,7 +59,7 @@ namespace DE {
 		else if (m_spawnShape == 4) {
 			if (ctx.bakedSpawnPos) {
 				ID3D11ShaderResourceView* srv = ctx.bakedSpawnPos->GetSRV();
-				ctx.context->CSSetShaderResources(2, 1, &srv);
+				ctx.context->CSSetShaderResources(0, 1, &srv);
 			}
 		}
 

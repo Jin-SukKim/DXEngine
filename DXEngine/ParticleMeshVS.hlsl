@@ -80,14 +80,14 @@ PSInput main(VSInput input, uint instanceID : SV_InstanceID)
     {
         // 1. Position
         // 파티클이 Actor에 종속적이므로 Actor의 World 행렬을 곱함
-        float4 worldPos = mul(localPosResult, world);
+        float4 worldPos = mul(localPosResult, pWorld);
         output.posWorld = worldPos.xyz;
 
         // 2. Normal & Tangent
         // (파티클 회전) -> (Actor 회전) 순서로 적용
         // Normal은 Inverse Transpose를 사용해야 정확함
-        output.normalWorld = normalize(mul(float4(rotatedNormal, 0.f), worldIT).xyz);
-        output.tangentWorld = normalize(mul(float4(rotatedTangent, 0.f), world).xyz);
+        output.normalWorld = normalize(mul(float4(rotatedNormal, 0.f), pWorldIT).xyz);
+        output.tangentWorld = normalize(mul(float4(rotatedTangent, 0.f), pWorld).xyz);
     }
 
     // -------------------------------------------------------------------------

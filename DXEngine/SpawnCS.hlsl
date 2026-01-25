@@ -9,9 +9,9 @@ struct Vertex {
 };
 
 AppendStructuredBuffer<Particle> outputParticles : register(u0);
-StructuredBuffer<float3> meshVertex : register(t0);
-StructuredBuffer<uint> meshIndices : register(t1);
-StructuredBuffer<float3> bakedSpawnPos : register(t2);
+StructuredBuffer<float3> bakedSpawnPos : register(t0);
+StructuredBuffer<float3> meshVertex : register(t9);
+StructuredBuffer<uint> meshIndices : register(t10);
 
 // --- [Robust Random Functions (Wang Hash)] ---
 
@@ -138,9 +138,9 @@ void main(uint3 dtID : SV_DispatchThreadID)
     else if (spawn.spawnShape == 1) // SPHERE
         spawnPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 2) // VERTEX
-        VertexSpawn(rngState, spawn.vertexCount, spawnPos);
+        VertexSpawn(rngState, vertexCount, spawnPos);
     else if (spawn.spawnShape == 3) // SURFACE
-        SurfaceSpawn(rngState, spawn.indexCount, spawnPos);
+        SurfaceSpawn(rngState, indexCount, spawnPos);
     else if (spawn.spawnShape == 4) // BAKED POS
     {
         uint idx = rngState % spawn.bakedCount;
@@ -167,11 +167,11 @@ void main(uint3 dtID : SV_DispatchThreadID)
     {
         // 위치: World 행렬 적용
         // Common.hlsli에 정의된 'world' 행렬 사용 (MeshConstants)
-        p.position = mul(float4(localPos, 1.0f), world).xyz;
+        p.position = mul(float4(localPos, 1.0f), pWorld).xyz;
 
         // 속도: World 회전만 적용 (3x3)
         // 만약 Scale도 속도에 영향을 주고 싶다면 (float3x3)world 대신 다른 방식 고려 필요
-        p.velocity = mul(localVel, (float3x3)world);
+        p.velocity = mul(localVel, (float3x3)pWorld);
     }
     else // Local Space Simulation (기존 방식)
     {

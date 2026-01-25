@@ -11,7 +11,6 @@
   "PreWarmTime": 1.0,
   "State": "Play",
   "Emitters": [
-    "Particles\\Emitters\\TestFire.json",
-    "Particles\\Emitters\\Mesh2.json"
+    "Particles\\Emitters\\TestFire.json"
   ]
 }

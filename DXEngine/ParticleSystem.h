@@ -12,6 +12,14 @@ enum class ParticleState {
 	Stopped // Not Visible인것처럼 처리
 };
 
+struct ParticleMeshConsts {
+	Matrix world;
+	Matrix worldIT; // World Inverse Transpose (Normal 변환에 사용)
+	UINT vertexCount;
+	UINT indexCount;
+	float padding[2];
+};
+
 class ParticleSystem : public Object
 {
 public:
@@ -68,7 +76,7 @@ private:
 	std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 	std::wstring m_jsonPath;
 	FileWatcher::CallbackID m_watcherID = 0;
-	ConstantBuffer<MeshConstants> m_transform;
+	ConstantBuffer<ParticleMeshConsts> m_meshConsts;
 
 	// Mesh 데이터 (Vertex/Surface Spawn용)
 	StructuredBuffer<Vector3> m_meshVertex;
