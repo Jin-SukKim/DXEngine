@@ -22,8 +22,8 @@ namespace DE {
 	{
 		ground = AddObject<SquareActor>(L"Ground");
 		
-		for (int y = 0; y < 1; ++y) {
-			for (int x = 0; x < 3; ++x) {
+		for (int y = 0; y < 2; ++y) {
+			for (int x = 0; x < 10; ++x) {
 				SampleActor* effect = AddObject<SampleActor>(L"Effect" + x);
 				effects.emplace_back(effect);
 			}
@@ -46,11 +46,11 @@ namespace DE {
 		//exit(0);
 		Scene::Initialize();
 
-		for (int y = 0; y < 1; ++y) {
-			for (int x = 0; x < 3; ++x) {
+		for (int y = 0; y < 2; ++y) {
+			for (int x = 0; x < 10; ++x) {
 				TransformComponent* tr = effects[x]->GetComponent<TransformComponent>();
 				if (tr) {
-					Vector3 pos = tr->GetPos() + Vector3(float(x) * 2.f, float(y), 0.f);
+					Vector3 pos = tr->GetPos() + Vector3(float(x) * 2.f, float(y) * 2.f, 0.f);
 					tr->SetPos(pos);
 				}
 			}

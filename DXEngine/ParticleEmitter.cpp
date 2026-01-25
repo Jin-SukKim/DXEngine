@@ -161,7 +161,12 @@ namespace DE {
 		m_meshVertex.Initialize(device.Get(), m_vertexCount);
 		m_meshIndices.Initialize(device.Get(), m_indexCount);
 
-		m_meshVertex.SetData(meshes.vertexCPU);
+		std::vector<Vector3> vertices;
+		for (const auto& vertex : meshes.vertexCPU) {
+			vertices.push_back(vertex.position);
+		}
+
+		m_meshVertex.SetData(vertices);
 		m_meshIndices.SetData(meshes.indexCPU);
 
 		m_meshVertex.Upload(context.Get());

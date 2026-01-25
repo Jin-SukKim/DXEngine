@@ -9,7 +9,7 @@ struct Vertex {
 };
 
 AppendStructuredBuffer<Particle> outputParticles : register(u0);
-StructuredBuffer<Vertex> meshVertex : register(t0);
+StructuredBuffer<float3> meshVertex : register(t0);
 StructuredBuffer<uint> meshIndices : register(t1);
 StructuredBuffer<float3> bakedSpawnPos : register(t2);
 
@@ -71,8 +71,8 @@ void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos)
         rngState = wang_hash(rngState);
         uint vIdx = rngState % vCount;
 
-        Vertex v = meshVertex[vIdx];
-        outPos = v.position;
+        float3 v = meshVertex[vIdx];
+        outPos = v;
     }
     else
     {
@@ -103,12 +103,12 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
             rb = 1.0f - rb;
         }
 
-        Vertex v0 = meshVertex[i0];
-        Vertex v1 = meshVertex[i1];
-        Vertex v2 = meshVertex[i2];
+        float3 v0 = meshVertex[i0];
+        float3 v1 = meshVertex[i1];
+        float3 v2 = meshVertex[i2];
 
         // Position Interpolation
-        outPos = v0.position + ra * (v1.position - v0.position) + rb * (v2.position - v0.position);
+        outPos = v0 + ra * (v1 - v0) + rb * (v2 - v0);
     }
     else
     {

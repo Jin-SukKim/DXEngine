@@ -47,7 +47,7 @@ namespace DE {
 		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
 		
 		// Mesh 데이터 접근자
-		StructuredBuffer<Vertex>* GetMeshVertexBuffer() { return &m_meshVertex; }
+		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
 		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
 		UINT GetVertexCount() const { return m_vertexCount; }
 		UINT GetIndexCount() const { return m_indexCount; }
@@ -92,7 +92,7 @@ namespace DE {
 		FileWatcher::CallbackID m_watcherID = 0;
 		
 		// Mesh 데이터 (Vertex/Surface Spawn용)
-		StructuredBuffer<Vertex> m_meshVertex;
+		StructuredBuffer<Vector3> m_meshVertex;
 		StructuredBuffer<uint32_t> m_meshIndices;
 		UINT m_vertexCount = 0;
 		UINT m_indexCount = 0;

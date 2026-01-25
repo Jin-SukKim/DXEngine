@@ -36,7 +36,7 @@ struct SimulationContext : ParticleContext {
     RenderModule* renderModule;
     
     // Mesh 데이터 (Vertex/Surface Spawn용)
-    StructuredBuffer<Vertex>* meshVertex = nullptr;
+    StructuredBuffer<Vector3>* meshVertex = nullptr;
     StructuredBuffer<uint32_t>* meshIndices = nullptr;
     UINT vertexCount = 0;
     UINT indexCount = 0;

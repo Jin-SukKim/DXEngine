@@ -13,8 +13,6 @@
   "Emitters": [
     "Particles\\Emitters\\Smoke.json",
     "Particles\\Emitters\\VortexAura.json",
-    "Particles\\Emitters\\Mesh.json",
-    "Particles\\Emitters\\Mesh2.json",
     "Particles\\Emitters\\Fire.json"
   ]
 }
