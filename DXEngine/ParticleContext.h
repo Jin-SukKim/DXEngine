@@ -3,6 +3,7 @@
 #include "Particle.h"
 #include "AppendBuffer.h"
 #include "IndirectArgsBuffer.h"
+#include "MeshData.h"
 
 namespace DE {
 
@@ -14,7 +15,7 @@ struct ParticleInitContext {
     ParticleFrameConsts& frameConsts;
 };
 
-// Base Context (공통 멤버)
+// Base Context (공통 정보)
 struct ParticleContext {
     ID3D11DeviceContext* context;
     ConstantBuffer<ParticleConsts>& constBuffer;
@@ -31,6 +32,12 @@ struct SimulationContext : ParticleContext {
     ID3D11Buffer* dispatchArgs;
     ID3D11Device* device;
     RenderModule* renderModule;
+    
+    // Mesh 데이터 (SpawnModule이 사용)
+    StructuredBuffer<Vertex>* meshVertex = nullptr;
+    StructuredBuffer<uint32_t>* meshIndices = nullptr;
+    UINT vertexCount = 0;
+    UINT indexCount = 0;
 };
 
 // Render 단계

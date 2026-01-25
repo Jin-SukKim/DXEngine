@@ -16,9 +16,8 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
 
-	void SetTarget(const int& modelIdx);
-
 	std::unique_ptr<ParticleModule> Clone() const override;
+	
 private:
 	Vector3 m_localPos = Vector3(0.f);
 	Vector3 m_spawnVolume = Vector3(0.05f, 0.15f, 0.05f);
@@ -29,14 +28,12 @@ private:
 	UINT m_maxParticles = 1024;
 	Vector2 m_lifeRange = { 0.1f, 1.5f };
 	float m_spawnAccumulator = 0.f;
-	UINT m_vertexCount = 0;
-	UINT m_indexCount = 0;
 	UINT m_simulationSpace = 0; // 0 : local, 1 : world
 
 	// ComputeShader 제거 - ComputeCommon 사용
 	UINT m_totalSpawnCount = 0;
-	StructuredBuffer<Vertex> m_meshVertex;
-	StructuredBuffer<uint32_t> m_meshIndices;
+	
+	// Texture Bake 전용
 	StructuredBuffer<Vector3> m_spawnPos;
 	UINT m_bakedCount = 0;
 };

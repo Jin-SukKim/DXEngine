@@ -10,6 +10,9 @@
 #include "RenderModule.h"	
 #include "MaterialModule.h"	
 #include "ParticleContext.h"
+#include "ModelManager.h"
+#include "Mesh.h"
+
 namespace DE {
 
 	ParticleEmitter::ParticleEmitter(const std::wstring& name) : m_name(name)
@@ -38,6 +41,8 @@ namespace DE {
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
 		: m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+		, m_vertexCount(other.m_vertexCount)
+		, m_indexCount(other.m_indexCount)
 	{
 		// Factory 등록 (필요시)
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
@@ -61,6 +66,10 @@ namespace DE {
 		// Constant Buffer 데이터 복사
 		m_consts = other.m_consts;
 		m_frameConsts = other.m_frameConsts;
+		
+		// Mesh 버퍼 복사
+		m_meshVertex = other.m_meshVertex;
+		m_meshIndices = other.m_meshIndices;
 
 		// GPU 버퍼는 Initialize()에서 재생성
 	}
@@ -101,7 +110,11 @@ namespace DE {
 			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
 			device.Get(),
-			this->GetModule<RenderModule>()
+			this->GetModule<RenderModule>(),
+			&m_meshVertex,
+			&m_meshIndices,
+			m_vertexCount,
+			m_indexCount
 		};
 
 		for (auto& mod : m_modules)
@@ -125,6 +138,30 @@ namespace DE {
 	{
 		m_jsonPath = path;
 		m_watcherID = id;
+	}
+
+	void ParticleEmitter::SetTargetMesh(const int& modelIdx)
+	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		Model* target = ModelManager::Get().GetModel(modelIdx);
+		if (!target || target->meshes.empty())
+			return;
+
+		const Mesh2& meshes = target->meshes[0];
+
+		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
+		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
+
+		m_meshVertex.Initialize(device.Get(), m_vertexCount);
+		m_meshIndices.Initialize(device.Get(), m_indexCount);
+
+		m_meshVertex.SetData(meshes.vertexCPU);
+		m_meshIndices.SetData(meshes.indexCPU);
+
+		m_meshVertex.Upload(context.Get());
+		m_meshIndices.Upload(context.Get());
 	}
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
@@ -160,6 +197,11 @@ namespace DE {
 			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
 			device.Get(),
+			nullptr,
+			&m_meshVertex,
+			&m_meshIndices,
+			m_vertexCount,
+			m_indexCount
 		};
 
 		for (auto& mod : m_modules)

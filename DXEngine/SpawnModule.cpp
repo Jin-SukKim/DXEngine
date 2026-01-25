@@ -22,8 +22,8 @@ namespace DE {
 		consts.spawnInnerRatio = m_spawnInnerRatio;
 		consts.spawnShape = m_spawnShape;
 		consts.lifeRange = m_lifeRange;
-		consts.vertexCount = m_vertexCount;
-		consts.indexCount = m_indexCount;
+		consts.vertexCount = ctx.vertexCount;
+		consts.indexCount = ctx.indexCount;
 		consts.bakedCount = m_bakedCount;
 		consts.simulationSpace = m_simulationSpace;
 
@@ -57,11 +57,14 @@ namespace DE {
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			ID3D11ShaderResourceView* srvs[] = {
-				m_meshVertex.GetSRV(),
-				m_meshIndices.GetSRV()
-			};
-			ctx.context->CSSetShaderResources(0, 2, srvs);
+			// ParticleEmitter의 메쉬 데이터 사용
+			if (ctx.meshVertex && ctx.meshIndices) {
+				ID3D11ShaderResourceView* srvs[] = {
+					ctx.meshVertex->GetSRV(),
+					ctx.meshIndices->GetSRV()
+				};
+				ctx.context->CSSetShaderResources(0, 2, srvs);
+			}
 		}
 		else if (m_spawnShape == 4) {
 			ID3D11ShaderResourceView* srv[] = { m_spawnPos.GetSRV() };
@@ -110,30 +113,6 @@ namespace DE {
 		if (data.contains("lifeRange")) m_lifeRange = JsonToVec2(data["lifeRange"]);
 	}
 
-	void SpawnModule::SetTarget(const int& modelIdx)
-	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-
-		Model* target = ModelManager::Get().GetModel(modelIdx);
-		if (!target || target->meshes.empty())
-			return;
-
-		const Mesh2& meshes = target->meshes[0];
-
-		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
-		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
-
-		m_meshVertex.Initialize(device.Get(), m_vertexCount);
-		m_meshIndices.Initialize(device.Get(), m_indexCount);
-
-		m_meshVertex.SetData(meshes.vertexCPU);
-		m_meshIndices.SetData(meshes.indexCPU);
-
-		m_meshVertex.Upload(context.Get());
-		m_meshIndices.Upload(context.Get());
-	}
-
 	std::unique_ptr<ParticleModule> SpawnModule::Clone() const
 	{
 		auto cloned = std::make_unique<SpawnModule>();
@@ -146,17 +125,11 @@ namespace DE {
 		cloned->m_particlesPerSpawn = this->m_particlesPerSpawn;
 		cloned->m_maxParticles = this->m_maxParticles;
 		cloned->m_lifeRange = this->m_lifeRange;
-		cloned->m_vertexCount = this->m_vertexCount;
-		cloned->m_indexCount = this->m_indexCount;
 		cloned->m_simulationSpace = this->m_simulationSpace;
 		cloned->m_bakedCount = this->m_bakedCount;
 		cloned->m_isEnabled = this->m_isEnabled;
 
-		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			cloned->m_meshVertex = this->m_meshVertex;
-			cloned->m_meshIndices = this->m_meshIndices;
-		}
-
+		// Texture bake 데이터만 복사
 		if (m_spawnShape == 4) {
 			cloned->m_spawnPos = this->m_spawnPos;
 		}

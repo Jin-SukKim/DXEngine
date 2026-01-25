@@ -205,9 +205,8 @@ namespace DE {
 	void ParticleSystem::SetTargetMesh(const int& modelIdx)
 	{
 		for (auto& emitter : m_emitters) {
-			SpawnModule* sp = emitter->GetModule<SpawnModule>();
-			if (sp) {
-				sp->SetTarget(modelIdx);
+			if (emitter) {
+				emitter->SetTargetMesh(modelIdx);
 			}
 		}
 	}
