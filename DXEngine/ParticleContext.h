@@ -4,11 +4,13 @@
 #include "AppendBuffer.h"
 #include "IndirectArgsBuffer.h"
 #include "MeshData.h"
+#include "BitonicSort.h"
 
 namespace DE {
 
     class RenderModule;
     class MaterialModule;
+
 struct ParticleInitContext {
     ID3D11Device* device;
     ParticleConsts& consts;
@@ -42,12 +44,22 @@ struct SimulationContext : ParticleContext {
     // Baked Spawn Position 데이터 (Texture Spawn용)
     StructuredBuffer<Vector3>* bakedSpawnPos = nullptr;
     UINT bakedCount = 0;
+    
+    // Render 관련 버퍼 (Render Module이 사용)
+    BitonicSort* sortBuffer = nullptr;
+    IndirectArgsBuffer<DrawInstancedArgs>* billboardArgsBuffer = nullptr;
+    IndirectArgsBuffer<DrawIndexedInstancedArgs>* meshArgsBuffer = nullptr;
 };
 
 // Render 단계
 struct RenderContext : ParticleContext {
     ID3D11ShaderResourceView* particleSRV;
     MaterialModule* materialModule;
+    
+    // Render 관련 버퍼
+    BitonicSort* sortBuffer = nullptr;
+    IndirectArgsBuffer<DrawInstancedArgs>* billboardArgsBuffer = nullptr;
+    IndirectArgsBuffer<DrawIndexedInstancedArgs>* meshArgsBuffer = nullptr;
 };
 
 } // namespace DE

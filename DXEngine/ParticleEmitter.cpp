@@ -41,12 +41,11 @@ namespace DE {
 
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
 		: m_jsonPath(other.m_jsonPath)
-		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+		, m_watcherID(0)
 		, m_vertexCount(other.m_vertexCount)
 		, m_indexCount(other.m_indexCount)
 		, m_bakedCount(other.m_bakedCount)
 	{
-		// Factory 등록 (필요시)
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
 		ParticleModuleFactory::Register<VisualModule>("Visual");
 		ParticleModuleFactory::Register<ForceModule>("Force");
@@ -55,7 +54,6 @@ namespace DE {
 		ParticleModuleFactory::Register<MaterialModule>("Material");
 		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
 
-		//  Module 복제
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
 				auto clonedModule = mod->Clone();
@@ -65,18 +63,11 @@ namespace DE {
 			}
 		}
 
-		// Constant Buffer 데이터 복사
 		m_consts = other.m_consts;
 		m_frameConsts = other.m_frameConsts;
-		
-		// Mesh 버퍼 복사
 		m_meshVertex = other.m_meshVertex;
 		m_meshIndices = other.m_meshIndices;
-		
-		// Baked Spawn Position 버퍼 복사
 		m_bakedSpawnPos = other.m_bakedSpawnPos;
-
-		// GPU 버퍼는 Initialize()에서 재생성
 	}
 
 	void ParticleEmitter::Initialize()
@@ -92,6 +83,9 @@ namespace DE {
 			m_consts.GetCpu(),
 			m_frameConsts.GetCpu() 
 		};
+
+		// Render 버퍼 초기화 (RenderModule이 사용)
+		m_sortBuffer.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
@@ -121,7 +115,10 @@ namespace DE {
 			m_vertexCount,
 			m_indexCount,
 			&m_bakedSpawnPos,
-			m_bakedCount
+			m_bakedCount,
+			&m_sortBuffer,
+			&m_billboardArgsBuffer,
+			&m_meshArgsBuffer
 		};
 
 		for (auto& mod : m_modules)
@@ -178,14 +175,10 @@ namespace DE {
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
-		// 핑퐁 업데이트를 위한 이중 버퍼 파티클 저장소
 		m_consume.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 		m_append.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
-
-		// 간접 디스패치 및 드로우 인수
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
 
-		// 활성 파티클 개수를 추적하는 카운터 버퍼
 		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), nullptr,
 			DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
 	}
@@ -200,22 +193,25 @@ namespace DE {
 		
 		SimulationContext simCtx = {
 			context.Get(),
-		 m_consts,
-		 m_frameConsts,
-		 dt,
-		 time,
-		 m_consume,
-		 m_append,
-		 m_countSRV.Get(),
-		 m_dispatchArgs.GetBuffer(),
-		 device.Get(),
-		 nullptr,
-		 &m_meshVertex,
-		 &m_meshIndices,
-		 m_vertexCount,
-		 m_indexCount,
-		 &m_bakedSpawnPos,
-		 m_bakedCount
+			m_consts,
+			m_frameConsts,
+			dt,
+			time,
+			m_consume,
+			m_append,
+			m_countSRV.Get(),
+			m_dispatchArgs.GetBuffer(),
+			device.Get(),
+			nullptr,
+			&m_meshVertex,
+			&m_meshIndices,
+			m_vertexCount,
+			m_indexCount,
+			&m_bakedSpawnPos,
+			m_bakedCount,
+			&m_sortBuffer,
+			&m_billboardArgsBuffer,
+			&m_meshArgsBuffer
 		};
 
 		for (auto& mod : m_modules)
@@ -236,13 +232,11 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
 
-		// 다음 프레임을 위한 버퍼 교환 
 		swap(m_consume, m_append);
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
 	{
-		// Append 버퍼에서 현재 파티클 개수를 카운트 버퍼로 복사
 		context->CopyStructureCount(m_countBuffer.Get(), 0, m_consume.GetUAV());
 
 		ID3D11UnorderedAccessView* argUAVs[] = {
@@ -252,12 +246,10 @@ namespace DE {
 		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
 		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
-		// ComputeCommon의 공유 ComputePSO 사용
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
 		context->CSSetShader(argsUpdateCS.computeShader.Get(), 0, 0);
 		context->Dispatch(1, 1, 1);
 		
-		// Barrier
 		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
 		context->CSSetShaderResources(0, 1, nullSRVs);
@@ -274,7 +266,10 @@ namespace DE {
 			m_consts,
 			m_frameConsts,
 			m_consume.GetSRV(),
-			this->GetModule<MaterialModule>()
+			this->GetModule<MaterialModule>(),
+			&m_sortBuffer,
+			&m_billboardArgsBuffer,
+			&m_meshArgsBuffer
 		};
 
 		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());

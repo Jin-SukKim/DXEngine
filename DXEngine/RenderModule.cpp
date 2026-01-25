@@ -14,9 +14,7 @@ namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		ParticleModule::Initialize(ctx);
-		
-		// BitonicSort 초기화 (ComputeShader는 ComputeCommon에서 공유)
-		m_sort.Initialize(ctx.device, ctx.frameConsts.maxParticles);
+		// BitonicSort는 ParticleEmitter에서 초기화
 	}
 
 	void RenderModule::OnSpawn(SimulationContext& ctx)
@@ -32,7 +30,10 @@ namespace DE {
 
 	void RenderModule::OnUpdate(const SimulationContext& ctx)
 	{
-		ID3D11UnorderedAccessView* uav[1] = { m_sort.GetUAV() };
+		if (!ctx.sortBuffer)
+			return;
+
+		ID3D11UnorderedAccessView* uav[1] = { ctx.sortBuffer->GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
 			ctx.appendBuffer.GetSRV(),
@@ -53,7 +54,7 @@ namespace DE {
 		ctx.context->CSSetShader(nullptr, 0, 0);
 
 		// BitonicSort 실행
-		m_sort.Sort(ctx.context);
+		ctx.sortBuffer->Sort(ctx.context);
 	}
 
 	void RenderModule::OnRender(const RenderContext& ctx)
@@ -109,30 +110,39 @@ namespace DE {
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
 
-		m_argsBuffer.Reset();
-		DrawInstancedArgs args = {};
-		args.vertexCountPerInstance = 0;
-		args.instanceCount = 1;
-		args.startVertexLocation = 0;
-		args.startInstanceLocation = 0;
+		// ParticleEmitter의 버퍼 초기화
+		if (ctx.billboardArgsBuffer) {
+			ctx.billboardArgsBuffer->Reset();
+			DrawInstancedArgs args = {};
+			args.vertexCountPerInstance = 0;
+			args.instanceCount = 1;
+			args.startVertexLocation = 0;
+			args.startInstanceLocation = 0;
 
-		m_argsBuffer.Initialize(ctx.device, args, 4);
+			ctx.billboardArgsBuffer->Initialize(ctx.device, args, 4);
+		}
 	}
 
 	void BillboardRenderModule::UpdateArgs(const SimulationContext& ctx)
 	{
 		RenderModule::UpdateArgs(ctx);
-		ctx.context->CopyStructureCount(m_argsBuffer.GetBuffer(), 0, ctx.consumeBuffer.GetUAV());
+		if (ctx.billboardArgsBuffer) {
+			ctx.context->CopyStructureCount(ctx.billboardArgsBuffer->GetBuffer(), 0, ctx.consumeBuffer.GetUAV());
+		}
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
+		
+		if (!ctx.sortBuffer || !ctx.billboardArgsBuffer)
+			return;
+
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 
 		ID3D11ShaderResourceView* sortSRVs[] = {
 			ctx.particleSRV,
-			m_sort.GetSRV()
+			ctx.sortBuffer->GetSRV()
 		};
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
 
@@ -157,7 +167,7 @@ namespace DE {
 			break;
 		}
 
-		ctx.context->DrawInstancedIndirect(m_argsBuffer.GetBuffer(), 0);
+		ctx.context->DrawInstancedIndirect(ctx.billboardArgsBuffer->GetBuffer(), 0);
 
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
@@ -190,7 +200,6 @@ namespace DE {
 		}
 	}
 
-	//  Clone 수정
 	std::unique_ptr<ParticleModule> BillboardRenderModule::Clone() const
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
@@ -206,8 +215,7 @@ namespace DE {
 		cloned->m_frameTiles = this->m_frameTiles;
 		cloned->m_frameCount = this->m_frameCount;
 
-		//  GPU 버퍼는 복사하지 않음 (OnSpawn에서 재생성)
-		// m_argsBuffer는 복사 안 함!
+		// GPU 버퍼는 ParticleEmitter가 소유
 
 		return cloned;
 	}
@@ -217,7 +225,6 @@ namespace DE {
 	void MeshRenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		RenderModule::Initialize(ctx);
-		// ComputeShader는 ComputeCommon에서 공유
 	}
 
 	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
@@ -234,23 +241,29 @@ namespace DE {
 		m_meshCount = static_cast<UINT>(model->meshes.size());
 		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
 
-		std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
-		for (size_t i = 0; i < model->meshes.size(); ++i) {
-			auto& mesh = model->meshes[i];
-			allArgs[i].indexCountPerInstance = mesh.indexCount;
-			allArgs[i].instanceCount = 0;
-			allArgs[i].startIndexLocation = 0;
-			allArgs[i].baseVertexLocation = 0;
-			allArgs[i].startInstanceLocation = 0;
-		}
+		// ParticleEmitter의 메쉬 Args 버퍼 초기화
+		if (ctx.meshArgsBuffer) {
+			std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
+			for (size_t i = 0; i < model->meshes.size(); ++i) {
+				auto& mesh = model->meshes[i];
+				allArgs[i].indexCountPerInstance = mesh.indexCount;
+				allArgs[i].instanceCount = 0;
+				allArgs[i].startIndexLocation = 0;
+				allArgs[i].baseVertexLocation = 0;
+				allArgs[i].startInstanceLocation = 0;
+			}
 
-		m_meshArgs.Initialize(ctx.device, allArgs, m_meshCount, static_cast<UINT>(sizeof(DrawIndexedInstancedArgs)), 5);
+			ctx.meshArgsBuffer->Initialize(ctx.device, allArgs, m_meshCount, static_cast<UINT>(sizeof(DrawIndexedInstancedArgs)), 5);
+		}
 	}
 
 	void MeshRenderModule::UpdateArgs(const SimulationContext& ctx)
 	{
+		if (!ctx.meshArgsBuffer)
+			return;
+
 		ctx.context->CSSetShaderResources(0, 1, &ctx.countSRV);
-		ID3D11UnorderedAccessView* uavs[] = { m_meshArgs.GetUAV() };
+		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer->GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
 		
 		// ComputeCommon의 공유 ComputePSO 사용
@@ -271,12 +284,15 @@ namespace DE {
 	{
 		RenderModule::OnRender(ctx);
 
+		if (!ctx.sortBuffer || !ctx.meshArgsBuffer)
+			return;
+
 		Model* model = ModelManager::Get().GetModel(m_modelIdx);
 		if (!model) return;
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 
-		ID3D11ShaderResourceView* sortSRVs[] = { ctx.particleSRV, m_sort.GetSRV() };
+		ID3D11ShaderResourceView* sortSRVs[] = { ctx.particleSRV, ctx.sortBuffer->GetSRV() };
 		ctx.context->VSSetShaderResources(1, 2, sortSRVs);
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {
@@ -291,7 +307,7 @@ namespace DE {
 			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 			UINT argsOffset = i * 20;
-			ctx.context->DrawIndexedInstancedIndirect(m_meshArgs.GetBuffer(), argsOffset);
+			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgsBuffer->GetBuffer(), argsOffset);
 		}
 
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
@@ -315,7 +331,6 @@ namespace DE {
 		}
 	}
 
-	//  Clone 수정
 	std::unique_ptr<ParticleModule> MeshRenderModule::Clone() const
 	{
 		auto cloned = std::make_unique<MeshRenderModule>();
@@ -327,8 +342,7 @@ namespace DE {
 		cloned->m_modelIdx = this->m_modelIdx;
 		cloned->m_meshCount = this->m_meshCount;
 
-		//  GPU 버퍼는 복사하지 않음 (OnSpawn에서 재생성)
-		// m_meshArgs는 복사 안 함!
+		// GPU 버퍼는 ParticleEmitter가 소유
 
 		return cloned;
 	}

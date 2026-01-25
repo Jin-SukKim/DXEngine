@@ -56,6 +56,11 @@ namespace DE {
 		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
 		UINT GetBakedCount() const { return m_bakedCount; }
 		
+		// Render 버퍼 접근자
+		BitonicSort* GetSortBuffer() { return &m_sortBuffer; }
+		IndirectArgsBuffer<DrawInstancedArgs>* GetBillboardArgsBuffer() { return &m_billboardArgsBuffer; }
+		IndirectArgsBuffer<DrawIndexedInstancedArgs>* GetMeshArgsBuffer() { return &m_meshArgsBuffer; }
+		
 	private:
 		// 초기화 관련 함수들
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
@@ -95,6 +100,11 @@ namespace DE {
 		// Baked Spawn Position 데이터 (Texture Spawn용)
 		StructuredBuffer<Vector3> m_bakedSpawnPos;
 		UINT m_bakedCount = 0;
+		
+		// Render 관련 버퍼
+		BitonicSort m_sortBuffer;
+		IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
+		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 	};
 
 	template<typename T>

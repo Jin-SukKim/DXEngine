@@ -1,6 +1,5 @@
 #pragma once
 #include "ParticleModule.h"
-#include "BitonicSort.h"
 
 namespace DE {
 enum class BlendMode {
@@ -17,7 +16,7 @@ public:
 	void UpdateArgs(const SimulationContext& ctx) override;
 	void OnUpdate(const SimulationContext& ctx) override;
 	virtual void OnRender(const RenderContext& ctx) override;
- void SetBlendState();
+	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
 	virtual int GetModelIndex() const { return -1; };
@@ -26,9 +25,8 @@ public:
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
-	BitonicSort m_sort;
 	ID3D11BlendState* m_blendState = NULL;
-	// ComputeShader 제거 - ComputeCommon 사용
+	// BitonicSort 제거 - ParticleEmitter가 소유
 };
 
 class BillboardRenderModule : public RenderModule
@@ -56,7 +54,7 @@ private:
 
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
-	IndirectArgsBuffer<DrawInstancedArgs> m_argsBuffer;
+	// IndirectArgsBuffer 제거 - ParticleEmitter가 소유
 };
 
 class MeshRenderModule : public RenderModule
@@ -71,9 +69,8 @@ public:
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	int m_modelIdx = -1;
-	IndirectArgsBuffer<DrawIndexedInstancedArgs>  m_meshArgs;
 	UINT m_meshCount = 0;
-	// ComputeShader 제거 - ComputeCommon 사용
+	// IndirectArgsBuffer 제거 - ParticleEmitter가 소유
 };
 }
 
