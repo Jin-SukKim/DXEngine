@@ -36,13 +36,14 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 
-		// AlphaBlend가 아니면 완전히 스킵
+		// [최적화] 조건 통합
 		if (blendMode != BlendMode::AlphaBlend || !ctx.sortBuffer)
 			return;
 
-		// 정렬 초기화 + BitonicSort
+		// 정렬 초기화
 		ID3D11UnorderedAccessView* uav[1] = { ctx.sortBuffer->GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
+		
 		ID3D11ShaderResourceView* srvs[] = {
 			ctx.appendBuffer.GetSRV(),
 			ctx.countSRV
@@ -51,7 +52,10 @@ namespace DE {
 		
 		auto& initSortKeysCS = RenderBase::computeCommon.particle.initSortKeysCS;
 		ctx.context->CSSetShader(initSortKeysCS.computeShader.Get(), 0, 0);
-		ctx.context->Dispatch((ctx.frameConstBuffer.GetCpu().maxParticles + 1023) / 1024, 1, 1);
+		
+		// [최적화] Thread group 계산 최적화
+		UINT dispatchCount = (ctx.frameConstBuffer.GetCpu().maxParticles + 1023) >> 10; // division -> bit shift
+		ctx.context->Dispatch(dispatchCount, 1, 1);
 		
 		// Barrier
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };

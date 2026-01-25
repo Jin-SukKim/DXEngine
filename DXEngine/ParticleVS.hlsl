@@ -30,16 +30,7 @@ float3x3 GetRotationMatrix(float3 rot) {
 
 GSInput main(uint vertexID : SV_VertexID)
 {
-    uint particleIdx;
-    // useSorting 플래그에 따라 분기
-    if (render.useSorting)
-    {
-        particleIdx = sortedElements[vertexID].value;
-    }
-    else
-    {
-        particleIdx = vertexID; // 순차 접근
-    }
+    uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
     Particle p = particles[particleIdx];
 
     GSInput output;

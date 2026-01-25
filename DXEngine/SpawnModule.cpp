@@ -46,14 +46,15 @@ namespace DE {
 	{
 		ParticleModule::PreUpdate(ctx);
 		
+		// [최적화] 조기 반환
 		if (m_totalSpawnCount == 0)
 			return;
 
 		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
+		// [최적화] Shape별 SRV 바인딩 최적화
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			// Vertex/Surface Spawn: ParticleEmitter의 메쉬 데이터 사용
 			if (ctx.meshVertex && ctx.meshIndices) {
 				ID3D11ShaderResourceView* srvs[] = {
 					ctx.meshVertex->GetSRV(),
@@ -63,23 +64,23 @@ namespace DE {
 			}
 		}
 		else if (m_spawnShape == 4) {
-			// Texture Spawn: ParticleEmitter의 Baked Position 데이터 사용
 			if (ctx.bakedSpawnPos) {
-				ID3D11ShaderResourceView* srv[] = { ctx.bakedSpawnPos->GetSRV() };
-				ctx.context->CSSetShaderResources(2, 1, srv);
+				ID3D11ShaderResourceView* srv = ctx.bakedSpawnPos->GetSRV();
+				ctx.context->CSSetShaderResources(2, 1, &srv);
 			}
 		}
 
-		// ComputeCommon의 공유 ComputePSO 사용
 		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
 		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
-		UINT groupCount = (m_totalSpawnCount + 1023) / 1024;
+		
+		// [최적화] Bit shift 사용
+		UINT groupCount = (m_totalSpawnCount + 1023) >> 10;
 		ctx.context->Dispatch(groupCount, 1, 1);
 		
 		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
 		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
-		ctx.context->CSSetShaderResources(0, 2, nullSRVs);
+		ctx.context->CSSetShaderResources(0, 3, nullSRVs);
 		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
 	}

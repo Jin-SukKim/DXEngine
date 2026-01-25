@@ -188,8 +188,10 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		m_frameConsts.GetCpu().dt = dt;
-		m_frameConsts.GetCpu().time = time;
+		// [최적화] Frame constants 먼저 업데이트
+		ParticleFrameConsts& frameConsts = m_frameConsts.GetCpu();
+		frameConsts.dt = dt;
+		frameConsts.time = time;
 		
 		SimulationContext simCtx = {
 			context.Get(),
@@ -218,8 +220,11 @@ namespace DE {
 			mod->OnUpdateCPU(simCtx);
 
 		m_frameConsts.Upload();
-		context->CSSetConstantBuffers(4, 1, m_frameConsts.GetAddressOf());
-		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
+		ID3D11Buffer* constBuffers[] = {
+			m_frameConsts.Get(),
+			m_consts.Get()
+		};
+		context->CSSetConstantBuffers(4, 2, constBuffers);
 
 		for (auto& mod : m_modules)
 			mod->PreUpdate(simCtx);

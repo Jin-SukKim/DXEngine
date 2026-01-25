@@ -6,34 +6,25 @@ StructuredBuffer<Particle> particles : register(t1);
 StructuredBuffer<SortElement> sortedElements : register(t2);
 
 // [추가] 3D Euler 각도 -> 회전 행렬 변환 함수
-float3x3 GetRotationMatrix(float3 rot) {
+float3x3 GetRotationMatrix(float3 rot)
+{
     float cX = cos(rot.x), sX = sin(rot.x);
     float cY = cos(rot.y), sY = sin(rot.y);
     float cZ = cos(rot.z), sZ = sin(rot.z);
 
-    // Z * Y * X 순서 (Roll -> Yaw -> Pitch)
-    float3x3 mX = { 1, 0, 0,  0, cX, -sX,  0, sX, cX };
-    float3x3 mY = { cY, 0, sY,  0, 1, 0,  -sY, 0, cY };
-    float3x3 mZ = { cZ, -sZ, 0,  sZ, cZ, 0,  0, 0, 1 };
-
-    return mul(mZ, mul(mY, mX));
+    // Z * Y * X 순서 직접 계산 (행렬 곱셈 제거)
+    return float3x3(
+        cY * cZ, -cY * sZ, sY,
+        sX * sY * cZ + cX * sZ, -sX * sY * sZ + cX * cZ, -sX * cY,
+        -cX * sY * cZ + sX * sZ, cX * sY * sZ + sX * cZ, cX * cY
+    );
 }
 
 // [중요] SV_InstanceID를 인자로 받아야 합니다.
 PSInput main(VSInput input, uint instanceID : SV_InstanceID)
 {
     // 1. 현재 그릴 파티클의 인덱스를 가져옵니다.
-    uint particleIdx;
-    
-    // useSorting 플래그에 따라 분기
-    if (render.useSorting)
-    {
-        particleIdx = sortedElements[instanceID].value;
-    }
-    else
-    {
-        particleIdx = instanceID; // 순차 접근
-    }
+    uint particleIdx = render.useSorting ? sortedElements[instanceID].value : instanceID;
     Particle p = particles[particleIdx];
 
     PSInput output;
