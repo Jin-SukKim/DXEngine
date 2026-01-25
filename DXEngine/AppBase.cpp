@@ -78,6 +78,21 @@ namespace DE {
 		m_inputManager.Update(m_mouseX, m_mouseY, true);
 		m_renderer->Update();
 		m_scene->Update(GetDeltaTime());
+		
+		// FPS 표시
+		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
+		ImGui::SetNextWindowBgAlpha(0.35f); // 반투명 배경
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | 
+		                                 ImGuiWindowFlags_AlwaysAutoResize | 
+		                                 ImGuiWindowFlags_NoSavedSettings | 
+		                                 ImGuiWindowFlags_NoFocusOnAppearing | 
+		                                 ImGuiWindowFlags_NoNav;
+		
+		if (ImGui::Begin("FPS", nullptr, window_flags)) {
+			float fps = 1.0f / GetDeltaTime();
+			ImGui::Text("FPS: %.1f (%.3f ms)", fps, GetDeltaTime() * 1000.0f);
+		}
+		ImGui::End();
 	}
 
 	void AppBase::render() {
