@@ -35,12 +35,6 @@ struct SimulationContext : ParticleContext {
     ID3D11Device* device;
     RenderModule* renderModule;
     
-    // Mesh 데이터 (Vertex/Surface Spawn용)
-    StructuredBuffer<Vector3>* meshVertex = nullptr;
-    StructuredBuffer<uint32_t>* meshIndices = nullptr;
-    UINT vertexCount = 0;
-    UINT indexCount = 0;
-    
     // Baked Spawn Position 데이터 (Texture Spawn용)
     StructuredBuffer<Vector3>* bakedSpawnPos = nullptr;
     UINT bakedCount = 0;

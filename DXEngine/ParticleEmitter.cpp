@@ -10,7 +10,6 @@
 #include "RenderModule.h"	
 #include "MaterialModule.h"	
 #include "ParticleContext.h"
-#include "ModelManager.h"
 #include "Mesh.h"
 #include "TextureSpawnBake.h"
 
@@ -42,8 +41,6 @@ namespace DE {
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
 		: m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)
-		, m_vertexCount(other.m_vertexCount)
-		, m_indexCount(other.m_indexCount)
 		, m_bakedCount(other.m_bakedCount)
 	{
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
@@ -65,8 +62,6 @@ namespace DE {
 
 		m_consts = other.m_consts;
 		m_frameConsts = other.m_frameConsts;
-		m_meshVertex = other.m_meshVertex;
-		m_meshIndices = other.m_meshIndices;
 		m_bakedSpawnPos = other.m_bakedSpawnPos;
 	}
 
@@ -110,10 +105,6 @@ namespace DE {
 			m_dispatchArgs.GetBuffer(),
 			device.Get(),
 			this->GetModule<RenderModule>(),
-			&m_meshVertex,
-			&m_meshIndices,
-			m_vertexCount,
-			m_indexCount,
 			&m_bakedSpawnPos,
 			m_bakedCount,
 			&m_sortBuffer,
@@ -142,35 +133,6 @@ namespace DE {
 	{
 		m_jsonPath = path;
 		m_watcherID = id;
-	}
-
-	void ParticleEmitter::SetTargetMesh(const int& modelIdx)
-	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-
-		Model* target = ModelManager::Get().GetModel(modelIdx);
-		if (!target || target->meshes.empty())
-			return;
-
-		const Mesh2& meshes = target->meshes[0];
-
-		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
-		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
-
-		m_meshVertex.Initialize(device.Get(), m_vertexCount);
-		m_meshIndices.Initialize(device.Get(), m_indexCount);
-
-		std::vector<Vector3> vertices;
-		for (const auto& vertex : meshes.vertexCPU) {
-			vertices.push_back(vertex.position);
-		}
-
-		m_meshVertex.SetData(vertices);
-		m_meshIndices.SetData(meshes.indexCPU);
-
-		m_meshVertex.Upload(context.Get());
-		m_meshIndices.Upload(context.Get());
 	}
 
 	void ParticleEmitter::LoadBakedSpawnData(const std::string& path)
@@ -210,10 +172,6 @@ namespace DE {
 			m_dispatchArgs.GetBuffer(),
 			device.Get(),
 			nullptr,
-			&m_meshVertex,
-			&m_meshIndices,
-			m_vertexCount,
-			m_indexCount,
 			&m_bakedSpawnPos,
 			m_bakedCount,
 			&m_sortBuffer,

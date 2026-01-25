@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 #include "SpawnModule.h"
 #include "Mesh.h"
+#include "ModelManager.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
@@ -90,6 +91,14 @@ namespace DE {
 		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(1, 1, m_transform.GetAddressOf());
+
+		if (m_vertexCount && m_indexCount) {
+			ID3D11ShaderResourceView* srvs[] = {
+				m_meshVertex.GetSRV(),
+				m_meshIndices.GetSRV()
+			};
+			context->CSSetShaderResources(0, 2, srvs);
+		}
 
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt, m_time);
@@ -204,11 +213,31 @@ namespace DE {
 
 	void ParticleSystem::SetTargetMesh(const int& modelIdx)
 	{
-		for (auto& emitter : m_emitters) {
-			if (emitter) {
-				emitter->SetTargetMesh(modelIdx);
-			}
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		Model* target = ModelManager::Get().GetModel(modelIdx);
+		if (!target || target->meshes.empty())
+			return;
+
+		const Mesh2& meshes = target->meshes[0];
+
+		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
+		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
+
+		m_meshVertex.Initialize(device.Get(), m_vertexCount);
+		m_meshIndices.Initialize(device.Get(), m_indexCount);
+
+		std::vector<Vector3> vertices;
+		for (const auto& vertex : meshes.vertexCPU) {
+			vertices.push_back(vertex.position);
 		}
+
+		m_meshVertex.SetData(vertices);
+		m_meshIndices.SetData(meshes.indexCPU);
+
+		m_meshVertex.Upload(context.Get());
+		m_meshIndices.Upload(context.Get());
 	}
 
 	void ParticleSystem::SetTransform(const MeshConstants& transform)

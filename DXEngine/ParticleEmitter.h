@@ -35,9 +35,6 @@ namespace DE {
 		void SetParticleConfig(const ParticleConsts& config);
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
-		// Mesh 데이터 설정 (Spawn 모듈용)
-		void SetTargetMesh(const int& modelIdx);
-		
 		// Texture Bake 데이터 설정 (Spawn 모듈용)
 		void LoadBakedSpawnData(const std::string& path);
 
@@ -45,12 +42,6 @@ namespace DE {
 		ParticleFrameConsts& GetFrameConstsData() { return m_frameConsts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
 		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
-		
-		// Mesh 데이터 접근자
-		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
-		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
-		UINT GetVertexCount() const { return m_vertexCount; }
-		UINT GetIndexCount() const { return m_indexCount; }
 		
 		// Baked Spawn Position 접근자
 		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
@@ -90,12 +81,6 @@ namespace DE {
 		// Hot-Reload 정보
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
-		
-		// Mesh 데이터 (Vertex/Surface Spawn용)
-		StructuredBuffer<Vector3> m_meshVertex;
-		StructuredBuffer<uint32_t> m_meshIndices;
-		UINT m_vertexCount = 0;
-		UINT m_indexCount = 0;
 		
 		// Baked Spawn Position 데이터 (Texture Spawn용)
 		StructuredBuffer<Vector3> m_bakedSpawnPos;

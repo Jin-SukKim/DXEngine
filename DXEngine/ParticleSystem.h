@@ -20,7 +20,6 @@ public:
 
 	ParticleSystem(const ParticleSystem& other);
 	UINT GetEmitterCount() const { return static_cast<UINT>(m_emitters.size()); }
-	ParticleEmitter* GetEmitter(UINT index) const;
 
 	void Initialize() override;
 	void OnSpawn();
@@ -46,6 +45,12 @@ public:
 	void SetPreWarmTime(float time) { m_preWarmTime = time; }
 	void SetTargetMesh(const int& modelIdx);
 
+	// Mesh 데이터 접근자
+	StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
+	StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
+	UINT GetVertexCount() const { return m_vertexCount; }
+	UINT GetIndexCount() const { return m_indexCount; }
+
 	void SetTransform(const MeshConstants& transform);
 
 private:
@@ -64,6 +69,12 @@ private:
 	std::wstring m_jsonPath;
 	FileWatcher::CallbackID m_watcherID = 0;
 	ConstantBuffer<MeshConstants> m_transform;
+
+	// Mesh 데이터 (Vertex/Surface Spawn용)
+	StructuredBuffer<Vector3> m_meshVertex;
+	StructuredBuffer<uint32_t> m_meshIndices;
+	UINT m_vertexCount = 0;
+	UINT m_indexCount = 0;
 };
 
 }

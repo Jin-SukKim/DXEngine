@@ -18,8 +18,6 @@ namespace DE {
 		consts.spawnInnerRatio = m_spawnInnerRatio;
 		consts.spawnShape = m_spawnShape;
 		consts.lifeRange = m_lifeRange;
-		consts.vertexCount = ctx.vertexCount;
-		consts.indexCount = ctx.indexCount;
 		consts.bakedCount = ctx.bakedCount;
 		consts.simulationSpace = m_simulationSpace;
 
@@ -55,13 +53,7 @@ namespace DE {
 
 		// [최적화] Shape별 SRV 바인딩 최적화
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			if (ctx.meshVertex && ctx.meshIndices) {
-				ID3D11ShaderResourceView* srvs[] = {
-					ctx.meshVertex->GetSRV(),
-					ctx.meshIndices->GetSRV()
-				};
-				ctx.context->CSSetShaderResources(0, 2, srvs);
-			}
+
 		}
 		else if (m_spawnShape == 4) {
 			if (ctx.bakedSpawnPos) {
