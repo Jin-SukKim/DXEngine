@@ -1,10 +1,6 @@
 #include "pch.h"
 #include "SpawnModule.h"
 #include "ParticleEmitter.h"
-#include "Mesh.h"
-#include "TextureSpawnBake.h"
-#include "MaterialSystem.h"
-#include "ModelManager.h"
 
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
@@ -24,7 +20,7 @@ namespace DE {
 		consts.lifeRange = m_lifeRange;
 		consts.vertexCount = ctx.vertexCount;
 		consts.indexCount = ctx.indexCount;
-		consts.bakedCount = m_bakedCount;
+		consts.bakedCount = ctx.bakedCount;
 		consts.simulationSpace = m_simulationSpace;
 
 		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
@@ -57,7 +53,7 @@ namespace DE {
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			// ParticleEmitter의 메쉬 데이터 사용
+			// Vertex/Surface Spawn: ParticleEmitter의 메쉬 데이터 사용
 			if (ctx.meshVertex && ctx.meshIndices) {
 				ID3D11ShaderResourceView* srvs[] = {
 					ctx.meshVertex->GetSRV(),
@@ -67,8 +63,11 @@ namespace DE {
 			}
 		}
 		else if (m_spawnShape == 4) {
-			ID3D11ShaderResourceView* srv[] = { m_spawnPos.GetSRV() };
-			ctx.context->CSSetShaderResources(2, 1, srv);
+			// Texture Spawn: ParticleEmitter의 Baked Position 데이터 사용
+			if (ctx.bakedSpawnPos) {
+				ID3D11ShaderResourceView* srv[] = { ctx.bakedSpawnPos->GetSRV() };
+				ctx.context->CSSetShaderResources(2, 1, srv);
+			}
 		}
 
 		// ComputeCommon의 공유 ComputePSO 사용
@@ -97,15 +96,7 @@ namespace DE {
 			else if (shape == "Sphere") m_spawnShape = 1;
 			else if (shape == "Vertex") m_spawnShape = 2;
 			else if (shape == "Surface") m_spawnShape = 3;
-			else if (shape == "Texture") {
-				if (data.contains("bakedPath")) {
-					m_spawnShape = 4;
-					std::string path = data["bakedPath"];
-					TextureSpawnBake::Get().LoadBakedData(path, m_spawnPos, m_bakedCount);
-				}
-				else
-					m_spawnShape = 1;
-			}
+			else if (shape == "Texture") m_spawnShape = 4;
 		}
 		if (data.contains("spawnRate")) m_spawnRate = data["spawnRate"];
 		if (data.contains("particlesPerSpawn")) m_particlesPerSpawn = data["particlesPerSpawn"];
@@ -126,13 +117,7 @@ namespace DE {
 		cloned->m_maxParticles = this->m_maxParticles;
 		cloned->m_lifeRange = this->m_lifeRange;
 		cloned->m_simulationSpace = this->m_simulationSpace;
-		cloned->m_bakedCount = this->m_bakedCount;
 		cloned->m_isEnabled = this->m_isEnabled;
-
-		// Texture bake 데이터만 복사
-		if (m_spawnShape == 4) {
-			cloned->m_spawnPos = this->m_spawnPos;
-		}
 
 		return cloned;
 	}

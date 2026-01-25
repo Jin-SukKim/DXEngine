@@ -37,6 +37,9 @@ namespace DE {
 		
 		// Mesh 데이터 설정 (Spawn 모듈용)
 		void SetTargetMesh(const int& modelIdx);
+		
+		// Texture Bake 데이터 설정 (Spawn 모듈용)
+		void LoadBakedSpawnData(const std::string& path);
 
 		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
 		ParticleFrameConsts& GetFrameConstsData() { return m_frameConsts.GetCpu(); }
@@ -48,6 +51,10 @@ namespace DE {
 		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
 		UINT GetVertexCount() const { return m_vertexCount; }
 		UINT GetIndexCount() const { return m_indexCount; }
+		
+		// Baked Spawn Position 접근자
+		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
+		UINT GetBakedCount() const { return m_bakedCount; }
 		
 	private:
 		// 초기화 관련 함수들
@@ -79,11 +86,15 @@ namespace DE {
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
 		
-		// Mesh 데이터 (Spawn 모듈이 사용)
+		// Mesh 데이터 (Vertex/Surface Spawn용)
 		StructuredBuffer<Vertex> m_meshVertex;
 		StructuredBuffer<uint32_t> m_meshIndices;
 		UINT m_vertexCount = 0;
 		UINT m_indexCount = 0;
+		
+		// Baked Spawn Position 데이터 (Texture Spawn용)
+		StructuredBuffer<Vector3> m_bakedSpawnPos;
+		UINT m_bakedCount = 0;
 	};
 
 	template<typename T>

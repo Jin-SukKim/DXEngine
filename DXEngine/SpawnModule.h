@@ -1,10 +1,7 @@
 #pragma once
 #include "ParticleModule.h"
-#include "MeshData.h"
 
 namespace DE {
-
-struct Mesh;
 
 class SpawnModule : public ParticleModule
 {
@@ -29,13 +26,7 @@ private:
 	Vector2 m_lifeRange = { 0.1f, 1.5f };
 	float m_spawnAccumulator = 0.f;
 	UINT m_simulationSpace = 0; // 0 : local, 1 : world
-
-	// ComputeShader 제거 - ComputeCommon 사용
 	UINT m_totalSpawnCount = 0;
-	
-	// Texture Bake 전용
-	StructuredBuffer<Vector3> m_spawnPos;
-	UINT m_bakedCount = 0;
 };
 }
 

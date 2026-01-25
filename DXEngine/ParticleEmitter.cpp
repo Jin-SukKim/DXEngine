@@ -12,6 +12,7 @@
 #include "ParticleContext.h"
 #include "ModelManager.h"
 #include "Mesh.h"
+#include "TextureSpawnBake.h"
 
 namespace DE {
 
@@ -43,6 +44,7 @@ namespace DE {
 		, m_watcherID(0)  // Hot-Reload는 복사 안 함
 		, m_vertexCount(other.m_vertexCount)
 		, m_indexCount(other.m_indexCount)
+		, m_bakedCount(other.m_bakedCount)
 	{
 		// Factory 등록 (필요시)
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
@@ -70,6 +72,9 @@ namespace DE {
 		// Mesh 버퍼 복사
 		m_meshVertex = other.m_meshVertex;
 		m_meshIndices = other.m_meshIndices;
+		
+		// Baked Spawn Position 버퍼 복사
+		m_bakedSpawnPos = other.m_bakedSpawnPos;
 
 		// GPU 버퍼는 Initialize()에서 재생성
 	}
@@ -114,7 +119,9 @@ namespace DE {
 			&m_meshVertex,
 			&m_meshIndices,
 			m_vertexCount,
-			m_indexCount
+			m_indexCount,
+			&m_bakedSpawnPos,
+			m_bakedCount
 		};
 
 		for (auto& mod : m_modules)
@@ -164,6 +171,11 @@ namespace DE {
 		m_meshIndices.Upload(context.Get());
 	}
 
+	void ParticleEmitter::LoadBakedSpawnData(const std::string& path)
+	{
+		TextureSpawnBake::Get().LoadBakedData(path, m_bakedSpawnPos, m_bakedCount);
+	}
+
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
 		// 핑퐁 업데이트를 위한 이중 버퍼 파티클 저장소
@@ -188,20 +200,22 @@ namespace DE {
 		
 		SimulationContext simCtx = {
 			context.Get(),
-			m_consts,
-			m_frameConsts,
-			dt,
-			time,
-			m_consume,
-			m_append,
-			m_countSRV.Get(),
-			m_dispatchArgs.GetBuffer(),
-			device.Get(),
-			nullptr,
-			&m_meshVertex,
-			&m_meshIndices,
-			m_vertexCount,
-			m_indexCount
+		 m_consts,
+		 m_frameConsts,
+		 dt,
+		 time,
+		 m_consume,
+		 m_append,
+		 m_countSRV.Get(),
+		 m_dispatchArgs.GetBuffer(),
+		 device.Get(),
+		 nullptr,
+		 &m_meshVertex,
+		 &m_meshIndices,
+		 m_vertexCount,
+		 m_indexCount,
+		 &m_bakedSpawnPos,
+		 m_bakedCount
 		};
 
 		for (auto& mod : m_modules)
