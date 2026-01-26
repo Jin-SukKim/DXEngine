@@ -2,6 +2,8 @@
 
 #include "InputManager.h"
 #include "Gui.h"
+#include "TransformComponent.h"
+#include "EffectActor.h"
 
 namespace DE {
 	class SampleActor;
@@ -28,13 +30,25 @@ namespace DE {
 
 	public:
 		Scene();
-		virtual ~Scene() {}
+		virtual ~Scene();  // cpp에서 정의 (CopyFilter 완전 타입 필요)
+		
 		virtual void Initialize();
 		virtual void Update(const float& deltaTime);
 		virtual void UpdateGUI();
 		virtual void Render();
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); }
+
+		// 동적 Effect 생성 (외부에서 호출 가능)
+		template<class T = EffectActor>
+		T* SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos);
+
+		// unique_ptr로 직접 추가 (ParticleSpawner용)
+		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor);
+
+		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category) {
+			return m_actorList[static_cast<size_t>(category)];
+		}
 
 	protected:
 		// Actor Management
@@ -62,6 +76,7 @@ namespace DE {
 		virtual void UpdateLights(const float& deltaTime);
 		virtual void UpdateActors(const float& deltaTime);
 		virtual void UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
+		virtual void CleanupFinishedEffects();
 
 		// Rendering
 		virtual void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
@@ -81,22 +96,22 @@ namespace DE {
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 
 		// Core Scene Elements
-		std::shared_ptr<CameraActor> m_mainCamera;
-		std::shared_ptr<SkyboxActor> m_skybox;
-		std::shared_ptr<CopyFilter> m_copyPostProcess;
+		std::unique_ptr<CameraActor> m_mainCamera;
+		std::unique_ptr<SkyboxActor> m_skybox;
+		std::unique_ptr<CopyFilter> m_copyPostProcess;
 
-		// Actors organized by category
-		std::vector<std::shared_ptr<Actor>> m_actorList[static_cast<size_t>(ActorCategory::Count)];
+		// Actors organized by category (unique_ptr로 변경)
+		std::vector<std::unique_ptr<Actor>> m_actorList[static_cast<size_t>(ActorCategory::Count)];
 		std::vector<std::unique_ptr<Actor>> m_lights;
 		std::vector<std::unique_ptr<Gui>> m_guis;
 
-		// Input - 버튼은 먼저 선언
+		// Input - 버튼과 축을 먼저 정의
 		InputButton m_fButton = InputButton::F;
 		InputButton m_lButton = InputButton::LButton;
 		InputButton m_rButton = InputButton::RButton;
 		InputAxis m_xAxis = InputAxis::XAxis;
 		
-		// InputAction은 나중에 선언 (버튼에 의존)
+		// InputAction은 나중에 정의 (버튼에 의존)
 		InputAction m_fpv;
 		InputAxisAction m_mouseClick;
 	};
@@ -104,19 +119,50 @@ namespace DE {
 	template<class T>
 	inline T* Scene::AddObject(const std::wstring& name)
 	{
-		std::unique_ptr<T> actor = std::make_unique<T>(name);
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
 		auto category = static_cast<size_t>(ActorCategory::Normal);
 		m_actorList[category].emplace_back(std::move(actor));
-		return dynamic_cast<T*>(m_actorList[category].back().get());
+		return rawPtr;
 	}
 
 	template<class T>
 	inline T* Scene::AddEffect(const std::wstring& name)
 	{
-		std::unique_ptr<T> actor = std::make_unique<T>(name);
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
 		auto category = static_cast<size_t>(ActorCategory::Effect);
 		m_actorList[category].emplace_back(std::move(actor));
-		return dynamic_cast<T*>(m_actorList[category].back().get());
+		return rawPtr;
+	}
+
+	template<class T>
+	inline T* Scene::SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos)
+	{
+		static_assert(std::is_base_of_v<EffectActor, T>, "T must derive from EffectActor");
+
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
+		
+		// Transform 설정
+		if (auto* transform = actor->GetComponent<TransformComponent>()) {
+			transform->SetPos(worldPos);
+		}
+		else {
+			auto* newTransform = actor->AddComponent<TransformComponent>(L"Transform");
+			newTransform->SetPos(worldPos);
+		}
+
+		// 프리셋 설정 (필요한 경우)
+		if (actor->NeedsExternalPreset() && !presetPath.empty()) {
+			actor->SetParticlePreset(presetPath);
+		}
+
+		actor->Initialize();
+
+		auto category = static_cast<size_t>(ActorCategory::Effect);
+		m_actorList[category].emplace_back(std::move(actor));
+		return rawPtr;
 	}
 
 	template<class T>
@@ -124,16 +170,18 @@ namespace DE {
 	{
 		assert(m_lights.size() < MAX_LIGHTS && "Cannot add more lights than MAX_LIGHTS");
 			
-		std::unique_ptr<T> light = std::make_unique<T>(name);
+		auto light = std::make_unique<T>(name);
+		T* rawPtr = light.get();
 		m_lights.emplace_back(std::move(light));
-		return dynamic_cast<T*>(m_lights.back().get());
+		return rawPtr;
 	}
 
 	template<class T>
 	inline T* Scene::AddGui()
 	{
-		std::unique_ptr<T> gui = std::make_unique<T>();
+		auto gui = std::make_unique<T>();
+		T* rawPtr = gui.get();
 		m_guis.emplace_back(std::move(gui));
-		return dynamic_cast<T*>(m_guis.back().get());
+		return rawPtr;
 	}
 }

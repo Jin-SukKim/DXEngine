@@ -4,6 +4,7 @@
 #include "CameraActor.h"
 #include "SkyboxActor.h"
 #include "TransformComponent.h"
+#include "EffectActor.h"
 
 #include "AppBase.h"
 #include "InputManager.h"
@@ -34,6 +35,10 @@ namespace DE {
 		InitializeCommonResources();
 	}
 
+	Scene::~Scene()
+	{
+	}
+
 	void Scene::InitializeCommonResources()
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
@@ -47,11 +52,11 @@ namespace DE {
 		MaterialSystem::Get().Initialize();
 
 		// Create core actors
-		m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");
-		m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
+		m_mainCamera = std::make_unique<CameraActor>(L"MainCamera");
+		m_skybox = std::make_unique<SkyboxActor>(L"Skybox");
 
 		// Setup post-processing
-		m_copyPostProcess = std::make_shared<CopyFilter>();
+		m_copyPostProcess = std::make_unique<CopyFilter>();
 		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 	}
 
@@ -86,10 +91,10 @@ namespace DE {
 		// Create temp lights up to MAX_LIGHTS
 		for (size_t i = m_lights.size(); i < MAX_LIGHTS; ++i)
 		{
-			std::unique_ptr<SpotLight> tempLight = std::make_unique<SpotLight>(L"TempLight");
+			auto tempLight = std::make_unique<SpotLight>(L"TempLight");
 			tempLight->TurnOff();
+			lights.emplace_back(tempLight.get());
 			m_lights.emplace_back(std::move(tempLight));
-			lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));
 		}
 
 		// Turn on first light by default
@@ -139,6 +144,9 @@ namespace DE {
 		UpdateLights(deltaTime);
 		UpdateActors(deltaTime);
 
+		// 완료된 Effect 정리
+		CleanupFinishedEffects();
+
 		// ParticleManager handles all particle updates
 		ParticleManager::Get().Update(deltaTime);
 	}
@@ -154,7 +162,6 @@ namespace DE {
 		{
 			m_lights[i]->Update(deltaTime);
 			
-			// Assuming m_lights contains only LightActor derived types
 			if (LightActor* lightActor = dynamic_cast<LightActor*>(m_lights[i].get()))
 			{
 				m_globalConstsCPU.lights[i] = lightActor->GetLight();
@@ -171,6 +178,18 @@ namespace DE {
 				actor->Update(deltaTime);
 			}
 		}
+	}
+
+	void Scene::CleanupFinishedEffects()
+	{
+		auto& effectList = m_actorList[static_cast<size_t>(ActorCategory::Effect)];
+		
+		std::erase_if(effectList, [](const std::unique_ptr<Actor>& actor) {
+			if (auto* effect = dynamic_cast<EffectActor*>(actor.get())) {
+				return effect->IsFinished();
+			}
+			return false;
+		});
 	}
 
 	void Scene::UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj)
@@ -210,10 +229,6 @@ namespace DE {
 		RenderDepthOnly();
 		RenderShadowMaps();
 
-		// Set common IBL textures
-		//m_skybox->SetCommonSRVs();
-
-		// Render opaque objects
 		RenderOpaqueObjects();
 	}
 
@@ -224,7 +239,6 @@ namespace DE {
 		
 		ID3D11Buffer* const buffers[] = { globalConstsGPU.Get() };
 		
-		// Set global constants for all shader stages
 		context->VSSetConstantBuffers(0, 1, buffers);
 		context->GSSetConstantBuffers(0, 1, buffers);
 		context->PSSetConstantBuffers(0, 1, buffers);
@@ -238,7 +252,6 @@ namespace DE {
 		const UINT samplerCount = static_cast<UINT>(RenderBase::graphicsCommon.sampleStates.size());
 		ID3D11SamplerState* const* samplers = RenderBase::graphicsCommon.sampleStates.data();
 
-		// Set common sampler states for all shader stages
 		context->VSSetSamplers(0, samplerCount, samplers);
 		context->PSSetSamplers(0, samplerCount, samplers);
 		context->CSSetSamplers(0, samplerCount, samplers);
@@ -252,25 +265,17 @@ namespace DE {
 
 		RenderActors(ActorCategory::Normal);
 		RenderActors(ActorCategory::Billboard);
-		
-		//m_skybox->Render();
 	}
 
 	void Scene::RenderShadowMaps()
 	{
-		RenderBase& renderer = *GET_SINGLE(RenderBase);
-
 		for (auto& light : m_lights)
 		{
 			if (LightActor* lightActor = dynamic_cast<LightActor*>(light.get()))
 			{
 				if (lightActor->GetLight().type & LIGHT_SHADOW)
 				{
-					lightActor->RenderShadow({ 
-						m_actorList[static_cast<size_t>(ActorCategory::Normal)], 
-						m_actorList[static_cast<size_t>(ActorCategory::Billboard)], 
-						m_actorList[static_cast<size_t>(ActorCategory::Effect)] 
-					});
+					lightActor->RenderShadow(m_actorList, static_cast<size_t>(ActorCategory::Count));
 				}
 			}
 		}
@@ -284,7 +289,6 @@ namespace DE {
 		renderer.SetRender();
 
 		SetGlobals(m_globalConstsGPU);
-		// Set shadow maps as SRVs
 		renderer.SetShadowSRVs();
 
 		// Render normal objects
@@ -295,9 +299,9 @@ namespace DE {
 		renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
 		RenderActors(ActorCategory::Billboard);
 
-		// Render skybox
-		//renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		//m_skybox->Render();
+		// Render effect actors (mesh가 있는 경우)
+		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
+		RenderActors(ActorCategory::Effect);
 
 		// Render particles (ParticleManager handles PSO restoration)
 		ParticleManager::Get().Render();
@@ -319,7 +323,6 @@ namespace DE {
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 
-		// Render bounding volumes
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.boundPSO);
 		for (const auto& actorList : m_actorList)
 		{
@@ -329,7 +332,6 @@ namespace DE {
 			}
 		}
 
-		// Render normals
 		renderer.SetPipelineState(RenderBase::graphicsCommon.normal.solidPSO);
 		for (const auto& actorList : m_actorList)
 		{
@@ -343,5 +345,15 @@ namespace DE {
 	void Scene::EnableCameraFPV()
 	{
 		m_mainCamera->EnableFPV();
+	}
+
+	EffectActor* Scene::SpawnEffect(std::unique_ptr<EffectActor> actor)
+	{
+		if (!actor) return nullptr;
+		
+		EffectActor* rawPtr = actor.get();
+		auto category = static_cast<size_t>(ActorCategory::Effect);
+		m_actorList[category].emplace_back(std::move(actor));
+		return rawPtr;
 	}
 }

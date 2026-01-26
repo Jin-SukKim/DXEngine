@@ -47,15 +47,19 @@ namespace DE {
 		ParticleModuleFactory::Register<MaterialModule>("Material");
 		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
 
+		// ClickEffectManager에 Scene 설정
 		ClickEffectManager::Get().Initialize();
+		ClickEffectManager::Get().SetActiveScene(this);
+
 		ground = AddObject<SquareActor>(L"Ground");
 		
 		m_sample = AddObject<SampleActor>(L"Sample");
 
 		m_spanwer = AddObject<ParticleSpawner>(L"TempSpawner");
+		m_spanwer->SetOwnerScene(this);  // ParticleSpawner에 Scene 설정
 		m_spanwer->SetActorType<Firework>();
 		//m_spanwer->SetParticlePreset(L"Particles\\TempEffect.json");
-		m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		m_spanwer->SetSpawnMode(SpawnMode::Interval);
 		m_spanwer->SetSpawnInterval(0.5f);
 		m_spanwer->SetSpawnRadius(2.0f);
 		m_spanwer->SetMaxActiveParticles(20);
@@ -106,14 +110,7 @@ namespace DE {
 	{
 		Scene::Update(dt);
 
-		//TransformComponent* tr = effect->GetComponent<TransformComponent>();
-		//if (tr) {
-		//	Vector3 pos = tr->GetPos();
-		//	pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
-		//	tr->SetPos(pos);
-		//}
-		ClickEffectManager::Get().Update(dt);
-		FileWatcher::Get().Update(); // File이 변하는지 감시
+		FileWatcher::Get().Update();
 	}
 
 	void ParticleEditor::UpdateGUI()
@@ -125,8 +122,15 @@ namespace DE {
 	{
 		Scene::Render();
 	}
+
 	void ParticleEditor::ClickEvent()
 	{
 		ClickEffectManager::Get().TriggerPreset("Smoke");
+		
+		// 또는 직접 Scene에서 생성
+		// InputManager& inputMgr = AppBase::GetInputManager();
+		// Vector2 mouseNDC = inputMgr.GetMouseNDC();
+		// Vector3 worldPos(mouseNDC.x * 10.0f, 0.0f, mouseNDC.y * 10.0f);
+		// SpawnEffect<EffectActor>(L"ClickEffect", L"Particles\\SmokeEffect.json", worldPos);
 	}
 }
