@@ -31,6 +31,8 @@
 #include "RenderModule.h"	
 #include "MaterialModule.h"	
 #include "Firework.h"
+#include "OrbitModule.h"
+#include "RoseEffect.h"
 
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
@@ -40,6 +42,7 @@ namespace DE {
 		ParticleModuleFactory::Register<VisualModule>("Visual");
 		ParticleModuleFactory::Register<ForceModule>("Force");
 		ParticleModuleFactory::Register<VortexModule>("Vortex");
+		ParticleModuleFactory::Register<OrbitModule>("Orbit");
 		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
 		ParticleModuleFactory::Register<MaterialModule>("Material");
 		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
@@ -58,6 +61,7 @@ namespace DE {
 		m_spanwer->SetMaxActiveParticles(20);
 
 		//m_firework = AddObject<Firework>(L"Firework");
+		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -81,6 +85,11 @@ namespace DE {
 		tr = m_sample->GetComponent<TransformComponent>();
 		if (tr) {
 			tr->SetScale(Vector3(0.5f));
+		}
+
+		tr = m_rose->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetPos(Vector3(-1.f, 0.f, 0.f));
 		}
 
 		tr = m_spanwer->GetComponent<TransformComponent>();

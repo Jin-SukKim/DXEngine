@@ -17,7 +17,6 @@ namespace DE {
 
 			m_sample = AddComponent<ModelComponent>(L"Model");
 			m_sample->SetModel("Box", mesh);
-
 		}
 	}
 

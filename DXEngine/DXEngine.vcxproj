@@ -198,8 +198,10 @@
     <ClInclude Include="MaterialModule.h" />
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="OrbitModule.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ParticleSpawner.h" />
+    <ClInclude Include="RoseEffect.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="BloomEffect.h" />
@@ -280,8 +282,10 @@
     <ClCompile Include="MaterialModule.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="OrbitModule.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ParticleSpawner.cpp" />
+    <ClCompile Include="RoseEffect.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
     <ClCompile Include="BloomEffect.cpp" />
@@ -514,6 +518,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="OrbitCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="ParticleArgsUpdateCS.hlsl">

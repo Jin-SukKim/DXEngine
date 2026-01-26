@@ -8,6 +8,7 @@ namespace DE {
 	class EffectActor;
 	class ParticleSpawner;
 	class Firework;
+	class RoseEffect;
 class ParticleEditor : public Scene
 {
 public:
@@ -26,7 +27,7 @@ private:
 	SampleActor* m_sample;
 	ParticleSpawner* m_spanwer;
 	Firework* m_firework;
-	
+	RoseEffect* m_rose;
 
 	InputAction m_click;
 };

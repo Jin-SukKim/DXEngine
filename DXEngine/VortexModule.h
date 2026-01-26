@@ -14,7 +14,7 @@ public:
 
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
-public:
+private:
 	Vector3 m_vortexCenter = Vector3(0.f);
 	float m_vortexStrength = 0.f;
 	float m_vortexFalloff = 1.f;

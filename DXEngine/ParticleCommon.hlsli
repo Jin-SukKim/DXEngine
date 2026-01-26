@@ -84,12 +84,20 @@ struct VortexConsts {
     float2 padding10;
 };
 
+struct OrbitConsts {
+    float3 center;
+    float rotationRate;
+    float3 axis;
+    float initialOffset;
+};
+
 cbuffer ParticleConsts : register(b5) {
     SpawnConsts spawn;
     VisualConsts visual;
     ForceConsts force;
     RenderConsts render;
     VortexConsts vortex;
+    OrbitConsts orbit;
 };
 
 cbuffer ParticleMeshConsts : register(b6)

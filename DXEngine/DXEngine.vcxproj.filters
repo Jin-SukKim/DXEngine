@@ -140,6 +140,9 @@
     <Filter Include="public\ParticleSystem\Resource">
       <UniqueIdentifier>{df639e14-4802-4783-a538-94edee4a25a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\ParticleSystem\Actor">
+      <UniqueIdentifier>{fcf6b784-8c9d-4352-af46-8260c33f86cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -370,20 +373,26 @@
     <ClInclude Include="TextureSpawnBake.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="ClickEffectManager.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleSpawner.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ComputeCommon.h">
       <Filter>public\ParticleSystem\Buffer</Filter>
     </ClInclude>
-    <ClInclude Include="EffectActor.h" />
     <ClInclude Include="ParticleManager.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Firework.h" />
+    <ClInclude Include="EffectActor.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Firework.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSpawner.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="ClickEffectManager.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbitModule.h" />
+    <ClInclude Include="RoseEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -579,9 +588,15 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="EffectActor.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\Actor</Filter>
     </ClCompile>
     <ClCompile Include="Firework.cpp">
+      <Filter>private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="OrbitModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RoseEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -707,6 +722,9 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="TextureSpawnBakeCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="OrbitCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>

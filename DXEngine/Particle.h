@@ -74,6 +74,13 @@ namespace DE {
         Vector2 padding10;    
     };
 
+    struct OrbitConsts {
+        Vector3 center;
+        float rotationRate;
+        Vector3 axis;
+        float initialOffset;
+    };
+
     struct RenderConsts {
         int textureIdx;
         UINT frameCount;
@@ -90,5 +97,6 @@ namespace DE {
         ForceConsts force;
         RenderConsts render;
         VortexConsts vortex;
+        OrbitConsts orbit;
     };
 }
