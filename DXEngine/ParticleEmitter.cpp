@@ -77,6 +77,18 @@ namespace DE {
 			mod->Initialize(initCtx);
 
 		InitializeBuffers(device);
+		
+		// Baked 데이터가 CPU에 있으면 GPU 버퍼 생성 및 업로드
+		if (m_bakedCount > 0 && m_bakedSpawnPos.Size() > 0) {
+			m_bakedSpawnPos.Initialize(device.Get());
+			m_bakedSpawnPos.Upload(context.Get());
+		}
+		
+		// Custom positions도 동일하게 처리
+		if (m_customPositions.Size() > 0) {
+			m_customPositions.Initialize(device.Get());
+			m_customPositions.Upload(context.Get());
+		}
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -136,7 +148,7 @@ namespace DE {
 		m_isCompleted = false;
 		m_startFired = false;
 		m_spawnOffset = Vector3(0.f);
-		Initialize();
+		// GPU 버퍼는 유지, 상태만 리셋
 	}
 
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)

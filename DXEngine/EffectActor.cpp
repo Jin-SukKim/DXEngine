@@ -43,13 +43,11 @@ namespace DE {
             m_particle = nullptr;
         }
 
-        // 새 시스템 생성
+        // 새 시스템 생성 (CreateSystem 내부에서 Initialize + OnSpawn 완료됨)
         m_particle = ParticleManager::Get().CreateSystem(path);
 
         if (m_particle) {
             m_particle->SetTarget(this);
-            m_particle->Initialize();
-            m_particle->OnSpawn();
             m_particle->Play();
         }
     }

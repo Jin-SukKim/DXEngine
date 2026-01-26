@@ -154,12 +154,13 @@ namespace DE {
 			newTransform->SetPos(worldPos);
 		}
 
-		// 프리셋 설정 (필요한 경우)
+		// 먼저 Initialize (컴포넌트 등 기본 초기화)
+		actor->Initialize();
+
+		// 그 다음 프리셋 설정 (ParticleSystem 생성)
 		if (actor->NeedsExternalPreset() && !presetPath.empty()) {
 			actor->SetParticlePreset(presetPath);
 		}
-
-		actor->Initialize();
 
 		auto category = static_cast<size_t>(ActorCategory::Effect);
 		m_actorList[category].emplace_back(std::move(actor));

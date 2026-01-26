@@ -4,6 +4,8 @@
 namespace DE {
     void BitonicSort::Initialize(ID3D11Device* device, const UINT numElements)
     {
+        if (numElements == 0) return;
+        
         // 기존 리소스 정리
         m_constsCpu.clear();
         m_constsGpu.clear();

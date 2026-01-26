@@ -299,13 +299,12 @@ namespace DE {
 
 	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
 	{
+		m_owner = owner;
+		
 		if (modelIdx >= 0) {
 			SetTargetMesh(modelIdx);
-			Initialize();
-			OnSpawn();
 		}
 
-		m_owner = owner;
 		UpdateTransform();
 	}
 

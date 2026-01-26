@@ -35,8 +35,6 @@ private:
 	
 	// 렌더링할 활성 시스템들 (포인터만 저장, 소유권 없음)
 	std::vector<ParticleSystem*> m_activeSystems;
-
-	std::vector<ParticleSystem*> m_stoppedSystems;
 };
 
 }
