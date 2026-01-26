@@ -35,6 +35,8 @@ namespace DE {
 		, m_state(other.m_state)
 		, m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)
+		, m_vertexCount(other.m_vertexCount)
+		, m_indexCount(other.m_indexCount)
 	{
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
@@ -43,7 +45,12 @@ namespace DE {
 			}
 		}
 
-		m_meshConsts = other.m_meshConsts;
+		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 생성
+		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpuConst());
+		
+		// mesh 데이터도 CPU만 복사
+		m_meshVertex.SetData(other.m_meshVertex.GetCpu());
+		m_meshIndices.SetData(other.m_meshIndices.GetCpu());
 	}
 
 	void ParticleSystem::Initialize()
