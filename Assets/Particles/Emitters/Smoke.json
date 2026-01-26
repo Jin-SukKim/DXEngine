@@ -2,13 +2,14 @@
   "Name": "SmokeEffect",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ -1.0, 0.08, 0.0],
-    "spawnVolume": [ 0.3, 0.3, 0.3 ],
+    "localPos": [ 0.0, 0.8, 0.0 ],
+    "spawnVolume": [ 0.2, 0.2, 0.2 ],
     "spawnInnerRatio": 0.3,
-    "spawnRate": 3.0,
-    "particlesPerSpawn": 50,
-    "maxParticles": 500,
-    "lifeRange": [ 0.1, 0.15 ]
+    "spawnRate": 0.0,
+    "burst": 1,
+    "particlesPerSpawn": 500,
+    "maxParticles": 5000,
+    "lifeRange": [ 0.2, 0.3 ]
   },
   "Visual": {
     "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
@@ -17,10 +18,10 @@
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
-    "speedRange": [ 1.0, 2.0 ],
+    "speedRange": [ 0.5, 1.0 ],
     "randomDir": [ 1.0, 1.0, 1.0 ],
     "gravity": [ 0.0, 0.0, 0.0 ],
-    "drag": 0.5
+    "drag": 0.9
   },
   "BillboardRender": {
     "blendMode": "Additive",

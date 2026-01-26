@@ -46,4 +46,11 @@ namespace DE {
 		}
 
 	}
+	bool Firework::IsFinished() const
+	{
+		if (m_up && m_up->IsStopped() && m_firework && m_firework->IsStopped()) {
+			return true;
+		}
+		return false;
+	}
 }

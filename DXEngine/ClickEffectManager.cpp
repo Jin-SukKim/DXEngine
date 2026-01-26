@@ -9,6 +9,8 @@ namespace DE {
 void ClickEffectManager::Initialize() {
     // 기본 프리셋 등록
     RegisterPreset("fire", { L"Particles\\TempEffect.json" });
+    RegisterPreset("Firework", { L"Particles\\Firework.json" });
+    RegisterPreset("Smoke", { L"Particles\\SmokeEffect.json" });
 }
 
 void ClickEffectManager::Update(float dt) {
@@ -22,10 +24,9 @@ void ClickEffectManager::Update(float dt) {
 
             bool isDead = effect.lifetime <= 0.0f;
 
-            auto& particles = effect.system->GetParticleSystem();
-            for (auto& ps : particles)
-                if (ps && ps->IsPlaying())
-                    isDead = false;
+            auto ps = effect.system->GetParticleSystem();
+            if (ps && ps->IsPlaying())
+                isDead = false;
             return isDead;
         });
     m_activeEffects.erase(it, m_activeEffects.end());
@@ -35,7 +36,7 @@ void ClickEffectManager::Render() {
     // ParticleManager가 자동으로 렌더링
 }
 
-void ClickEffectManager::SpawnEffectAtMousePosition(std::vector<std::wstring>& presetPath) {
+void ClickEffectManager::SpawnEffectAtMousePosition(const std::wstring& presetPath) {
     // InputManager에서 마우스 NDC 좌표 가져오기
     InputManager& inputMgr = AppBase::GetInputManager();
     Vector2 mouseNDC = inputMgr.GetMouseNDC();
@@ -44,7 +45,7 @@ void ClickEffectManager::SpawnEffectAtMousePosition(std::vector<std::wstring>& p
     SpawnEffectAtWorldPosition(presetPath, worldPos);
 }
 
-void ClickEffectManager::SpawnEffectAtWorldPosition(std::vector<std::wstring>& presetPath, const Vector3& worldPos) {
+void ClickEffectManager::SpawnEffectAtWorldPosition(const std::wstring& presetPath, const Vector3& worldPos) {
     // EffectActor 생성
     std::unique_ptr<EffectActor> actor = std::make_unique<EffectActor>(L"ClickEffect");
 
@@ -55,12 +56,10 @@ void ClickEffectManager::SpawnEffectAtWorldPosition(std::vector<std::wstring>& p
     actor->SetParticlePreset(presetPath);
 
     // 일회성 설정 (필요 시)
-    auto& particles = actor->GetParticleSystem();
-    for (auto& ps : particles) {
-        if (ps) {
-            ps->SetLooping(false);
-            ps->SetDuration(2.0f);
-        }
+    auto ps = actor->GetParticleSystem();
+    if (ps) {
+        ps->SetLooping(false);
+        ps->SetDuration(2.0f);
     }
 
     actor->Initialize();
@@ -72,9 +71,8 @@ void ClickEffectManager::SpawnEffectAtWorldPosition(std::vector<std::wstring>& p
     m_activeEffects.push_back(std::move(effect));
 }
 
-void ClickEffectManager::RegisterPreset(const std::string& name, const std::vector<std::wstring>& presetPath) {
-    for (const std::wstring& path : presetPath)
-        m_presets[name].push_back(L"..\\Assets\\" + path);
+void ClickEffectManager::RegisterPreset(const std::string& name, const std::wstring& presetPath) {
+    m_presets[name] = L"..\\Assets\\" + presetPath;
 }
 
 void ClickEffectManager::TriggerPreset(const std::string& name) {

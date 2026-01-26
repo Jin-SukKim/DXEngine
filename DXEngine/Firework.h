@@ -13,6 +13,8 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;
+		bool IsFinished() const override;
+		bool NeedsExternalPreset() const override { return false; }
 	private:
 		ParticleSystem* m_up;
 		ParticleSystem* m_firework;
