@@ -1,6 +1,5 @@
 #pragma once
-#include "Actor.h"
-#include "ParticleSystem.h"
+#include "EffectActor.h"
 
 namespace DE {
 
@@ -22,7 +21,7 @@ public:
     void Render() override;
 
     // [Spawner 설정]
-    void SetParticlePreset(const std::wstring& presetPath);
+    void SetParticlePreset(const std::vector<std::wstring>& presetPath);
     void SetSpawnMode(SpawnMode mode);
     void SetSpawnInterval(float interval);
     void SetMaxActiveParticles(int maxCount);
@@ -42,7 +41,7 @@ private:
     Vector3 GetRandomSpawnPosition();
 
 private:
-    std::wstring m_presetPath;
+    std::vector<std::wstring> m_presetPath;
     SpawnMode m_spawnMode = SpawnMode::Continuous;
 
     // 생성 제어 변수
@@ -56,8 +55,7 @@ private:
     float m_lifetime = -1.0f;
     float m_elapsedTime = 0.0f;
 
-    // 이 Spawner가 생성한 ParticleSystem 포인터 관리
-    std::vector<ParticleSystem*> m_spawnedSystems;
+    std::vector<std::unique_ptr<EffectActor>> m_spawnedActors;
 };
 
 }

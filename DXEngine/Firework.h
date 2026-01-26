@@ -9,7 +9,7 @@ namespace DE {
 		using Super = Actor;
 	public:
 		Firework(const std::wstring& name);
-		virtual ~Firework() override {}
+		virtual ~Firework() override;
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;

@@ -14,6 +14,12 @@ namespace DE {
 		m_firework->Stop();
 	}
 
+	Firework::~Firework()
+	{
+		ParticleManager::Get().DestroyInstance(m_up);
+		ParticleManager::Get().DestroyInstance(m_firework);
+	}
+
 	void Firework::Initialize()
 	{
 		Super::Initialize();

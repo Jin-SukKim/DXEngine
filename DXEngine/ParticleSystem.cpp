@@ -24,7 +24,7 @@ namespace DE {
 				// 프로그램 종료 시 무시
 			}
 		}	
-		ParticleManager::Get().DestroyInstance(this);
+		ParticleManager::Get().UnregisterActiveSystem(this);
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)

@@ -28,15 +28,25 @@ void ParticleSpawner::Update(const float& deltaTime) {
     }
 
     UpdateSpawning(deltaTime);
+
+    for (auto& actor : m_spawnedActors) {
+        actor->Update(deltaTime);
+    }
+
     CleanupDeadSystems();
 }
 
 void ParticleSpawner::Render() {
     Super::Render();
+
+    for (auto& actor : m_spawnedActors) {
+        actor->Render();
+    }
 }
 
-void ParticleSpawner::SetParticlePreset(const std::wstring& presetPath) {
-    m_presetPath = L"..\\Assets\\" + presetPath;
+void ParticleSpawner::SetParticlePreset(const std::vector<std::wstring>& presetPath) {
+    for (const std::wstring& path : presetPath)
+        m_presetPath.push_back(L"..\\Assets\\" + path);
 }
 
 void ParticleSpawner::SetSpawnMode(SpawnMode mode) {
@@ -66,23 +76,23 @@ void ParticleSpawner::SetLifetime(float lifetime) {
 void ParticleSpawner::Spawn() {
     if (m_presetPath.empty()) return;
     // 최대 활성 개수 제한 확인
-    if (m_spawnedSystems.size() >= m_maxActiveParticles) return;
+    if (m_spawnedActors.size() >= m_maxActiveParticles) return;
 
-    // ParticleManager를 통해 시스템 인스턴스 생성
-    ParticleSystem* system = ParticleManager::Get().CreateSystem(m_presetPath);
-    if (system) {
-        // Transform 설정 (Spawner 위치 + 랜덤 반경)
-        auto* transform = GetComponent<TransformComponent>();
-        if (transform) {
-            Vector3 spawnPos = GetRandomSpawnPosition();
+    // 1. EffectActor 생성
+    std::unique_ptr<EffectActor> actor = std::make_unique<EffectActor>(L"SpawnedEffect");
 
-            MeshConstants meshConst;
-            meshConst.world = Matrix::CreateTranslation(spawnPos).Transpose();
-            system->SetTransform(meshConst);
-        }
-
-        m_spawnedSystems.push_back(system);
+    // 2. 위치 설정 (Spawner 위치 기준 랜덤)
+    auto* transform = actor->GetComponent<TransformComponent>();
+    if (transform) {
+        transform->SetPos(GetRandomSpawnPosition());
     }
+
+    // 3. 파티클 프리셋 지정
+    actor->SetParticlePreset(m_presetPath);
+
+    // 4. 초기화 및 리스트 추가
+    actor->Initialize();
+    m_spawnedActors.push_back(std::move(actor));
 }
 
 void ParticleSpawner::SpawnBurst(int count) {
@@ -92,7 +102,7 @@ void ParticleSpawner::SpawnBurst(int count) {
 }
 
 void ParticleSpawner::Stop() {
-    for (auto* system : m_spawnedSystems) {
+    for (auto& system : m_spawnedActors) {
         if (system) {
             system->Stop();
         }
@@ -100,7 +110,7 @@ void ParticleSpawner::Stop() {
 }
 
 void ParticleSpawner::Clear() {
-    m_spawnedSystems.clear();
+    m_spawnedActors.clear();
     // ParticleManager가 자동으로 정리
 }
 
@@ -119,7 +129,7 @@ void ParticleSpawner::UpdateSpawning(float dt) {
             break;
 
         case SpawnMode::OneShot:
-            if (m_spawnedSystems.empty()) {
+            if (m_spawnedActors.empty()) {
                 Spawn();
             }
             break;
@@ -131,22 +141,19 @@ void ParticleSpawner::UpdateSpawning(float dt) {
 }
 
 void ParticleSpawner::CleanupDeadSystems() {
-    auto it = std::remove_if(m_spawnedSystems.begin(), m_spawnedSystems.end(),
-        [](ParticleSystem* system) {
-            if (system == nullptr) return true;
+    auto it = std::remove_if(m_spawnedActors.begin(), m_spawnedActors.end(),
+        [](std::unique_ptr<EffectActor>& actor) {
+            if (!actor) return true;
 
-            // 파티클이 멈췄다면 (Loop: false이고 재생 끝남)
-            if (system->IsStopped()) {
-                // [수정] 직접 delete 하지 않고 Manager에 파괴 요청
-                ParticleManager::Get().DestroyInstance(system);
-
-                return true; // Spawner의 관리 목록에서도 제거
-            }
-
-            return false;
+            // 파티클이 멈췄는지 확인
+            std::vector<ParticleSystem*> paritcles = actor->GetParticleSystem();
+            for (auto& ps : paritcles)
+                if (ps && ps->IsPlaying())
+                    return false;
+            return true;
         });
 
-    m_spawnedSystems.erase(it, m_spawnedSystems.end());
+    m_spawnedActors.erase(it, m_spawnedActors.end());
 }
 
 Vector3 ParticleSpawner::GetRandomSpawnPosition() {

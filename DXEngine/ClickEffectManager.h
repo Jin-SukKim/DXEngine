@@ -1,13 +1,13 @@
 #pragma once
-#include "ParticleSystem.h"
+#include "EffectActor.h"
 
 namespace DE {
 
 struct ClickEffect {
-    std::wstring presetPath;
+    std::vector<std::wstring> presetPath;
     Vector3 worldPosition;
     float lifetime;
-    ParticleSystem* system;
+    std::unique_ptr<EffectActor> system;
 };
 
 class ClickEffectManager {
@@ -22,13 +22,13 @@ public:
     void Render();
 
     // 마우스 위치에 이펙트 생성
-    void SpawnEffectAtMousePosition(const std::wstring& presetPath);
+    void SpawnEffectAtMousePosition(std::vector<std::wstring>& presetPath);
     
     // 월드 좌표에 이펙트 생성
-    void SpawnEffectAtWorldPosition(const std::wstring& presetPath, const Vector3& worldPos);
+    void SpawnEffectAtWorldPosition(std::vector<std::wstring>& presetPath, const Vector3& worldPos);
 
     // 여러 프리셋 등록
-    void RegisterPreset(const std::string& name, const std::wstring& path);
+    void RegisterPreset(const std::string& name, const std::vector<std::wstring>& path);
     void TriggerPreset(const std::string& name);
 
 private:
@@ -36,7 +36,7 @@ private:
 
 private:
     std::vector<ClickEffect> m_activeEffects;
-    std::unordered_map<std::string, std::wstring> m_presets;
+    std::unordered_map<std::string, std::vector<std::wstring>> m_presets;
 };
 
 }
