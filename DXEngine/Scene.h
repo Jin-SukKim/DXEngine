@@ -49,6 +49,7 @@ namespace DE {
 		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category) {
 			return m_actorList[static_cast<size_t>(category)];
 		}
+		bool ContainsEffect(EffectActor* effect) const;
 
 	protected:
 		// Actor Management

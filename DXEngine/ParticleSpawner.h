@@ -14,6 +14,12 @@ namespace DE {
         Burst
     };
 
+    enum class SpawnShape {
+        Circle,  // XZ 평면 원
+        Sphere,  // 3D 구체
+        Box      // 3D 박스
+    };
+
     // ParticleSpawner: Effect 생성 요청만 담당 (소유권 없음)
     class ParticleSpawner : public Actor {
         using Super = Actor;
@@ -34,6 +40,8 @@ namespace DE {
         void SetSpawnInterval(float interval);
         void SetMaxActiveParticles(int maxCount);
         void SetSpawnRadius(float radius);
+        void SetSpawnShape(SpawnShape shape) { m_spawnShape = shape; }
+        void SetSpawnBox(const Vector3& halfExtents) { m_spawnBoxExtents = halfExtents; }
         void SetAutoDestroy(bool enable);
         void SetLifetime(float lifetime);
 
@@ -68,11 +76,13 @@ namespace DE {
         Scene* m_ownerScene = nullptr;
         std::wstring m_presetPath;
         SpawnMode m_spawnMode = SpawnMode::Continuous;
+        SpawnShape m_spawnShape = SpawnShape::Circle;
 
         float m_spawnInterval = 1.0f;
         float m_spawnAccumulator = 0.0f;
         int m_maxActiveParticles = 10;
         float m_spawnRadius = 0.0f;
+        Vector3 m_spawnBoxExtents = Vector3(1.0f);  // half extents
 
         bool m_autoDestroy = false;
         float m_lifetime = -1.0f;

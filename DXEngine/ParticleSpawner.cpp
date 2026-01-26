@@ -2,6 +2,7 @@
 #include "ParticleSpawner.h"
 #include "Scene.h"
 #include "TransformComponent.h"
+#include <random>
 
 namespace DE {
 
@@ -65,9 +66,11 @@ namespace DE {
     }
 
     void ParticleSpawner::CleanupExpiredEffects() {
-        // IsFinished()가 true인 Effect 제거
-        std::erase_if(m_spawnedEffects, [](EffectActor* effect) {
-            return effect == nullptr || effect->IsFinished();
+        if (!m_ownerScene) return;
+        
+        std::erase_if(m_spawnedEffects, [this](EffectActor* effect) {
+            // Scene에 실제로 존재하는지 확인
+            return !m_ownerScene->ContainsEffect(effect);
         });
     }
 
@@ -142,16 +145,53 @@ namespace DE {
         }
     }
 
+    // 개선된 GetRandomSpawnPosition() - 다양한 형태 지원
     Vector3 ParticleSpawner::GetRandomSpawnPosition() {
         auto* transform = GetComponent<TransformComponent>();
         Vector3 basePos = transform ? transform->GetPos() : Vector3(0.f);
 
-        if (m_spawnRadius > 0.0f) {
-            float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.0f;
-            float radius = (static_cast<float>(rand() % 100) / 100.0f) * m_spawnRadius;
+        static std::mt19937 gen{std::random_device{}()};
 
-            basePos.x += cos(angle) * radius;
-            basePos.z += sin(angle) * radius;
+        switch (m_spawnShape) {
+        case SpawnShape::Box: {
+            std::uniform_real_distribution<float> distX(-m_spawnBoxExtents.x, m_spawnBoxExtents.x);
+            std::uniform_real_distribution<float> distY(-m_spawnBoxExtents.y, m_spawnBoxExtents.y);
+            std::uniform_real_distribution<float> distZ(-m_spawnBoxExtents.z, m_spawnBoxExtents.z);
+            
+            basePos.x += distX(gen);
+            basePos.y += distY(gen);
+            basePos.z += distZ(gen);
+            break;
+        }
+        case SpawnShape::Sphere: {
+            if (m_spawnRadius > 0.0f) {
+                std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+                std::uniform_real_distribution<float> radiusDist(0.0f, 1.0f);
+                
+                float theta = std::acos(dist(gen));
+                float phi = dist(gen) * DirectX::XM_PI;
+                float r = std::cbrt(radiusDist(gen)) * m_spawnRadius;
+                
+                basePos.x += r * std::sin(theta) * std::cos(phi);
+                basePos.y += r * std::cos(theta);
+                basePos.z += r * std::sin(theta) * std::sin(phi);
+            }
+            break;
+        }
+        case SpawnShape::Circle:
+        default: {
+            if (m_spawnRadius > 0.0f) {
+                std::uniform_real_distribution<float> angleDist(0.0f, DirectX::XM_2PI);
+                std::uniform_real_distribution<float> radiusDist(0.0f, 1.0f);
+                
+                float angle = angleDist(gen);
+                float radius = std::sqrt(radiusDist(gen)) * m_spawnRadius;
+
+                basePos.x += std::cos(angle) * radius;
+                basePos.z += std::sin(angle) * radius;
+            }
+            break;
+        }
         }
 
         return basePos;

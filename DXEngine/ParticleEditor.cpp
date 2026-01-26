@@ -61,7 +61,8 @@ namespace DE {
 		//m_spanwer->SetParticlePreset(L"Particles\\TempEffect.json");
 		m_spanwer->SetSpawnMode(SpawnMode::Interval);
 		m_spanwer->SetSpawnInterval(0.5f);
-		m_spanwer->SetSpawnRadius(2.0f);
+		m_spanwer->SetSpawnShape(SpawnShape::Box);
+		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.0f));  // 더 작은 범위
 		m_spanwer->SetMaxActiveParticles(20);
 
 		//m_firework = AddObject<Firework>(L"Firework");
@@ -99,7 +100,7 @@ namespace DE {
 		tr = m_spanwer->GetComponent<TransformComponent>();
 		if (tr) {
 			Vector3 pos = tr->GetPos();
-			pos.z += 4.f;
+			pos.z += 5.f;
 			tr->SetPos(pos);
 		}
 

@@ -45,10 +45,8 @@ namespace DE {
 	{
 		if (!system) return;
 		
-		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
-		if (it != m_activeSystems.end()) {
-			m_activeSystems.erase(it);
-		}
+		// 개선: std::erase (C++20) 또는 erase-remove idiom
+		std::erase(m_activeSystems, system);  // C++20
 	}
 
 	ParticleSystem* ParticleManager::CreateSystem(const std::wstring& path)

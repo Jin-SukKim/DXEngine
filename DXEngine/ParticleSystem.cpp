@@ -103,13 +103,9 @@ namespace DE {
 			emitter->Update(newDt, m_time);
 		
 		// 완료된 Sub-Emitter 제거
-		m_dynamicEmitters.erase(
-			std::remove_if(m_dynamicEmitters.begin(), m_dynamicEmitters.end(),
-				[](const std::unique_ptr<ParticleEmitter>& em) {
-					return em->IsCompleted();
-				}),
-			m_dynamicEmitters.end()
-		);
+		std::erase_if(m_dynamicEmitters, [](const auto& em) {
+			return em->IsCompleted();
+		});
 
 		// 모든 Emitter 완료 체크 (Looping이 아닐 때만)
 		if (!m_looping && IsAllEmittersCompleted()) {
@@ -361,7 +357,7 @@ namespace DE {
 		auto subEmitter = ParticleLoader::Load<ParticleEmitter>(entry.emitterPath);
 		if (!subEmitter) return;
 		
-		// 위치 상속
+		// 위치 상 속
 		if (entry.inheritPosition) {
 			subEmitter->SetSpawnOffset(position);
 		}

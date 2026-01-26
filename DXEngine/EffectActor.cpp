@@ -11,7 +11,6 @@ namespace DE {
 
     EffectActor::~EffectActor()
     {
-        // 소멸 시 매니저에게 반납 요청
         if (m_particle) {
             ParticleManager::Get().DestroyInstance(m_particle);
             m_particle = nullptr;

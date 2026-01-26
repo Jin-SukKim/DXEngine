@@ -356,4 +356,11 @@ namespace DE {
 		m_actorList[category].emplace_back(std::move(actor));
 		return rawPtr;
 	}
+
+	bool Scene::ContainsEffect(EffectActor* effect) const {
+		for (const auto& e : m_actorList[static_cast<size_t>(ActorCategory::Effect)]) {
+			if (e.get() == effect) return true;
+		}
+		return false;
+	}
 }
