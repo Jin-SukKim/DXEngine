@@ -84,12 +84,12 @@ namespace DE {
 		
 		tr = m_sample->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetScale(Vector3(0.5f));
+			tr->SetPos(Vector3(-1.f, 0.f, 0.f));
 		}
 
 		tr = m_rose->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetPos(Vector3(-1.f, 0.f, 0.f));
+			//tr->SetPos(Vector3(0.f, -1.f, 0.f));
 		}
 
 		tr = m_spanwer->GetComponent<TransformComponent>();

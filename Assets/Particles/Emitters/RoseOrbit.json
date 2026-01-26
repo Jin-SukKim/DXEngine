@@ -2,18 +2,18 @@
   "Name": "VortexAura",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ 0, 0, 0.0 ],
-    "spawnVolume": [ 0.15, 0.0, 0.15 ],
+    "localPos": [ -0.1, -0.4, 0.0 ],
+    "spawnVolume": [ 0.2, 0.1, 0.2 ],
     "spawnInnerRatio": 1.5,
     "spawnRate": 5.0,
-    "particlesPerSpawn": 3,
+    "particlesPerSpawn": 10,
     "maxParticles": 1024,
     "lifeRange": [ 0.7, 1.5 ]
   },
   "Visual": {
     "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
     "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
-    "sizeRange": [ 0.001, 0.001 ],
+    "sizeRange": [ 0.1, 0.1 ],
     "rotation": {
       "minRotation": [ 0.0, 0.0, 0.0 ],
       "maxRotation": [ 6.28, 6.28, 6.28 ],
@@ -25,14 +25,14 @@
     "velocity": [ 0.0, 0.0, 0.0 ],
     "speedRange": [ 0.0, 0.0 ],
     "randomDir": [ 0.0, 0.0, 0.0 ],
-    "gravity": [ 0.0, 1.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
     "drag": 0.0
   },
   "Orbit": {
-    "center": [ 0.0, 0.0, 0.0 ],
+    "center": [ -0.1, 0.0, 0.0 ],
     "axis": [ 0.0, 1.0, 0.0 ],
     "rotationRate": 10.0,
-    "offset": 10.0
+    "offset": 20.0
   },
   "Material": {
     "materials": [ "Materials\\ParticleBox_0.json" ]

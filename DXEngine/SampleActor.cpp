@@ -33,11 +33,11 @@ namespace DE {
 		Super::Initialize();
 
 
-		//TransformComponent* tr = this->GetComponent<TransformComponent>();
-		//if (tr) {
-		//	//tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
-		//	//tr->SetScale(Vector3(5.f));
-		//}
+		TransformComponent* tr = this->GetComponent<TransformComponent>();
+		if (tr) {
+			//tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
+			//tr->SetScale(Vector3(0.5f));
+		}
 	}
 
 	void SampleActor::Update(const float& deltaTime) {

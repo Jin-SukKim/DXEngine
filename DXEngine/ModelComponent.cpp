@@ -58,7 +58,7 @@ namespace DE {
 		// 3. 모델의 각 메쉬에 대해 렌더링
 		for (size_t i = 0; i < model->meshes.size(); ++i) {
 			const auto& mesh = model->meshes[i];
-			int materialIndex = model->materialIndices[i];
+			int materialIndex = m_matIdx < 0 ? model->materialIndices[i] : m_matIdx;
 
 			// 4. MaterialSystem을 통해 재질 바인딩 (Texture, 상수버퍼 등) - Slot 3
 			MaterialSystem::Get().BindMaterial(materialIndex);

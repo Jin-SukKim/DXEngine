@@ -1,21 +1,22 @@
 #pragma once
-#include "EffectActor.h"
+#include "Actor.h"
 
 namespace DE {
+	class ModelComponent;
 	class ParticleSystem;
 
-	class RoseEffect : public EffectActor
+	class RoseEffect : public Actor
 	{
-		using Super = EffectActor;
+		using Super = Actor;
 	public:
 		RoseEffect(const std::wstring& name);
 		virtual ~RoseEffect() override;
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;
-		bool IsFinished() const override;
-		bool NeedsExternalPreset() const override { return false; }
+		void Render() override;
 	private:
+		ModelComponent* m_model;
 		ParticleSystem* m_orbit;
 
 		int count = 0;
