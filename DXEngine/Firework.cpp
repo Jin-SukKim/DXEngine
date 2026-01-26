@@ -41,7 +41,7 @@ namespace DE {
 		TransformComponent* tr = this->GetComponent < TransformComponent>();
 		if (tr) {
 			Vector3 pos = tr->GetPos();
-			pos.y += 1.f * deltaTime;
+			pos.y += 1.5f * deltaTime;
 			tr->SetPos(pos);
 		}
 

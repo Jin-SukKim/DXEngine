@@ -23,7 +23,7 @@ public:
 private:
 	SquareActor* ground;
 
-	std::vector<EffectActor*> effects;
+	SampleActor* m_sample;
 	ParticleSpawner* m_spanwer;
 	Firework* m_firework;
 	

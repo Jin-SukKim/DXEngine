@@ -15,19 +15,15 @@ void ClickEffectManager::Initialize() {
 
 void ClickEffectManager::Update(float dt) {
     for (auto& effect : m_activeEffects) {
-        if (effect.system) effect.system->Update(dt);
+        if (effect) effect->Update(dt);
     }
 
     auto it = std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
-        [dt](ClickEffect& effect) {
-            effect.lifetime -= dt;
-
-            bool isDead = effect.lifetime <= 0.0f;
-
-            auto ps = effect.system->GetParticleSystem();
+        [dt](std::unique_ptr<EffectActor>& effect) {
+            auto ps = effect->GetParticleSystem();
             if (ps && ps->IsPlaying())
-                isDead = false;
-            return isDead;
+                return false;
+            return true;
         });
     m_activeEffects.erase(it, m_activeEffects.end());
 }
@@ -64,11 +60,7 @@ void ClickEffectManager::SpawnEffectAtWorldPosition(const std::wstring& presetPa
 
     actor->Initialize();
 
-    // 관리 리스트 추가
-    ClickEffect effect;
-    effect.system = std::move(actor);
-    effect.lifetime = 2.0f;
-    m_activeEffects.push_back(std::move(effect));
+    m_activeEffects.push_back(std::move(actor));
 }
 
 void ClickEffectManager::RegisterPreset(const std::string& name, const std::wstring& presetPath) {

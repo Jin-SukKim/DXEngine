@@ -47,12 +47,7 @@ namespace DE {
 		ClickEffectManager::Get().Initialize();
 		ground = AddObject<SquareActor>(L"Ground");
 		
-		//for (int y = 0; y < 2; ++y) {
-		//	for (int x = 0; x < 10; ++x) {
-		//		EffectActor* effect = AddObject<EffectActor>(L"Effect" + x);
-		//		effects.emplace_back(effect);
-		//	}
-		//}
+		m_sample = AddObject<SampleActor>(L"Sample");
 
 		m_spanwer = AddObject<ParticleSpawner>(L"TempSpawner");
 		m_spanwer->SetActorType<Firework>();
@@ -81,15 +76,19 @@ namespace DE {
 		//exit(0);
 		Scene::Initialize();
 
-		//for (int y = 0; y < 2; ++y) {
-		//	for (int x = 0; x < 10; ++x) {
-		//		TransformComponent* tr = effects[y * 10 + x]->GetComponent<TransformComponent>();
-		//		if (tr) {
-		//			Vector3 pos = tr->GetPos() + Vector3(float(x), float(y), 0.f);
-		//			tr->SetPos(pos);
-		//		}
-		//	}
-		//}
+		TransformComponent* tr;
+		
+		tr = m_sample->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetScale(Vector3(0.5f));
+		}
+
+		tr = m_spanwer->GetComponent<TransformComponent>();
+		if (tr) {
+			Vector3 pos = tr->GetPos();
+			pos.z += 4.f;
+			tr->SetPos(pos);
+		}
 
 		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 	}

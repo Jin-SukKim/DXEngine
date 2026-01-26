@@ -30,6 +30,7 @@ namespace DE {
 		if (tr) {
 			tr->SetPos({ 0.f, -2.5f, 0.f });
 			tr->SetLocalRotation(0.f, 90.f, 0.f);
+			tr->SetScale(Vector3(10.f));
 		}
 	}
 

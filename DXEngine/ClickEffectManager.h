@@ -3,13 +3,6 @@
 
 namespace DE {
 
-struct ClickEffect {
-    std::vector<std::wstring> presetPath;
-    Vector3 worldPosition;
-    float lifetime;
-    std::unique_ptr<EffectActor> system;
-};
-
 class ClickEffectManager {
 public:
     static ClickEffectManager& Get() {
@@ -35,7 +28,7 @@ private:
     Vector3 ScreenToWorldPosition(float mouseNdcX, float mouseNdcY);
 
 private:
-    std::vector<ClickEffect> m_activeEffects;
+    std::vector<std::unique_ptr<EffectActor>> m_activeEffects;
     std::unordered_map<std::string, std::wstring> m_presets;
 };
 
