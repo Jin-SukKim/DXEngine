@@ -61,11 +61,19 @@ public:
 
 	void SetTransform(const MeshConstants& transform);
 
+	bool IsLooping() { return m_looping; }
+	bool IsStopped() const { return m_state == ParticleState::Stopped; }
+	bool IsPlaying() const { return m_state == ParticleState::Playing; }
+	void SetState(ParticleState state) { m_state = state; }
+
+	void SetTarget(Actor* owner = nullptr, const int& modelIdx = -1);
 private:
 	void Reset();
 	void ExecutePreWarm();
+	void UpdateTransform();
 
 private:
+	Actor* m_owner = nullptr;
 	bool m_looping = true;
 	float m_duration = 5.0f;
 	float m_playRate = 1.0f;

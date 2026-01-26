@@ -7,8 +7,9 @@
 #include "ModelComponent.h"
 
 #include "RenderBase.h"
-#include "ParticleSystemComponent.h"
+#include "ParticleSystem.h"
 #include "ModelManager.h"
+#include "ParticleManager.h"
 
 namespace DE {
 	SampleActor::SampleActor(const std::wstring& name) : Super(name)
@@ -19,17 +20,18 @@ namespace DE {
 			// basePath만 전달 (presetPath는 사용하지 않음)
 			m_sample->SetModel("DamagedHelmet.gltf", "DamagedHelmet/", true);
 
-			m_particles = AddComponent<ParticleSystemComponent>(L"Particles");
+			m_particles = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
+
 			// ModelComponent에서 모델 인덱스를 가져와서 전달
 			int modelIdx = m_sample->GetModelIndex();
-			m_particles->SetSystem(L"Particles\\TestEffect.json", modelIdx);
+			m_particles->SetTarget(this, modelIdx);
+			m_sample->SetDrawNormal(false);
 		}
 	}
 	
 	void SampleActor::Initialize() {
 		Super::Initialize();
 
-		m_sample->SetDrawNormal(false);
 
 		//TransformComponent* tr = this->GetComponent<TransformComponent>();
 		//if (tr) {

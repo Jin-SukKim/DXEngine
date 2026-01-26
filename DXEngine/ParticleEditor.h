@@ -5,7 +5,9 @@ namespace DE {
 
 	class ParticleEmitter;
 	class SquareActor;
-	class SampleActor;
+	class EffectActor;
+	class ParticleSpawner;
+	class Firework;
 class ParticleEditor : public Scene
 {
 public:
@@ -17,10 +19,16 @@ public:
 	void UpdateGUI() override;
 	void Render() override;
 
+	void ClickEvent();
 private:
 	SquareActor* ground;
 
-	std::vector<SampleActor*> effects;
+	std::vector<EffectActor*> effects;
+	ParticleSpawner* m_spanwer;
+	Firework* m_firework;
+	
+
+	InputAction m_click;
 };
 
 

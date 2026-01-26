@@ -6,6 +6,7 @@
 #include "SpawnModule.h"
 #include "Mesh.h"
 #include "ModelManager.h"
+#include "ParticleManager.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
@@ -23,6 +24,7 @@ namespace DE {
 				// 프로그램 종료 시 무시
 			}
 		}	
+		ParticleManager::Get().DestroyInstance(this);
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
@@ -51,6 +53,7 @@ namespace DE {
 	void ParticleSystem::Initialize()
 	{
 		m_meshConsts.Initialize();
+		UpdateTransform();
 		for (auto& emitter : m_emitters)
 			emitter->Initialize();
 
@@ -88,6 +91,7 @@ namespace DE {
 			}
 		}
 
+		UpdateTransform();
 		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
@@ -102,6 +106,9 @@ namespace DE {
 
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt, m_time);
+
+		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 5, nullSRVs);
 	}
 
 	void ParticleSystem::Render()
@@ -115,6 +122,9 @@ namespace DE {
 
 		for (auto& emitter : m_emitters)
 			emitter->Render();
+
+		ID3D11Buffer* nullCB[] = { nullptr };
+		context->VSSetConstantBuffers(6, 1, nullCB);
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)
@@ -203,11 +213,11 @@ namespace DE {
 	{
 		m_state = ParticleState::Stopped;
 		m_time = 0.f;
-		Reset(); // 버퍼 비우기
 	}
 	void ParticleSystem::Restart()
 	{
 		Stop();
+		Reset(); // 버퍼 비우기
 		Play();
 	}
 
@@ -253,6 +263,20 @@ namespace DE {
 		m_meshConsts.Upload();
 	}
 
+	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
+	{
+		if (modelIdx >= 0) {
+			SetTargetMesh(modelIdx);
+			// 타겟 메시 변경 후 재초기화
+			Initialize();
+			OnSpawn();
+		}
+
+		m_owner = owner;
+		// Transform 초기 설정
+		UpdateTransform();
+	}
+
 	void ParticleSystem::Reset()
 	{
 		for (auto& emitter : m_emitters)
@@ -277,5 +301,20 @@ namespace DE {
 			for (auto& emitter : m_emitters)
 				emitter->Update(step, m_time);
 		}
+	}
+
+	void ParticleSystem::UpdateTransform()
+	{
+		if (!m_owner) return;
+
+		TransformComponent* tr = m_owner->GetComponent<TransformComponent>();
+		if (!tr) return;
+
+		// Transform 정보를 ParticleSystem에 전달
+		MeshConstants meshConsts;
+		meshConsts.world = tr->GetTransformMatrix().Transpose();
+		meshConsts.worldIT = meshConsts.world.Invert();
+
+		this->SetTransform(meshConsts);
 	}
 }

@@ -17,13 +17,6 @@ namespace DE {
 
 	ParticleEmitter::ParticleEmitter(const std::wstring& name) : m_name(name)
 	{
-		ParticleModuleFactory::Register<SpawnModule>("Spawn");
-		ParticleModuleFactory::Register<VisualModule>("Visual");
-		ParticleModuleFactory::Register<ForceModule>("Force");
-		ParticleModuleFactory::Register<VortexModule>("Vortex");
-		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
-		ParticleModuleFactory::Register<MaterialModule>("Material");
-		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
 	}
 
 	ParticleEmitter::~ParticleEmitter()
@@ -43,14 +36,6 @@ namespace DE {
 		, m_watcherID(0)
 		, m_bakedCount(other.m_bakedCount)
 	{
-		ParticleModuleFactory::Register<SpawnModule>("Spawn");
-		ParticleModuleFactory::Register<VisualModule>("Visual");
-		ParticleModuleFactory::Register<ForceModule>("Force");
-		ParticleModuleFactory::Register<VortexModule>("Vortex");
-		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
-		ParticleModuleFactory::Register<MaterialModule>("Material");
-		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
-
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
 				auto clonedModule = mod->Clone();

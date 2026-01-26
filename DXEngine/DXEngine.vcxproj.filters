@@ -370,9 +370,20 @@
     <ClInclude Include="TextureSpawnBake.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleManager.h" />
-    <ClInclude Include="ParticleSystemComponent.h" />
-    <ClInclude Include="ComputeCommon.h" />
+    <ClInclude Include="ClickEffectManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSpawner.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeCommon.h">
+      <Filter>public\ParticleSystem\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectActor.h" />
+    <ClInclude Include="ParticleManager.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Firework.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -555,13 +566,22 @@
     <ClCompile Include="TextureSpawnBake.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleSystemComponent.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ClickEffectManager.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ComputeCommon.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleManager.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSpawner.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Firework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,21 +2,18 @@
 #include "Actor.h"
 
 namespace DE {
-	class ModelComponent;
 	class ParticleSystem;
 
-	class SampleActor : public Actor
+	class EffectActor : public Actor
 	{
 		using Super = Actor;
 	public:
-		SampleActor(const std::wstring& name);
-		virtual ~SampleActor() override {}
+		EffectActor(const std::wstring& name);
+		virtual ~EffectActor() override {}
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;
-		void Render() override;
 	private:
-		ModelComponent* m_sample;
 		ParticleSystem* m_particles;
 	};
 }

@@ -60,15 +60,15 @@ namespace DE {
 		if (prototypeIt != m_prototypes.end()) {
 			// 캐시 히트
 			prototype = prototypeIt->second.get();
-			printf("[ParticleManager] Cache HIT: %ls\n", path.c_str());
+			//printf("[ParticleManager] Cache HIT: %ls\n", path.c_str());
 		}
 		else {
 			// 캐시 미스 - 원본 로드
-			printf("[ParticleManager] Cache MISS: Loading %ls\n", path.c_str());
+			//printf("[ParticleManager] Cache MISS: Loading %ls\n", path.c_str());
 
 			auto newSystem = ParticleLoader::Load<ParticleSystem>(path);
 			if (!newSystem) {
-				printf("[ParticleManager] Failed to load: %ls\n", path.c_str());
+				//printf("[ParticleManager] Failed to load: %ls\n", path.c_str());
 				return nullptr;
 			}
 
@@ -93,8 +93,29 @@ namespace DE {
 		// 자동으로 활성 시스템에 등록
 		RegisterActiveSystem(clonedPtr);
 
-		printf("[ParticleManager] CreateInstance: %p (Cloned)\n", clonedPtr);
+		//printf("[ParticleManager] CreateInstance: %p (Cloned)\n", clonedPtr);
 
 		return clonedPtr;
+	}
+	
+	void ParticleManager::DestroyInstance(ParticleSystem* system)
+	{
+		if (!system) return;
+
+		// 1. 활성 리스트에서 제거 (렌더링/업데이트 제외)
+		UnregisterActiveSystem(system);
+
+		// 2. 소유권 리스트(m_instances)에서 찾아 제거
+		// erase가 호출되는 순간 unique_ptr이 소멸되며 자동으로 delete가 호출됩니다.
+		auto it = std::find_if(m_instances.begin(), m_instances.end(),
+			[system](const std::unique_ptr<ParticleSystem>& ptr) {
+				return ptr.get() == system;
+			});
+
+		if (it != m_instances.end()) {
+			// 여기서 실제로 메모리가 해제됩니다.
+			m_instances.erase(it);
+			//printf("[ParticleManager] Destroyed Instance: %p\n", system);
+		}
 	}
 }

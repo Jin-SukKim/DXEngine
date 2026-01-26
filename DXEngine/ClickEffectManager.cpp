@@ -7,19 +7,30 @@ namespace DE {
 
 void ClickEffectManager::Initialize() {
     // 기본 프리셋 등록
-    RegisterPreset("explosion", L"explosion.json");
-    RegisterPreset("smoke", L"smoke.json");
-    RegisterPreset("spark", L"spark.json");
+    RegisterPreset("fire", L"Particles\\TempEffect.json");
 }
 
 void ClickEffectManager::Update(float dt) {
-    // 만료된 이펙트 제거
     auto it = std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
         [dt](ClickEffect& effect) {
             effect.lifetime -= dt;
-            return effect.lifetime <= 0.0f || effect.system == nullptr;
+
+            bool shouldRemove = (effect.lifetime <= 0.0f);
+            if (effect.system && effect.system->IsStopped()) {
+                shouldRemove = true;
+            }
+
+            if (shouldRemove) {
+                // [수정] Manager에 파괴 요청
+                if (effect.system) {
+                    ParticleManager::Get().DestroyInstance(effect.system);
+                    effect.system = nullptr;
+                }
+                return true;
+            }
+            return false;
         });
-    
+
     m_activeEffects.erase(it, m_activeEffects.end());
 }
 
@@ -60,7 +71,7 @@ void ClickEffectManager::SpawnEffectAtWorldPosition(const std::wstring& presetPa
 }
 
 void ClickEffectManager::RegisterPreset(const std::string& name, const std::wstring& path) {
-    m_presets[name] = path;
+    m_presets[name] = L"..\\Assets\\" + path;
 }
 
 void ClickEffectManager::TriggerPreset(const std::string& name) {

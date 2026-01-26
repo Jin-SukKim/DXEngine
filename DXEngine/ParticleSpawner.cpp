@@ -6,7 +6,6 @@
 namespace DE {
 
 ParticleSpawner::ParticleSpawner(const std::wstring& name) : Super(name) {
-    AddComponent<TransformComponent>(L"Transform");
 }
 
 ParticleSpawner::~ParticleSpawner() {
@@ -22,7 +21,7 @@ void ParticleSpawner::Update(const float& deltaTime) {
 
     m_elapsedTime += deltaTime;
 
-    // Lifetime 체크
+    // Spawner 자체의 수명 체크 (AutoDestroy가 켜져있을 경우)
     if (m_autoDestroy && m_lifetime > 0.0f && m_elapsedTime >= m_lifetime) {
         Clear();
         return;
@@ -37,7 +36,7 @@ void ParticleSpawner::Render() {
 }
 
 void ParticleSpawner::SetParticlePreset(const std::wstring& presetPath) {
-    m_presetPath = presetPath;
+    m_presetPath = L"..\\Assets\\" + presetPath;
 }
 
 void ParticleSpawner::SetSpawnMode(SpawnMode mode) {
@@ -66,24 +65,21 @@ void ParticleSpawner::SetLifetime(float lifetime) {
 
 void ParticleSpawner::Spawn() {
     if (m_presetPath.empty()) return;
+    // 최대 활성 개수 제한 확인
     if (m_spawnedSystems.size() >= m_maxActiveParticles) return;
 
-    // ParticleManager를 통해 생성
+    // ParticleManager를 통해 시스템 인스턴스 생성
     ParticleSystem* system = ParticleManager::Get().CreateSystem(m_presetPath);
     if (system) {
-        // Transform 설정
+        // Transform 설정 (Spawner 위치 + 랜덤 반경)
         auto* transform = GetComponent<TransformComponent>();
         if (transform) {
             Vector3 spawnPos = GetRandomSpawnPosition();
-            
+
             MeshConstants meshConst;
             meshConst.world = Matrix::CreateTranslation(spawnPos).Transpose();
             system->SetTransform(meshConst);
         }
-
-        system->Initialize();
-        system->OnSpawn();
-        system->Play();
 
         m_spawnedSystems.push_back(system);
     }
@@ -129,7 +125,7 @@ void ParticleSpawner::UpdateSpawning(float dt) {
             break;
 
         case SpawnMode::Burst:
-            // 수동 제어
+            // Burst 모드는 자동 생성을 하지 않음 (SpawnBurst 호출 시에만 동작)
             break;
     }
 }
@@ -137,11 +133,19 @@ void ParticleSpawner::UpdateSpawning(float dt) {
 void ParticleSpawner::CleanupDeadSystems() {
     auto it = std::remove_if(m_spawnedSystems.begin(), m_spawnedSystems.end(),
         [](ParticleSystem* system) {
-            // ParticleSystem이 종료되었는지 확인
-            // (ParticleSystem에 IsAlive() 메서드 필요)
-            return system == nullptr;
+            if (system == nullptr) return true;
+
+            // 파티클이 멈췄다면 (Loop: false이고 재생 끝남)
+            if (system->IsStopped()) {
+                // [수정] 직접 delete 하지 않고 Manager에 파괴 요청
+                ParticleManager::Get().DestroyInstance(system);
+
+                return true; // Spawner의 관리 목록에서도 제거
+            }
+
+            return false;
         });
-    
+
     m_spawnedSystems.erase(it, m_spawnedSystems.end());
 }
 

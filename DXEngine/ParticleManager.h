@@ -25,7 +25,7 @@ public:
 	void UnregisterActiveSystem(ParticleSystem* system);
 
 	ParticleSystem* CreateSystem(const std::wstring& path);
-
+	void DestroyInstance(ParticleSystem* system);
 private:
 	// 프로토타입 저장소 (파일 경로별 원본)
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
@@ -35,6 +35,8 @@ private:
 	
 	// 렌더링할 활성 시스템들 (포인터만 저장, 소유권 없음)
 	std::vector<ParticleSystem*> m_activeSystems;
+
+	std::vector<ParticleSystem*> m_stoppedSystems;
 };
 
 }
