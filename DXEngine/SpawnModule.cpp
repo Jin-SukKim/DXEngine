@@ -126,6 +126,7 @@ namespace DE {
 		cloned->m_lifeRange = this->m_lifeRange;
 		cloned->m_simulationSpace = this->m_simulationSpace;
 		cloned->m_isEnabled = this->m_isEnabled;
+		cloned->m_burstCount = this->m_burstCount;
 
 		return cloned;
 	}

@@ -54,12 +54,12 @@ namespace DE {
 		//	}
 		//}
 
-		m_spanwer = AddObject<ParticleSpawner>(L"TempSpawner");
-		m_spanwer->SetParticlePreset({ L"Particles\\TempEffect.json" });
-		m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
-		m_spanwer->SetSpawnInterval(0.1f);
-		m_spanwer->SetSpawnRadius(2.0f);
-		m_spanwer->SetMaxActiveParticles(100);
+		//m_spanwer = AddObject<ParticleSpawner>(L"TempSpawner");
+		//m_spanwer->SetParticlePreset({ L"Particles\\TempEffect.json" });
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		//m_spanwer->SetSpawnInterval(0.1f);
+		//m_spanwer->SetSpawnRadius(2.0f);
+		//m_spanwer->SetMaxActiveParticles(100);
 
 		m_firework = AddObject<Firework>(L"Firework");
 	}

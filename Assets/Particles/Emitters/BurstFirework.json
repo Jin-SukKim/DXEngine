@@ -5,8 +5,8 @@
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 0.0, 0.0, 0.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 1.0,
-    "burst": 500,
+    "spawnRate": 0.0,
+    "burst": 1,
     "particlesPerSpawn": 500,
     "maxParticles": 500,
     "lifeRange": [ 0.8, 1.2 ]

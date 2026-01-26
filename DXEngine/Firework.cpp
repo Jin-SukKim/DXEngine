@@ -33,7 +33,7 @@ namespace DE {
 			return;
 
 		if (m_up->IsStopped()) {
-			m_firework->Play();
+			m_firework->Restart();
 			++count;
 			return; 
 		}
