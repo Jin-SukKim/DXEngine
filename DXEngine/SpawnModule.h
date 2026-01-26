@@ -27,6 +27,8 @@ private:
 	float m_spawnAccumulator = 0.f;
 	UINT m_simulationSpace = 0; // 0 : local, 1 : world
 	UINT m_totalSpawnCount = 0;
+	UINT m_burstCount = 0;      // 한 번에 터트릴 개수
+	bool m_burstFired = false; // 이미 터졌는지 체크
 };
 }
 

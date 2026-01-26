@@ -6,6 +6,7 @@
     "spawnVolume": [ 0.0, 0.0, 0.0 ],
     "spawnInnerRatio": 0.0,
     "spawnRate": 1.0,
+    "burst": 500,
     "particlesPerSpawn": 500,
     "maxParticles": 500,
     "lifeRange": [ 0.8, 1.2 ]

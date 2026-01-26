@@ -20,6 +20,8 @@ namespace DE {
 		consts.lifeRange = m_lifeRange;
 		consts.bakedCount = ctx.bakedCount;
 		consts.simulationSpace = m_simulationSpace;
+		m_burstFired = false;
+		m_spawnAccumulator = 0.0f;
 
 		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
 	}
@@ -27,7 +29,18 @@ namespace DE {
 	void SpawnModule::OnUpdateCPU(SimulationContext& ctx)
 	{
 		ParticleModule::OnUpdateCPU(ctx);
-		m_spawnAccumulator += m_spawnRate * ctx.dt;
+		// Burst 로직: 아직 발사 안 했고, 설정된 Burst 개수가 있다면
+		if (m_burstCount > 0 && !m_burstFired)
+		{
+			m_spawnAccumulator += (float)m_burstCount;
+			m_burstFired = true; // 발사 완료 처리
+		}
+
+		// Rate 로직 (지속 생성)
+		if (m_spawnRate > 0.0f)
+		{
+			m_spawnAccumulator += m_spawnRate * ctx.dt;
+		}
 
 		//m_totalSpawnCount = 1;
 		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
@@ -93,6 +106,7 @@ namespace DE {
 			else if (shape == "Texture") m_spawnShape = 4;
 		}
 		if (data.contains("spawnRate")) m_spawnRate = data["spawnRate"];
+		if (data.contains("burst")) m_burstCount = data["burst"];
 		if (data.contains("particlesPerSpawn")) m_particlesPerSpawn = data["particlesPerSpawn"];
 		if (data.contains("maxParticles")) m_maxParticles = data["maxParticles"];
 		if (data.contains("lifeRange")) m_lifeRange = JsonToVec2(data["lifeRange"]);

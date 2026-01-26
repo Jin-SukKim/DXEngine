@@ -1,12 +1,12 @@
 #pragma once
-#include "Actor.h"
+#include "EffectActor.h"
 
 namespace DE {
 	class ParticleSystem;
 
-	class Firework : public Actor
+	class Firework : public EffectActor
 	{
-		using Super = Actor;
+		using Super = EffectActor;
 	public:
 		Firework(const std::wstring& name);
 		virtual ~Firework() override;
