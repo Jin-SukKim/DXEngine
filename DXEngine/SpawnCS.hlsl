@@ -146,6 +146,14 @@ void main(uint3 dtID : SV_DispatchThreadID)
         uint idx = rngState % spawn.bakedCount;
         spawnPos = bakedSpawnPos[idx];
     }
+    else if (spawn.spawnShape == 5) {
+        // 랜덤 대신 순차적 인덱싱 사용
+        // spawnStartIndex: 이번 프레임 시작 오프셋
+        // dtID.x: 이번 프레임 내에서 현재 파티클의 번호 (0 ~ spawnCount-1)
+        uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;
+
+        spawnPos = bakedSpawnPos[idx];
+    }
 
     // 성공한 위치 적용
     // 로컬 기준 위치 및 속도 계산

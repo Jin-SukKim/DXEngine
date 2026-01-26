@@ -23,6 +23,26 @@ namespace DE {
 		m_burstFired = false;
 		m_spawnAccumulator = 0.0f;
 
+		if (m_spawnShape == 5) // Custom Mode
+		{
+			UINT posCount = (UINT)m_customPositions.size();
+			ctx.customPositions->Initialize(ctx.device, posCount);
+			ctx.customPositions->SetData(m_customPositions);
+			ctx.customPositions->Upload(ctx.context);
+
+			consts.bakedCount = posCount;
+
+			// 1. 이번 프레임의 시작 인덱스를 GPU에 전달
+			consts.spawnStartIndex = m_nextSpawnIndex;
+
+			// 2. 다음 프레임을 위해 인덱스 미리 이동 (Round-Robin)
+			// m_totalSpawnCount는 이번 프레임에 생성될 총 파티클 수입니다.
+			if (posCount > 0)
+			{
+				m_nextSpawnIndex = (m_nextSpawnIndex + m_totalSpawnCount) % posCount;
+			}
+		}
+
 		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
 	}
 
@@ -75,6 +95,12 @@ namespace DE {
 				ctx.context->CSSetShaderResources(0, 1, &srv);
 			}
 		}
+		else if (m_spawnShape == 5) {
+			if (ctx.customPositions) {
+				ID3D11ShaderResourceView* srv = ctx.customPositions->GetSRV();
+				ctx.context->CSSetShaderResources(0, 1, &srv);
+			}
+		}
 
 		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
 		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
@@ -104,6 +130,16 @@ namespace DE {
 			else if (shape == "Vertex") m_spawnShape = 2;
 			else if (shape == "Surface") m_spawnShape = 3;
 			else if (shape == "Texture") m_spawnShape = 4;
+			else if (shape == "Custom") {
+				if (data.contains("positions") && data["positions"].is_array()) {
+					std::vector<Vector3> positions;
+					// json 배열을 순회하며 Vector3로 변환하여 저장
+					for (const auto& item : data["positions"]) {
+						positions.push_back(JsonToVec3(item));
+					}
+					SetSpawnPosition(positions);
+				}
+			}
 		}
 		if (data.contains("spawnRate")) m_spawnRate = data["spawnRate"];
 		if (data.contains("burst")) m_burstCount = data["burst"];
@@ -127,7 +163,19 @@ namespace DE {
 		cloned->m_simulationSpace = this->m_simulationSpace;
 		cloned->m_isEnabled = this->m_isEnabled;
 		cloned->m_burstCount = this->m_burstCount;
+		cloned->m_customPositions = this->m_customPositions;
 
 		return cloned;
+	}
+	void SpawnModule::SetSpawnPosition(const std::vector<Vector3>& positions)
+	{
+		// 1. 위치 데이터 저장
+		m_customPositions = positions;
+
+		// 2. 모드를 Custom(5)으로 설정
+		m_spawnShape = 5;
+
+		// 3. 순차적 인덱스 초기화 (새로운 위치 목록이 들어왔으므로 처음부터 다시 시작)
+		m_nextSpawnIndex = 0;
 	}
 }

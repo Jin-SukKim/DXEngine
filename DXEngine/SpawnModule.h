@@ -14,7 +14,7 @@ public:
 	void LoadFromJson(const json& data) override;
 
 	std::unique_ptr<ParticleModule> Clone() const override;
-	
+	void SetSpawnPosition(const std::vector<Vector3>& positions);
 private:
 	Vector3 m_localPos = Vector3(0.f);
 	Vector3 m_spawnVolume = Vector3(0.05f, 0.15f, 0.05f);
@@ -29,6 +29,8 @@ private:
 	UINT m_totalSpawnCount = 0;
 	UINT m_burstCount = 0;      // 한 번에 터트릴 개수
 	bool m_burstFired = false; // 이미 터졌는지 체크
+	UINT m_nextSpawnIndex = 0;
+	std::vector<Vector3> m_customPositions;
 };
 }
 

@@ -1,12 +1,17 @@
 {
   "Name": "VortexAura",
   "Spawn": {
-    "shape": "Sphere",
+    "shape": "Custom",
+    "positions": [
+      [0.0, 0.0, 0.0],
+      [1.0, 0.0, 0.0],
+      [-1.0, 0.0, 0.0]
+    ],
     "localPos": [ -0.1, -0.4, 0.0 ],
     "spawnVolume": [ 0.2, 0.1, 0.2 ],
     "spawnInnerRatio": 1.5,
-    "spawnRate": 5.0,
-    "particlesPerSpawn": 10,
+    "spawnRate": 1.0,
+    "particlesPerSpawn": 2,
     "maxParticles": 1024,
     "lifeRange": [ 0.7, 1.5 ]
   },

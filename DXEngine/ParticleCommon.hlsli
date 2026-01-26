@@ -33,7 +33,9 @@ struct SpawnConsts {
     int spawnShape;
     uint bakedCount;
     uint simulationSpace;
-    float3 padding1;
+
+    uint spawnStartIndex;
+    float2 padding1;
 };
 
 struct VisualConsts {

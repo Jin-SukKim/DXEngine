@@ -84,6 +84,7 @@ namespace DE {
 		
 		// Baked Spawn Position 데이터 (Texture Spawn용)
 		StructuredBuffer<Vector3> m_bakedSpawnPos;
+		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_bakedCount = 0;
 		
 		// Render 관련 버퍼

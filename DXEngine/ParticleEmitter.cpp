@@ -48,6 +48,7 @@ namespace DE {
 		m_consts = other.m_consts;
 		m_frameConsts = other.m_frameConsts;
 		m_bakedSpawnPos = other.m_bakedSpawnPos;
+		m_customPositions = other.m_customPositions;
 	}
 
 	void ParticleEmitter::Initialize()
@@ -91,6 +92,7 @@ namespace DE {
 			device.Get(),
 			this->GetModule<RenderModule>(),
 			&m_bakedSpawnPos,
+			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
 			&m_billboardArgsBuffer,
@@ -158,6 +160,7 @@ namespace DE {
 			device.Get(),
 			nullptr,
 			&m_bakedSpawnPos,
+			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
 			&m_billboardArgsBuffer,

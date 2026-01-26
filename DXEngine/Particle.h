@@ -31,7 +31,9 @@ namespace DE {
         int spawnShape = 0; // 0: Box, 1: Sphere, 2 : Vertex, 3: Surface
         UINT bakedCount = 0;
         UINT simulationSpace = 0; // 0 : Local, 1 : world
-        float padding1[3];
+
+        UINT spawnStartIndex;
+        Vector2 padding1;
     };
 
     struct VisualConsts {
