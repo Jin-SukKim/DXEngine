@@ -192,6 +192,7 @@
     <ClInclude Include="AppendBuffer.h" />
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
+    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="EffectActor.h" />
     <ClInclude Include="Firework.h" />
     <ClInclude Include="Material.h" />

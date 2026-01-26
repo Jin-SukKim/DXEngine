@@ -4,6 +4,11 @@
 namespace DE {
     void BitonicSort::Initialize(ID3D11Device* device, const UINT numElements)
     {
+        // 기존 리소스 정리
+        m_constsCpu.clear();
+        m_constsGpu.clear();
+        m_array = StructuredBuffer<Element>();
+
         // 2의 제곱인지 확인
         // https://stackoverflow.com/questions/108318/how-can-i-test-whether-a-number-is-a-power-of-2
         UINT num = 1;

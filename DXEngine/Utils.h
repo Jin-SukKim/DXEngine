@@ -19,6 +19,7 @@ namespace DE {
 		T_CONST& GetCpu() { return m_cpu; }
 		const auto Get() { return m_gpu.Get(); }
 		const auto GetAddressOf() const { return m_gpu.GetAddressOf(); }
+		const T_CONST& GetCpuConst() const { return m_cpu; }
 	private:
 		T_CONST m_cpu;
 		ComPtr<ID3D11Buffer> m_gpu;

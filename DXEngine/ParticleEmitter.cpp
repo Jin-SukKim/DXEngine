@@ -48,24 +48,27 @@ namespace DE {
 			}
 		}
 
-		m_consts = other.m_consts;
-		m_frameConsts = other.m_frameConsts;
-		m_bakedSpawnPos = other.m_bakedSpawnPos;
-		m_customPositions = other.m_customPositions;
+		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 새로 생성
+		m_consts.SetCpuData(other.m_consts.GetCpuConst());
+		m_frameConsts.SetCpuData(other.m_frameConsts.GetCpuConst());
+		
+		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
+		m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
+		m_customPositions.SetData(other.m_customPositions.GetCpu());
 	}
 
 	void ParticleEmitter::Initialize()
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-		
+
 		m_consts.Initialize();
 		m_frameConsts.Initialize();
 
-		ParticleInitContext initCtx = { 
-			device.Get(), 
+		ParticleInitContext initCtx = {
+			device.Get(),
 			m_consts.GetCpu(),
-			m_frameConsts.GetCpu() 
+			m_frameConsts.GetCpu()
 		};
 
 		m_sortBuffer.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
@@ -111,7 +114,7 @@ namespace DE {
 		if (m_spawnOffset != Vector3(0.f)) {
 			m_consts.GetCpu().spawn.localPos += m_spawnOffset;
 		}
-		
+
 		// m_spawnOffset에 최종 위치 저장 (Sub-Emitter 상속용)
 		m_spawnOffset = m_consts.GetCpu().spawn.localPos;
 
@@ -120,7 +123,7 @@ namespace DE {
 
 		m_consts.Upload();
 		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
-		
+
 		// OnStart 이벤트
 		FireEvent(EmitterEvent::OnStart);
 		m_startFired = true;
@@ -154,6 +157,13 @@ namespace DE {
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
+		// 기존 버퍼 명시적 해제 (ComPtr이 있어도 명확히)
+		m_consume = AppendBuffer<Particle>();
+		m_append = AppendBuffer<Particle>();
+		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
+		m_countBuffer.Reset();
+		m_countSRV.Reset();
+
 		m_consume.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 		m_append.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
@@ -191,7 +201,7 @@ namespace DE {
 		ParticleFrameConsts& frameConsts = m_frameConsts.GetCpu();
 		frameConsts.dt = dt;
 		frameConsts.time = time;
-		
+
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts,
@@ -216,7 +226,8 @@ namespace DE {
 		if (!m_durationEnded) {
 			for (auto& mod : m_modules)
 				mod->OnUpdateCPU(simCtx);
-		} else {
+		}
+		else {
 			// Duration 종료 후에는 spawnCount = 0
 			frameConsts.spawnCount = 0;
 		}
@@ -258,7 +269,7 @@ namespace DE {
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
 		context->CSSetShader(argsUpdateCS.computeShader.Get(), 0, 0);
 		context->Dispatch(1, 1, 1);
-		
+
 		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
 		context->CSSetShaderResources(0, 1, nullSRVs);
@@ -273,7 +284,7 @@ namespace DE {
 			return;
 
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		
+
 		RenderContext renderCtx = {
 			context,
 			m_consts,
