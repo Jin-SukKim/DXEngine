@@ -26,15 +26,18 @@ namespace DE {
 				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
 			}
 			catch (...) {
-				// 프로그램 종료 시 무시
 			}
 		}
 	}
 
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
-		: m_jsonPath(other.m_jsonPath)
+		: m_name(other.m_name)
+		, m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)
 		, m_bakedCount(other.m_bakedCount)
+		, m_duration(other.m_duration)
+		, m_completionDelay(other.m_completionDelay)
+		, m_subEmitters(other.m_subEmitters)
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
@@ -65,7 +68,6 @@ namespace DE {
 			m_frameConsts.GetCpu() 
 		};
 
-		// Render 버퍼 초기화 (RenderModule이 사용)
 		m_sortBuffer.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 
 		for (auto& mod : m_modules)
@@ -78,6 +80,12 @@ namespace DE {
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		// 상태 초기화
+		m_elapsedTime = 0.f;
+		m_durationEnded = false;
+		m_isCompleted = false;
+		m_startFired = false;
 
 		SimulationContext simCtx = {
 			context.Get(),
@@ -99,15 +107,32 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
+		// Spawn 위치 오프셋 적용
+		if (m_spawnOffset != Vector3(0.f)) {
+			m_consts.GetCpu().spawn.localPos += m_spawnOffset;
+		}
+		
+		// m_spawnOffset에 최종 위치 저장 (Sub-Emitter 상속용)
+		m_spawnOffset = m_consts.GetCpu().spawn.localPos;
+
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
 
 		m_consts.Upload();
 		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
+		
+		// OnStart 이벤트
+		FireEvent(EmitterEvent::OnStart);
+		m_startFired = true;
 	}
 
 	void ParticleEmitter::Reset()
 	{
+		m_elapsedTime = 0.f;
+		m_durationEnded = false;
+		m_isCompleted = false;
+		m_startFired = false;
+		m_spawnOffset = Vector3(0.f);
 		Initialize();
 	}
 
@@ -139,10 +164,30 @@ namespace DE {
 
 	void ParticleEmitter::Update(const float& dt, const float& time)
 	{
+		// 이미 완료된 경우 스킵
+		if (m_isCompleted)
+			return;
+
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		// [최적화] Frame constants 먼저 업데이트
+		m_elapsedTime += dt;
+
+		// Duration 체크 (m_duration > 0일 때만)
+		if (m_duration > 0.f) {
+			if (!m_durationEnded && m_elapsedTime >= m_duration) {
+				m_durationEnded = true;
+				FireEvent(EmitterEvent::OnDurationEnd);
+			}
+
+			// Complete 체크 (Duration 후 Delay 경과)
+			if (m_durationEnded && m_elapsedTime >= (m_duration + m_completionDelay)) {
+				m_isCompleted = true;
+				FireEvent(EmitterEvent::OnComplete);
+				return;
+			}
+		}
+
 		ParticleFrameConsts& frameConsts = m_frameConsts.GetCpu();
 		frameConsts.dt = dt;
 		frameConsts.time = time;
@@ -167,8 +212,14 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
-		for (auto& mod : m_modules)
-			mod->OnUpdateCPU(simCtx);
+		// Duration 종료 전에만 Spawn (또는 Duration 무한일 때)
+		if (!m_durationEnded) {
+			for (auto& mod : m_modules)
+				mod->OnUpdateCPU(simCtx);
+		} else {
+			// Duration 종료 후에는 spawnCount = 0
+			frameConsts.spawnCount = 0;
+		}
 
 		m_frameConsts.Upload();
 		ID3D11Buffer* constBuffers[] = {
@@ -177,8 +228,10 @@ namespace DE {
 		};
 		context->CSSetConstantBuffers(4, 2, constBuffers);
 
-		for (auto& mod : m_modules)
-			mod->PreUpdate(simCtx);
+		if (!m_durationEnded) {
+			for (auto& mod : m_modules)
+				mod->PreUpdate(simCtx);
+		}
 
 		UpdateArgsBuffers(context.Get());
 
@@ -215,6 +268,10 @@ namespace DE {
 
 	void ParticleEmitter::Render()
 	{
+		// 완료된 경우 렌더링 스킵
+		if (m_isCompleted)
+			return;
+
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		
 		RenderContext renderCtx = {
@@ -248,5 +305,17 @@ namespace DE {
 			[](const std::unique_ptr<ParticleModule>& a, const std::unique_ptr<ParticleModule>& b) {
 				return a->GetPriority() < b->GetPriority();
 			});
+	}
+
+	void ParticleEmitter::SetSpawnOffset(const Vector3& offset)
+	{
+		m_spawnOffset = offset;
+	}
+
+	void ParticleEmitter::FireEvent(EmitterEvent event)
+	{
+		if (m_eventCallback) {
+			m_eventCallback(event, this);
+		}
 	}
 }

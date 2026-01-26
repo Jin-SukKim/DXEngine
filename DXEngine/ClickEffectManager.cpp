@@ -8,28 +8,26 @@ namespace DE {
 
 void ClickEffectManager::Initialize() {
     // 기본 프리셋 등록
-    RegisterPreset("fire", { L"Particles\\TempEffect.json" });
-    RegisterPreset("Firework", { L"Particles\\Firework.json" });
-    RegisterPreset("Smoke", { L"Particles\\SmokeEffect.json" });
+    RegisterPreset("fire", L"Particles\\TempEffect.json");
+    RegisterPreset("Firework", L"Particles\\Firework.json");
+    RegisterPreset("Smoke", L"Particles\\SmokeEffect.json");
 }
 
 void ClickEffectManager::Update(float dt) {
+    // 모든 이펙트 업데이트
     for (auto& effect : m_activeEffects) {
         if (effect) effect->Update(dt);
     }
 
-    auto it = std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
-        [dt](std::unique_ptr<EffectActor>& effect) {
-            auto ps = effect->GetParticleSystem();
-            if (ps && ps->IsPlaying())
-                return false;
-            return true;
-        });
-    m_activeEffects.erase(it, m_activeEffects.end());
+    // 완료된 이펙트 제거
+    CleanupFinishedEffects();
 }
 
 void ClickEffectManager::Render() {
-    // ParticleManager가 자동으로 렌더링
+    // 이펙트 렌더링
+    for (auto& effect : m_activeEffects) {
+        if (effect) effect->Render();
+    }
 }
 
 void ClickEffectManager::SpawnEffectAtMousePosition(const std::wstring& presetPath) {
@@ -45,26 +43,26 @@ void ClickEffectManager::SpawnEffectAtWorldPosition(const std::wstring& presetPa
     // EffectActor 생성
     std::unique_ptr<EffectActor> actor = std::make_unique<EffectActor>(L"ClickEffect");
 
+    // Transform 컴포넌트 추가 (없으면)
+    auto* transform = actor->GetComponent<TransformComponent>();
+    if (!transform) {
+        transform = actor->AddComponent<TransformComponent>(L"Transform");
+    }
+    
     // 위치 설정
-    actor->GetComponent<TransformComponent>()->SetPos(worldPos);
+    transform->SetPos(worldPos);
 
-    // 파티클 설정
+    // 파티클 시스템 설정
     actor->SetParticlePreset(presetPath);
 
-    // 일회성 설정 (필요 시)
-    auto ps = actor->GetParticleSystem();
-    if (ps) {
-        ps->SetLooping(false);
-        ps->SetDuration(2.0f);
-    }
-
+    // 초기화
     actor->Initialize();
 
     m_activeEffects.push_back(std::move(actor));
 }
 
 void ClickEffectManager::RegisterPreset(const std::string& name, const std::wstring& presetPath) {
-    m_presets[name] = L"..\\Assets\\" + presetPath;
+    m_presets[name] = presetPath;
 }
 
 void ClickEffectManager::TriggerPreset(const std::string& name) {
@@ -74,8 +72,23 @@ void ClickEffectManager::TriggerPreset(const std::string& name) {
     }
 }
 
+void ClickEffectManager::Clear() {
+    m_activeEffects.clear();
+}
+
+void ClickEffectManager::CleanupFinishedEffects() {
+    // IsFinished()가 true인 이펙트 제거
+    auto it = std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
+        [](const std::unique_ptr<EffectActor>& effect) {
+            if (!effect) return true;
+            return effect->IsFinished();
+        });
+    
+    m_activeEffects.erase(it, m_activeEffects.end());
+}
+
 Vector3 ClickEffectManager::ScreenToWorldPosition(float mouseNdcX, float mouseNdcY) {
-    // 간단히 평면에 투영 (Y=0)
+    // 간단한 변환 (Y=0 평면에 투영)
     Vector3 worldPos(mouseNdcX * 10.0f, 0.0f, mouseNdcY * 10.0f);
     return worldPos;
 }

@@ -17,11 +17,9 @@ namespace DE {
 	{
 		if (m_watcherID != 0 && !m_jsonPath.empty()) {
 			try {
-				// FileWatcher가 유효한지 확인
 				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
 			}
 			catch (...) {
-				// 프로그램 종료 시 무시
 			}
 		}	
 		ParticleManager::Get().UnregisterActiveSystem(this);
@@ -32,13 +30,12 @@ namespace DE {
 		, m_looping(other.m_looping)
 		, m_duration(other.m_duration)
 		, m_playRate(other.m_playRate)
-		, m_time(0.0f)  // 시간은 0으로 초기화
+		, m_time(0.0f)
 		, m_preWarmTime(other.m_preWarmTime)
 		, m_state(other.m_state)
 		, m_jsonPath(other.m_jsonPath)
-		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+		, m_watcherID(0)
 	{
-		// Emitter 복제
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
 				auto clonedEmitter = std::make_unique<ParticleEmitter>(*emitter);
@@ -46,7 +43,6 @@ namespace DE {
 			}
 		}
 
-		// Transform 복사
 		m_meshConsts = other.m_meshConsts;
 	}
 
@@ -54,8 +50,14 @@ namespace DE {
 	{
 		m_meshConsts.Initialize();
 		UpdateTransform();
-		for (auto& emitter : m_emitters)
+		
+		for (auto& emitter : m_emitters) {
 			emitter->Initialize();
+			// 이벤트 콜백 등록
+			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+				this->OnEmitterEvent(event, em);
+			});
+		}
 
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();
@@ -79,20 +81,8 @@ namespace DE {
 		float newDt = dt * m_playRate;
 		m_time += newDt;
 
-		// Loop 및 종료 체크
-		if (m_duration <= m_time) {
-			if (m_looping) {
-				m_time = 0.f;
-			}
-			else {
-				m_time = m_duration;
-				Stop();
-				return;
-			}
-		}
-
 		UpdateTransform();
-		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
+		
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
@@ -104,11 +94,49 @@ namespace DE {
 			context->CSSetShaderResources(9, 2, srvs);
 		}
 
+		// 주 Emitter 업데이트
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt, m_time);
+		
+		// 동적 Sub-Emitter 업데이트
+		for (auto& emitter : m_dynamicEmitters)
+			emitter->Update(newDt, m_time);
+		
+		// 완료된 Sub-Emitter 제거
+		m_dynamicEmitters.erase(
+			std::remove_if(m_dynamicEmitters.begin(), m_dynamicEmitters.end(),
+				[](const std::unique_ptr<ParticleEmitter>& em) {
+					return em->IsCompleted();
+				}),
+			m_dynamicEmitters.end()
+		);
+
+		// 모든 Emitter 완료 체크 (Looping이 아닐 때만)
+		if (!m_looping && IsAllEmittersCompleted()) {
+			Stop();
+		}
 
 		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 5, nullSRVs);
+	}
+
+	bool ParticleSystem::IsAllEmittersCompleted() const
+	{
+		// Looping이면 절대 완료 안됨
+		if (m_looping)
+			return false;
+		
+		// 주 Emitter 체크
+		for (const auto& emitter : m_emitters) {
+			if (!emitter->IsCompleted())
+				return false;
+		}
+		
+		// 동적 Sub-Emitter 체크
+		if (!m_dynamicEmitters.empty())
+			return false;
+		
+		return true;
 	}
 
 	void ParticleSystem::Render()
@@ -116,11 +144,15 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		// Transform Constant Buffer 바인딩 (Slot 1)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
+		// 주 Emitter 렌더링
 		for (auto& emitter : m_emitters)
+			emitter->Render();
+		
+		// 동적 Sub-Emitter 렌더링
+		for (auto& emitter : m_dynamicEmitters)
 			emitter->Render();
 
 		ID3D11Buffer* nullCB[] = { nullptr };
@@ -132,17 +164,28 @@ namespace DE {
 		std::wstring name(path.begin(), path.end());
 
 		std::unique_ptr emitter = ParticleLoader::Load<ParticleEmitter>(name);
-		m_emitters.emplace_back(std::move(emitter));
+		if (emitter) {
+			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+				this->OnEmitterEvent(event, em);
+			});
+			m_emitters.emplace_back(std::move(emitter));
+		}
 	}
 
 	void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter)
 	{
-		m_emitters.emplace_back(std::move(emitter));
+		if (emitter) {
+			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+				this->OnEmitterEvent(event, em);
+			});
+			m_emitters.emplace_back(std::move(emitter));
+		}
 	}
 
 	void ParticleSystem::ClearEmitters()
 	{
 		m_emitters.clear();
+		m_dynamicEmitters.clear();
 	}
 
 	void ParticleSystem::LoadFromJson(const json& data)
@@ -152,24 +195,11 @@ namespace DE {
 			std::wstring wname(name.begin(), name.end());
 			this->SetName(wname);
 		}
-		if (data.contains("Transform")) {
-			/*auto jsonTr = data["Transform"];
-			auto tr = this->GetComponent<TransformComponent>();
-			if (tr) {
-				if (jsonTr.contains("position"))
-					tr->SetPos(JsonToVec3(jsonTr["position"]));
-				if (jsonTr.contains("rotation"))
-					tr->SetRotation(JsonToVec3(jsonTr["rotation"]));
-				if (jsonTr.contains("size"))
-					tr->SetScale(JsonToVec3(jsonTr["size"]));
-			}*/
-		}
 
 		ClearEmitters();
 		if (data.contains("Emitters")) {
 			for (const auto& file : data["Emitters"]) {
 				std::string s = file;
-				// Emitter 로드 (각각의 FileWatcher가 등록됨)
 				auto emitter = ParticleLoader::Load<ParticleEmitter>(std::wstring(s.begin(), s.end()));
 				if (emitter)
 					this->AddEmitter(std::move(emitter));
@@ -183,10 +213,6 @@ namespace DE {
 		
 		if (data.contains("State")) {
 			std::string state = data["State"];
-			//if (state == "Play")  Restart();
-			//else if (state == "Pause") Pause();
-			//else if (state == "Stop") Stop();
-
 			if (state == "Play") m_state = ParticleState::Playing;
 			else if (state == "Pause") m_state = ParticleState::Paused;
 			else if (state == "Stop") m_state = ParticleState::Stopped;
@@ -198,26 +224,31 @@ namespace DE {
 		m_jsonPath = path;
 		m_watcherID = id;
 	}
+	
 	void ParticleSystem::Play()
 	{
 		if (m_state == ParticleState::Stopped)
 			OnSpawn();
 		m_state = ParticleState::Playing;
 	}
+	
 	void ParticleSystem::Pause()
 	{
 		if (m_state == ParticleState::Playing)
 			m_state = ParticleState::Paused;
 	}
+	
 	void ParticleSystem::Stop()
 	{
 		m_state = ParticleState::Stopped;
 		m_time = 0.f;
+		m_dynamicEmitters.clear();
 	}
+	
 	void ParticleSystem::Restart()
 	{
 		Stop();
-		Reset(); // 버퍼 비우기
+		Reset();
 		Play();
 	}
 
@@ -267,13 +298,11 @@ namespace DE {
 	{
 		if (modelIdx >= 0) {
 			SetTargetMesh(modelIdx);
-			// 타겟 메시 변경 후 재초기화
 			Initialize();
 			OnSpawn();
 		}
 
 		m_owner = owner;
-		// Transform 초기 설정
 		UpdateTransform();
 	}
 
@@ -283,19 +312,18 @@ namespace DE {
 		{
 			emitter->Reset();
 		}
+		m_dynamicEmitters.clear();
 	}
 
 	void ParticleSystem::ExecutePreWarm()
 	{
 		if (m_preWarmTime <= 0.f) return;
 
-		// 고정 프레임(60FPS)으로 시뮬레이션
 		static const float step = 1.f / 60.f;
 		float t = 0.f;
 
 		while (t < m_preWarmTime)
 		{
-			//m_time += step; // 필요하면 활성화
 			t += step;
 
 			for (auto& emitter : m_emitters)
@@ -310,11 +338,42 @@ namespace DE {
 		TransformComponent* tr = m_owner->GetComponent<TransformComponent>();
 		if (!tr) return;
 
-		// Transform 정보를 ParticleSystem에 전달
 		MeshConstants meshConsts;
 		meshConsts.world = tr->GetTransformMatrix().Transpose();
 		meshConsts.worldIT = meshConsts.world.Invert();
 
 		this->SetTransform(meshConsts);
+	}
+
+	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)
+	{
+		// 해당 이벤트에 대응하는 Sub-Emitter 생성
+		for (const auto& entry : emitter->GetSubEmitters()) {
+			if (entry.trigger == event) {
+				Vector3 position = entry.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
+				SpawnSubEmitter(entry, position);
+			}
+		}
+	}
+
+	void ParticleSystem::SpawnSubEmitter(const SubEmitterEntry& entry, const Vector3& position)
+	{
+		auto subEmitter = ParticleLoader::Load<ParticleEmitter>(entry.emitterPath);
+		if (!subEmitter) return;
+		
+		// 위치 상속
+		if (entry.inheritPosition) {
+			subEmitter->SetSpawnOffset(position);
+		}
+		
+		// Sub-Emitter도 이벤트 콜백 등록 (중첩 지원)
+		subEmitter->SetEventCallback([this](EmitterEvent ev, ParticleEmitter* em) {
+			this->OnEmitterEvent(ev, em);
+		});
+		
+		subEmitter->Initialize();
+		subEmitter->OnSpawn();
+		
+		m_dynamicEmitters.push_back(std::move(subEmitter));
 	}
 }

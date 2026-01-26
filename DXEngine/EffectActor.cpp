@@ -76,10 +76,17 @@ namespace DE {
 
     bool EffectActor::IsFinished() const
     {
-        // 기본 로직: 파티클이 없거나 멈췄으면 끝난 것
-        if (m_particle) {
-            return m_particle->IsStopped();
-        }
-        return true;
+        if (!m_particle)
+            return true;
+
+        // Stopped 상태이면 완료
+        if (m_particle->IsStopped())
+            return true;
+
+        // Looping이 아니고 모든 Emitter가 완료되면 완료
+        if (!m_particle->IsLooping() && m_particle->IsAllEmittersCompleted())
+            return true;
+
+        return false;
     }
 }

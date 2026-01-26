@@ -20,12 +20,16 @@ public:
     // 월드 좌표에 이펙트 생성
     void SpawnEffectAtWorldPosition(const std::wstring& presetPath, const Vector3& worldPos);
 
-    // 여러 프리셋 등록
+    // 프리셋 등록 및 실행
     void RegisterPreset(const std::string& name, const std::wstring& path);
     void TriggerPreset(const std::string& name);
+    
+    // 모든 이펙트 제거
+    void Clear();
 
 private:
     Vector3 ScreenToWorldPosition(float mouseNdcX, float mouseNdcY);
+    void CleanupFinishedEffects();
 
 private:
     std::vector<std::unique_ptr<EffectActor>> m_activeEffects;

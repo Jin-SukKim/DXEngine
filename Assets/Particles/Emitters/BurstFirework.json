@@ -1,5 +1,7 @@
 {
   "Name": "BurstFireEffect",
+  "Duration": 5.0,
+  "CompletionDelay": 1.0,
   "Spawn": {
     "shape": "Sphere",
     "localPos": [ 0.0, 0.0, 0.0 ],
