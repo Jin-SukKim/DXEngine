@@ -45,7 +45,10 @@ namespace DE {
 	{
 		if (!system) return;
 		
-		std::erase(m_activeSystems, system);
+		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
+		if (it != m_activeSystems.end()) {
+			m_activeSystems.erase(it);
+		}
 	}
 
 	ParticleSystem* ParticleManager::CreateSystem(const std::wstring& path)
