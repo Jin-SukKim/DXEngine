@@ -1,0 +1,11 @@
+{
+    "Name": "DragonBreath",
+    "Looping": true,
+    "Duration": 5.0,
+    "PlayRate": 1.0,
+    "PreWarmTime": 0.0,
+    "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Combination\\DragonBreath\\Emitters\\Dragon_ChargeUp.json"
+  ]
+}

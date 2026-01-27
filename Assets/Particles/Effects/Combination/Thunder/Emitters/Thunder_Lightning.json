@@ -1,0 +1,43 @@
+{
+    "Name": "Thunder_Lightning",
+    "Duration": 0.1,
+    "CompletionDelay": 0.5,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 2.5, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.1, 5.0, 0.1],
+        "burst": 500,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 2048,
+        "lifeRange": [0.1, 0.3]
+    },
+    "Visual": {
+        "startColor": [0.8, 0.9, 1.0, 1.0],
+        "endColor": [0.5, 0.7, 1.0, 0.0],
+        "sizeRange": [0.15, 0.05]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.5, 2.0],
+        "randomDir": [0.3, 0.1, 0.3],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Impact.json",
+        "trigger": "OnStart",
+        "inheritPosition": false
+      },
+      {
+        "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Shockwave.json",
+        "trigger": "OnStart",
+        "inheritPosition": false
+      }
+    ]
+}

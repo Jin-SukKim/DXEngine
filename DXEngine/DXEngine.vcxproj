@@ -190,6 +190,7 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="AppendBuffer.h" />
+    <ClInclude Include="BasicParticleScene.h" />
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
     <ClInclude Include="EffectActor.h" />
@@ -202,6 +203,9 @@
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ParticleSpawner.h" />
     <ClInclude Include="RoseEffect.h" />
+    <ClInclude Include="SnowActor.h" />
+    <ClInclude Include="SpawnEffectsActor.h" />
+    <ClInclude Include="TestActor.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="BloomEffect.h" />
@@ -275,6 +279,7 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AppBase.cpp" />
+    <ClCompile Include="BasicParticleScene.cpp" />
     <ClCompile Include="ClickEffectManager.cpp" />
     <ClCompile Include="ComputeCommon.cpp" />
     <ClCompile Include="EffectActor.cpp" />
@@ -286,6 +291,9 @@
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ParticleSpawner.cpp" />
     <ClCompile Include="RoseEffect.cpp" />
+    <ClCompile Include="SnowActor.cpp" />
+    <ClCompile Include="SpawnEffectsActor.cpp" />
+    <ClCompile Include="TestActor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
     <ClCompile Include="BloomEffect.cpp" />

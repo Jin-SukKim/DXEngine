@@ -1,0 +1,45 @@
+{
+    "Name": "Ice_Charge",
+    "Duration": 1.0,
+    "CompletionDelay": 0.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [1.5, 1.5, 1.5],
+        "spawnInnerRatio": 0.7,
+        "spawnRate": 80.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 1024,
+        "lifeRange": [0.5, 1.0]
+    },
+    "Visual": {
+        "startColor": [0.6, 0.85, 1.0, 0.8],
+        "endColor": [0.8, 0.95, 1.0, 0.0],
+        "sizeRange": [0.08, 0.02]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.1],
+        "randomDir": [0.0, 0.0, 0.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "Vortex": {
+        "center": [0.0, 0.0, 0.0],
+        "strength": 2.0,
+        "axis": [0.0, 1.0, 0.0],
+        "vortexFalloff": 0.5,
+        "pull": [-3.0, 0.0]
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Ice\\Emitters\\Ice_Burst.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      }
+    ]
+}

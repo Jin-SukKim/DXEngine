@@ -1,0 +1,19 @@
+{
+    "Name": "character.fbx_0",
+    "Albedo": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896
+    ],
+    "Roughness": 0.5,
+    "Metallic": 0.5,
+    "Emission": [
+        0.5,
+        0.5,
+        0.5
+    ],
+    "Textures": {
+        "albedo": "Models\\Ch03_1001_Diffuse.png",
+        "normal": "Models\\Ch03_1001_Normal.png"
+    }
+}

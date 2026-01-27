@@ -1,0 +1,48 @@
+{
+    "Name": "Explosion_Core",
+    "Duration": 0.1,
+    "CompletionDelay": 0.5,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.2, 0.2, 0.2],
+        "burst": 50,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 256,
+        "lifeRange": [0.1, 0.3]
+    },
+    "Visual": {
+        "startColor": [1.0, 1.0, 0.8, 1.0],
+        "endColor": [1.0, 0.5, 0.0, 0.0],
+        "sizeRange": [0.8, 1.5]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [2.0, 4.0],
+        "randomDir": [1.0, 1.0, 1.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.5
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\SubEmitter\\Emitters\\ExplosionFlames.json",
+        "trigger": "OnStart",
+        "inheritPosition": true
+      },
+      {
+        "path": "Particles\\Effects\\SubEmitter\\Emitters\\ExplosionSmoke.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      },
+      {
+        "path": "Particles\\Effects\\SubEmitter\\Emitters\\ExplosionSparks.json",
+        "trigger": "OnStart",
+        "inheritPosition": true
+      }
+    ]
+}

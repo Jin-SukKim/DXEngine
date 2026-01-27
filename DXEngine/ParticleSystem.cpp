@@ -119,8 +119,16 @@ namespace DE {
 			});
 
 		// Looping이 아니고 모든 Emitter가 종료되면 Stop
-		if (!m_looping && IsAllEmittersCompleted())
-			Stop();
+		//if (!m_looping && IsAllEmittersCompleted())
+		//	Stop();
+		if (IsAllEmittersCompleted()) {
+			if (m_looping)
+				// 루핑이 켜져있다면 재시작 (Stop -> Reset -> Play)
+				Restart();
+			else
+				// 루핑이 꺼져있다면 완전 정지
+				Stop();
+		}
 
 		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 5, nullSRVs);
@@ -290,8 +298,8 @@ namespace DE {
 	bool ParticleSystem::IsAllEmittersCompleted() const
 	{
 		// Looping이면 절대 완료 안됨
-		if (m_looping)
-			return false;
+		//if (m_looping)
+		//	return false;
 
 		// 주 Emitter 체크
 		for (const auto& emitter : m_emitters) {

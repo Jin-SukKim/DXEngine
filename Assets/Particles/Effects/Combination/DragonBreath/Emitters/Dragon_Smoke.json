@@ -1,0 +1,38 @@
+{
+    "Name": "Dragon_Smoke",
+    "Duration": 2.0,
+    "CompletionDelay": 3.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 5.0],
+        "shape": "Box",
+        "spawnVolume": [2.0, 2.0, 3.0],
+        "spawnRate": 40.0,
+        "particlesPerSpawn": 5,
+        "maxParticles": 512,
+        "lifeRange": [2.0, 4.0]
+    },
+    "Visual": {
+        "startColor": [0.3, 0.3, 0.3, 0.5],
+        "endColor": [0.1, 0.1, 0.1, 0.0],
+        "sizeRange": [0.5, 1.5],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -0.3],
+            "maxRotSpeed": [0.0, 0.0, 0.3]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 1.0, 1.0],
+        "speedRange": [0.3, 0.6],
+        "randomDir": [0.3, 0.2, 0.2],
+        "gravity": [0.0, 0.5, 0.0],
+        "drag": 0.05
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "useSingleTexture": true,
+        "texture": "Textures/glassParticle.png"
+    }
+}

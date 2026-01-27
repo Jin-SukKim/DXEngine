@@ -1,0 +1,35 @@
+{
+    "Name": "VisualDemo_ColorGradient",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.5, 0.01, 0.5],
+        "spawnRate": 40.0,
+        "particlesPerSpawn": 5,
+        "maxParticles": 512,
+        "lifeRange": [1.5, 3.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 1.0, 0.0, 1.0],
+        "endColor": [1.0, 0.0, 0.5, 0.0],
+        "sizeRange": [0.2, 0.1],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -2.0],
+            "maxRotSpeed": [0.0, 0.0, 2.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 1.0, 0.0],
+        "speedRange": [0.1, 0.2],
+        "randomDir": [0.2, 0.1, 0.2],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "AlphaBlend"
+    }
+}

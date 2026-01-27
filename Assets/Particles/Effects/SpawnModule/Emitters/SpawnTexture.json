@@ -1,0 +1,29 @@
+{
+    "Name": "SpawnDemo_Texture",
+    "Duration": 0,
+    "Spawn": {
+      "space": "Local",
+      "localPos": [ 0.0, 0.0, 0.0 ],
+      "shape": "Texture",
+      "bakedPath": "Models\\DamagedHelmet\\emissive.bin",
+      "spawnRate": 100.0,
+      "particlesPerSpawn": 20,
+      "maxParticles": 4096,
+      "lifeRange": [ 2.0, 4.0 ]
+    },
+    "Visual": {
+        "startColor": [0.5, 0.8, 1.0, 1.0],
+        "endColor": [0.8, 0.4, 1.0, 0.0],
+        "sizeRange": [0.05, 0.02]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.02],
+        "randomDir": [0.05, 0.05, 0.05],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "Name": "SpawnDemo_WorldSpace",
+    "Duration": 0,
+    "Spawn": {
+        "space": "World",
+        "localPos": [0.0, 1.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [2.0, 0.1, 2.0],
+        "spawnRate": 40.0,
+        "particlesPerSpawn": 5,
+        "maxParticles": 512,
+        "lifeRange": [3.0, 5.0]
+    },
+    "Visual": {
+        "startColor": [0.8, 0.9, 1.0, 0.6],
+        "endColor": [0.5, 0.7, 1.0, 0.0],
+        "sizeRange": [0.3, 0.1]
+    },
+    "Force": {
+        "velocity": [1.0, 0.0, 0.0],
+        "speedRange": [0.2, 0.5],
+        "randomDir": [0.1, 0.2, 0.1],
+        "gravity": [0.0, -0.3, 0.0],
+        "drag": 0.02
+    },
+    "BillboardRender": {
+        "blendMode": "AlphaBlend"
+    }
+}

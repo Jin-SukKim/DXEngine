@@ -1,0 +1,35 @@
+{
+    "Name": "OrbitDemo_AxisX",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.8, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.05, 0.05, 0.05],
+        "spawnRate": 40.0,
+        "particlesPerSpawn": 5,
+        "maxParticles": 1024,
+        "lifeRange": [4.0, 6.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.3, 0.3, 1.0],
+        "endColor": [0.8, 0.1, 0.1, 0.0],
+        "sizeRange": [0.08, 0.03]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.0],
+        "randomDir": [0.0, 0.0, 0.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "Orbit": {
+        "center": [0.0, 0.0, 0.0],
+        "axis": [1.0, 0.0, 0.0],
+        "rotationRate": 3.0,
+        "offset": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

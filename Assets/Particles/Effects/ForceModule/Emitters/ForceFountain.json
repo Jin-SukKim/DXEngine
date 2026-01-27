@@ -1,0 +1,29 @@
+{
+    "Name": "ForceDemo_Fountain",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.1, 0.05, 0.1],
+        "spawnRate": 60.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 2048,
+        "lifeRange": [1.5, 3.0]
+    },
+    "Visual": {
+        "startColor": [0.3, 0.6, 1.0, 0.8],
+        "endColor": [0.1, 0.3, 0.8, 0.0],
+        "sizeRange": [0.08, 0.03]
+    },
+    "Force": {
+        "velocity": [0.0, 3.0, 0.0],
+        "speedRange": [0.8, 1.2],
+        "randomDir": [0.7, 0.2, 0.7],
+        "gravity": [0.0, -1.0, 0.0],
+        "drag": 0.02
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

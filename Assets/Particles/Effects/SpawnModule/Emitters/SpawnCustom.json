@@ -1,0 +1,39 @@
+{
+    "Name": "SpawnDemo_Custom",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Custom",
+        "positions": [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, -1.0],
+            [0.5, 0.5, 0.5],
+            [-0.5, 0.5, -0.5],
+            [0.5, 0.5, -0.5],
+            [-0.5, 0.5, 0.5]
+        ],
+        "spawnRate": 30.0,
+        "particlesPerSpawn": 18,
+        "maxParticles": 1000,
+        "lifeRange": [1.0, 2.0]
+    },
+    "Visual": {
+        "startColor": [0.5, 1.0, 0.5, 1.0],
+        "endColor": [0.0, 0.8, 0.3, 0.0],
+        "sizeRange": [0.15, 0.05]
+    },
+    "Force": {
+        "velocity": [0.0, 1.0, 0.0],
+        "speedRange": [0.3, 0.5],
+        "randomDir": [0.1, 0.0, 0.1],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.05
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "Name": "Phoenix_Wings",
+    "Duration": 0.5,
+    "CompletionDelay": 3.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 1.5, 0.0],
+        "shape": "Custom",
+        "positions": [
+            [-0.3, 0.0, 0.0], [-0.6, 0.2, 0.0], [-0.9, 0.5, 0.0], [-1.2, 0.8, 0.0], [-1.5, 1.2, 0.0],
+            [0.3, 0.0, 0.0], [0.6, 0.2, 0.0], [0.9, 0.5, 0.0], [1.2, 0.8, 0.0], [1.5, 1.2, 0.0],
+            [-0.4, -0.1, 0.0], [-0.7, 0.0, 0.0], [-1.0, 0.2, 0.0], [-1.3, 0.5, 0.0],
+            [0.4, -0.1, 0.0], [0.7, 0.0, 0.0], [1.0, 0.2, 0.0], [1.3, 0.5, 0.0]
+        ],
+        "burst": 100,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 2048,
+        "lifeRange": [1.5, 3.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.6, 0.1, 1.0],
+        "endColor": [1.0, 0.9, 0.3, 0.0],
+        "sizeRange": [0.2, 0.08]
+    },
+    "Force": {
+        "velocity": [0.0, 0.3, 0.0],
+        "speedRange": [0.5, 1.0],
+        "randomDir": [0.3, 0.2, 0.1],
+        "gravity": [0.0, 0.5, 0.0],
+        "drag": 0.1
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "texture": "Textures/flare0.dds"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Pheonix\\Emitters\\Phoenix_Feathers.json",
+        "trigger": "OnStart",
+        "inheritPosition": true
+      },
+      {
+        "path": "Particles\\Effects\\Combination\\Pheonix\\Emitters\\Phoenix_GlowAura.json",
+        "trigger": "OnStart",
+        "inheritPosition": true
+      }
+    ]
+}

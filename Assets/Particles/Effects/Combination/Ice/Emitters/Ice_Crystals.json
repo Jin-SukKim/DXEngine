@@ -1,0 +1,43 @@
+{
+    "Name": "Ice_Crystals",
+    "Duration": 0.1,
+    "CompletionDelay": 4.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Custom",
+        "positions": [
+            [0.0, 0.0, 0.0],
+            [0.8, 0.0, 0.0], [-0.8, 0.0, 0.0], [0.0, 0.0, 0.8], [0.0, 0.0, -0.8],
+            [0.6, 0.0, 0.6], [-0.6, 0.0, 0.6], [0.6, 0.0, -0.6], [-0.6, 0.0, -0.6],
+            [1.2, 0.0, 0.0], [-1.2, 0.0, 0.0], [0.0, 0.0, 1.2], [0.0, 0.0, -1.2]
+        ],
+        "burst": 13,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 64,
+        "lifeRange": [3.0, 4.0]
+    },
+    "Visual": {
+        "startColor": [0.7, 0.9, 1.0, 0.0],
+        "endColor": [0.5, 0.8, 1.0, 0.0],
+        "sizeRange": [0.0, 0.15],
+        "rotation": {
+            "minRotation": [-15.0, 0.0, -15.0],
+            "maxRotation": [15.0, 360.0, 15.0],
+            "minRotSpeed": [0.0, 0.0, 0.0],
+            "maxRotSpeed": [0.0, 0.0, 0.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 2.0, 0.0],
+        "speedRange": [0.8, 1.2],
+        "randomDir": [0.0, 0.0, 0.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.5
+    },
+    "MeshRender": {
+        "blendMode": "Opaque",
+        "defaultMesh": 0
+    }
+}

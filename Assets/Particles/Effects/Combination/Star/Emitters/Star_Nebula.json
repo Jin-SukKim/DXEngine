@@ -1,0 +1,53 @@
+{
+    "Name": "Star_Nebula",
+    "Duration": 3.0,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [3.0, 3.0, 3.0],
+        "spawnInnerRatio": 0.3,
+        "spawnRate": 30.0,
+        "particlesPerSpawn": 30,
+        "maxParticles": 100000,
+        "lifeRange": [8.0, 10.0]
+    },
+    "Visual": {
+        "startColor": [0.3, 0.2, 0.5, 0.5],
+        "endColor": [0.6, 0.4, 0.8, 0.0],
+        "sizeRange": [0.2, 0.05],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [360.0, 360.0, 360.0],
+            "minRotSpeed": [-0.5, -0.5, -0.5],
+            "maxRotSpeed": [0.5, 0.5, 0.5]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.1],
+        "randomDir": [0.1, 0.1, 0.1],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "Vortex": {
+        "center": [0.0, 0.0, 0.0],
+        "strength": 2.0,
+        "axis": [0.2, 1.0, 0.1],
+        "vortexFalloff": 0.3,
+        "pull": [-0.8, 0.0]
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "useSingleTexture": true,
+      "texture": "Textures/glassParticle.png"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Star\\Emitters\\Star_Collapse.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      }
+    ]
+}

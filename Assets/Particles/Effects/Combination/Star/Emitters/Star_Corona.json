@@ -1,0 +1,32 @@
+{
+    "Name": "Star_Corona",
+    "Duration": 5.0,
+    "CompletionDelay": 0.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.5, 0.5, 0.5],
+        "spawnInnerRatio": 0.8,
+        "spawnRate": 80.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 1024,
+        "lifeRange": [0.5, 1.2]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.8, 0.3, 0.8],
+        "endColor": [1.0, 0.5, 0.1, 0.0],
+        "sizeRange": [0.15, 0.05]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.5, 1.5],
+        "randomDir": [1.0, 1.0, 1.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.1
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "texture": "Textures/flare0.dds"
+    }
+}

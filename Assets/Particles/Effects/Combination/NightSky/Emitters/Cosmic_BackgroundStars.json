@@ -1,0 +1,30 @@
+{
+  "Name": "Cosmic_BackgroundStars",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [ 0.0, 30.0, 0.0 ],
+    "shape": "Sphere",
+    "spawnVolume": [ 80.0, 20.0, 80.0 ],
+    "spawnInnerRatio": 0.3,
+    "spawnRate": 50.0,
+    "particlesPerSpawn": 20,
+    "maxParticles": 8192,
+    "lifeRange": [ 15.0, 30.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
+    "endColor": [ 1.0, 1.0, 1.0, 0.5 ],
+    "sizeRange": [ 0.015, 0.008 ]
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
+    "randomDir": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.0
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

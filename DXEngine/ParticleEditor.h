@@ -9,6 +9,7 @@ namespace DE {
 	class ParticleSpawner;
 	class Firework;
 	class RoseEffect;
+	class TestActor;
 class ParticleEditor : public Scene
 {
 public:
@@ -30,6 +31,9 @@ private:
 	RoseEffect* m_rose;
 
 	InputAction m_click;
+
+	ParticleSystem* m_test;
+	TestActor* m_testActor;
 };
 
 

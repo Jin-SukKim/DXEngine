@@ -397,6 +397,10 @@
     <ClInclude Include="OrbitModule.h">
       <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
+    <ClInclude Include="TestActor.h" />
+    <ClInclude Include="BasicParticleScene.h" />
+    <ClInclude Include="SpawnEffectsActor.h" />
+    <ClInclude Include="SnowActor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -602,6 +606,18 @@
     </ClCompile>
     <ClCompile Include="RoseEffect.cpp">
       <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TestActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicParticleScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpawnEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SnowActor.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

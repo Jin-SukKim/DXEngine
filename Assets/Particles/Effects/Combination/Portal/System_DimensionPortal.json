@@ -1,0 +1,16 @@
+{
+    "Name": "DimensionPortal",
+    "Looping": true,
+    "Duration": 0,
+    "PlayRate": 1.0,
+    "PreWarmTime": 1.0,
+    "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Combination\\Portal\\Emitters\\Portal_OuterRing.json",
+    "Particles\\Effects\\Combination\\Portal\\Emitters\\Portal_InnerVortex.json",
+    "Particles\\Effects\\Combination\\Portal\\Emitters\\Portal_Core.json",
+    "Particles\\Effects\\Combination\\Portal\\Emitters\\Portal_EnergyStreams.json",
+    "Particles\\Effects\\Combination\\Portal\\Emitters\\Portal_Runes.json",
+    "Particles\\Effects\\Combination\\Portal\\Emitters\\Portal_Ambient.json"
+  ]
+}

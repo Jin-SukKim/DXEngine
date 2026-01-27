@@ -1,0 +1,37 @@
+{
+    "Name": "Necro_SoulForm",
+    "Duration": 2.0,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 1.5, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.4, 0.8, 0.4],
+        "spawnInnerRatio": 0.5,
+        "spawnRate": 80.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 1024,
+        "lifeRange": [0.5, 1.0]
+    },
+    "Visual": {
+        "startColor": [0.5, 0.3, 0.8, 0.7],
+        "endColor": [0.2, 0.1, 0.4, 0.0],
+        "sizeRange": [0.15, 0.05]
+    },
+    "Force": {
+        "velocity": [0.0, 0.3, 0.0],
+        "speedRange": [0.1, 0.3],
+        "randomDir": [0.2, 0.2, 0.2],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.05
+    },
+    "Orbit": {
+        "center": [0.0, 1.5, 0.0],
+        "axis": [0.0, 1.0, 0.0],
+        "rotationRate": 1.5,
+        "offset": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

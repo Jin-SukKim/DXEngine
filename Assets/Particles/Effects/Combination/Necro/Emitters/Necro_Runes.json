@@ -1,0 +1,47 @@
+{
+    "Name": "Necro_Runes",
+    "Duration": 2.5,
+    "CompletionDelay": 0.5,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.1, 0.0],
+        "shape": "Custom",
+        "positions": [
+            [1.2, 0.0, 0.0], [0.85, 0.0, 0.85], [0.0, 0.0, 1.2], [-0.85, 0.0, 0.85],
+            [-1.2, 0.0, 0.0], [-0.85, 0.0, -0.85], [0.0, 0.0, -1.2], [0.85, 0.0, -0.85]
+        ],
+        "spawnRate": 8.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 16,
+        "lifeRange": [2.0, 2.5]
+    },
+    "Visual": {
+        "startColor": [0.6, 0.2, 1.0, 0.0],
+        "endColor": [0.3, 0.0, 0.5, 0.0],
+        "sizeRange": [0.2, 0.15],
+        "rotation": {
+            "minRotation": [90.0, 0.0, 0.0],
+            "maxRotation": [90.0, 0.0, 0.0],
+            "minRotSpeed": [0.0, 0.0, 0.0],
+            "maxRotSpeed": [0.0, 0.0, 0.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.0],
+        "randomDir": [0.0, 0.0, 0.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "Orbit": {
+        "center": [0.0, 0.1, 0.0],
+        "axis": [0.0, 1.0, 0.0],
+        "rotationRate": 0.5,
+        "offset": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "useSingleTexture": true,
+        "texture": "Textures/flame.png"
+    }
+}

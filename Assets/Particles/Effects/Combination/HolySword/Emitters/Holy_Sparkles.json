@@ -1,0 +1,30 @@
+{
+    "Name": "Holy_Sparkles",
+    "Duration": 1.0,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 2.5, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.5, 3.0, 0.5],
+        "spawnRate": 100.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 1024,
+        "lifeRange": [0.5, 1.5]
+    },
+    "Visual": {
+        "startColor": [1.0, 1.0, 0.8, 1.0],
+        "endColor": [1.0, 0.95, 0.6, 0.0],
+        "sizeRange": [0.03, 0.01]
+    },
+    "Force": {
+        "velocity": [0.0, -3.0, 0.0],
+        "speedRange": [0.5, 1.0],
+        "randomDir": [0.3, 0.2, 0.3],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

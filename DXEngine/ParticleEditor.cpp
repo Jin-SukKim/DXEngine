@@ -33,6 +33,8 @@
 #include "Firework.h"
 #include "OrbitModule.h"
 #include "RoseEffect.h"
+#include "ParticleManager.h"
+#include "TestActor.h"
 
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
@@ -51,19 +53,22 @@ namespace DE {
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
 		
-		m_sample = AddObject<SampleActor>(L"Sample");
+		//m_sample = AddObject<SampleActor>(L"Sample");
 
-		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spanwer->SetScene(this); 
-		m_spanwer->SetActorType<Firework>();
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this); 
+		//m_spanwer->SetActorType<Firework>();
 		//m_spanwer->SetParticlePreset(L"Particles\\TempEffect.json");
-		m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
-		m_spanwer->SetSpawnInterval(0.5f);
-		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(20);
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		//m_spanwer->SetSpawnInterval(0.5f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(20);
 
 		//m_firework = AddObject<Firework>(L"Firework");
-		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+
+		m_test = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Tsunami\\System_WaterDragon.json");
+		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -82,26 +87,26 @@ namespace DE {
 		//exit(0);
 		Scene::Initialize();
 
-		TransformComponent* tr;
+		//TransformComponent* tr;
 		
-		tr = m_sample->GetComponent<TransformComponent>();
-		if (tr) {
-			tr->SetPos(Vector3(-1.f, 0.f, 0.f));
-		}
+		//tr = m_sample->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	tr->SetPos(Vector3(-1.f, 0.f, 0.f));
+		//}
 
-		tr = m_rose->GetComponent<TransformComponent>();
-		if (tr) {
-			//tr->SetPos(Vector3(0.f, -1.f, 0.f));
-		}
+		//tr = m_rose->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	//tr->SetPos(Vector3(0.f, -1.f, 0.f));
+		//}
 
-		tr = m_spanwer->GetComponent<TransformComponent>();
-		if (tr) {
-			Vector3 pos = tr->GetPos();
-			pos.z += 4.f;
-			tr->SetPos(pos);
-		}
+		//tr = m_spanwer->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	Vector3 pos = tr->GetPos();
+		//	pos.z += 4.f;
+		//	tr->SetPos(pos);
+		//}
 
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 	}
 
 	void ParticleEditor::Update(const float& dt)

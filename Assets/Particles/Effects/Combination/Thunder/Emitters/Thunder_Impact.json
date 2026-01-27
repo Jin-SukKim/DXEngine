@@ -1,0 +1,38 @@
+{
+    "Name": "Thunder_Impact",
+    "Duration": 0.2,
+    "CompletionDelay": 1.5,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.3, 0.1, 0.3],
+        "burst": 200,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 1024,
+        "lifeRange": [0.3, 0.8]
+    },
+    "Visual": {
+        "startColor": [0.7, 0.85, 1.0, 1.0],
+        "endColor": [0.3, 0.5, 1.0, 0.0],
+        "sizeRange": [0.1, 0.02]
+    },
+    "Force": {
+        "velocity": [0.0, 0.5, 0.0],
+        "speedRange": [3.0, 6.0],
+        "randomDir": [1.0, 0.5, 1.0],
+        "gravity": [0.0, -3.0, 0.0],
+        "drag": 0.1
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Residue.json",
+        "trigger": "OnComplete",
+        "inheritPosition": true
+      }
+    ]
+}

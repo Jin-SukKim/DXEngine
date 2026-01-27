@@ -1,0 +1,38 @@
+{
+    "Name": "Ice_Shards",
+    "Duration": 0.2,
+    "CompletionDelay": 3.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.3, 0.3, 0.3],
+        "burst": 50,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 256,
+        "lifeRange": [1.5, 3.0]
+    },
+    "Visual": {
+        "startColor": [0.7, 0.9, 1.0, 1.0],
+        "endColor": [0.5, 0.8, 1.0, 0.3],
+        "sizeRange": [0.1, 0.05],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [360.0, 360.0, 360.0],
+            "minRotSpeed": [-2.0, -2.0, -2.0],
+            "maxRotSpeed": [2.0, 2.0, 2.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.5, 0.0],
+        "speedRange": [4.0, 7.0],
+        "randomDir": [1.0, 0.8, 1.0],
+        "gravity": [0.0, -5.0, 0.0],
+        "drag": 0.05
+    },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "defaultMesh": 0
+  }
+}

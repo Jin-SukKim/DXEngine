@@ -9,7 +9,7 @@ void ClickEffectManager::Initialize() {
     // 기본 프리셋 등록
     RegisterPreset("fire", L"Particles\\TempEffect.json");
     RegisterPreset("Firework", L"Particles\\Firework.json");
-    RegisterPreset("Smoke", L"Particles\\SmokeEffect.json");
+    RegisterPreset("Burst", L"Particles\\SmokeEffect.json");
 }
 
 void ClickEffectManager::SpawnEffectAtMousePosition(const std::wstring& presetPath) {

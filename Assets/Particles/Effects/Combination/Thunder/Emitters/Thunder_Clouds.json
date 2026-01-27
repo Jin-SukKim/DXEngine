@@ -1,0 +1,57 @@
+{
+    "Name": "Thunder_Clouds",
+    "Duration": 1.5,
+    "CompletionDelay": 0.5,
+    "Spawn": {
+        "space": "World",
+        "localPos": [0.0, 5.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [3.0, 0.5, 3.0],
+        "spawnRate": 50.0,
+        "particlesPerSpawn": 5,
+        "maxParticles": 256,
+        "lifeRange": [1.5, 2.5]
+    },
+    "Visual": {
+        "startColor": [0.2, 0.2, 0.3, 0.8],
+        "endColor": [0.1, 0.1, 0.15, 0.0],
+        "sizeRange": [0.8, 1.5],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -0.3],
+            "maxRotSpeed": [0.0, 0.0, 0.3]
+        }
+    },
+    "Force": {
+        "velocity": [0.5, 0.0, 0.0],
+        "speedRange": [0.1, 0.3],
+        "randomDir": [0.2, 0.05, 0.2],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.02
+    },
+    "Vortex": {
+        "center": [0.0, 5.0, 0.0],
+        "strength": 1.0,
+        "axis": [0.0, 1.0, 0.0],
+        "vortexFalloff": 0.3,
+        "pull": [-0.3, 0.0]
+    },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "useSingleTexture": true,
+    "texture": "Textures/glassParticle.png"
+  },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_ChargeOrbs.json",
+        "trigger": "OnStart",
+        "inheritPosition": false
+      },
+      {
+        "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Lightning.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": false
+      }
+    ]
+}
