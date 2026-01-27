@@ -191,20 +191,26 @@
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="AppendBuffer.h" />
     <ClInclude Include="BasicParticleScene.h" />
+    <ClInclude Include="BillboardEffectsActor.h" />
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
     <ClInclude Include="EffectActor.h" />
     <ClInclude Include="Firework.h" />
+    <ClInclude Include="ForceEffectsActor.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="MaterialEffectsActor.h" />
     <ClInclude Include="MaterialModule.h" />
     <ClInclude Include="MaterialSystem.h" />
+    <ClInclude Include="MeshEffectsActor.h" />
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="OrbitEffectsActor.h" />
     <ClInclude Include="OrbitModule.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ParticleSpawner.h" />
     <ClInclude Include="RoseEffect.h" />
     <ClInclude Include="SnowActor.h" />
     <ClInclude Include="SpawnEffectsActor.h" />
+    <ClInclude Include="SubEmitterEffectsActor.h" />
     <ClInclude Include="TestActor.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="BitonicSort.h" />
@@ -272,7 +278,9 @@
     <ClInclude Include="SampleActor.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VisualEffectsActor.h" />
     <ClInclude Include="VisualModule.h" />
+    <ClInclude Include="VortexEffectsActor.h" />
     <ClInclude Include="VortexModule.h" />
     <ClInclude Include="WindowUtils.h" />
   </ItemGroup>
@@ -280,19 +288,25 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AppBase.cpp" />
     <ClCompile Include="BasicParticleScene.cpp" />
+    <ClCompile Include="BillboardEffectsActor.cpp" />
     <ClCompile Include="ClickEffectManager.cpp" />
     <ClCompile Include="ComputeCommon.cpp" />
     <ClCompile Include="EffectActor.cpp" />
     <ClCompile Include="Firework.cpp" />
+    <ClCompile Include="ForceEffectsActor.cpp" />
+    <ClCompile Include="MaterialEffectsActor.cpp" />
     <ClCompile Include="MaterialModule.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
+    <ClCompile Include="MeshEffectsActor.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="OrbitEffectsActor.cpp" />
     <ClCompile Include="OrbitModule.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ParticleSpawner.cpp" />
     <ClCompile Include="RoseEffect.cpp" />
     <ClCompile Include="SnowActor.cpp" />
     <ClCompile Include="SpawnEffectsActor.cpp" />
+    <ClCompile Include="SubEmitterEffectsActor.cpp" />
     <ClCompile Include="TestActor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
@@ -352,7 +366,9 @@
     <ClCompile Include="ToneMappingFilter.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="SampleActor.cpp" />
+    <ClCompile Include="VisualEffectsActor.cpp" />
     <ClCompile Include="VisualModule.cpp" />
+    <ClCompile Include="VortexEffectsActor.cpp" />
     <ClCompile Include="VortexModule.cpp" />
   </ItemGroup>
   <ItemGroup>

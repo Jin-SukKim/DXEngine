@@ -143,6 +143,9 @@
     <Filter Include="public\ParticleSystem\Actor">
       <UniqueIdentifier>{fcf6b784-8c9d-4352-af46-8260c33f86cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\ParticleSystem\Actor\Basic">
+      <UniqueIdentifier>{322d1b77-9a4a-4247-b85e-8687956ee2c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -382,9 +385,6 @@
     <ClInclude Include="EffectActor.h">
       <Filter>public\ParticleSystem\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="Firework.h">
-      <Filter>public\ParticleSystem\Actor</Filter>
-    </ClInclude>
     <ClInclude Include="ParticleSpawner.h">
       <Filter>public\ParticleSystem\Actor</Filter>
     </ClInclude>
@@ -398,9 +398,42 @@
       <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
     <ClInclude Include="TestActor.h" />
-    <ClInclude Include="BasicParticleScene.h" />
-    <ClInclude Include="SpawnEffectsActor.h" />
-    <ClInclude Include="SnowActor.h" />
+    <ClInclude Include="SnowActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="SpawnEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="Firework.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicParticleScene.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="ForceEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbitEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="SubEmitterEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="VisualEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="VortexEffectsActor.h">
+      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -617,6 +650,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SnowActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VisualEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VortexEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OrbitEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BillboardEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshEffectsActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SubEmitterEffectsActor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
