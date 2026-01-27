@@ -107,9 +107,8 @@ namespace DE {
 			emitter->Update(newDt);
 
 		// 완료된 Sub-Emitter 제거
-		std::erase_if(m_dynamicEmitters,
-			[](const std::unique_ptr<ParticleEmitter>& em) {
-				return em->IsCompleted();
+		std::erase_if(m_dynamicEmitters, [](const auto& em) {
+			return em->IsCompleted();
 			});
 
 		// Looping이 아니고 모든 Emitter가 종료되면 Stop

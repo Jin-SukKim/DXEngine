@@ -3,6 +3,8 @@
 
 namespace DE {
 
+class Scene;
+
 class ClickEffectManager {
 public:
     static ClickEffectManager& Get() {
@@ -11,8 +13,6 @@ public:
     }
 
     void Initialize();
-    void Update(float dt);
-    void Render();
 
     // 마우스 위치에 이펙트 생성
     void SpawnEffectAtMousePosition(const std::wstring& presetPath);
@@ -24,11 +24,12 @@ public:
     void RegisterPreset(const std::string& name, const std::wstring& path);
     void TriggerPreset(const std::string& name);
 
+    void SetScene(Scene* scene) { m_scene = scene; }
 private:
+    ClickEffectManager() = default;
     Vector3 ScreenToWorldPosition(float mouseNdcX, float mouseNdcY);
-
 private:
-    std::vector<std::unique_ptr<EffectActor>> m_activeEffects;
+    Scene* m_scene = nullptr;
     std::unordered_map<std::string, std::wstring> m_presets;
 };
 

@@ -1,38 +1,20 @@
 #include "pch.h"
 #include "ClickEffectManager.h"
-#include "ParticleManager.h"
+#include "Scene.h"
 #include "AppBase.h"
-#include "TransformComponent.h"
 
 namespace DE {
 
 void ClickEffectManager::Initialize() {
     // 기본 프리셋 등록
-    RegisterPreset("fire", { L"Particles\\TempEffect.json" });
-    RegisterPreset("Firework", { L"Particles\\Firework.json" });
-    RegisterPreset("Smoke", { L"Particles\\SmokeEffect.json" });
-}
-
-void ClickEffectManager::Update(float dt) {
-    for (auto& effect : m_activeEffects) {
-        if (effect) effect->Update(dt);
-    }
-
-    auto it = std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
-        [dt](std::unique_ptr<EffectActor>& effect) {
-            auto ps = effect->GetParticleSystem();
-            if (ps && ps->IsPlaying())
-                return false;
-            return true;
-        });
-    m_activeEffects.erase(it, m_activeEffects.end());
-}
-
-void ClickEffectManager::Render() {
-    // ParticleManager가 자동으로 렌더링
+    RegisterPreset("fire", L"Particles\\TempEffect.json");
+    RegisterPreset("Firework", L"Particles\\Firework.json");
+    RegisterPreset("Smoke", L"Particles\\SmokeEffect.json");
 }
 
 void ClickEffectManager::SpawnEffectAtMousePosition(const std::wstring& presetPath) {
+    if (!m_scene)
+        return;
     // InputManager에서 마우스 NDC 좌표 가져오기
     InputManager& inputMgr = AppBase::GetInputManager();
     Vector2 mouseNDC = inputMgr.GetMouseNDC();
@@ -42,29 +24,13 @@ void ClickEffectManager::SpawnEffectAtMousePosition(const std::wstring& presetPa
 }
 
 void ClickEffectManager::SpawnEffectAtWorldPosition(const std::wstring& presetPath, const Vector3& worldPos) {
-    // EffectActor 생성
-    std::unique_ptr<EffectActor> actor = std::make_unique<EffectActor>(L"ClickEffect");
-
-    // 위치 설정
-    actor->GetComponent<TransformComponent>()->SetPos(worldPos);
-
-    // 파티클 설정
-    actor->SetParticlePreset(presetPath);
-
-    // 일회성 설정 (필요 시)
-    auto ps = actor->GetParticleSystem();
-    if (ps) {
-        ps->SetLooping(false);
-        ps->SetDuration(2.0f);
-    }
-
-    actor->Initialize();
-
-    m_activeEffects.push_back(std::move(actor));
+    if (!m_scene)
+        return;
+    m_scene->SpawnEffect(L"ClickEffect", presetPath, worldPos);
 }
 
 void ClickEffectManager::RegisterPreset(const std::string& name, const std::wstring& presetPath) {
-    m_presets[name] = L"..\\Assets\\" + presetPath;
+    m_presets[name] = presetPath;
 }
 
 void ClickEffectManager::TriggerPreset(const std::string& name) {

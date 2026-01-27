@@ -2,6 +2,7 @@
 #include "ParticleSpawner.h"
 #include "ParticleManager.h"
 #include "TransformComponent.h"
+#include "Scene.h"
 
 namespace DE {
 
@@ -10,9 +11,7 @@ namespace DE {
         AddComponent<TransformComponent>(L"Transform");
     }
 
-    ParticleSpawner::~ParticleSpawner() {
-        Clear();
-    }
+    ParticleSpawner::~ParticleSpawner() {}
 
     void ParticleSpawner::Initialize() {
         Super::Initialize();
@@ -21,30 +20,25 @@ namespace DE {
     void ParticleSpawner::Update(const float& deltaTime) {
         Super::Update(deltaTime);
 
+        if (m_stopped)
+            return;
+
         m_elapsedTime += deltaTime;
 
         // Spawner 자체 수명 관리
         if (m_autoDestroy && m_lifetime > 0.0f && m_elapsedTime >= m_lifetime) {
-            Clear();
-            // 필요하다면 여기서 Spawner Actor 자체를 Scene에서 제거 요청 (Destroy(this))
+            m_stopped = true;
             return;
         }
 
-        UpdateSpawning(deltaTime);
-
-        // 관리 중인 모든 이펙트 Actor 업데이트
-        for (auto& actor : m_spawnedActors) {
-            if (actor) actor->Update(deltaTime);
-        }
-
+        // 종료된 Effect 정리
         CleanupDeadSystems();
+        // 새로 Spawn
+        UpdateSpawning(deltaTime);
     }
 
     void ParticleSpawner::Render() {
         Super::Render();
-        for (auto& actor : m_spawnedActors) {
-            if (actor) actor->Render();
-        }
     }
 
     void ParticleSpawner::SetParticlePreset(const std::wstring& presetPath) {
@@ -65,8 +59,9 @@ namespace DE {
         m_maxActiveParticles = maxCount;
     }
 
-    void ParticleSpawner::SetSpawnRadius(float radius) {
-        m_spawnRadius = radius;
+    void ParticleSpawner::SetSpawnBox(Vector3 halfExtends)
+    {
+        m_spawnBoxExtents = halfExtends;
     }
 
     void ParticleSpawner::SetAutoDestroy(bool enable) {
@@ -77,34 +72,36 @@ namespace DE {
         m_lifetime = lifetime;
     }
 
-    // [핵심 수정] Spawn 함수 구현
+    // Spawn 함수 구현
     void ParticleSpawner::Spawn() {
-        // 1. 최대 개수 제한 확인
-        if (m_spawnedActors.size() >= m_maxActiveParticles) return;
+        if (!m_scene)
+            return;
 
-        // 2. 팩토리를 통해 Actor 생성 (EffectActor 또는 Firework 등)
-        std::unique_ptr<EffectActor> actor = m_actorFactory(L"SpawnedEffect");
+        // 최대 개수 제한 확인
+        if (m_spawnedEffects.size() >= m_maxActiveParticles) return;
+
+        // 팩토리를 통해 Actor 생성 (EffectActor 또는 EffectActor를 상속받은 Class 등)
+        auto actor = m_actorFactory(L"SpawnedEffect");
         if (!actor) return;
 
-        // 3. 위치 설정 (Spawner 위치 기준 랜덤 반경)
-        auto* transform = actor->GetComponent<TransformComponent>();
-        if (transform) {
-            transform->SetPos(GetRandomSpawnPosition());
-        }
+        // 위치 설정 (Spawner 위치 기준 랜덤 반경)
+        Vector3 spawnPos = GetRandomSpawnPosition();
+        if (auto* tr = actor->GetComponent<TransformComponent>())
+            tr->SetPos(spawnPos);
 
-        // 4. 프리셋 설정 여부 확인 (다형성 활용)
-        // Firework 등 내부 생성 방식은 NeedsExternalPreset() == false 이므로 패스
-        if (actor->NeedsExternalPreset()) {
-            // 외부 프리셋이 필요한데 경로가 비어있으면 생성 취소
-            if (m_presetPath.empty()) {
-                return; // unique_ptr이 범위를 벗어나며 자동 소멸됨
-            }
+        // 프리셋 설정 여부 확인
+        if (actor->NeedsExternalPreset() && !m_presetPath.empty()) 
             actor->SetParticlePreset(m_presetPath);
-        }
 
-        // 5. 초기화 및 리스트 추가
+        // 초기화 
         actor->Initialize();
-        m_spawnedActors.push_back(std::move(actor));
+
+        // raw pointer 저장 (추적용)
+        EffectActor* rawPtr = actor.get();
+        m_spawnedEffects.push_back(rawPtr);
+
+        // Scene에 추가
+        m_scene->SpawnEffect(std::move(actor));
     }
 
     void ParticleSpawner::SpawnBurst(int count) {
@@ -114,13 +111,7 @@ namespace DE {
     }
 
     void ParticleSpawner::Stop() {
-        for (auto& actor : m_spawnedActors) {
-            if (actor) actor->Stop();
-        }
-    }
-
-    void ParticleSpawner::Clear() {
-        m_spawnedActors.clear(); // unique_ptr 벡터이므로 clear 시 자동 소멸(delete)
+        m_stopped = true;
     }
 
     void ParticleSpawner::UpdateSpawning(float dt) {
@@ -138,7 +129,7 @@ namespace DE {
             break;
 
         case SpawnMode::OneShot:
-            if (m_spawnedActors.empty()) {
+            if (m_spawnedEffects.empty()) {
                 Spawn();
             }
             break;
@@ -150,28 +141,27 @@ namespace DE {
     }
 
     void ParticleSpawner::CleanupDeadSystems() {
-        // 종료된 이펙트 제거 (IsFinished()가 true인 요소 삭제)
-        auto it = std::remove_if(m_spawnedActors.begin(), m_spawnedActors.end(),
-            [](const std::unique_ptr<EffectActor>& actor) {
-                if (!actor) return true;
-                return actor->IsFinished();
-            });
+        if (!m_scene) return;
 
-        m_spawnedActors.erase(it, m_spawnedActors.end());
+        std::erase_if(m_spawnedEffects, [this](EffectActor* effect) {
+            // Scene에 실제로 존재하는지 확인
+            return !m_scene->ContainsEffect(effect);
+            });
     }
 
     Vector3 ParticleSpawner::GetRandomSpawnPosition() {
         auto* transform = GetComponent<TransformComponent>();
         Vector3 basePos = transform ? transform->GetPos() : Vector3(0.f);
 
-        if (m_spawnRadius > 0.0f) {
-            // XZ 평면상의 랜덤 위치 계산
-            float angle = (float)(rand() % 360) * 3.14159f / 180.0f;
-            float radius = ((float)(rand() % 100) / 100.0f) * m_spawnRadius;
+        static std::mt19937 gen{ std::random_device{}() };
 
-            basePos.x += cos(angle) * radius;
-            basePos.z += sin(angle) * radius;
-        }
+        std::uniform_real_distribution<float> distX(-m_spawnBoxExtents.x, m_spawnBoxExtents.x);
+        std::uniform_real_distribution<float> distY(-m_spawnBoxExtents.y, m_spawnBoxExtents.y);
+        std::uniform_real_distribution<float> distZ(-m_spawnBoxExtents.z, m_spawnBoxExtents.z);
+
+        basePos.x += distX(gen);
+        basePos.y += distY(gen);
+        basePos.z += distZ(gen);
 
         return basePos;
     }

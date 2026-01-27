@@ -12,12 +12,12 @@ namespace DE {
         using Super = Actor;
     public:
         LightActor(const std::wstring& name);
-        virtual ~LightActor() override {}
+        virtual ~LightActor() override;
 
         virtual void Initialize() override;
         virtual void Update(const float& deltaTime) override;
         virtual void Render() override;
-        virtual void RenderShadow(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists);
+        virtual void RenderShadow(const std::vector<std::unique_ptr<Actor>>* actorLists, size_t count);
 
 		virtual void UpdateShadowGlobals(const Matrix& view, const Matrix& proj);
         virtual float GetLightFrustumWidth(const Matrix& proj);

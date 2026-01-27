@@ -1,10 +1,9 @@
 #pragma once
 #include "Actor.h"
 #include "EffectActor.h" // EffectActor의 NeedsExternalPreset() 사용을 위해 필요
-#include <functional>
-#include <memory> // std::unique_ptr
 
 namespace DE {
+    class Scene;
 
     enum class SpawnMode {
         Continuous,
@@ -13,6 +12,7 @@ namespace DE {
         Burst
     };
 
+    // Effect 생성만 scene에게 요청 (소유권 없음)
     class ParticleSpawner : public Actor {
         using Super = Actor;
     public:
@@ -23,12 +23,14 @@ namespace DE {
         void Update(const float& deltaTime) override;
         void Render() override;
 
+        void SetScene(Scene* scene) { m_scene = scene; }
+
         // [Spawner 설정]
         void SetParticlePreset(const std::wstring& presetPath);
         void SetSpawnMode(SpawnMode mode);
         void SetSpawnInterval(float interval);
         void SetMaxActiveParticles(int maxCount);
-        void SetSpawnRadius(float radius);
+        void SetSpawnBox(Vector3 halfExtends);
         void SetAutoDestroy(bool enable);
         void SetLifetime(float lifetime);
 
@@ -36,7 +38,6 @@ namespace DE {
         void Spawn();                   // 생성 함수 (수정됨)
         void SpawnBurst(int count);
         void Stop();
-        void Clear();
 
         // 팩토리 함수 타입 정의
         using ActorFactory = std::function<std::unique_ptr<EffectActor>(const std::wstring&)>;
@@ -63,20 +64,22 @@ namespace DE {
         };
 
     private:
+        Scene* m_scene = nullptr;
         std::wstring m_presetPath;
         SpawnMode m_spawnMode = SpawnMode::Continuous;
 
         float m_spawnInterval = 1.0f;
         float m_spawnAccumulator = 0.0f;
         int m_maxActiveParticles = 10;
-        float m_spawnRadius = 0.0f;
+        Vector3 m_spawnBoxExtents = Vector3(1.f);
 
         bool m_autoDestroy = false;
         float m_lifetime = -1.0f;
         float m_elapsedTime = 0.0f;
+        bool m_stopped = false;
 
-        // unique_ptr로 소유권 관리
-        std::vector<std::unique_ptr<EffectActor>> m_spawnedActors;
+        // EffaActor 추적
+        std::vector<EffectActor*> m_spawnedEffects;
     };
 
 }

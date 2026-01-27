@@ -2,6 +2,8 @@
 
 #include "InputManager.h"
 #include "Gui.h"
+#include "EffectActor.h"
+#include "TransformComponent.h"
 
 namespace DE {
 	class SampleActor;
@@ -28,7 +30,7 @@ namespace DE {
 
 	public:
 		Scene();
-		virtual ~Scene() {}
+		virtual ~Scene();
 		virtual void Initialize();
 		virtual void Update(const float& deltaTime);
 		virtual void UpdateGUI();
@@ -36,6 +38,12 @@ namespace DE {
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); }
 
+		// 동적 EffectActor 추가
+		template<class T = EffectActor>
+		T* SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos);
+		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); // 직접 추가
+		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category);
+		bool ContainsEffect(EffectActor* effect) const;
 	protected:
 		// Actor Management
 		template<class T>
@@ -72,6 +80,8 @@ namespace DE {
 		virtual void RenderActors(ActorCategory category);
 		virtual void RenderDebugGeometry();
 
+		// Effect
+		virtual void CleanupFinishedEffects();
 	private:
 		void EnableCameraFPV();
 
@@ -81,12 +91,12 @@ namespace DE {
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 
 		// Core Scene Elements
-		std::shared_ptr<CameraActor> m_mainCamera;
-		std::shared_ptr<SkyboxActor> m_skybox;
-		std::shared_ptr<CopyFilter> m_copyPostProcess;
+		std::unique_ptr<CameraActor> m_mainCamera;
+		std::unique_ptr<SkyboxActor> m_skybox;
+		std::unique_ptr<CopyFilter> m_copyPostProcess;
 
 		// Actors organized by category
-		std::vector<std::shared_ptr<Actor>> m_actorList[static_cast<size_t>(ActorCategory::Count)];
+		std::vector<std::unique_ptr<Actor>> m_actorList[static_cast<size_t>(ActorCategory::Count)];
 		std::vector<std::unique_ptr<Actor>> m_lights;
 		std::vector<std::unique_ptr<Gui>> m_guis;
 
@@ -104,19 +114,39 @@ namespace DE {
 	template<class T>
 	inline T* Scene::AddObject(const std::wstring& name)
 	{
-		std::unique_ptr<T> actor = std::make_unique<T>(name);
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
 		auto category = static_cast<size_t>(ActorCategory::Normal);
 		m_actorList[category].emplace_back(std::move(actor));
-		return dynamic_cast<T*>(m_actorList[category].back().get());
+		return rawPtr;
 	}
 
 	template<class T>
 	inline T* Scene::AddEffect(const std::wstring& name)
 	{
-		std::unique_ptr<T> actor = std::make_unique<T>(name);
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
 		auto category = static_cast<size_t>(ActorCategory::Effect);
 		m_actorList[category].emplace_back(std::move(actor));
-		return dynamic_cast<T*>(m_actorList[category].back().get());
+		return rawPtr;
+	}
+
+	template<class T>
+	inline T* Scene::SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos)
+	{
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
+
+		if (auto* tr = actor->GetComponent<TransformComponent>())
+			tr->SetPos(worldPos);
+
+		if (actor->NeedsExternalPreset() && !presetPath.empty())
+			actor->SetParticlePreset(presetPath);
+		actor->Initialize();
+
+		auto category = static_cast<size_t>(ActorCategory::Effect);
+		m_actorList[category].emplace_back(std::move(actor));
+		return rawPtr;
 	}
 
 	template<class T>
@@ -132,8 +162,9 @@ namespace DE {
 	template<class T>
 	inline T* Scene::AddGui()
 	{
-		std::unique_ptr<T> gui = std::make_unique<T>();
+		auto gui = std::make_unique<T>();
+		T* rawPtr = gui.get();
 		m_guis.emplace_back(std::move(gui));
-		return dynamic_cast<T*>(m_guis.back().get());
+		return rawPtr;
 	}
 }

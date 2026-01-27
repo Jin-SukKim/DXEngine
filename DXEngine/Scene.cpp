@@ -34,6 +34,35 @@ namespace DE {
 		InitializeCommonResources();
 	}
 
+	Scene::~Scene()
+	{
+	}
+
+	EffectActor* Scene::SpawnEffect(std::unique_ptr<EffectActor> actor)
+	{
+		if (!actor)
+			return nullptr;
+
+		EffectActor* rawPtr = actor.get();
+		auto category = static_cast<size_t>(ActorCategory::Effect);
+		m_actorList[category].emplace_back(std::move(actor));
+
+		return rawPtr;
+	}
+
+	std::vector<std::unique_ptr<Actor>>& Scene::GetActorList(ActorCategory category)
+	{
+		return m_actorList[static_cast<size_t>(category)];
+	}
+
+	bool Scene::ContainsEffect(EffectActor* effect) const
+	{
+		for (const auto& e : m_actorList[static_cast<size_t>(ActorCategory::Effect)]) {
+			if (e.get() == effect) return true;
+		}
+		return false;
+	}
+
 	void Scene::InitializeCommonResources()
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
@@ -47,11 +76,11 @@ namespace DE {
 		MaterialSystem::Get().Initialize();
 
 		// Create core actors
-		m_mainCamera = std::make_shared<CameraActor>(L"MainCamera");
-		m_skybox = std::make_shared<SkyboxActor>(L"Skybox");
+		m_mainCamera = std::make_unique<CameraActor>(L"MainCamera");
+		m_skybox = std::make_unique<SkyboxActor>(L"Skybox");
 
 		// Setup post-processing
-		m_copyPostProcess = std::make_shared<CopyFilter>();
+		m_copyPostProcess = std::make_unique<CopyFilter>();
 		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 	}
 
@@ -86,7 +115,7 @@ namespace DE {
 		// Create temp lights up to MAX_LIGHTS
 		for (size_t i = m_lights.size(); i < MAX_LIGHTS; ++i)
 		{
-			std::unique_ptr<SpotLight> tempLight = std::make_unique<SpotLight>(L"TempLight");
+			auto tempLight = std::make_unique<SpotLight>(L"TempLight");
 			tempLight->TurnOff();
 			m_lights.emplace_back(std::move(tempLight));
 			lights.emplace_back(dynamic_cast<LightActor*>(m_lights.back().get()));
@@ -138,6 +167,9 @@ namespace DE {
 		UpdateGlobalConstants(deltaTime, eyeWorld, view, proj);
 		UpdateLights(deltaTime);
 		UpdateActors(deltaTime);
+
+		// 동적으로 추가된 EffectActor중 완료된 것들 정리
+		CleanupFinishedEffects();
 
 		// ParticleManager handles all particle updates
 		ParticleManager::Get().Update(deltaTime);
@@ -261,19 +293,9 @@ namespace DE {
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 
 		for (auto& light : m_lights)
-		{
 			if (LightActor* lightActor = dynamic_cast<LightActor*>(light.get()))
-			{
 				if (lightActor->GetLight().type & LIGHT_SHADOW)
-				{
-					lightActor->RenderShadow({ 
-						m_actorList[static_cast<size_t>(ActorCategory::Normal)], 
-						m_actorList[static_cast<size_t>(ActorCategory::Billboard)], 
-						m_actorList[static_cast<size_t>(ActorCategory::Effect)] 
-					});
-				}
-			}
-		}
+					lightActor->RenderShadow(m_actorList, static_cast<size_t>(ActorCategory::Count));
 	}
 
 	void Scene::RenderOpaqueObjects()
@@ -290,6 +312,7 @@ namespace DE {
 		// Render normal objects
 		renderer.SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 		RenderActors(ActorCategory::Normal);
+		RenderActors(ActorCategory::Effect);
 
 		// Render billboards
 		renderer.SetPipelineState(RenderBase::graphicsCommon.billboard.solidPSO);
@@ -338,6 +361,20 @@ namespace DE {
 				actor->RenderNormal();
 			}
 		}
+	}
+
+	void Scene::CleanupFinishedEffects()
+	{
+		auto& effectList = m_actorList[static_cast<size_t>(ActorCategory::Effect)];
+
+		// 완료된 것들 정리
+		std::erase_if(effectList,
+			[](const std::unique_ptr<Actor>& actor) {
+				if (auto* effect = dynamic_cast<EffectActor*>(actor.get())) {
+					return effect->IsFinished();
+				}
+				return false;
+			});
 	}
 
 	void Scene::EnableCameraFPV()
