@@ -7,12 +7,13 @@ namespace DE {
 	Firework::Firework(const std::wstring& name) : Super(name)
 	{
 		m_particle = ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
-		m_particle->SetTarget(this);
+		if (m_particle)
+			m_particle->SetTarget(this);
 	}
 
 	Firework::~Firework()
 	{
-		ParticleManager::Get().DestroyInstance(m_particle);
+		// m_particle은 부모 ~EffectActor()에서 해제됨
 	}
 
 	void Firework::Initialize()
@@ -24,7 +25,7 @@ namespace DE {
 	{
 		Super::Update(deltaTime);
 
-		if (m_particle->IsStopped()) 
+		if (!m_particle || m_particle->IsStopped()) 
 			return; 
 		
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
@@ -33,6 +34,5 @@ namespace DE {
 			pos.y += 1.0f * deltaTime;
 			tr->SetPos(pos);
 		}
-
 	}
 }

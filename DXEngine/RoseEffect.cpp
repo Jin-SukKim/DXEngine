@@ -10,7 +10,6 @@ namespace DE {
 RoseEffect::RoseEffect(const std::wstring& name) : Super(name)
 {
 	m_model = AddComponent<ModelComponent>(L"Model");
-	// basePath만 전달 (presetPath는 사용하지 않음)
 	m_model->SetModel("angel_armor.fbx", "armored-female-future-soldier/", false);
 	m_model->SetDrawNormal(false);
 
@@ -18,13 +17,18 @@ RoseEffect::RoseEffect(const std::wstring& name) : Super(name)
 	m_model->SetMaterialIndex(matIdx);
 
 	m_orbit = ParticleManager::Get().CreateSystem(L"Particles\\OrbitEffect.json");
-	int modelIdx = m_model->GetModelIndex();
-	m_orbit->SetTarget(this, modelIdx);
+	if (m_orbit) {
+		int modelIdx = m_model->GetModelIndex();
+		m_orbit->SetTarget(this, modelIdx);
+	}
 }
 
 RoseEffect::~RoseEffect()
 {
-	ParticleManager::Get().DestroyInstance(m_orbit);
+	if (m_orbit) {
+		ParticleManager::Get().DestroyInstance(m_orbit);
+		m_orbit = nullptr;
+	}
 }
 
 void RoseEffect::Initialize()

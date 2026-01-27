@@ -383,4 +383,11 @@ namespace DE {
 
 		m_dynamicEmitters.emplace_back(std::move(subEmitter));
 	}
+
+	void ParticleSystem::SetSpawnOffset(const Vector3& offset)
+	{
+		for (auto& emitter : m_emitters) {
+			emitter->SetSpawnOffset(offset);
+		}
+	}
 }

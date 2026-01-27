@@ -68,6 +68,9 @@ public:
 
 	void SetTarget(Actor* owner = nullptr, const int& modelIdx = -1);
 
+	// 위치 오프셋 설정 (모든 Emitter에 적용)
+	void SetSpawnOffset(const Vector3& offset);
+
 	// 모든 Emitter 종료 확인 (SubEmitter 포함)
 	bool IsAllEmittersCompleted() const;
 private:

@@ -39,6 +39,7 @@ namespace DE {
 		, m_duration(other.m_duration)
 		, m_completionDelay(other.m_completionDelay)
 		, m_subEmitters(other.m_subEmitters)
+		, m_initialSpawnPos(other.m_initialSpawnPos)  // 추가
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
@@ -90,6 +91,9 @@ namespace DE {
 			m_customPositions.Initialize(device.Get());
 			m_customPositions.Upload(context.Get());
 		}
+
+		// 초기 spawn 위치 저장 (Reset 시 복원용)
+		m_initialSpawnPos = m_consts.GetCpu().spawn.localPos;
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -148,6 +152,9 @@ namespace DE {
 		m_isCompleted = false;
 		m_isStarted = false;
 		m_spawnOffset = Vector3(0.f);
+		
+		// 초기 spawn 위치로 복원
+		m_consts.GetCpu().spawn.localPos = m_initialSpawnPos;
 	}
 
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)

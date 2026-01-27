@@ -16,8 +16,8 @@ namespace DE {
 		void Update(const float& deltaTime) override;
 		void Render() override;
 	private:
-		ModelComponent* m_model;
-		ParticleSystem* m_orbit;
+		ModelComponent* m_model = nullptr;
+		ParticleSystem* m_orbit = nullptr;
 
 		int count = 0;
 	};

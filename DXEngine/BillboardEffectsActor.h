@@ -13,10 +13,8 @@ namespace DE {
 
 		bool NeedsExternalPreset() const override { return false; }
 	private:
-		ParticleSystem* m_burst;
-		ParticleSystem* m_custom;
-		ParticleSystem* m_hollow;
-		ParticleSystem* m_sphere;
-		ParticleSystem* m_texture;
+		ParticleSystem* m_single;
+		ParticleSystem* m_sprite;
+		ParticleSystem* m_textures;
 	};
 }

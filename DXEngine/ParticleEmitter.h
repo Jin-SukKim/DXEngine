@@ -135,6 +135,8 @@ namespace DE {
 		std::vector<SubEmitter> m_subEmitters;
 		EventCallback m_eventCallback;
 		Vector3 m_spawnOffset = Vector3(0.f);
+
+		Vector3 m_initialSpawnPos = Vector3(0.f);  // 추가: 초기 위치 저장
 	};
 
 	template<typename T>

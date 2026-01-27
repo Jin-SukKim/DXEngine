@@ -7,11 +7,12 @@ namespace DE {
 	TestActor::TestActor(const std::wstring& name) : Super(name)
 	{
 		m_particle = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\SpawnModule\\SpawnEffect.json");
-		m_particle->SetTarget(this);
+		if (m_particle)
+			m_particle->SetTarget(this);
 	}
 
 	TestActor::~TestActor()
 	{
-		ParticleManager::Get().DestroyInstance(m_particle);
+		// m_particle은 부모 ~EffectActor()에서 해제됨
 	}
 }

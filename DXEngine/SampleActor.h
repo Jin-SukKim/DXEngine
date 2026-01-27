@@ -10,13 +10,13 @@ namespace DE {
 		using Super = Actor;
 	public:
 		SampleActor(const std::wstring& name);
-		virtual ~SampleActor() override {}
+		virtual ~SampleActor() override;  // 소멸자 구현 필요
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;
 		void Render() override;
 	private:
 		ModelComponent* m_sample;
-		ParticleSystem* m_particles;
+		ParticleSystem* m_particles = nullptr;  // nullptr 초기화
 	};
 }

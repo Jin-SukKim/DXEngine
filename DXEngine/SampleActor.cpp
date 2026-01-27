@@ -22,13 +22,23 @@ namespace DE {
 
 			m_particles = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
 
-			// ModelComponent에서 모델 인덱스를 가져와서 전달
-			int modelIdx = m_sample->GetModelIndex();
-			m_particles->SetTarget(this, modelIdx);
+			if (m_particles) {
+				int modelIdx = m_sample->GetModelIndex();
+				m_particles->SetTarget(this, modelIdx);
+			}
 			m_sample->SetDrawNormal(false);
 		}
 	}
-	
+
+	// 소멸자 추가
+	SampleActor::~SampleActor()
+	{
+		if (m_particles) {
+			ParticleManager::Get().DestroyInstance(m_particles);
+			m_particles = nullptr;
+		}
+	}
+
 	void SampleActor::Initialize() {
 		Super::Initialize();
 
@@ -54,5 +64,6 @@ namespace DE {
 	void SampleActor::Render() {
 		Super::Render();
 	}
+
 
 }

@@ -23,17 +23,17 @@ public:
 
 	void ClickEvent();
 private:
-	SquareActor* ground;
+	SquareActor* ground = nullptr;
 
-	SampleActor* m_sample;
-	ParticleSpawner* m_spanwer;
-	Firework* m_firework;
-	RoseEffect* m_rose;
+	SampleActor* m_sample = nullptr;
+	ParticleSpawner* m_spanwer = nullptr;
+	Firework* m_firework = nullptr;
+	RoseEffect* m_rose = nullptr;
 
 	InputAction m_click;
 
-	ParticleSystem* m_test;
-	TestActor* m_testActor;
+	ParticleSystem* m_test = nullptr;
+	TestActor* m_testActor = nullptr;
 };
 
 

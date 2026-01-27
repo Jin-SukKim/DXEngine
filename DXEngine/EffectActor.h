@@ -1,6 +1,7 @@
 #pragma once
 #include "Actor.h"
 #include "ParticleSystem.h"
+#include "ParticleManager.h"
 
 namespace DE {
 
