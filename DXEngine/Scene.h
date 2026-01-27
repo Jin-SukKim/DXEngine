@@ -140,9 +140,10 @@ namespace DE {
 		if (auto* tr = actor->GetComponent<TransformComponent>())
 			tr->SetPos(worldPos);
 
+		actor->Initialize();
+
 		if (actor->NeedsExternalPreset() && !presetPath.empty())
 			actor->SetParticlePreset(presetPath);
-		actor->Initialize();
 
 		auto category = static_cast<size_t>(ActorCategory::Effect);
 		m_actorList[category].emplace_back(std::move(actor));

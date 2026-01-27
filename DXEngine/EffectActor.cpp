@@ -46,8 +46,6 @@ namespace DE {
 
         if (m_particle) {
             m_particle->SetTarget(this);
-            m_particle->Initialize();
-            m_particle->OnSpawn();
             m_particle->Play();
         }
     }

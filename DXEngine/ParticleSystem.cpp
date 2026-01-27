@@ -36,6 +36,8 @@ namespace DE {
 		, m_state(other.m_state)
 		, m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+		, m_vertexCount(other.m_vertexCount)
+		, m_indexCount(other.m_indexCount)
 	{
 		// Emitter 복제
 		for (const auto& emitter : other.m_emitters) {
@@ -45,8 +47,12 @@ namespace DE {
 			}
 		}
 
-		// Transform 복사
-		m_meshConsts = other.m_meshConsts;
+		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 생성
+		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
+
+		// mesh 데이터도 CPU만 복사
+		m_meshVertex.SetData(other.m_meshVertex.GetCpu());
+		m_meshIndices.SetData(other.m_meshIndices.GetCpu());
 	}
 
 	void ParticleSystem::Initialize()
@@ -272,14 +278,10 @@ namespace DE {
 
 	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
 	{
-		if (modelIdx >= 0) {
-			SetTargetMesh(modelIdx);
-			// 타겟 메시 변경 후 재초기화
-			Initialize();
-			OnSpawn();
-		}
-
 		m_owner = owner;
+		if (modelIdx >= 0) 
+			SetTargetMesh(modelIdx);
+
 		// Transform 초기 설정
 		UpdateTransform();
 	}

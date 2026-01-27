@@ -4,6 +4,13 @@
 namespace DE {
     void BitonicSort::Initialize(ID3D11Device* device, const UINT numElements)
     {
+        // 기존 리소스 정리
+        m_constsCpu.clear();
+        m_constsGpu.clear();
+        m_array = StructuredBuffer<Element>();
+
+        if (numElements == 0)
+            return;
         // 2의 제곱인지 확인
         // https://stackoverflow.com/questions/108318/how-can-i-test-whether-a-number-is-a-power-of-2
         UINT num = 1;
@@ -41,7 +48,7 @@ namespace DE {
                 context->CSSetConstantBuffers(0, 1, m_constsGpu[constCount++].GetAddressOf());
                 context->CSSetShader(bitonicSortCS.computeShader.Get(), 0, 0);
                 context->CSSetUnorderedAccessViews(0, 1, m_array.GetAddressOfUAV(), NULL);
-                context->Dispatch(UINT(ceil(m_numElements / 1024)), 1, 1);
+                context->Dispatch((m_numElements + 1023) / 1024, 1, 1);
             }
 
         // UAV Barrier

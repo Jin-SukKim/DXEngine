@@ -22,7 +22,7 @@ public:
 	void SetData(std::vector<T_ELEMENT> data);
 	auto Get(UINT idx) -> T_ELEMENT&;
 	auto Size() -> UINT;
-
+	const std::vector<T_ELEMENT>& GetCpu() const { return m_cpu; }
 protected:
 	std::vector<T_ELEMENT> m_cpu;
 	ComPtr<ID3D11Buffer> m_gpu;

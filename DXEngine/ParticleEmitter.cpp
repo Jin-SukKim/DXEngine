@@ -48,10 +48,13 @@ namespace DE {
 			}
 		}
 
-		m_consts = other.m_consts;
-		m_frameConsts = other.m_frameConsts;
-		m_bakedSpawnPos = other.m_bakedSpawnPos;
-		m_customPositions = other.m_customPositions;
+		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 새로 생성
+		m_consts.SetCpuData(other.m_consts.GetCpu());
+		m_frameConsts.SetCpuData(other.m_frameConsts.GetCpu());
+
+		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
+		m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
+		m_customPositions.SetData(other.m_customPositions.GetCpu());
 	}
 
 	void ParticleEmitter::Initialize()
@@ -75,6 +78,18 @@ namespace DE {
 			mod->Initialize(initCtx);
 
 		InitializeBuffers(device);
+
+		// Baked 데이터가 CPU에 있으면 GPU 버퍼 생성 및 업로드
+		if (m_bakedCount > 0 && m_bakedSpawnPos.Size() > 0) {
+			m_bakedSpawnPos.Initialize(device.Get());
+			m_bakedSpawnPos.Upload(context.Get());
+		}
+
+		// Custom positions도 동일하게 처리
+		if (m_customPositions.Size() > 0) {
+			m_customPositions.Initialize(device.Get());
+			m_customPositions.Upload(context.Get());
+		}
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -133,7 +148,6 @@ namespace DE {
 		m_isCompleted = false;
 		m_isStarted = false;
 		m_spawnOffset = Vector3(0.f);
-		Initialize();
 	}
 
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
@@ -154,6 +168,13 @@ namespace DE {
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
+		// 기존 버퍼 해제
+		m_consume = AppendBuffer<Particle>();
+		m_append = AppendBuffer<Particle>();
+		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
+		m_countBuffer.Reset();
+		m_countSRV.Reset();
+
 		m_consume.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 		m_append.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
