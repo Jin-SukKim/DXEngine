@@ -6,18 +6,13 @@
 namespace DE {
 	Firework::Firework(const std::wstring& name) : Super(name)
 	{
-		m_up = ParticleManager::Get().CreateSystem(L"..\\Assets\\Particles\\UpFIrework.json");
-		m_up->SetTarget(this);
-
-		m_firework = ParticleManager::Get().CreateSystem(L"..\\Assets\\Particles\\Firework.json");
-		m_firework->SetTarget(this);
-		m_firework->Stop();
+		m_particle = ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
+		m_particle->SetTarget(this);
 	}
 
 	Firework::~Firework()
 	{
-		ParticleManager::Get().DestroyInstance(m_up);
-		ParticleManager::Get().DestroyInstance(m_firework);
+		ParticleManager::Get().DestroyInstance(m_particle);
 	}
 
 	void Firework::Initialize()
@@ -29,28 +24,16 @@ namespace DE {
 	void Firework::Update(const float& deltaTime)
 	{
 		Super::Update(deltaTime);
-		if (m_up->IsStopped() && count)
-			return;
 
-		if (m_up->IsStopped()) {
-			m_firework->Restart();
-			++count;
+		if (m_particle->IsStopped()) 
 			return; 
-		}
-
-		TransformComponent* tr = this->GetComponent < TransformComponent>();
+		
+		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
 			Vector3 pos = tr->GetPos();
 			pos.y += 1.5f * deltaTime;
 			tr->SetPos(pos);
 		}
 
-	}
-	bool Firework::IsFinished() const
-	{
-		if (m_up && m_up->IsStopped() && m_firework && m_firework->IsStopped()) {
-			return true;
-		}
-		return false;
 	}
 }

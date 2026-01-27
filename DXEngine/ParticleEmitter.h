@@ -10,6 +10,18 @@
 #include "MeshData.h"
 
 namespace DE {
+	enum class EmitterEvent : uint8_t {
+		OnStart, // Emitter 시작 시
+		OnDurationEnd, // Duration 종료 시
+		OnComplete // Duration + Delay 완료 시
+	};
+
+	struct SubEmitter {
+		std::wstring emitterPath;
+		EmitterEvent trigger = EmitterEvent::OnComplete;
+		bool inheritPosition = true; // trigger되는 emitter의 위치 상속
+	};
+
 	class ParticleEmitter
 	{
 	public:
@@ -20,7 +32,7 @@ namespace DE {
 
 		void Initialize();
 		void OnSpawn();
-		void Update(const float& dt, const float& time);
+		void Update(const float& dt);
 		void Render();
 
 		template<typename T>
@@ -52,6 +64,25 @@ namespace DE {
 		IndirectArgsBuffer<DrawInstancedArgs>* GetBillboardArgsBuffer() { return &m_billboardArgsBuffer; }
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>* GetMeshArgsBuffer() { return &m_meshArgsBuffer; }
 		
+		// SubEmitter
+		void SetDuration(float duration) { m_duration = duration; }
+		void SetCompletionDelay(float delay) { m_completionDelay = delay; }
+		bool IsCompleted() const { return m_isCompleted; }
+		float GetElapsedTime() const { return m_elapsedTime; }
+
+		void AddSubEmitter(const SubEmitter& sub);
+		void ClearSubEmitters();
+		const std::vector<SubEmitter>& GetSubEmitters() const;
+
+		// ParticleSystem이 등록 (어떤 Event때 이 Emitter를 사용할지)
+		using EventCallback = std::function<void(EmitterEvent, ParticleEmitter*)>; 
+		// ParticleSystem에서 SubEmitter 생성 함수 등록
+		void SetEventCallback(EventCallback cb);
+
+		Vector3 GetSpawnPosition() const;
+		void SetSpawnOffset(const Vector3& offset);
+		const std::wstring& GetName() const;
+
 	private:
 		// 초기화 관련 함수들
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
@@ -59,6 +90,7 @@ namespace DE {
 		// 업데이트 단계별 함수들
 		void UpdateArgsBuffers(ID3D11DeviceContext* context);
 
+		void ExecuteEvent(EmitterEvent event);
 	private:
 		std::wstring m_name;
 		// 파티클 버퍼 (이중 버퍼링)
@@ -91,6 +123,18 @@ namespace DE {
 		BitonicSort m_sortBuffer;
 		IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
+
+		// SubEmitter
+		float m_duration = -1.f; // -1: 무한(Looping), 0 >= : 지정 시간
+		float m_completionDelay = 2.f; // Duration 후 대기 시간
+		float m_elapsedTime = 0.f;
+		bool m_isDurationEnded = false;
+		bool m_isCompleted = false;
+		bool m_isStarted = false;
+
+		std::vector<SubEmitter> m_subEmitters;
+		EventCallback m_eventCallback;
+		Vector3 m_spawnOffset = Vector3(0.f);
 	};
 
 	template<typename T>

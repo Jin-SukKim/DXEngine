@@ -391,8 +391,12 @@
     <ClInclude Include="ClickEffectManager.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="OrbitModule.h" />
-    <ClInclude Include="RoseEffect.h" />
+    <ClInclude Include="RoseEffect.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbitModule.h">
+      <Filter>public\ParticleSystem\Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -594,10 +598,10 @@
       <Filter>private\Actor</Filter>
     </ClCompile>
     <ClCompile Include="OrbitModule.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="RoseEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,7 @@
 {
   "Name": "UpFireEffect",
+  "Duration": 2.0,
+  "CompletionDelay": 0.5,
   "Spawn": {
     "shape": "Sphere",
     "localPos": [ 0.0, 0.0, 0.0 ],
@@ -24,5 +26,12 @@
   },
   "BillboardRender": {
     "blendMode": "Additive"
-  }
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Emitters\\BurstFirework.json",
+      "trigger": "OnComplete",
+      "inheritPosition": true
+    }
+  ]
 }

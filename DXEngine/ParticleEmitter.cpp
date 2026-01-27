@@ -35,13 +35,16 @@ namespace DE {
 		: m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)
 		, m_bakedCount(other.m_bakedCount)
+		, m_name(other.m_name)
+		, m_duration(other.m_duration)
+		, m_completionDelay(other.m_completionDelay)
+		, m_subEmitters(other.m_subEmitters)
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
 				auto clonedModule = mod->Clone();
-				if (clonedModule) {
+				if (clonedModule)
 					m_modules.push_back(std::move(clonedModule));
-				}
 			}
 		}
 
@@ -79,6 +82,11 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
+		m_elapsedTime = 0.f;
+		m_isDurationEnded = false;
+		m_isCompleted = false;
+		m_isStarted = false;
+
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts,
@@ -99,15 +107,32 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
+		if (m_spawnOffset != Vector3(0.f)) 
+			m_consts.GetCpu().spawn.localPos += m_spawnOffset;
+
+		// m_spawnOffset에 최종 위치 저장 (Sub-Emitter 상속용)
+		m_spawnOffset = m_consts.GetCpu().spawn.localPos;
+
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
 
 		m_consts.Upload();
 		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
+
+		// OnStart 이벤트
+		if (!m_isStarted) {
+			ExecuteEvent(EmitterEvent::OnStart);
+			m_isStarted = true;
+		}
 	}
 
 	void ParticleEmitter::Reset()
 	{
+		m_elapsedTime = 0.f;
+		m_isDurationEnded = false;
+		m_isCompleted = false;
+		m_isStarted = false;
+		m_spawnOffset = Vector3(0.f);
 		Initialize();
 	}
 
@@ -137,22 +162,43 @@ namespace DE {
 			DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
 	}
 
-	void ParticleEmitter::Update(const float& dt, const float& time)
+	void ParticleEmitter::Update(const float& dt)
 	{
+		// 완료된 경우 (Loop가 아닐때 종료된 경우)
+		if (m_isCompleted)
+			return; 
+
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		m_elapsedTime += dt;
+
+		// Duration 체크 (m_duration > 0일 때만)
+		if (m_duration > 0.f) {
+			if (!m_isDurationEnded && m_elapsedTime >= m_duration) {
+				m_isDurationEnded = true;
+				ExecuteEvent(EmitterEvent::OnDurationEnd);
+			}
+
+			// Complete 체크 (Duration 후 Delay 경과)
+			if (m_isDurationEnded && m_elapsedTime >= (m_duration + m_completionDelay)) {
+				m_isCompleted = true;
+				ExecuteEvent(EmitterEvent::OnComplete);
+				return;
+			}
+		}
 
 		// [최적화] Frame constants 먼저 업데이트
 		ParticleFrameConsts& frameConsts = m_frameConsts.GetCpu();
 		frameConsts.dt = dt;
-		frameConsts.time = time;
+		frameConsts.time = m_elapsedTime;
 		
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
 			dt,
-			time,
+			m_elapsedTime,
 			m_consume,
 			m_append,
 			m_countSRV.Get(),
@@ -167,8 +213,15 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
-		for (auto& mod : m_modules)
-			mod->OnUpdateCPU(simCtx);
+		// Duration 종료 전 혹은 Looping일때만 계속 Spawn
+		if (!m_isDurationEnded) {
+			for (auto& mod : m_modules)
+				mod->OnUpdateCPU(simCtx);
+		}
+		else {
+			// Duration 종료 후에는 spawnCount = 0
+			frameConsts.spawnCount = 0;
+		}
 
 		m_frameConsts.Upload();
 		ID3D11Buffer* constBuffers[] = {
@@ -177,10 +230,14 @@ namespace DE {
 		};
 		context->CSSetConstantBuffers(4, 2, constBuffers);
 
-		for (auto& mod : m_modules)
-			mod->PreUpdate(simCtx);
+		// Duration 종료 전 혹은 Looping일때만 계속 계산
+		if (!m_isDurationEnded) {
+			for (auto& mod : m_modules)
+				mod->PreUpdate(simCtx); // 현재 SpawnModule에서만 Particle을 생성하기 위해 사용중
+		}
 
-		UpdateArgsBuffers(context.Get());
+		// 더 이상 spawn하지 않아도 남은 Particle 연산 계속 진행
+		UpdateArgsBuffers(context.Get()); 
 
 		for (auto& mod : m_modules)
 			mod->UpdateArgs(simCtx);
@@ -213,8 +270,19 @@ namespace DE {
 		context->CSSetShader(nullptr, 0, 0);
 	}
 
+	void ParticleEmitter::ExecuteEvent(EmitterEvent event)
+	{
+		// 현재 이 Emitter가 가진 SubEmitter를 사용해 Emitter 생성
+		if (m_eventCallback)
+			m_eventCallback(event, this);
+	}
+
 	void ParticleEmitter::Render()
 	{
+		// 완료되면 Skip
+		if (m_isCompleted)
+			return;
+
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		
 		RenderContext renderCtx = {
@@ -248,5 +316,34 @@ namespace DE {
 			[](const std::unique_ptr<ParticleModule>& a, const std::unique_ptr<ParticleModule>& b) {
 				return a->GetPriority() < b->GetPriority();
 			});
+	}
+
+	void ParticleEmitter::AddSubEmitter(const SubEmitter& sub)
+	{
+		m_subEmitters.push_back(sub);
+	}
+	void ParticleEmitter::ClearSubEmitters()
+	{
+		m_subEmitters.clear();
+	}
+	const std::vector<SubEmitter>& ParticleEmitter::GetSubEmitters() const
+	{
+		return m_subEmitters;
+	}
+	void ParticleEmitter::SetEventCallback(EventCallback cb)
+	{
+		m_eventCallback = std::move(cb);
+	}
+	Vector3 ParticleEmitter::GetSpawnPosition() const
+	{
+		return m_spawnOffset;
+	}
+	void ParticleEmitter::SetSpawnOffset(const Vector3& offset)
+	{
+		m_spawnOffset = offset;
+	}
+	const std::wstring& ParticleEmitter::GetName() const
+	{
+		return m_name;
 	}
 }

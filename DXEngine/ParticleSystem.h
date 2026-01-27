@@ -67,17 +67,22 @@ public:
 	void SetState(ParticleState state) { m_state = state; }
 
 	void SetTarget(Actor* owner = nullptr, const int& modelIdx = -1);
+
+	// 모든 Emitter 종료 확인 (SubEmitter 포함)
+	bool IsAllEmittersCompleted() const;
 private:
 	void Reset();
 	void ExecutePreWarm();
 	void UpdateTransform();
 
+	// SubEmitter 처리
+	void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
+	void SpawnSubEmitter(const SubEmitter& sub, const Vector3& position);
 private:
 	Actor* m_owner = nullptr;
 	bool m_looping = true;
 	float m_duration = 5.0f;
 	float m_playRate = 1.0f;
-	float m_time = 0.f;
 	float m_preWarmTime = 0.0f; // 시작 시 미리 시뮬레이션 돌릴 시간 (예: 안개)
 	ParticleState m_state = ParticleState::Playing;
 
@@ -91,6 +96,9 @@ private:
 	StructuredBuffer<uint32_t> m_meshIndices;
 	UINT m_vertexCount = 0;
 	UINT m_indexCount = 0;
+
+	// 동적으로 생성된 Sub-Emitter
+	std::vector<std::unique_ptr<ParticleEmitter>> m_dynamicEmitters;
 };
 
 }

@@ -24,7 +24,7 @@ namespace DE {
         bool IsPlaying() const;
 
         // 수명 관리용 가상 함수
-        virtual bool IsFinished() const;
+        bool IsFinished() const;
         virtual bool NeedsExternalPreset() const { return true; }
 
     protected:
