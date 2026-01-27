@@ -21,26 +21,16 @@ namespace DE {
     void EffectActor::Initialize()
     {
         Super::Initialize();
-        if (m_particle) m_particle->Initialize();
     }
 
     void EffectActor::Update(const float& deltaTime)
     {
         Super::Update(deltaTime);
-        // Actor의 Transform을 파티클에 동기화할 필요가 있다면 여기서 수행
-        // (보통 ParticleSystem::Update 내부나 SetTarget에서 처리됨)
-
-        if (m_particle) {
-            m_particle->Update(deltaTime);
-        }
     }
 
     void EffectActor::Render()
     {
         Super::Render();
-        if (m_particle) {
-            m_particle->Render();
-        }
     }
 
     void EffectActor::SetParticlePreset(const std::wstring& path)
