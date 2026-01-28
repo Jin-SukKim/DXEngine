@@ -7,6 +7,7 @@ namespace DE {
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
 		// ComputeShader는 ComputeCommon에서 공유
+		
 	}
 
 	void SpawnModule::OnSpawn(SimulationContext& ctx)

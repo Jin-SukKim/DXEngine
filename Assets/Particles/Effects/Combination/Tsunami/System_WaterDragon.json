@@ -1,6 +1,6 @@
 {
     "Name": "WaterDragon",
-    "Looping": true,
+    "Looping": false,
     "Duration": 6.0,
     "PlayRate": 1.0,
     "PreWarmTime": 0.0,

@@ -439,17 +439,40 @@
     <ClInclude Include="TestActor.h">
       <Filter>public\ParticleSystem\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="MagicEffect.h" />
-    <ClInclude Include="PortalEffect.h" />
-    <ClInclude Include="BreathEffect.h" />
-    <ClInclude Include="HolySwordEffect.h" />
-    <ClInclude Include="IceEffect.h" />
-    <ClInclude Include="NecroEffect.h" />
-    <ClInclude Include="NightSkyEffect.h" />
-    <ClInclude Include="PhoenixEffect.h" />
-    <ClInclude Include="StarEffect.h" />
-    <ClInclude Include="ThunderEffect.h" />
-    <ClInclude Include="TsunamiEffect.h" />
+    <ClInclude Include="BreathEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="HolySwordEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="IceEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="NecroEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="NightSkyEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="PhoenixEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="PortalEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="StarEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ThunderEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="TsunamiEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -692,37 +715,40 @@
     <ClCompile Include="VortexEffectsActor.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="MagicEffect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PortalEffect.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="TsunamiEffect.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="BreathEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="HolySwordEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="IceEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicEffect.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="NecroEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="NightSkyEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="PhoenixEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="PortalEffect.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="StarEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ThunderEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TsunamiEffect.cpp">
+    <ClCompile Include="ObjectPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

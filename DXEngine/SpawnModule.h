@@ -31,6 +31,9 @@ private:
 	bool m_burstFired = false; // 이미 터졌는지 체크
 	UINT m_nextSpawnIndex = 0;
 	std::vector<Vector3> m_customPositions;
+
+	std::string m_bakedPath;
+	bool m_needsSpawnPosInit = false;
 };
 }
 

@@ -39,7 +39,7 @@ namespace DE {
 		SquareActor* ground;
 		InputAction m_click;
 
-		ParticleSpawner* m_spanwer;
+		std::vector<ParticleSpawner*> m_spanwer;
 
 		SpawnEffectsActor* m_spawnModule;
 		SnowActor* m_snow;
@@ -51,16 +51,16 @@ namespace DE {
 		SubEmitterEffectsActor* m_subEmitSystem;
 		VisualEffectsActor* m_visualModule;
 		VortexEffectsActor* m_vortexModule;
-		MagicEffect* m_magic;
 		PortalEffect* m_portal;
+		NightSkyEffect* m_nightSky;
+
+		MagicEffect* m_magic;
 		BreathEffect* m_breathEffect;
 		HolySwordEffect* m_holySwordEffect;
 		IceEffect* m_iceEffect;
 		NecroEffect* m_necroEffect;
-		NightSkyEffect* m_nightSky;
 		PhoenixEffect* m_phoenixEffect;
 		StarEffect* m_starEffect;
-		ThunderEffect* m_thunderEffect;
 		TsunamiEffect* m_tsunamiEffect;
 	};
 

@@ -66,7 +66,7 @@ namespace DE {
     private:
         Scene* m_scene = nullptr;
         std::wstring m_presetPath;
-        SpawnMode m_spawnMode = SpawnMode::Continuous;
+        SpawnMode m_spawnMode = SpawnMode::Interval;
 
         float m_spawnInterval = 1.0f;
         float m_spawnAccumulator = 0.0f;

@@ -1,6 +1,6 @@
 {
     "Name": "ThunderStrike",
-    "Looping": true,
+    "Looping": false,
     "Duration": 4.0,
     "PlayRate": 1.0,
     "PreWarmTime": 0.0,

@@ -239,7 +239,7 @@ namespace DE {
 	void ParticleSystem::Restart()
 	{
 		Stop();
-		Reset(); // 버퍼 비우기
+		//Reset(); // 버퍼 비우기
 		Play();
 	}
 

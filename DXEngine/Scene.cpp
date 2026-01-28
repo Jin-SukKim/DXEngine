@@ -292,6 +292,8 @@ namespace DE {
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
 
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+		renderer.GetContext()->PSSetShaderResources(15, 1, &nullSRV);
 		for (auto& light : m_lights)
 			if (LightActor* lightActor = dynamic_cast<LightActor*>(light.get()))
 				if (lightActor->GetLight().type & LIGHT_SHADOW)
