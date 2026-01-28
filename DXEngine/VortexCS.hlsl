@@ -1,7 +1,7 @@
 #include "ParticleCommon.hlsli"
 
-Buffer<uint> activeCount : register(t0);
-RWStructuredBuffer<Particle> inputParticles : register(u0);
+StructuredBuffer<uint> activeCount : register(t0);
+RWStructuredBuffer<Particle> particles : register(u0);
 
 float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
     float3 fromCenter = pos - vortex.vortexCenter;
@@ -31,7 +31,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (dtID.x >= activeCount[0])
         return;
 
-    Particle p = inputParticles[dtID.x];
+    Particle p = particles[dtID.x];
 
     // Vortex(소용돌이)        
     // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
@@ -47,6 +47,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
         p.velocity += vForce * dt;
 
-        inputParticles[dtID.x].velocity = p.velocity;
+        particles[dtID.x].velocity = p.velocity;
     }
 }

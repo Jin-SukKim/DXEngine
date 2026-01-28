@@ -53,7 +53,6 @@ namespace DE {
 		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
 		ParticleFrameConsts& GetFrameConstsData() { return m_frameConsts.GetCpu(); }
 		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
-		AppendBuffer<Particle>& GetConsumeBuffer() { return m_consume; }
 		
 		// Baked Spawn Position 접근자
 		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
@@ -94,15 +93,11 @@ namespace DE {
 	private:
 		std::wstring m_name;
 		// 파티클 버퍼 (이중 버퍼링)
-		AppendBuffer<Particle> m_consume;
-		AppendBuffer<Particle> m_append;
+		StructuredBuffer<uint32_t> m_activeCounts;
+		StructuredBuffer<Particle> m_particles;
 
 		// 간접 디스패치
 		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
-		
-		// 활성 파티클 개수 버퍼를 카운터 버퍼
-		ComPtr<ID3D11Buffer> m_countBuffer;
-		ComPtr<ID3D11ShaderResourceView> m_countSRV;
 
 		// 상수 버퍼
 		ConstantBuffer<ParticleFrameConsts> m_frameConsts;

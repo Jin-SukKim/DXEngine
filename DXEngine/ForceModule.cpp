@@ -23,16 +23,13 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 		
-		ID3D11ShaderResourceView* srvs[] = { ctx.countSRV };
-		ctx.context->CSSetShaderResources(0, 1, srvs);
+		ctx.context->CSSetShaderResources(0, 1, ctx.activeCounts.GetAddressOfSRV());
 
-		UINT initCounts[2] = { static_cast<UINT>(-1), 0 };
-		ID3D11UnorderedAccessView* particleUAVs[] = {
-			ctx.consumeBuffer.GetUAV(),
-			ctx.appendBuffer.GetUAV()
+		ID3D11UnorderedAccessView* srvs[2] = {
+			ctx.particles.GetUAV(),
+			ctx.activeCounts.GetUAV()
 		};
-
-		ctx.context->CSSetUnorderedAccessViews(0, 2, particleUAVs, initCounts);
+		ctx.context->CSSetUnorderedAccessViews(0, 2, srvs, NULL);
 
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;

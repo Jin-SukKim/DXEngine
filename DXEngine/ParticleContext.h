@@ -22,15 +22,14 @@ struct ParticleContext {
     ID3D11DeviceContext* context;
     ConstantBuffer<ParticleConsts>& constBuffer;
     ConstantBuffer<ParticleFrameConsts>& frameConstBuffer;
+    StructuredBuffer<Particle>& particles;
+    StructuredBuffer<uint32_t>& activeCounts;
 };
 
 // Simulation 단계
 struct SimulationContext : ParticleContext {
     float dt;
     float time;
-    AppendBuffer<Particle>& consumeBuffer;
-    AppendBuffer<Particle>& appendBuffer;
-    ID3D11ShaderResourceView* countSRV;
     ID3D11Buffer* dispatchArgs;
     ID3D11Device* device;
     RenderModule* renderModule;
@@ -48,7 +47,6 @@ struct SimulationContext : ParticleContext {
 
 // Render 단계
 struct RenderContext : ParticleContext {
-    ID3D11ShaderResourceView* particleSRV;
     MaterialModule* materialModule;
     
     // Render 관련 버퍼

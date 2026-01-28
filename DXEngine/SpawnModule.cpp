@@ -83,7 +83,7 @@ namespace DE {
 		if (m_totalSpawnCount == 0)
 			return;
 
-		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
+		ID3D11UnorderedAccessView* uav = ctx.particles.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
 		// [최적화] Shape별 SRV 바인딩 최적화

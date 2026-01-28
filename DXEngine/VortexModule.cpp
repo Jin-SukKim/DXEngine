@@ -23,11 +23,9 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 		
-		ID3D11ShaderResourceView* srvs[] = { ctx.countSRV };
-		ctx.context->CSSetShaderResources(0, 1, srvs);
+		ctx.context->CSSetShaderResources(0, 1, ctx.activeCounts.GetAddressOfSRV());
 
-		UINT initCounts[1] = { static_cast<UINT>(-1) };
-		ctx.context->CSSetUnorderedAccessViews(0, 1, ctx.consumeBuffer.GetAddressOfRWuav(), initCounts);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, ctx.particles.GetAddressOfUAV(), NULL);
 		
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& vortexCS = RenderBase::computeCommon.particle.vortexCS;

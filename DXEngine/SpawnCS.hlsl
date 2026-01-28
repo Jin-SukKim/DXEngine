@@ -8,7 +8,9 @@ struct Vertex {
     float3 tangentModel;
 };
 
-AppendStructuredBuffer<Particle> outputParticles : register(u0);
+RWStructuredBuffer<Particle> particles : register(u0);
+RWStructuredBuffer<uint> activeCount : register(u1); // 카운팅용 버퍼
+
 StructuredBuffer<float3> bakedSpawnPos : register(t0);
 StructuredBuffer<float3> meshVertex : register(t9);
 StructuredBuffer<uint> meshIndices : register(t10);
@@ -63,16 +65,14 @@ float3 SphereSpawn(inout uint rngState, float3 volume, float innerRatio)
     return dir * dist * volume;
 }
 
-// Vertex 스폰: 위치와 UV를 모두 반환
+// Vertex 스폰
 void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos)
 {
     if (vCount > 0)
     {
         rngState = wang_hash(rngState);
         uint vIdx = rngState % vCount;
-
-        float3 v = meshVertex[vIdx];
-        outPos = v;
+        outPos = meshVertex[vIdx];
     }
     else
     {
@@ -80,7 +80,7 @@ void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos)
     }
 }
 
-// Surface 스폰: 위치와 UV를 모두 반환
+// Surface 스폰
 void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
 {
     if (iCount > 0)
@@ -93,7 +93,6 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
         uint i1 = meshIndices[triIdx * 3 + 1];
         uint i2 = meshIndices[triIdx * 3 + 2];
 
-        // Barycentric Coords
         float ra = rand_float(rngState);
         float rb = rand_float(rngState);
 
@@ -107,7 +106,6 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
         float3 v1 = meshVertex[i1];
         float3 v2 = meshVertex[i2];
 
-        // Position Interpolation
         outPos = v0 + ra * (v1 - v0) + rb * (v2 - v0);
     }
     else
@@ -124,11 +122,10 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     // 시드 초기화
     uint rngState = dtID.x * 1973 + uint(time * 10000.0f);
-    rngState = wang_hash(rngState); // 워밍업
+    rngState = wang_hash(rngState);
 
     Particle p;
     float3 spawnPos = float3(0, 0, 0);
-    bool validSpawn = false;
 
     // 매 시도마다 시드 갱신
     rngState = wang_hash(rngState);
@@ -147,19 +144,13 @@ void main(uint3 dtID : SV_DispatchThreadID)
         spawnPos = bakedSpawnPos[idx];
     }
     else if (spawn.spawnShape == 5) {
-        // 랜덤 대신 순차적 인덱싱 사용
-        // spawnStartIndex: 이번 프레임 시작 오프셋
-        // dtID.x: 이번 프레임 내에서 현재 파티클의 번호 (0 ~ spawnCount-1)
         uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;
-
         spawnPos = bakedSpawnPos[idx];
     }
 
-    // 성공한 위치 적용
-    // 로컬 기준 위치 및 속도 계산
+    // 위치 및 속도 설정
     float3 localPos = spawnPos + spawn.localPos;
 
-    // Velocity
     float3 noiseDir;
     noiseDir.x = rand_signed(rngState);
     noiseDir.y = rand_signed(rngState);
@@ -167,27 +158,18 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     float3 finalDir = normalize(force.velocity + noiseDir * force.randomDir + 1e-5f);
     float speed = lerp(force.speedRange.x, force.speedRange.y, rand_float(rngState));
-
     float3 localVel = finalDir * speed;
 
-    // 시뮬레이션 공간에 따른 변환 적용
-    if (spawn.simulationSpace == 1) // World Space Simulation
+    if (spawn.simulationSpace == 1) // World Space
     {
-        // 위치: World 행렬 적용
-        // Common.hlsli에 정의된 'world' 행렬 사용 (MeshConstants)
         p.position = mul(float4(localPos, 1.0f), pWorld).xyz;
-
-        // 속도: World 회전만 적용 (3x3)
-        // 만약 Scale도 속도에 영향을 주고 싶다면 (float3x3)world 대신 다른 방식 고려 필요
         p.velocity = mul(localVel, (float3x3)pWorld);
     }
-    else // Local Space Simulation (기존 방식)
+    else // Local Space
     {
         p.position = localPos;
         p.velocity = localVel;
     }
-
-    // --- Life, etc. ---
 
     // Life
     p.life = lerp(spawn.lifeRange.x, spawn.lifeRange.y, rand_float(rngState));
@@ -207,5 +189,13 @@ void main(uint3 dtID : SV_DispatchThreadID)
     float3 rndRotSpd = float3(rand_float(rngState), rand_float(rngState), rand_float(rngState));
     p.rotSpeed = lerp(visual.minRotSpeed, visual.maxRotSpeed, rndRotSpd);
 
-    outputParticles.Append(p);
+    // counts[0]을 1 증가시키고, '증가되기 전의 값'을 index에 받아옵니다.
+    uint index;
+    InterlockedAdd(activeCount[0], 1, index);
+
+    // 최대 파티클 개수를 넘지 않는 경우에만 버퍼에 기록합니다.
+    if (index < maxParticles)
+    {
+        particles[index] = p;
+    }
 }

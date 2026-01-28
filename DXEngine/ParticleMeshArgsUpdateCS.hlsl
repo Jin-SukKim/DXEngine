@@ -3,7 +3,7 @@
 // 설명: 현재 활성화된 파티클 개수를 읽어, Indirect Draw Buffer의 InstanceCount를 갱신합니다.
 
 // t0: 현재 살아있는 파티클 개수가 담긴 버퍼 (SRV)
-Buffer<uint> activeCount : register(t0);
+StructuredBuffer<uint> activeCount : register(t0);
 
 // u0: 갱신할 DrawIndexedInstancedArgs 버퍼 (UAV)
 // 구조: { IndexCount, InstanceCount, StartIndex, BaseVertex, StartInstance }

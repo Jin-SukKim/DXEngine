@@ -110,11 +110,10 @@ namespace DE {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
+			m_particles,
+			m_activeCounts,
 			0.f,
 			0.f,
-			m_consume,
-			m_append,
-			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
 			device.Get(),
 			this->GetModule<RenderModule>(),
@@ -176,18 +175,19 @@ namespace DE {
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
 		// 기존 버퍼 해제
-		m_consume = AppendBuffer<Particle>();
-		m_append = AppendBuffer<Particle>();
+		m_particles = StructuredBuffer<Particle>();
+		m_activeCounts = StructuredBuffer<uint32_t>();
+
 		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
-		m_countBuffer.Reset();
-		m_countSRV.Reset();
 
-		m_consume.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
-		m_append.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
+		m_particles.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
+		m_activeCounts.Initialize(device.Get(), 1);
+
+		std::vector<uint32_t> initialCount = { 0 };
+		m_activeCounts.SetData(initialCount);
+		m_activeCounts.Upload(GET_SINGLE(RenderBase)->GetContext().Get());
+
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
-
-		D3D11Utils::CreateBuffer(device.Get(), sizeof(UINT), nullptr,
-			DXGI_FORMAT_R32_UINT, m_countBuffer, m_countSRV);
 	}
 
 	void ParticleEmitter::Update(const float& dt)
@@ -225,11 +225,10 @@ namespace DE {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
+			m_particles,
+			m_activeCounts,
 			dt,
 			m_elapsedTime,
-			m_consume,
-			m_append,
-			m_countSRV.Get(),
 			m_dispatchArgs.GetBuffer(),
 			device.Get(),
 			nullptr,
@@ -272,19 +271,15 @@ namespace DE {
 
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
-
-		swap(m_consume, m_append);
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
 	{
-		context->CopyStructureCount(m_countBuffer.Get(), 0, m_consume.GetUAV());
-
 		ID3D11UnorderedAccessView* argUAVs[] = {
 			m_dispatchArgs.GetUAV()
 		};
 
-		context->CSSetShaderResources(0, 1, m_countSRV.GetAddressOf());
+		context->CSSetShaderResources(0, 1, m_activeCounts.GetAddressOfSRV());
 		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
@@ -317,7 +312,8 @@ namespace DE {
 			context,
 			m_consts,
 			m_frameConsts,
-			m_consume.GetSRV(),
+			m_particles,
+			m_activeCounts,
 			this->GetModule<MaterialModule>(),
 			&m_sortBuffer,
 			&m_billboardArgsBuffer,

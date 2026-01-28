@@ -63,7 +63,7 @@ namespace DE {
 		spanwer->SetMaxActiveParticles(100);
 
 		m_spanwer.push_back(spanwer);
-		for (int i = 0; i < 8; ++i) {
+		for (int i = 0; i < 3; ++i) {
 			spanwer = AddObject<ParticleSpawner>(L"MagicEffect");
 			spanwer->SetScene(this);
 			switch (i) {
@@ -122,7 +122,7 @@ namespace DE {
 			tr->SetPos(pos);
 		}
 
-		for (int i = 1; i < 9; ++i) {
+		for (int i = 1; i < 3; ++i) {
 			tr = m_spanwer[i]->GetComponent<TransformComponent>();
 			if (tr) {
 				Vector3 pos = tr->GetPos();
