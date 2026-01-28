@@ -5,7 +5,7 @@
 namespace DE {
 	void ForceModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ComputeShader는 ComputeCommon에서 공유
+		// ComputeShader는 ComputeCommon에서 관리
 	}
 
 	void ForceModule::OnSpawn(SimulationContext& ctx)
@@ -23,23 +23,20 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 		
-		ctx.context->CSSetShaderResources(0, 1, ctx.activeCounts.GetAddressOfSRV());
-
-		ID3D11UnorderedAccessView* srvs[2] = {
+		// UAV 바인딩 (particles와 activeCounts 모두 RW 접근 필요)
+		ID3D11UnorderedAccessView* uavs[2] = {
 			ctx.particles.GetUAV(),
 			ctx.activeCounts.GetUAV()
 		};
-		ctx.context->CSSetUnorderedAccessViews(0, 2, srvs, NULL);
+		ctx.context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 
-		// ComputeCommon의 공유 ComputePSO 사용
+		// ComputeCommon의 공용 ComputePSO 사용
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
 		ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
 		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
 		
 		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		ID3D11UnorderedAccessView* nullUAVs[2] = { nullptr, nullptr };
-		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
 		ctx.context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
 	}

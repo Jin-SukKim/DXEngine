@@ -36,7 +36,7 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 
-		// [최적화] 조건 통합
+		// [최적화] 정렬 제외
 		if (blendMode != BlendMode::AlphaBlend || !ctx.sortBuffer)
 			return;
 
@@ -124,7 +124,7 @@ namespace DE {
 		if (ctx.billboardArgsBuffer) {
 			ctx.billboardArgsBuffer->Reset();
 			DrawInstancedArgs args = {};
-			args.vertexCountPerInstance = 0;
+			args.vertexCountPerInstance = 0;  // activeCount에서 복사될 예정
 			args.instanceCount = 1;
 			args.startVertexLocation = 0;
 			args.startInstanceLocation = 0;
@@ -137,7 +137,18 @@ namespace DE {
 	{
 		RenderModule::UpdateArgs(ctx);
 		if (ctx.billboardArgsBuffer) {
-			ctx.context->CopyStructureCount(ctx.billboardArgsBuffer->GetBuffer(), 0, ctx.activeCounts.GetUAV());
+			// StructuredBuffer<uint>의 첫 번째 요소(activeCount)를 
+			// DrawInstancedArgs의 vertexCountPerInstance 위치에 복사
+			// activeCount 버퍼의 offset 0에서 4바이트를 billboardArgs의 offset 0으로 복사
+			ctx.context->CopySubresourceRegion(
+				ctx.billboardArgsBuffer->GetBuffer(),  // Dest buffer
+				0,                                      // Dest subresource
+				0,                                      // Dest X (offset in bytes)
+				0, 0,                                   // Dest Y, Z
+				ctx.activeCounts.GetBuffer(),           // Source buffer
+				0,                                      // Source subresource
+				nullptr                                 // Source box (nullptr = entire resource)
+			);
 		}
 	}
 
@@ -217,7 +228,7 @@ namespace DE {
 		// 기본 설정 복사
 		CopyBasicSettings(cloned.get());
 
-		// Billboard 설정 복사
+		// Billboard 전용 복사
 		cloned->m_textureMode = this->m_textureMode;
 		cloned->m_texturePath = this->m_texturePath;
 		cloned->m_textureIdx = this->m_textureIdx;
@@ -225,7 +236,7 @@ namespace DE {
 		cloned->m_frameTiles = this->m_frameTiles;
 		cloned->m_frameCount = this->m_frameCount;
 
-		// GPU 버퍼는 ParticleEmitter가 소유
+		// GPU 버퍼는 ParticleEmitter가 관리
 
 		return cloned;
 	}
@@ -251,7 +262,7 @@ namespace DE {
 		m_meshCount = static_cast<UINT>(model->meshes.size());
 		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
 
-		// ParticleEmitter의 메쉬 Args 버퍼 초기화
+		// ParticleEmitter의 메시 Args 버퍼 초기화
 		if (ctx.meshArgsBuffer) {
 			std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
 			for (size_t i = 0; i < model->meshes.size(); ++i) {
@@ -276,7 +287,7 @@ namespace DE {
 		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer->GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
 		
-		// ComputeCommon의 공유 ComputePSO 사용
+		// ComputeCommon의 공용 ComputePSO 사용
 		auto& meshArgsUpdateCS = RenderBase::computeCommon.particle.meshArgsUpdateCS;
 		ctx.context->CSSetShader(meshArgsUpdateCS.computeShader.Get(), 0, 0);
 		UINT groupCount = (m_meshCount + 1023) / 1024;
@@ -348,11 +359,11 @@ namespace DE {
 		// 기본 설정 복사
 		CopyBasicSettings(cloned.get());
 
-		// Mesh 설정 복사
+		// Mesh 전용 복사
 		cloned->m_modelIdx = this->m_modelIdx;
 		cloned->m_meshCount = this->m_meshCount;
 
-		// GPU 버퍼는 ParticleEmitter가 소유
+		// GPU 버퍼는 ParticleEmitter가 관리
 
 		return cloned;
 	}

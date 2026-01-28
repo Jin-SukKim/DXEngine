@@ -63,14 +63,14 @@ namespace DE {
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
 		}
 
-		//m_totalSpawnCount = 1;
-		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
-		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
+		m_totalSpawnCount = 1;
+		//UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
+		//m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
-		if (spawnCycles > 0)
-			m_spawnAccumulator -= static_cast<float>(spawnCycles);
-		if (m_totalSpawnCount < 0)
-			m_totalSpawnCount = 0;
+		//if (spawnCycles > 0)
+		//	m_spawnAccumulator -= static_cast<float>(spawnCycles);
+		//if (m_totalSpawnCount < 0)
+		//	m_totalSpawnCount = 0;
 
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}
@@ -83,8 +83,11 @@ namespace DE {
 		if (m_totalSpawnCount == 0)
 			return;
 
-		ID3D11UnorderedAccessView* uav = ctx.particles.GetUAV();
-		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
+		ID3D11UnorderedAccessView* uavs[2] = {
+			ctx.particles.GetUAV(),
+			ctx.activeCounts.GetUAV()
+		};
+		ctx.context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 
 		// [최적화] Shape별 SRV 바인딩 최적화
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
@@ -112,9 +115,9 @@ namespace DE {
 		
 		// Barrier
 		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[2] = { nullptr, nullptr };
 		ctx.context->CSSetShaderResources(0, 3, nullSRVs);
-		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ctx.context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
