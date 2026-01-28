@@ -93,7 +93,7 @@ namespace DE {
 
         float m_spawnInterval = 1.0f;
         float m_spawnAccumulator = 0.0f;
-        int m_maxActiveParticles = 10;
+        size_t m_maxActiveParticles = 10;
         Vector3 m_spawnBoxExtents = Vector3(1.f);
 
         bool m_autoDestroy = false;
@@ -106,7 +106,7 @@ namespace DE {
         std::vector<std::unique_ptr<EffectActor>> m_pool;       // Pool에 보관된 EffectActor들
         std::vector<EffectActor*> m_activeEffects;              // 현재 활성화된 Effect들
 
-        // EffaActor 관리 (호환성 유지)
+        // EffectActor 관리 (호환성 유지)
         std::vector<EffectActor*> m_spawnedEffects;
     };
 

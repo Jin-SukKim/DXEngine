@@ -74,7 +74,11 @@ namespace DE {
     }
 
     void ParticleSpawner::SetPoolSize(int size) {
+        if (size <= 0) {
+            size = 1;  // Minimum pool size
+        }
         m_poolSize = size;
+        // Note: This should be called before Initialize() to take effect
     }
 
     // Spawn 함수 구현
@@ -136,7 +140,7 @@ namespace DE {
             break;
 
         case SpawnMode::OneShot:
-            if (m_spawnedEffects.empty()) {
+            if (m_activeEffects.empty()) {
                 Spawn();
             }
             break;
@@ -150,20 +154,30 @@ namespace DE {
     void ParticleSpawner::CleanupDeadSystems() {
         if (!m_scene) return;
 
-        // 완료된 Effect를 Pool로 반환
-        std::erase_if(m_activeEffects, [this](EffectActor* effect) {
+        // 완료된 Effect들을 별도 리스트에 수집
+        std::vector<EffectActor*> finishedEffects;
+        for (auto* effect : m_activeEffects) {
             if (effect->IsFinished()) {
-                ReleaseToPool(effect);
-                return true;
+                finishedEffects.push_back(effect);
             }
-            return false;
+        }
+
+        // 수집된 Effect들을 Pool로 반환
+        for (auto* effect : finishedEffects) {
+            ReleaseToPool(effect);
+        }
+
+        // m_activeEffects에서 제거
+        std::erase_if(m_activeEffects, [](EffectActor* effect) {
+            return effect->IsFinished();
         });
 
         // m_spawnedEffects도 동기화
-        std::erase_if(m_spawnedEffects, [this](EffectActor* effect) {
+        std::erase_if(m_spawnedEffects, [](EffectActor* effect) {
             return effect->IsFinished();
         });
     }
+
 
 
     Vector3 ParticleSpawner::GetRandomSpawnPosition() {
@@ -251,7 +265,7 @@ namespace DE {
                 }
                 // Pool이 가득 차면 그냥 삭제 (unique_ptr이 자동으로 해제)
 
-                break;
+                return;  // 즉시 반환하여 무효화된 iterator 사용 방지
             }
         }
     }
