@@ -14,7 +14,7 @@
     "lifeRange": [ 1.5, 2.5 ]
   },
   "Visual": {
-    "startColor": [ 0.5, 0.8, 1.0, 0.0 ],
+    "startColor": [ 0.5, 0.8, 1.0, 1.0 ],
     "endColor": [ 0.3, 0.5, 1.0, 0.0 ],
     "sizeRange": [ 0.2, 0.15 ],
     "rotation": {
@@ -40,6 +40,10 @@
   "BillboardRender": {
     "blendMode": "Additive",
     "useSingleTexture": true,
-    "texture": "Particles/rune.png"
+    "texture": "Textures\\explosion2.png",
+    "sprite": {
+      "frameTiles": [ 4, 4 ],
+      "frameCount": 16
+    }
   }
 }

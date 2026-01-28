@@ -33,6 +33,10 @@
     },
   "BillboardRender": {
     "blendMode": "Additive",
-    "texture": "Textures\\flame.png"
+    "texture": "Textures\\explosion2.png",
+    "sprite": {
+      "frameTiles": [ 4.0, 4.0 ],
+      "frameCount": 16
+    }
   }
 }

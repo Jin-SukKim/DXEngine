@@ -24,7 +24,8 @@
         "gravity": [0.0, 2.0, 0.0],
         "drag": 0.05
     },
-    "BillboardRender": {
-        "blendMode": "Additive"
-    }
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures/ember.png"
+  }
 }

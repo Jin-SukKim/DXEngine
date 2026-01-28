@@ -39,7 +39,7 @@
     "offset": 20.0
   },
   "Material": {
-    "materials": [ "Materials\\ParticleBox_0.json" ]
+    "materials": [ "Materials\\roseMat.json" ]
   },
   "MeshRender": {
     "blendMode": "Opaque",

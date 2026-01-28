@@ -8,8 +8,8 @@
         "spawnVolume": [1.0, 1.0, 1.0],
         "spawnInnerRatio": 0.95,
         "spawnRate": 80.0,
-        "particlesPerSpawn": 15,
-        "maxParticles": 2048,
+        "particlesPerSpawn": 30,
+        "maxParticles": 4096,
         "lifeRange": [2.0, 4.0]
     },
     "Visual": {

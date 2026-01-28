@@ -55,19 +55,19 @@ namespace DE {
 		
 		//m_sample = AddObject<SampleActor>(L"Sample");
 
-		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spanwer->SetScene(this); 
-		m_spanwer->SetActorType<Firework>();
-		m_spanwer->SetParticlePreset(L"Particles\\TempEffect.json");
-		m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
-		m_spanwer->SetSpawnInterval(0.5f);
-		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(20);
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this); 
+		//m_spanwer->SetActorType<Firework>();
+		//m_spanwer->SetParticlePreset(L"Particles\\TempEffect.json");
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		//m_spanwer->SetSpawnInterval(0.5f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(20);
 
 		//m_firework = AddObject<Firework>(L"Firework");
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		m_test = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Tsunami\\System_WaterDragon.json");
+		m_test = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Thunder\\System_ThunderStrike.json");
 		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 

@@ -8,7 +8,7 @@
   "Looping": true,
   "Duration": 3.0,
   "PlayRate": 1.0,
-  "PreWarmTime": 1.0,
+  "PreWarmTime": 0.0,
   "State": "Play",
   "Emitters": [
     "Particles\\Effects\\SpawnModule\\Emitters\\SpawnWorldSpace.json"

@@ -146,6 +146,9 @@
     <Filter Include="public\ParticleSystem\Actor\Basic">
       <UniqueIdentifier>{322d1b77-9a4a-4247-b85e-8687956ee2c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="public\ParticleSystem\Actor\Combination">
+      <UniqueIdentifier>{c7e44fcc-4ea5-4983-90ba-fdb4612dee92}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -397,7 +400,6 @@
     <ClInclude Include="OrbitModule.h">
       <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
-    <ClInclude Include="TestActor.h" />
     <ClInclude Include="SnowActor.h">
       <Filter>public\ParticleSystem\Actor\Basic</Filter>
     </ClInclude>
@@ -405,9 +407,6 @@
       <Filter>public\ParticleSystem\Actor\Basic</Filter>
     </ClInclude>
     <ClInclude Include="Firework.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicParticleScene.h">
       <Filter>public\ParticleSystem\Actor\Basic</Filter>
     </ClInclude>
     <ClInclude Include="BillboardEffectsActor.h">
@@ -434,6 +433,23 @@
     <ClInclude Include="VortexEffectsActor.h">
       <Filter>public\ParticleSystem\Actor\Basic</Filter>
     </ClInclude>
+    <ClInclude Include="BasicParticleScene.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TestActor.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicEffect.h" />
+    <ClInclude Include="PortalEffect.h" />
+    <ClInclude Include="BreathEffect.h" />
+    <ClInclude Include="HolySwordEffect.h" />
+    <ClInclude Include="IceEffect.h" />
+    <ClInclude Include="NecroEffect.h" />
+    <ClInclude Include="NightSkyEffect.h" />
+    <ClInclude Include="PhoenixEffect.h" />
+    <ClInclude Include="StarEffect.h" />
+    <ClInclude Include="ThunderEffect.h" />
+    <ClInclude Include="TsunamiEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -640,40 +656,73 @@
     <ClCompile Include="RoseEffect.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TestActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BasicParticleScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SpawnEffectsActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SnowActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VisualEffectsActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VortexEffectsActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OrbitEffectsActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ForceEffectsActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialEffectsActor.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="BillboardEffectsActor.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ForceEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="MeshEffectsActor.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="OrbitEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SnowActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SpawnEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="SubEmitterEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TestActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="VisualEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="VortexEffectsActor.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PortalEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BreathEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HolySwordEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IceEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NecroEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NightSkyEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PhoenixEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StarEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThunderEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TsunamiEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -9,11 +9,10 @@ namespace DE {
 
 		m_particle = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\SpawnModule\\SpawnBox.json");
 		m_particle->SetTarget(this);
-		m_particle->SetSpawnOffset(Vector3(-spacing * 2.5f, 0.f, 0.f));
 
 		m_burst = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\SpawnModule\\SpawnBurst.json");
 		m_burst->SetTarget(this);
-		m_burst->SetSpawnOffset(Vector3(-spacing * 1.5f, 0.f, 0.f));
+		m_burst->SetSpawnOffset(Vector3(-5.f, 0.f, 0.f));
 
 		m_custom = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\SpawnModule\\SpawnCustom.json");
 		m_custom->SetTarget(this);
@@ -25,7 +24,6 @@ namespace DE {
 
 		m_sphere = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\SpawnModule\\SpawnSphere.json");
 		m_sphere->SetTarget(this);
-		m_sphere->SetSpawnOffset(Vector3(spacing * 1.5f, 0.f, 0.f));
 
 		m_texture = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\SpawnModule\\SpawnTexture.json");
 		m_texture->SetTarget(this);
@@ -40,6 +38,11 @@ namespace DE {
 		ParticleManager::Get().DestroyInstance(m_hollow);
 		ParticleManager::Get().DestroyInstance(m_sphere);
 		ParticleManager::Get().DestroyInstance(m_texture);
+	}
+
+	void SpawnEffectsActor::Initialize()
+	{
+		EffectActor::Initialize();
 	}
 
 	void SpawnEffectsActor::Update(const float& deltaTime)

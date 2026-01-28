@@ -4,7 +4,7 @@
     "CompletionDelay": 3.0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 0.7, 0.0],
+        "localPos": [0.0, 0.2, 0.0],
         "shape": "Sphere",
         "spawnVolume": [0.8, 0.4, 0.8],
         "spawnInnerRatio": 0.2,
@@ -34,6 +34,10 @@
   "BillboardRender": {
     "blendMode": "Additive",
     "useSingleTexture": true,
-    "texture": "Textures\\glassParticle.png"
+    "texture": "Textures\\SmokeSprite.png",
+    "sprite": {
+      "frameTiles": [ 2.0, 2.0 ],
+      "frameCount": 4
+    }
   }
 }

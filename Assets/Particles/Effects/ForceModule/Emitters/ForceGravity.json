@@ -3,12 +3,12 @@
     "Duration": 0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 2.0, 0.0],
+        "localPos": [-3.0, 2.0, 0.0],
         "shape": "Box",
         "spawnVolume": [0.5, 0.1, 0.5],
-        "spawnRate": 25.0,
-        "particlesPerSpawn": 3,
-        "maxParticles": 512,
+        "spawnRate": 30.0,
+        "particlesPerSpawn": 30,
+        "maxParticles": 2024,
         "lifeRange": [2.0, 3.0]
     },
     "Visual": {
@@ -23,7 +23,7 @@
         "gravity": [0.0, -2.0, 0.0],
         "drag": 0.01
     },
-    "BillboardRender": {
-        "blendMode": "AlphaBlend"
-    }
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
 }

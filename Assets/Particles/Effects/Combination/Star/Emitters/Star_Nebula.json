@@ -38,11 +38,11 @@
         "vortexFalloff": 0.3,
         "pull": [-0.8, 0.0]
     },
-    "BillboardRender": {
-        "blendMode": "Additive",
-        "useSingleTexture": true,
-      "texture": "Textures/glassParticle.png"
-    },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "useSingleTexture": true,
+    "texture": "Textures/core2.png"
+  },
     "SubEmitters": [
       {
         "path": "Particles\\Effects\\Combination\\Star\\Emitters\\Star_Collapse.json",

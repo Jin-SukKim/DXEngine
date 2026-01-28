@@ -17,7 +17,6 @@ namespace DE {
 
 	ForceEffectsActor::~ForceEffectsActor()
 	{
-		ParticleManager::Get().DestroyInstance(m_particle);
 		ParticleManager::Get().DestroyInstance(m_fountain);
 		ParticleManager::Get().DestroyInstance(m_gravity);
 	}

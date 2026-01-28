@@ -1,41 +1,41 @@
 {
-    "Name": "MaterialDemo_PBR",
-    "Duration": 0,
-    "Spawn": {
-        "space": "Local",
-        "localPos": [0.0, 1.0, 0.0],
-        "shape": "Box",
-        "spawnVolume": [0.5, 0.1, 0.5],
-        "spawnRate": 5.0,
-        "particlesPerSpawn": 1,
-        "maxParticles": 32,
-        "lifeRange": [3.0, 5.0]
-    },
-    "Visual": {
-        "startColor": [1.0, 1.0, 1.0, 1.0],
-        "endColor": [1.0, 1.0, 1.0, 0.0],
-        "sizeRange": [0.15, 0.1],
-        "rotation": {
-            "minRotation": [0.0, 0.0, 0.0],
-            "maxRotation": [360.0, 360.0, 360.0],
-            "minRotSpeed": [-1.0, -1.0, -1.0],
-            "maxRotSpeed": [1.0, 1.0, 1.0]
-        }
-    },
-    "Force": {
-        "velocity": [0.0, -0.3, 0.0],
-        "speedRange": [0.05, 0.1],
-        "randomDir": [0.1, 0.0, 0.1],
-        "gravity": [0.0, -1.0, 0.0],
-        "drag": 0.05
-    },
-    "Material": {
-      "materials": [
-        "Materials\\ParticleBox_0.json"
-      ]
-    },
-    "MeshRender": {
-        "blendMode": "Opaque",
-        "defaultMesh": 1
+  "Name": "MaterialDemo_PBR",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [ 0.0, 1.0, 0.0 ],
+    "shape": "Box",
+    "spawnVolume": [ 0.5, 0.1, 0.5 ],
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 200,
+    "lifeRange": [ 1.0, 3.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "endColor": [ 1.0, 1.0, 1.0, 0.0 ],
+    "sizeRange": [ 0.3, 0.2 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 360.0, 360.0, 360.0 ],
+      "minRotSpeed": [ -1.0, -1.0, -1.0 ],
+      "maxRotSpeed": [ 1.0, 1.0, 1.0 ]
     }
+  },
+  "Force": {
+    "velocity": [ 0.0, -0.3, 0.0 ],
+    "speedRange": [ 0.05, 0.1 ],
+    "randomDir": [ 0.1, 0.0, 0.1 ],
+    "gravity": [ 0.0, -1.0, 0.0 ],
+    "drag": 0.3
+  },
+  "Material": {
+    "materials": [ "Materials\\roseMat.json" ]
+  },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "model": "rose.fbx",
+    "basePath": "rose\\",
+    "isGLTF": false
+  }
 }

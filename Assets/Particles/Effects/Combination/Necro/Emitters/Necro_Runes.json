@@ -10,13 +10,13 @@
             [1.2, 0.0, 0.0], [0.85, 0.0, 0.85], [0.0, 0.0, 1.2], [-0.85, 0.0, 0.85],
             [-1.2, 0.0, 0.0], [-0.85, 0.0, -0.85], [0.0, 0.0, -1.2], [0.85, 0.0, -0.85]
         ],
-        "spawnRate": 8.0,
-        "particlesPerSpawn": 1,
-        "maxParticles": 16,
+        "spawnRate": 16.0,
+        "particlesPerSpawn": 16,
+        "maxParticles": 500,
         "lifeRange": [2.0, 2.5]
     },
     "Visual": {
-        "startColor": [0.6, 0.2, 1.0, 0.0],
+        "startColor": [0.6, 0.2, 1.0, 1.0],
         "endColor": [0.3, 0.0, 0.5, 0.0],
         "sizeRange": [0.2, 0.15],
         "rotation": {
@@ -39,9 +39,13 @@
         "rotationRate": 0.5,
         "offset": 0.0
     },
-    "BillboardRender": {
-        "blendMode": "Additive",
-        "useSingleTexture": true,
-        "texture": "Textures/flame.png"
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "useSingleTexture": true,
+    "texture": "Textures/Runes.png",
+    "sprite": {
+      "frameTiles": [ 9.0, 3.0 ],
+      "frameCount": 27
     }
+  }
 }

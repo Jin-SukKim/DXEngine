@@ -18,9 +18,4 @@ namespace DE {
 		ParticleManager::Get().DestroyInstance(m_sphere);
 		ParticleManager::Get().DestroyInstance(m_model);
 	}
-
-	void MeshEffectsActor::Update(const float& deltaTime)
-	{
-		Super::Update(deltaTime);
-	}
 }

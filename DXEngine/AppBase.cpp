@@ -42,7 +42,7 @@ namespace DE {
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.hwnd);
 
-		m_scene = std::make_unique<ParticleEditor>();
+		m_scene = std::make_unique<BasicParticleScene>();
 		float aspect = float(m_window.width) / m_window.height;
 		m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 		m_scene->Initialize();

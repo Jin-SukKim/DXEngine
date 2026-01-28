@@ -6,18 +6,24 @@
         "space": "Local",
         "localPos": [0.0, 2.5, 0.0],
         "shape": "Box",
-        "spawnVolume": [0.1, 5.0, 0.1],
+        "spawnVolume": [0.1, 2.5, 0.1],
         "burst": 500,
         "spawnRate": 0.0,
         "particlesPerSpawn": 1,
         "maxParticles": 2048,
         "lifeRange": [0.1, 0.3]
     },
-    "Visual": {
-        "startColor": [0.8, 0.9, 1.0, 1.0],
-        "endColor": [0.5, 0.7, 1.0, 0.0],
-        "sizeRange": [0.15, 0.05]
-    },
+  "Visual": {
+    "startColor": [ 0.8, 0.9, 1.0, 1.0 ],
+    "endColor": [ 0.5, 0.7, 1.0, 0.0 ],
+    "sizeRange": [ 0.15, 0.05 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+    }
+  },
     "Force": {
         "velocity": [0.0, 0.0, 0.0],
         "speedRange": [0.5, 2.0],
@@ -25,9 +31,14 @@
         "gravity": [0.0, 0.0, 0.0],
         "drag": 0.0
     },
-    "BillboardRender": {
-        "blendMode": "Additive"
-    },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures/thunder2.jpg",
+    "sprite": {
+      "frameTiles": [ 4.0, 4.0 ],
+      "frameCount": 16
+    }
+  },
     "SubEmitters": [
       {
         "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Impact.json",

@@ -31,7 +31,8 @@
         "rotationRate": 1.5,
         "offset": 0.0
     },
-    "BillboardRender": {
-        "blendMode": "Additive"
-    }
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures/core2.png"
+  }
 }

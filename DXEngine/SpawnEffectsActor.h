@@ -9,6 +9,7 @@ public:
 	SpawnEffectsActor(const std::wstring& name);
 	virtual ~SpawnEffectsActor() override;
 
+	void Initialize() override;
 	void Update(const float& deltaTime) override;
 
 	bool NeedsExternalPreset() const override { return false; }

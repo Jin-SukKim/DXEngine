@@ -19,6 +19,11 @@ namespace DE {
 	void Firework::Initialize()
 	{
 		Super::Initialize();
+
+		TransformComponent* tr = this->GetComponent<TransformComponent>();
+		if (tr) {
+			tr->SetScale(Vector3(3.f));
+		}
 	}
 
 	void Firework::Update(const float& deltaTime)
@@ -31,7 +36,7 @@ namespace DE {
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
 			Vector3 pos = tr->GetPos();
-			pos.y += 1.0f * deltaTime;
+			pos.y += 5.0f * deltaTime;
 			tr->SetPos(pos);
 		}
 	}

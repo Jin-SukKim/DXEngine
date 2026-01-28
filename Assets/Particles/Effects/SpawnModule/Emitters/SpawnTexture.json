@@ -3,7 +3,7 @@
     "Duration": 0,
     "Spawn": {
       "space": "Local",
-      "localPos": [ 0.0, 0.0, 0.0 ],
+      "localPos": [ 3.0, 0.0, 3.0 ],
       "shape": "Texture",
       "bakedPath": "Models\\DamagedHelmet\\emissive.bin",
       "spawnRate": 100.0,

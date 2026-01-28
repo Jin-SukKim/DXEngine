@@ -3,7 +3,7 @@
     "Duration": 0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 0.0, 0.0],
+        "localPos": [3.0, 0.0, 0.0],
         "shape": "Custom",
         "positions": [
             [0.0, 0.0, 0.0],
@@ -18,7 +18,7 @@
         ],
         "spawnRate": 30.0,
         "particlesPerSpawn": 18,
-        "maxParticles": 1000,
+        "maxParticles": 1024,
         "lifeRange": [1.0, 2.0]
     },
     "Visual": {

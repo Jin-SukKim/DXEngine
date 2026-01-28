@@ -28,6 +28,7 @@ namespace DE {
         bool IsFinished() const;
         virtual bool NeedsExternalPreset() const { return true; }
 
+        void SetPosOffset(Vector3 offset);
     protected:
         ParticleSystem* m_particle = nullptr;
     };

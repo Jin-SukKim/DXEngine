@@ -8,8 +8,6 @@ namespace DE {
 		MeshEffectsActor(const std::wstring& name);
 		virtual ~MeshEffectsActor() override;
 
-		void Update(const float& deltaTime) override;
-
 		bool NeedsExternalPreset() const override { return false; }
 	private:
 		ParticleSystem* m_sphere = nullptr;

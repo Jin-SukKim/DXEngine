@@ -8,10 +8,10 @@
         "shape": "Sphere",
         "spawnVolume": [0.1, 0.02, 0.1],
         "spawnInnerRatio": 0.0,
-        "burst": 100,
+        "burst": 1024,
         "spawnRate": 0.0,
         "particlesPerSpawn": 1,
-        "maxParticles": 512,
+        "maxParticles": 1024,
         "lifeRange": [0.5, 0.8]
     },
     "Visual": {
@@ -26,7 +26,12 @@
         "gravity": [0.0, 0.0, 0.0],
         "drag": 0.2
     },
-    "BillboardRender": {
-        "blendMode": "Additive"
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures/thunder1.jpg",
+    "sprite": {
+      "frameTiles": [ 4.0, 1.0 ],
+      "frameCount": 4
     }
+  }
 }

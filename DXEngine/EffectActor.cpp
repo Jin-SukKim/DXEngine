@@ -77,4 +77,12 @@ namespace DE {
 
         return false;
     }
+    void EffectActor::SetPosOffset(Vector3 offset)
+    {
+        auto* tr = this->GetComponent<TransformComponent>();
+        if (tr) {
+            Vector3 pos = tr->GetPos() + offset;
+            tr->SetPos(pos);
+        }
+    }
 }

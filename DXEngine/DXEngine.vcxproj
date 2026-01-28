@@ -42,13 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -192,24 +192,33 @@
     <ClInclude Include="AppendBuffer.h" />
     <ClInclude Include="BasicParticleScene.h" />
     <ClInclude Include="BillboardEffectsActor.h" />
+    <ClInclude Include="BreathEffect.h" />
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
     <ClInclude Include="EffectActor.h" />
     <ClInclude Include="Firework.h" />
     <ClInclude Include="ForceEffectsActor.h" />
+    <ClInclude Include="HolySwordEffect.h" />
+    <ClInclude Include="IceEffect.h" />
+    <ClInclude Include="MagicEffect.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialEffectsActor.h" />
     <ClInclude Include="MaterialModule.h" />
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="MeshEffectsActor.h" />
     <ClInclude Include="ModelManager.h" />
+    <ClInclude Include="NecroEffect.h" />
+    <ClInclude Include="NightSkyEffect.h" />
     <ClInclude Include="OrbitEffectsActor.h" />
     <ClInclude Include="OrbitModule.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ParticleSpawner.h" />
+    <ClInclude Include="PhoenixEffect.h" />
+    <ClInclude Include="PortalEffect.h" />
     <ClInclude Include="RoseEffect.h" />
     <ClInclude Include="SnowActor.h" />
     <ClInclude Include="SpawnEffectsActor.h" />
+    <ClInclude Include="StarEffect.h" />
     <ClInclude Include="SubEmitterEffectsActor.h" />
     <ClInclude Include="TestActor.h" />
     <ClInclude Include="TextureManager.h" />
@@ -273,9 +282,11 @@
     <ClInclude Include="StructuredBuffer.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TextureSpawnBake.h" />
+    <ClInclude Include="ThunderEffect.h" />
     <ClInclude Include="ToneMappingFilter.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="SampleActor.h" />
+    <ClInclude Include="TsunamiEffect.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VisualEffectsActor.h" />
@@ -289,23 +300,32 @@
     <ClCompile Include="AppBase.cpp" />
     <ClCompile Include="BasicParticleScene.cpp" />
     <ClCompile Include="BillboardEffectsActor.cpp" />
+    <ClCompile Include="BreathEffect.cpp" />
     <ClCompile Include="ClickEffectManager.cpp" />
     <ClCompile Include="ComputeCommon.cpp" />
     <ClCompile Include="EffectActor.cpp" />
     <ClCompile Include="Firework.cpp" />
     <ClCompile Include="ForceEffectsActor.cpp" />
+    <ClCompile Include="HolySwordEffect.cpp" />
+    <ClCompile Include="IceEffect.cpp" />
+    <ClCompile Include="MagicEffect.cpp" />
     <ClCompile Include="MaterialEffectsActor.cpp" />
     <ClCompile Include="MaterialModule.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="MeshEffectsActor.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="NecroEffect.cpp" />
+    <ClCompile Include="NightSkyEffect.cpp" />
     <ClCompile Include="OrbitEffectsActor.cpp" />
     <ClCompile Include="OrbitModule.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ParticleSpawner.cpp" />
+    <ClCompile Include="PhoenixEffect.cpp" />
+    <ClCompile Include="PortalEffect.cpp" />
     <ClCompile Include="RoseEffect.cpp" />
     <ClCompile Include="SnowActor.cpp" />
     <ClCompile Include="SpawnEffectsActor.cpp" />
+    <ClCompile Include="StarEffect.cpp" />
     <ClCompile Include="SubEmitterEffectsActor.cpp" />
     <ClCompile Include="TestActor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -363,9 +383,11 @@
     <ClCompile Include="SquareActor.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="TextureSpawnBake.cpp" />
+    <ClCompile Include="ThunderEffect.cpp" />
     <ClCompile Include="ToneMappingFilter.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="SampleActor.cpp" />
+    <ClCompile Include="TsunamiEffect.cpp" />
     <ClCompile Include="VisualEffectsActor.cpp" />
     <ClCompile Include="VisualModule.cpp" />
     <ClCompile Include="VortexEffectsActor.cpp" />

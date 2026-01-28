@@ -3,7 +3,7 @@
     "Duration": 0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 0.0, 0.0],
+        "localPos": [5.0, 0.0, 0.0],
         "shape": "Sphere",
         "spawnVolume": [2.0, 0.2, 2.0],
         "spawnInnerRatio": 0.3,
@@ -25,7 +25,7 @@
         "drag": 0.0
     },
     "Vortex": {
-        "center": [0.0, 0.0, 0.0],
+        "center": [5.0, 0.0, 0.0],
         "strength": 3.0,
         "axis": [0.0, 1.0, 0.0],
         "vortexFalloff": 0.5,

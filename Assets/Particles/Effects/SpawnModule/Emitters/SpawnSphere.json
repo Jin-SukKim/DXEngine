@@ -3,12 +3,12 @@
     "Duration": 0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 0.0, 0.0],
+        "localPos": [-3.0, 0.0, 0.0],
         "shape": "Sphere",
         "spawnVolume": [0.8, 0.8, 0.8],
         "spawnInnerRatio": 0.0,
         "spawnRate": 50.0,
-        "particlesPerSpawn": 8,
+        "particlesPerSpawn": 16,
         "maxParticles": 1024,
         "lifeRange": [0.8, 1.5]
     },

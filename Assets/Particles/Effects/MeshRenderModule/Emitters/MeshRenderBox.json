@@ -3,13 +3,13 @@
     "Duration": 0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 2.0, 0.0],
+        "localPos": [-1.0, 2.0, 0.0],
         "shape": "Box",
         "spawnVolume": [1.0, 0.1, 1.0],
         "spawnRate": 10.0,
         "particlesPerSpawn": 2,
         "maxParticles": 128,
-        "lifeRange": [2.0, 3.0]
+        "lifeRange": [1.3, 1.8]
     },
     "Visual": {
         "startColor": [1.0, 0.8, 0.3, 1.0],

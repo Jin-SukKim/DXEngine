@@ -38,9 +38,13 @@
         "pull": [-0.3, 0.0]
     },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
+    "blendMode": "Additive",
     "useSingleTexture": true,
-    "texture": "Textures/glassParticle.png"
+    "texture": "Textures/SmokeSprite2.png",
+    "sprite": {
+      "frameTiles": [ 4.0, 4.0 ],
+      "frameCount": 16
+    }
   },
     "SubEmitters": [
       {

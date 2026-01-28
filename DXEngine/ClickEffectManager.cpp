@@ -10,6 +10,7 @@ void ClickEffectManager::Initialize() {
     RegisterPreset("fire", L"Particles\\TempEffect.json");
     RegisterPreset("Firework", L"Particles\\Firework.json");
     RegisterPreset("Burst", L"Particles\\SmokeEffect.json");
+    RegisterPreset("Thunder", L"Particles\\Effects\\Combination\\Thunder\\System_ThunderStrike.json");
 }
 
 void ClickEffectManager::SpawnEffectAtMousePosition(const std::wstring& presetPath) {
