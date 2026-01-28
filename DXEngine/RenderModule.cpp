@@ -219,11 +219,20 @@ namespace DE {
 		if (!model)
 			return;
 
+		// Update mesh count if it wasn't set during Initialize (model may have loaded later)
+		if (m_meshCount == 0) {
+			m_meshCount = static_cast<UINT>(model->meshes.size());
+		}
+
 		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
 	}
 
 	void MeshRenderModule::UpdateArgs(const SimulationContext& ctx)
 	{
+		// Skip if buffer not initialized (no model or model not loaded during Initialize)
+		if (m_modelIdx < 0 || m_meshCount == 0)
+			return;
+
 		ctx.context->CSSetShaderResources(0, 1, &ctx.countSRV);
 
 		ID3D11UnorderedAccessView* uavs[] = { m_meshArgs.GetUAV() };

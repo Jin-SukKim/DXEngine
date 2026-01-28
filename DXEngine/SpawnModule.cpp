@@ -76,7 +76,7 @@ namespace DE {
 			};
 			ctx.context->CSSetShaderResources(0, 2, srvs);
 		}
-		else if (m_spawnShape == 4) {
+		else if (m_spawnShape == 4 && m_spawnPos.GetSRV()) {
 			ID3D11ShaderResourceView* srv[] = { m_spawnPos.GetSRV() };
 			ctx.context->CSSetShaderResources(2, 1, srv);
 		}
