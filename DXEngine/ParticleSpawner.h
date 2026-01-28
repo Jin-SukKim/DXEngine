@@ -11,7 +11,24 @@ namespace DE {
         OneShot,
         Burst
     };
-
+    /**
+     * ParticleSpawner - ObjectPool 패턴을 사용하는 파티클 이펙트 생성 관리자
+     * 
+     * [ObjectPool 구현]
+     * - GPU Buffer 재사용을 위해 EffectActor를 미리 생성하고 풀에 보관
+     * - 완료된 Effect를 삭제하지 않고 풀로 반환하여 재활용
+     * - 기본 풀 크기: 20개 (SetPoolSize로 변경 가능)
+     * 
+     * [동작 방식]
+     * 1. Initialize 시 m_poolSize만큼 EffectActor를 미리 생성
+     * 2. Spawn 호출 시 풀에서 가져와서 재활용 (풀이 비면 동적 생성)
+     * 3. Effect 완료 시 Scene에서 회수하여 풀로 반환
+     * 
+     * [장점]
+     * - GPU Buffer 생성 비용 최소화 (최초 1회만 생성)
+     * - 메모리 할당/해제 빈도 감소로 성능 향상
+     * - 리소스 재사용으로 메모리 효율 증대
+     */
     // Effect ������ scene���� ��û (������ ����)
     class ParticleSpawner : public Actor {
         using Super = Actor;
