@@ -1,0 +1,36 @@
+{
+    "Name": "Dragon_HeatWave",
+    "Duration": 2.5,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 2.0],
+        "shape": "Box",
+        "spawnVolume": [0.5, 0.5, 3.0],
+        "spawnRate": 30.0,
+        "particlesPerSpawn": 3,
+        "maxParticles": 256,
+        "lifeRange": [0.5, 1.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.6, 0.2, 0.3],
+        "endColor": [1.0, 0.4, 0.1, 0.0],
+        "sizeRange": [0.8, 1.5],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -0.5],
+            "maxRotSpeed": [0.0, 0.0, 0.5]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 6.0],
+        "speedRange": [0.8, 1.0],
+        "randomDir": [0.2, 0.2, 0.1],
+        "gravity": [0.0, 0.5, 0.0],
+        "drag": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

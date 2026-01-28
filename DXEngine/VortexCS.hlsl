@@ -24,7 +24,7 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
     return ((tangent * vortex.vortexStrength) - (dir * pull)) * falloff;
 }
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴

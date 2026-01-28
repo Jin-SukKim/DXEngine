@@ -29,6 +29,8 @@ public:
 	virtual ModulePriority GetPriority() = 0;
 	virtual void LoadFromJson(const json& data) = 0;
 	void SetEnable(const bool& enable) { m_isEnabled = enable; }
+
+	virtual std::unique_ptr<ParticleModule> Clone() const = 0;
 protected:
 	bool m_isEnabled = true;
 };

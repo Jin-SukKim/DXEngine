@@ -2,6 +2,7 @@
 #include "D3D11Utils.h"
 #include "GraphicsCommon.h"
 #include "LightActor.h"
+#include "ComputeCommon.h"
 
 namespace DE {
 	class GraphicsCommon;
@@ -58,6 +59,7 @@ namespace DE {
 
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
+		static ComputeCommon computeCommon;
 	protected:
 		UINT m_numQualityLevels = 0;
 		int m_screenWidth = 1280;

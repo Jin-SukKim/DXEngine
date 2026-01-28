@@ -1,6 +1,5 @@
 #pragma once
 #include "StructuredBuffer.h"
-#include "ComputeShader.h"
 
 namespace DE {
     class BitonicSort {
@@ -17,13 +16,11 @@ namespace DE {
 
         BitonicSort() {};
 
-        BitonicSort(ID3D11Device* device, const UINT numElements,
-            const std::wstring shaderFilename) {
-            Initialize(device, numElements, shaderFilename);
+        BitonicSort(ID3D11Device* device, const UINT numElements) {
+            Initialize(device, numElements);
         };
 
-        void Initialize(ID3D11Device* device, const UINT numElements,
-            const std::wstring shaderFilename);
+        void Initialize(ID3D11Device* device, const UINT numElements);
 
         void Sort(ID3D11DeviceContext* context);
 
@@ -33,8 +30,6 @@ namespace DE {
         std::vector<Consts> m_constsCpu;
         std::vector<ComPtr<ID3D11Buffer>> m_constsGpu;
         StructuredBuffer<Element> m_array;
-
-		ComputeShader m_bitonicSortCS;
 
         UINT m_numElements = 0;
     };

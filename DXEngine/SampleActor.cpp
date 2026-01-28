@@ -5,42 +5,48 @@
 #include "D3D11Utils.h"
 #include "TransformComponent.h"
 #include "ModelComponent.h"
-#include "BoundComponent.h"
+
 #include "RenderBase.h"
 #include "ParticleSystem.h"
-#include "ParticleLoader.h"
+#include "ModelManager.h"
+#include "ParticleManager.h"
 
 namespace DE {
 	SampleActor::SampleActor(const std::wstring& name) : Super(name)
 	{
 		// main object
 		{
-			std::vector<MeshData> meshes = GeometryGenerator::ReadFromFile("../Assets/Models/DamagedHelmet/", "DamagedHelmet.gltf");
-
 			m_sample = AddComponent<ModelComponent>(L"Model");
-			m_sample->SetModel(meshes, true);
+			// basePath만 전달 (presetPath는 사용하지 않음)
+			m_sample->SetModel("DamagedHelmet.gltf", "DamagedHelmet/", true);
 
-			m_boundVolume = AddComponent<BoundComponent>(L"BoundingVolume");
-			m_boundVolume->SetBoundingVolume(meshes);
+			m_particles = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
 
-			m_particles = AddComponent<ParticleSystem>(L"Particles");
-			ParticleLoader::Load<ParticleSystem>(L"Particles\\TestEffect.json", m_particles);
-			m_particles->SetTargetMesh(meshes[0]);
-			
-			//MeshData box = GeometryGenerator::MakeBox();
-			//ModelManager::Get().LoadModel("ParticleBox", box);
+			if (m_particles) {
+				int modelIdx = m_sample->GetModelIndex();
+				m_particles->SetTarget(this, modelIdx);
+			}
+			m_sample->SetDrawNormal(false);
 		}
 	}
+
+	// 소멸자 추가
+	SampleActor::~SampleActor()
+	{
+		if (m_particles) {
+			ParticleManager::Get().DestroyInstance(m_particles);
+			m_particles = nullptr;
+		}
+	}
+
 	void SampleActor::Initialize() {
 		Super::Initialize();
 
-		m_sample->SetDrawNormal(false);
-		m_boundVolume->SetVisibility(false);
 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
-			//tr->SetScale(Vector3(5.f));
+			//tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
+			//tr->SetScale(Vector3(0.5f));
 		}
 	}
 
@@ -58,5 +64,6 @@ namespace DE {
 	void SampleActor::Render() {
 		Super::Render();
 	}
+
 
 }

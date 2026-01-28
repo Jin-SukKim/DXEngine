@@ -5,7 +5,7 @@
 namespace DE {
 	void VortexModule::Initialize(ParticleInitContext& ctx)
 	{
-		m_vortexCS.Initialize(ctx.device, L"VortexCS.hlsl");
+		// ComputeShader는 ComputeCommon에서 공유
 	}
 
 	void VortexModule::OnSpawn(SimulationContext& ctx)
@@ -22,19 +22,24 @@ namespace DE {
 	void VortexModule::OnUpdate(const SimulationContext& ctx)
 	{
 		ParticleModule::OnUpdate(ctx);
-		// Counter buffer binding
+		
 		ID3D11ShaderResourceView* srvs[] = { ctx.countSRV };
 		ctx.context->CSSetShaderResources(0, 1, srvs);
 
-		// UAV 설정 (초기 카운트 지정)
-		// -1: consume 버퍼의 기존 카운트 유지
-		// 0: append 버퍼의 카운트 리셋
 		UINT initCounts[1] = { static_cast<UINT>(-1) };
-
 		ctx.context->CSSetUnorderedAccessViews(0, 1, ctx.consumeBuffer.GetAddressOfRWuav(), initCounts);
 		
-		// Particle Simulation Compute Shader
-		m_vortexCS.DispatchIndirect(ctx.context, ctx.dispatchArgs);
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& vortexCS = RenderBase::computeCommon.particle.vortexCS;
+		ctx.context->CSSetShader(vortexCS.computeShader.Get(), 0, 0);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void VortexModule::LoadFromJson(const json& data)
@@ -44,5 +49,19 @@ namespace DE {
 		if (data.contains("axis")) m_vortexAxis = JsonToVec3(data["axis"]);
 		if (data.contains("vortexFalloff")) m_vortexFalloff = data["vortexFalloff"];
 		if (data.contains("pull")) m_vortexPull = JsonToVec2(data["pull"]);
+	}
+
+	std::unique_ptr<ParticleModule> VortexModule::Clone() const
+	{
+		auto cloned = std::make_unique<VortexModule>();
+
+		cloned->m_vortexStrength = this->m_vortexStrength;
+		cloned->m_vortexCenter = this->m_vortexCenter;
+		cloned->m_vortexAxis = this->m_vortexAxis;
+		cloned->m_vortexFalloff = this->m_vortexFalloff;
+		cloned->m_vortexPull = this->m_vortexPull;
+		cloned->m_isEnabled = this->m_isEnabled;
+
+		return cloned;
 	}
 }

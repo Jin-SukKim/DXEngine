@@ -50,4 +50,14 @@ namespace DE {
 		if (!m_materialIndices.empty())
 			m_isLoadedFromJson = true;
 	}
+	std::unique_ptr<ParticleModule> MaterialModule::Clone() const
+	{
+		auto cloned = std::make_unique<MaterialModule>();
+
+		cloned->m_isEnabled = this->m_isEnabled;
+		cloned->m_isLoadedFromJson = this->m_isLoadedFromJson;
+		cloned->m_materialIndices = this->m_materialIndices;
+
+		return std::move(cloned);
+	}
 }

@@ -9,6 +9,7 @@
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
+	ComputeCommon RenderBase::computeCommon;  // 추가
 
 	RenderBase::~RenderBase()
 	{
@@ -77,6 +78,7 @@ namespace DE {
 		CreateDepthStencilBuffer();
 
 		graphicsCommon.InitCommonStates(m_device);
+		computeCommon.InitCommonStates(m_device);  // 추가
 
 		// TODO: 임시
 		D3D11Utils::CreateImageFilterTexture(m_device, int(m_screenViewport.Width), int(m_screenViewport.Height), m_toneMapTexture);

@@ -1,0 +1,36 @@
+{
+    "Name": "MeshRenderDemo_Sphere",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [1.0, 0.5, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.5, 0.5, 0.5],
+        "spawnRate": 15.0,
+        "particlesPerSpawn": 3,
+        "maxParticles": 256,
+        "lifeRange": [1.0, 2.0]
+    },
+    "Visual": {
+        "startColor": [0.3, 0.8, 1.0, 1.0],
+        "endColor": [0.1, 0.4, 0.8, 0.3],
+        "sizeRange": [0.08, 0.03],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [180.0, 180.0, 180.0],
+            "minRotSpeed": [-1.0, -1.0, -1.0],
+            "maxRotSpeed": [1.0, 1.0, 1.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 1.0, 0.0],
+        "speedRange": [0.2, 0.5],
+        "randomDir": [0.3, 0.3, 0.3],
+        "gravity": [0.0, -1.5, 0.0],
+        "drag": 0.1
+    },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "defaultMesh": 1
+  }
+}

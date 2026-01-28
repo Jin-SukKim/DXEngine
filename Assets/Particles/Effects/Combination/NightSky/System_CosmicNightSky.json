@@ -1,0 +1,18 @@
+{
+    "Name": "CosmicNightSky",
+    "Looping": true,
+    "Duration": 0,
+    "PlayRate": 1.0,
+    "PreWarmTime": 5.0,
+    "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_BackgroundStars.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_MilkyWayCore.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_MilkyWayDust.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_MilkyWayStars.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_Nebulae.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_TwinkleStars.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_Planets.json",
+    "Particles\\Effects\\Combination\\NightSky\\Emitters\\Cosmic_MeteorSpawner.json"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "Name": "UpFireEffect",
+  "Duration": 2.0,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "shape": "Sphere",
+    "localPos": [ 0.0, 0.0, 0.0 ],
+    "spawnVolume": [ 0.01, 0.1, 0.01 ],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 1000,
+    "lifeRange": [ 0.5, 1.7 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
+    "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
+    "sizeRange": [ 0.3, 0.02 ]
+  },
+  "Force": {
+    "velocity": [ 0.0, -0.1, 0.0 ],
+    "speedRange": [ 0.01, 0.02 ],
+    "randomDir": [ 0.3, 0.5, 0.3 ],
+    "gravity": [ 0.0, -1.0, 0.0 ],
+    "drag": 0.0
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Emitters\\BurstFirework.json",
+      "trigger": "OnComplete",
+      "inheritPosition": true
+    }
+  ]
+}

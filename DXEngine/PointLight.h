@@ -12,7 +12,7 @@ namespace DE
 
         void Initialize() override;
         void Update(const float& deltaTime) override;
-		void RenderShadow(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists) override;
+		void RenderShadow(const std::vector<std::unique_ptr<Actor>>* actorLists, size_t count) override;
         void UpdateShadowGlobals(const Matrix& view, const Matrix& proj, const int& i);
     private:
 		// 6개의 면에 대한 View Matrix를 생성

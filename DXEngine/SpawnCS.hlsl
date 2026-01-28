@@ -9,9 +9,9 @@ struct Vertex {
 };
 
 AppendStructuredBuffer<Particle> outputParticles : register(u0);
-StructuredBuffer<Vertex> meshVertex : register(t0);
-StructuredBuffer<uint> meshIndices : register(t1);
-StructuredBuffer<float3> bakedSpawnPos : register(t2);
+StructuredBuffer<float3> bakedSpawnPos : register(t0);
+StructuredBuffer<float3> meshVertex : register(t9);
+StructuredBuffer<uint> meshIndices : register(t10);
 
 // --- [Robust Random Functions (Wang Hash)] ---
 
@@ -71,8 +71,8 @@ void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos)
         rngState = wang_hash(rngState);
         uint vIdx = rngState % vCount;
 
-        Vertex v = meshVertex[vIdx];
-        outPos = v.position;
+        float3 v = meshVertex[vIdx];
+        outPos = v;
     }
     else
     {
@@ -103,12 +103,12 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
             rb = 1.0f - rb;
         }
 
-        Vertex v0 = meshVertex[i0];
-        Vertex v1 = meshVertex[i1];
-        Vertex v2 = meshVertex[i2];
+        float3 v0 = meshVertex[i0];
+        float3 v1 = meshVertex[i1];
+        float3 v2 = meshVertex[i2];
 
         // Position Interpolation
-        outPos = v0.position + ra * (v1.position - v0.position) + rb * (v2.position - v0.position);
+        outPos = v0 + ra * (v1 - v0) + rb * (v2 - v0);
     }
     else
     {
@@ -116,7 +116,7 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
     }
 }
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     if (dtID.x >= spawnCount)
@@ -138,12 +138,20 @@ void main(uint3 dtID : SV_DispatchThreadID)
     else if (spawn.spawnShape == 1) // SPHERE
         spawnPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 2) // VERTEX
-        VertexSpawn(rngState, spawn.vertexCount, spawnPos);
+        VertexSpawn(rngState, vertexCount, spawnPos);
     else if (spawn.spawnShape == 3) // SURFACE
-        SurfaceSpawn(rngState, spawn.indexCount, spawnPos);
+        SurfaceSpawn(rngState, indexCount, spawnPos);
     else if (spawn.spawnShape == 4) // BAKED POS
     {
         uint idx = rngState % spawn.bakedCount;
+        spawnPos = bakedSpawnPos[idx];
+    }
+    else if (spawn.spawnShape == 5) {
+        // 랜덤 대신 순차적 인덱싱 사용
+        // spawnStartIndex: 이번 프레임 시작 오프셋
+        // dtID.x: 이번 프레임 내에서 현재 파티클의 번호 (0 ~ spawnCount-1)
+        uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;
+
         spawnPos = bakedSpawnPos[idx];
     }
 
@@ -167,11 +175,11 @@ void main(uint3 dtID : SV_DispatchThreadID)
     {
         // 위치: World 행렬 적용
         // Common.hlsli에 정의된 'world' 행렬 사용 (MeshConstants)
-        p.position = mul(float4(localPos, 1.0f), world).xyz;
+        p.position = mul(float4(localPos, 1.0f), pWorld).xyz;
 
         // 속도: World 회전만 적용 (3x3)
         // 만약 Scale도 속도에 영향을 주고 싶다면 (float3x3)world 대신 다른 방식 고려 필요
-        p.velocity = mul(localVel, (float3x3)world);
+        p.velocity = mul(localVel, (float3x3)pWorld);
     }
     else // Local Space Simulation (기존 방식)
     {

@@ -1,0 +1,36 @@
+{
+    "Name": "VortexDemo_Tornado",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [-3.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [1.0, 0.1, 1.0],
+        "spawnRate": 80.0,
+        "particlesPerSpawn": 15,
+        "maxParticles": 4096,
+        "lifeRange": [2.0, 3.0]
+    },
+    "Visual": {
+        "startColor": [0.6, 0.6, 0.6, 0.8],
+        "endColor": [0.1, 0.1, 0.1, 0.5],
+        "sizeRange": [0.15, 0.05]
+    },
+    "Force": {
+        "velocity": [0.0, 0.8, 0.0],
+        "speedRange": [0.1, 0.3],
+        "randomDir": [0.1, 0.1, 0.1],
+        "gravity": [0.0, 1.0, 0.0],
+        "drag": 0.05
+    },
+    "Vortex": {
+        "center": [-3.0, 1.0, 0.0],
+        "strength": 5.0,
+        "axis": [0.0, 1.0, 0.0],
+        "vortexFalloff": 2.0,
+        "pull": [0.3, 10.0]
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

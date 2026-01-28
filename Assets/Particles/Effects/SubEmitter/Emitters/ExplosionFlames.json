@@ -1,0 +1,42 @@
+{
+    "Name": "Explosion_Flames",
+    "Duration": 0.5,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.5, 0.5, 0.5],
+        "spawnInnerRatio": 0.3,
+        "spawnRate": 200.0,
+        "particlesPerSpawn": 15,
+        "maxParticles": 512,
+        "lifeRange": [0.3, 0.8]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.6, 0.1, 1.0],
+        "endColor": [1.0, 0.2, 0.0, 0.0],
+        "sizeRange": [0.5, 0.2],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -2.0],
+            "maxRotSpeed": [0.0, 0.0, 2.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 1.5, 0.0],
+        "speedRange": [1.0, 2.5],
+        "randomDir": [0.8, 0.5, 0.8],
+        "gravity": [0.0, 1.0, 0.0],
+        "drag": 0.3
+    },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures\\explosion2.png",
+    "sprite": {
+      "frameTiles": [ 4.0, 4.0 ],
+      "frameCount": 16
+    }
+  }
+}

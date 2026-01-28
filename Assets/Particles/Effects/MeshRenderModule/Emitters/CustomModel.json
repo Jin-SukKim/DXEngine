@@ -1,0 +1,38 @@
+{
+    "Name": "MeshRenderDemo_CustomModel",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.3, 0.3, 0.3],
+        "spawnRate": 8.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 64,
+        "lifeRange": [3.0, 5.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 1.0, 1.0, 1.0],
+        "endColor": [0.8, 0.8, 0.8, 0.0],
+        "sizeRange": [0.2, 0.1],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [360.0, 360.0, 360.0],
+            "minRotSpeed": [-0.5, -1.5, -0.5],
+            "maxRotSpeed": [0.5, 1.5, 0.5]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.5, 0.0],
+        "speedRange": [0.1, 0.2],
+        "randomDir": [0.1, 0.1, 0.1],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "model": "DamagedHelmet.gltf",
+    "basePath": "DamagedHelmet\\",
+    "isGLTF": true
+  }
+}

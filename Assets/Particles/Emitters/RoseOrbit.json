@@ -1,0 +1,50 @@
+{
+  "Name": "VortexAura",
+  "Spawn": {
+    "shape": "Custom",
+    "positions": [
+      [0.3, 0.0, 0.0],
+      [-0.3, 0.0, 0.0]
+    ],
+    "localPos": [ -0.1, -0.4, 0.0 ],
+    "spawnVolume": [ 0.2, 0.1, 0.2 ],
+    "spawnInnerRatio": 1.5,
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 2,
+    "maxParticles": 1024,
+    "lifeRange": [ 0.7, 1.5 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
+    "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
+    "sizeRange": [ 0.1, 0.1 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 6.28, 6.28, 6.28 ],
+      "minRotSpeed": [ -2.0, -2.0, -2.0 ],
+      "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
+    }
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
+    "randomDir": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 0.1, 0.0 ],
+    "drag": 0.0
+  },
+  "Orbit": {
+    "center": [ -0.1, 0.0, 0.0 ],
+    "axis": [ 0.0, 1.0, 0.0 ],
+    "rotationRate": 10.0,
+    "offset": 20.0
+  },
+  "Material": {
+    "materials": [ "Materials\\roseMat.json" ]
+  },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "model": "rose.fbx",
+    "basePath": "rose\\",
+    "isGLTF": false
+  }
+}

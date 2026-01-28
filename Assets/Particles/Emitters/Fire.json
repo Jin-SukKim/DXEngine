@@ -23,7 +23,6 @@
     "drag": 0.0
   },
   "BillboardRender": {
-    "blendMode": "Additive",
-    "texture": "Textures\\flame.png"
+    "blendMode": "Additive"
   }
 }

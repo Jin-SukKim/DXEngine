@@ -1,0 +1,50 @@
+{
+    "Name": "Necro_SoulRise",
+    "Duration": 1.5,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.8, 0.1, 0.8],
+        "spawnInnerRatio": 0.3,
+        "spawnRate": 150.0,
+        "particlesPerSpawn": 20,
+        "maxParticles": 2048,
+        "lifeRange": [1.0, 2.0]
+    },
+    "Visual": {
+        "startColor": [0.4, 0.1, 0.6, 0.9],
+        "endColor": [0.2, 0.0, 0.3, 0.0],
+        "sizeRange": [0.1, 0.03]
+    },
+    "Force": {
+        "velocity": [0.0, 3.0, 0.0],
+        "speedRange": [0.7, 1.3],
+        "randomDir": [0.2, 0.1, 0.2],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.1
+    },
+    "Vortex": {
+        "center": [0.0, 1.0, 0.0],
+        "strength": 2.0,
+        "axis": [0.0, 1.0, 0.0],
+        "vortexFalloff": 0.5,
+        "pull": [-0.3, 0.0]
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Necro\\Emitters\\Necro_SoulForm.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      },
+      {
+        "path": "Particles\\Effects\\Combination\\Necro\\Emitters\\Necro_DarkMist.json",
+        "trigger": "OnStart",
+        "inheritPosition": true
+      }
+    ]
+}

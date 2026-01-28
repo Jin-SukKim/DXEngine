@@ -16,6 +16,10 @@ namespace DE {
 		m_shadowGlobalConsts.Initialize();
 	}
 
+	LightActor::~LightActor()
+	{
+	}
+
 	void LightActor::Initialize()
 	{
 		Super::Initialize();
@@ -59,7 +63,7 @@ namespace DE {
 		// TODO: 빛을 의미하는 표현하는 걸 렌더링하면 좋을듯 (언리얼 엔진 생각해보기)
 	}
 
-	void LightActor::RenderShadow(const std::vector<std::vector<std::shared_ptr<Actor>>>& actorLists)
+	void LightActor::RenderShadow(const std::vector<std::unique_ptr<Actor>>* actorLists, size_t count)
 	{
 		if (m_light.type & LIGHT_OFF)
 			return; // 빛이 꺼져있으면 렌더링하지 않음
@@ -69,8 +73,8 @@ namespace DE {
 			GET_SINGLE(RenderBase)->SetShadowMap(m_lightID);
 			SetGlobals(m_shadowGlobalConsts.Get());
 
-			for (const auto& actorList : actorLists) {
-				for (const auto& actor : actorList)
+			for (size_t i = 0; i < count; ++i) {
+				for (const auto& actor : actorLists[i])
 					if (actor->IsCastShadow() && actor->IsVisible())
 						actor->Render();
 			}

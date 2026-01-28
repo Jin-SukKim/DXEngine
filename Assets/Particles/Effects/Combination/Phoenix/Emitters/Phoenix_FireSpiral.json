@@ -1,0 +1,50 @@
+{
+    "Name": "Phoenix_FireSpiral",
+    "Duration": 2.0,
+    "CompletionDelay": 1.0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.8, 0.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.1, 0.1, 0.1],
+        "spawnRate": 150.0,
+        "particlesPerSpawn": 20,
+        "maxParticles": 4096,
+        "lifeRange": [0.8, 1.5]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.8, 0.2, 1.0],
+        "endColor": [1.0, 0.2, 0.0, 0.0],
+        "sizeRange": [0.15, 0.03],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -1.0],
+            "maxRotSpeed": [0.0, 0.0, 1.0]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 2.5, 0.0],
+        "speedRange": [0.8, 1.2],
+        "randomDir": [0.1, 0.0, 0.1],
+        "gravity": [0.0, 1.0, 0.0],
+        "drag": 0.0
+    },
+    "Orbit": {
+        "center": [0.0, 0.0, 0.0],
+        "axis": [0.0, 1.0, 0.0],
+        "rotationRate": 6.0,
+        "offset": 0.3
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "texture": "Textures/flare0.dds"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\Pheonix\\Emitters\\Phoenix_Wings.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      }
+    ]
+}

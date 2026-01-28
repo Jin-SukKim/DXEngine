@@ -2,6 +2,8 @@
 
 #include "InputManager.h"
 #include "Gui.h"
+#include "EffectActor.h"
+#include "TransformComponent.h"
 
 namespace DE {
 	class SampleActor;
@@ -18,17 +20,32 @@ namespace DE {
 	class Scene
 	{
 	public:
+		enum class ActorCategory : uint8_t
+		{
+			Normal = 0,
+			Billboard = 1,
+			Effect = 2,
+			Count = 3
+		};
+
+	public:
 		Scene();
-		virtual ~Scene() {}
+		virtual ~Scene();
 		virtual void Initialize();
 		virtual void Update(const float& deltaTime);
 		virtual void UpdateGUI();
 		virtual void Render();
 
-		CameraActor* GetMainCamera() { return m_mainCamera.get(); };
+		CameraActor* GetMainCamera() { return m_mainCamera.get(); }
 
-		uint8_t* GetPickColor() { return m_pickColor; }
+		// 동적 EffectActor 추가
+		template<class T = EffectActor>
+		T* SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos);
+		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); // 직접 추가
+		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category);
+		bool ContainsEffect(EffectActor* effect) const;
 	protected:
+		// Actor Management
 		template<class T>
 		T* AddObject(const std::wstring& name);
 
@@ -41,84 +58,114 @@ namespace DE {
 		template<class T>
 		T* AddGui();
 
-		virtual void UpdateLight(const float& deltaTime);
-		virtual void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
-		virtual void UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
-		// Rendering
-		virtual void RenderOpaqueObjects(); // 불투명한 물체 렌더링
-		virtual void RenderMirror(); // 거울 렌더링
-		// Depth값만 추출하기 위한 Depth Only Pass
-		virtual void RenderDepthOnly();
-		// 그림자를 위한 그림자 맵
-		virtual void RenderShadowMap();
+		// Initialization
+		virtual void InitializeCommonResources();
+		virtual void InitializeLights();
+		virtual void InitializeCamera();
+		virtual void InitializeSkybox();
+		virtual void InitializeInput();
 
+		// Update
+		virtual void UpdateCamera(const float& deltaTime);
+		virtual void UpdateLights(const float& deltaTime);
+		virtual void UpdateActors(const float& deltaTime);
+		virtual void UpdateGlobalConstants(const float& deltaTime, const Vector3& eyeWorld, const Matrix& view, const Matrix& proj);
+
+		// Rendering
+		virtual void SetGlobals(const ComPtr<ID3D11Buffer>& globalConstsGPU);
+		virtual void SetCommonRenderStates();
+		virtual void RenderDepthOnly();
+		virtual void RenderShadowMaps();
+		virtual void RenderOpaqueObjects();
+		virtual void RenderActors(ActorCategory category);
+		virtual void RenderDebugGeometry();
+
+		// Effect
+		virtual void CleanupFinishedEffects();
 	private:
-		void enableCamFpv();
-		void pickingRay(float click);
-		// Ray와 충돌한 가장 가까운 Actor
-		Actor* pickClosest(const DirectX::SimpleMath::Ray& pickingRay, float& minDist);
-		void pickingGpu(float click);
+		void EnableCameraFPV();
+
 	protected:
-		// Shader에서 공통으로 사용되는 Constant Buffer Data
+		// Rendering Constants
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 
-		std::shared_ptr<CameraActor> m_mainCamera;
-		InputButton f = InputButton::F;
-		InputAction m_fpv;
-		InputButton lButton = InputButton::LButton;
-		InputButton rButton = InputButton::RButton;
-		InputAxis xAxis = InputAxis::XAxis;
-		InputAxisAction m_mouseClick;
+		// Core Scene Elements
+		std::unique_ptr<CameraActor> m_mainCamera;
+		std::unique_ptr<SkyboxActor> m_skybox;
+		std::unique_ptr<CopyFilter> m_copyPostProcess;
 
-	private:
-		std::shared_ptr<SkyboxActor> m_skybox;
-		//std::shared_ptr<TreeBillboard> m_billboard;
-		//// 거울 반사
-		//std::shared_ptr<MirrorActor> m_mirror;
-
-		std::shared_ptr<CopyFilter> m_copyPostProcess;
-		std::shared_ptr<FogEffect> m_depthPP;
-		
-		// 0 row는 일반 actor, 1 row는 billboard
-		std::vector<std::shared_ptr<Actor>> m_actorList[3];
-		Actor* m_pickedActor = nullptr;
-
-		uint8_t m_pickColor[4] = { 0, 0, 0, 0 };
-
+		// Actors organized by category
+		std::vector<std::unique_ptr<Actor>> m_actorList[static_cast<size_t>(ActorCategory::Count)];
 		std::vector<std::unique_ptr<Actor>> m_lights;
-
 		std::vector<std::unique_ptr<Gui>> m_guis;
+
+		// Input - 버튼은 먼저 선언
+		InputButton m_fButton = InputButton::F;
+		InputButton m_lButton = InputButton::LButton;
+		InputButton m_rButton = InputButton::RButton;
+		InputAxis m_xAxis = InputAxis::XAxis;
+		
+		// InputAction은 나중에 선언 (버튼에 의존)
+		InputAction m_fpv;
+		InputAxisAction m_mouseClick;
 	};
 
 	template<class T>
 	inline T* Scene::AddObject(const std::wstring& name)
 	{
-		std::unique_ptr<T> actor = std::make_unique<T>(name);
-		m_actorList[0].emplace_back(std::move(actor));
-		return dynamic_cast<T*>(m_actorList[0].back().get());
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
+		auto category = static_cast<size_t>(ActorCategory::Normal);
+		m_actorList[category].emplace_back(std::move(actor));
+		return rawPtr;
 	}
+
 	template<class T>
 	inline T* Scene::AddEffect(const std::wstring& name)
 	{
-		std::unique_ptr<T> actor = std::make_unique<T>(name);
-		m_actorList[2].emplace_back(std::move(actor));
-		return dynamic_cast<T*>(m_actorList[2].back().get());
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
+		auto category = static_cast<size_t>(ActorCategory::Effect);
+		m_actorList[category].emplace_back(std::move(actor));
+		return rawPtr;
 	}
+
+	template<class T>
+	inline T* Scene::SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos)
+	{
+		auto actor = std::make_unique<T>(name);
+		T* rawPtr = actor.get();
+
+		if (auto* tr = actor->GetComponent<TransformComponent>())
+			tr->SetPos(worldPos);
+
+		actor->Initialize();
+
+		if (actor->NeedsExternalPreset() && !presetPath.empty())
+			actor->SetParticlePreset(presetPath);
+
+		auto category = static_cast<size_t>(ActorCategory::Effect);
+		m_actorList[category].emplace_back(std::move(actor));
+		return rawPtr;
+	}
+
 	template<class T>
 	inline T* Scene::AddLight(const std::wstring& name)
 	{
-		assert(m_lights.size() <= MAX_LIGHTS);
+		assert(m_lights.size() < MAX_LIGHTS && "Cannot add more lights than MAX_LIGHTS");
 			
 		std::unique_ptr<T> light = std::make_unique<T>(name);
 		m_lights.emplace_back(std::move(light));
 		return dynamic_cast<T*>(m_lights.back().get());
 	}
+
 	template<class T>
 	inline T* Scene::AddGui()
 	{
-		std::unique_ptr<T> gui = std::make_unique<T>();
+		auto gui = std::make_unique<T>();
+		T* rawPtr = gui.get();
 		m_guis.emplace_back(std::move(gui));
-		return dynamic_cast<T*>(m_guis.back().get());
+		return rawPtr;
 	}
 }

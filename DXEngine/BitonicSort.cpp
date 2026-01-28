@@ -2,8 +2,15 @@
 #include "BitonicSort.h"
 
 namespace DE {
-    void BitonicSort::Initialize(ID3D11Device* device, const UINT numElements, const std::wstring shaderFilename)
+    void BitonicSort::Initialize(ID3D11Device* device, const UINT numElements)
     {
+        // 기존 리소스 정리
+        m_constsCpu.clear();
+        m_constsGpu.clear();
+        m_array = StructuredBuffer<Element>();
+
+        if (numElements == 0)
+            return;
         // 2의 제곱인지 확인
         // https://stackoverflow.com/questions/108318/how-can-i-test-whether-a-number-is-a-power-of-2
         UINT num = 1;
@@ -15,8 +22,6 @@ namespace DE {
         m_numElements = num;
 
         m_array.Initialize(device, num);
-
-		m_bitonicSortCS.Initialize(device, shaderFilename);
 
         // 필요한 ConstBuffer 들을 미리 만들어 두기
         for (uint32_t k = 2; k <= num; k *= 2)
@@ -34,15 +39,16 @@ namespace DE {
 
     void BitonicSort::Sort(ID3D11DeviceContext* context)
     {
+        // ComputeCommon의 공유 ComputePSO 사용
+        auto& bitonicSortCS = RenderBase::computeCommon.sort.bitonicSortCS;
+
         size_t constCount = 0;
         for (uint32_t k = 2; k <= m_numElements; k *= 2)
             for (uint32_t j = k / 2; j > 0; j /= 2) {
-                m_bitonicSortCS.UpdateConsts(
-					context, 0, 1, m_constsGpu[constCount++].GetAddressOf());
-                context->CSSetShader(m_bitonicSortCS.Get(), 0, 0);
-                context->CSSetUnorderedAccessViews(0, 1, m_array.GetAddressOfUAV(),
-                    NULL);
-                context->Dispatch(UINT(ceil(m_numElements / 256)), 1, 1);
+                context->CSSetConstantBuffers(0, 1, m_constsGpu[constCount++].GetAddressOf());
+                context->CSSetShader(bitonicSortCS.computeShader.Get(), 0, 0);
+                context->CSSetUnorderedAccessViews(0, 1, m_array.GetAddressOfUAV(), NULL);
+                context->Dispatch((m_numElements + 1023) / 1024, 1, 1);
             }
 
         // UAV Barrier
@@ -50,5 +56,6 @@ namespace DE {
         context->CSSetShaderResources(0, 2, nullSRV);
         ID3D11UnorderedAccessView* nullUAV[2] = { 0, 0 };
         context->CSSetUnorderedAccessViews(0, 2, nullUAV, NULL);
+        context->CSSetShader(nullptr, 0, 0);
     }
 }

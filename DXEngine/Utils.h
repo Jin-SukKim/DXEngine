@@ -17,6 +17,7 @@ namespace DE {
 
 		void SetCpuData(const T_CONST& data) { m_cpu = data; }
 		T_CONST& GetCpu() { return m_cpu; }
+		const T_CONST& GetCpu() const { return m_cpu; }
 		const auto Get() { return m_gpu.Get(); }
 		const auto GetAddressOf() const { return m_gpu.GetAddressOf(); }
 	private:

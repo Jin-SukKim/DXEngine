@@ -5,7 +5,7 @@
 #include "D3D11Utils.h"
 #include "TransformComponent.h"
 #include "ModelComponent.h"
-#include "BoundComponent.h"
+
 #include "RenderBase.h"
 
 namespace DE {
@@ -16,14 +16,7 @@ namespace DE {
 			MeshData mesh = GeometryGenerator::MakeSquare(3.f);
 
 			m_sample = AddComponent<ModelComponent>(L"Model");
-			m_sample->SetModel(mesh);
-
-			MaterialConstants consts = m_sample->GetMaterialCpu();
-			consts.albedoFactor = Vector3(0.01f);
-			consts.emissionFactor = Vector3(0.0f);
-			consts.metallicFactor = 0.2f;
-			consts.roughnessFactor = 0.8f;
-			m_sample->SetMaterial(consts);
+			m_sample->SetModel("Box", mesh);
 		}
 	}
 
@@ -36,6 +29,7 @@ namespace DE {
 		if (tr) {
 			tr->SetPos({ 0.f, -2.5f, 0.f });
 			tr->SetLocalRotation(0.f, 90.f, 0.f);
+			tr->SetScale(Vector3(10.f));
 		}
 	}
 

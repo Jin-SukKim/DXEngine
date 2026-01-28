@@ -159,7 +159,7 @@ namespace DE {
 		context->CSSetConstantBuffers(0, 1, m_consts.GetAddressOf());
 
 		UINT triangleCount = m_consts.GetCpu().indexCount / 3;
-		UINT groupCount = (triangleCount + 255) / 256;
+		UINT groupCount = (triangleCount + 1023) / 1024;
 		m_bakeCS.Dispatch(context, groupCount, 1, 1);
 
 		//// SRV 해제 (기존 코드)

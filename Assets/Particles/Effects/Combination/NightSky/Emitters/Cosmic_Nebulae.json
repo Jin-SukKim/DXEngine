@@ -1,0 +1,40 @@
+{
+    "Name": "Cosmic_Nebulae",
+    "Duration": 0,
+    "Spawn": {
+        "space": "World",
+        "localPos": [0.0, 32.0, -5.0],
+        "shape": "Custom",
+        "positions": [
+            [-20.0, 3.0, 5.0], [25.0, -2.0, -8.0], [-35.0, 1.0, 2.0],
+            [10.0, 4.0, 10.0], [-15.0, -1.0, -5.0], [30.0, 2.0, 0.0]
+        ],
+        "spawnRate": 2.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 32,
+        "lifeRange": [20.0, 40.0]
+    },
+    "Visual": {
+        "startColor": [0.5, 0.3, 0.7, 0.12],
+        "endColor": [0.4, 0.5, 0.8, 0.0],
+        "sizeRange": [2.0, 4.0],
+        "rotation": {
+            "minRotation": [0.0, 0.0, 0.0],
+            "maxRotation": [0.0, 0.0, 360.0],
+            "minRotSpeed": [0.0, 0.0, -0.02],
+            "maxRotSpeed": [0.0, 0.0, 0.02]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.0],
+        "randomDir": [0.0, 0.0, 0.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "useSingleTexture": true,
+    "texture": "Textures/core1.png"
+  }
+}

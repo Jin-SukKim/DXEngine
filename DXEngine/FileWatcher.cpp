@@ -6,7 +6,7 @@ namespace DE {
 
 	FileWatcher::CallbackID FileWatcher::Register(const std::wstring& path, Callback callback)
 	{
-		if (!fs::exists(path)) {
+		if (m_isShuttingDown || path.empty() || !fs::exists(path)) {
 			return 0;
 		}
 
@@ -23,25 +23,50 @@ namespace DE {
 
 	void FileWatcher::Unregister(const std::wstring& path, CallbackID id)
 	{
-		if (!fs::exists(path))
+		// 종료 중이거나 ID가 0이면 무시
+		if (m_isShuttingDown || id == 0 || path.empty())
 			return;
 
-		std::wstring absPath = fs::absolute(path).wstring();
+		std::wstring absPath;
+		try {
+			absPath = fs::absolute(path).wstring();
+		}
+		catch (...) {
+			return;  // 경로 변환 실패 시 조용히 종료
+		}
 
-		auto it = m_watchedFiles.find(absPath);
-		if (it != m_watchedFiles.end()) {
-			auto& list = it->second.callbacks;
-			list.erase(std::remove_if(list.begin(), list.end(), 
-					[id](const CallbackEntity& entity) { return entity.id == id; }), list.end());
+		// map 접근 전 종료 상태 재확인
+		if (m_isShuttingDown)
+			return;
 
-			// callback이 비어있다면 unordered_map의 element를 삭제
-			if (list.empty())
-				m_watchedFiles.erase(it);
+		try {
+			auto it = m_watchedFiles.find(absPath);
+			if (it != m_watchedFiles.end()) {
+				auto& list = it->second.callbacks;
+				
+				auto removeIt = std::remove_if(list.begin(), list.end(), 
+					[id](const CallbackEntity& entity) { return entity.id == id; });
+				
+				if (removeIt != list.end()) {
+					list.erase(removeIt, list.end());
+				}
+
+				if (list.empty()) {
+					m_watchedFiles.erase(it);
+				}
+			}
+		}
+		catch (...) {
+			// 프로그램 종료 중 예외 무시
+			m_isShuttingDown = true;
 		}
 	}
 
 	void FileWatcher::Update()
 	{
+		if (m_isShuttingDown)
+			return;
+
 		for (auto& [path, file] : m_watchedFiles) {
 			if (!fs::exists(path))
 				continue;
@@ -58,10 +83,8 @@ namespace DE {
 				}
 			} 
 			catch (const std::exception& e) {
-				// file이 저장될때 못 읽어와서 에러가 발생할 수 있음
-				// 이때 다음 프레임에 다시 시도
+				// 파일 저장 중 에러 발생 시 다음 프레임에 재시도
 			}
 		}
 	}
-
 }

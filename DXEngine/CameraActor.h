@@ -35,9 +35,8 @@ namespace DE {
 		bool m_usePerspectiveProjection = true; // 원근 투영
 
 		bool m_fpv = false;
-		float m_speed = 1.f;
+		float m_speed = 10.f;
 		float m_rotateSpeed = 35.f;
-
 
 		Vector2 m_prevMousePos = Vector2(0.f, 0.f);
 		InputAxis zAxis = InputAxis::ZAxis;

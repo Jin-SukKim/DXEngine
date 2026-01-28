@@ -5,7 +5,11 @@ namespace DE {
 
 	class ParticleEmitter;
 	class SquareActor;
-	class SampleActor;
+	class EffectActor;
+	class ParticleSpawner;
+	class Firework;
+	class RoseEffect;
+	class TestActor;
 class ParticleEditor : public Scene
 {
 public:
@@ -17,10 +21,19 @@ public:
 	void UpdateGUI() override;
 	void Render() override;
 
+	void ClickEvent();
 private:
-	SquareActor* ground;
+	SquareActor* ground = nullptr;
 
-	SampleActor* effect;
+	SampleActor* m_sample = nullptr;
+	ParticleSpawner* m_spanwer = nullptr;
+	Firework* m_firework = nullptr;
+	RoseEffect* m_rose = nullptr;
+
+	InputAction m_click;
+
+	ParticleSystem* m_test = nullptr;
+	TestActor* m_testActor = nullptr;
 };
 
 

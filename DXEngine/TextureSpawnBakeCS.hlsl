@@ -60,7 +60,7 @@ bool CheckTextureCondition(int2 pixelPos, uint w, uint h)
     return value >= threshold;
 }
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     uint triIdx = dtID.x;

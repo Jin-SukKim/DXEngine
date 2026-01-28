@@ -1,0 +1,11 @@
+{
+    "Name": "MagicCast_Complete",
+    "Looping": true,
+    "Duration": 5.0,
+    "PlayRate": 1.0,
+    "PreWarmTime": 0.5,
+    "State": "Play",
+    "Emitters": [
+      "Particles\\Effects\\Magic\\Emitters\\Magic_Charge.json"
+    ]
+}

@@ -1,0 +1,45 @@
+{
+    "Name": "Dragon_ChargeUp",
+    "Duration": 1.0,
+    "CompletionDelay": 0.2,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 1.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.8, 0.8, 0.8],
+        "spawnInnerRatio": 0.5,
+        "spawnRate": 80.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 1024,
+        "lifeRange": [0.3, 0.8]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.5, 0.1, 0.8],
+        "endColor": [1.0, 0.8, 0.3, 0.0],
+        "sizeRange": [0.1, 0.03]
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.1],
+        "randomDir": [0.0, 0.0, 0.0],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "Vortex": {
+        "center": [0.0, 0.0, 1.0],
+        "strength": 3.0,
+        "axis": [0.0, 0.0, 1.0],
+        "vortexFalloff": 0.5,
+        "pull": [-2.5, 0.0]
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    },
+    "SubEmitters": [
+      {
+        "path": "Particles\\Effects\\Combination\\DragonBreath\\Emitters\\Dragon_FireStream.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      }
+    ]
+}

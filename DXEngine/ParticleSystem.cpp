@@ -5,23 +5,70 @@
 #include "TextureManager.h"
 #include "SpawnModule.h"
 #include "Mesh.h"
+#include "ModelManager.h"
+#include "ParticleManager.h"
 
 namespace DE {
-	ParticleSystem::ParticleSystem(const std::wstring& name) : Component(name, ComponentType::ParticleSystem)
+	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
 	{
 	}
 
 	ParticleSystem::~ParticleSystem()
 	{
-		if (m_watcherID)
-			FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+		if (m_watcherID != 0 && !m_jsonPath.empty()) {
+			try {
+				// FileWatcher가 유효한지 확인
+				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
+			}
+			catch (...) {
+				// 프로그램 종료 시 무시
+			}
+		}	
+
+		ParticleManager::Get().UnregisterActiveSystem(this);
+	}
+
+	ParticleSystem::ParticleSystem(const ParticleSystem& other)
+		: Object(other.m_watcherID + L"_Clone")
+		, m_looping(other.m_looping)
+		, m_duration(other.m_duration)
+		, m_playRate(other.m_playRate)
+		, m_preWarmTime(other.m_preWarmTime)
+		, m_state(other.m_state)
+		, m_jsonPath(other.m_jsonPath)
+		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+		, m_vertexCount(other.m_vertexCount)
+		, m_indexCount(other.m_indexCount)
+	{
+		// Emitter 복제
+		for (const auto& emitter : other.m_emitters) {
+			if (emitter) {
+				auto clonedEmitter = std::make_unique<ParticleEmitter>(*emitter);
+				m_emitters.push_back(std::move(clonedEmitter));
+			}
+		}
+
+		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 생성
+		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
+
+		// mesh 데이터도 CPU만 복사
+		m_meshVertex.SetData(other.m_meshVertex.GetCpu());
+		m_meshIndices.SetData(other.m_meshIndices.GetCpu());
 	}
 
 	void ParticleSystem::Initialize()
 	{
-		Component::Initialize();
-		for (auto& emitter : m_emitters)
+		m_meshConsts.Initialize();
+		UpdateTransform();
+		for (auto& emitter : m_emitters) {
 			emitter->Initialize();
+
+			// EventCallback 등록
+			emitter->SetEventCallback(
+				[this](EmitterEvent event, ParticleEmitter* em) {
+					this->OnEmitterEvent(event, em); // SubEmitter 생성 함수
+				});
+		}
 
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();
@@ -42,25 +89,49 @@ namespace DE {
 		if (m_state != ParticleState::Playing)
 			return;
 
-		Component::Update(dt);
-
 		float newDt = dt * m_playRate;
-		m_time += newDt;
 
-		// Loop 및 종료 체크
-		if (m_duration <= m_time) {
-			if (m_looping) {
-				m_time = 0.f;
-			}
-			else {
-				m_time = m_duration;
-				Stop();
-				return;
-			}
+		UpdateTransform();
+
+		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+
+		if (m_vertexCount && m_indexCount) {
+			ID3D11ShaderResourceView* srvs[] = {
+				m_meshVertex.GetSRV(),
+				m_meshIndices.GetSRV()
+			};
+			context->CSSetShaderResources(9, 2, srvs);
 		}
 
+		// Main Emitter 업데이트
 		for (auto& emitter : m_emitters)
-			emitter->Update(newDt, m_time);
+			emitter->Update(newDt);
+
+		// Sub-Emitter 업데이트
+		for (auto& emitter : m_dynamicEmitters)
+			emitter->Update(newDt);
+
+		// 완료된 Sub-Emitter 제거
+		std::erase_if(m_dynamicEmitters, [](const auto& em) {
+			return em->IsCompleted();
+			});
+
+		// Looping이 아니고 모든 Emitter가 종료되면 Stop
+		//if (!m_looping && IsAllEmittersCompleted())
+		//	Stop();
+		if (IsAllEmittersCompleted()) {
+			if (m_looping)
+				// 루핑이 켜져있다면 재시작 (Stop -> Reset -> Play)
+				Restart();
+			else
+				// 루핑이 꺼져있다면 완전 정지
+				Stop();
+		}
+
+		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 5, nullSRVs);
 	}
 
 	void ParticleSystem::Render()
@@ -68,9 +139,20 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		Component::Render();
+		// Transform Constant Buffer 바인딩 (Slot 1)
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+
+		// 주 Emitter 렌더링
 		for (auto& emitter : m_emitters)
 			emitter->Render();
+
+		// 동적 Sub-Emitter 렌더링
+		for (auto& emitter : m_dynamicEmitters)
+			emitter->Render();
+
+		ID3D11Buffer* nullCB[] = { nullptr };
+		context->VSSetConstantBuffers(6, 1, nullCB);
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)
@@ -78,17 +160,28 @@ namespace DE {
 		std::wstring name(path.begin(), path.end());
 
 		std::unique_ptr emitter = ParticleLoader::Load<ParticleEmitter>(name);
-		m_emitters.emplace_back(std::move(emitter));
+		if (emitter) {
+			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+				this->OnEmitterEvent(event, em);
+				});
+			m_emitters.emplace_back(std::move(emitter));
+		}
 	}
 
 	void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter)
 	{
-		m_emitters.emplace_back(std::move(emitter));
+		if (emitter) {
+			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+				this->OnEmitterEvent(event, em);
+				});
+			m_emitters.emplace_back(std::move(emitter));
+		}
 	}
 
 	void ParticleSystem::ClearEmitters()
 	{
 		m_emitters.clear();
+		m_dynamicEmitters.clear();
 	}
 
 	void ParticleSystem::LoadFromJson(const json& data)
@@ -98,19 +191,6 @@ namespace DE {
 			std::wstring wname(name.begin(), name.end());
 			this->SetName(wname);
 		}
-		if (data.contains("Transform")) {
-			/*auto jsonTr = data["Transform"];
-			auto tr = this->GetComponent<TransformComponent>();
-			if (tr) {
-				if (jsonTr.contains("position"))
-					tr->SetPos(JsonToVec3(jsonTr["position"]));
-				if (jsonTr.contains("rotation"))
-					tr->SetRotation(JsonToVec3(jsonTr["rotation"]));
-				if (jsonTr.contains("size"))
-					tr->SetScale(JsonToVec3(jsonTr["size"]));
-			}*/
-		}
-
 		ClearEmitters();
 		if (data.contains("Emitters")) {
 			for (const auto& file : data["Emitters"]) {
@@ -129,10 +209,6 @@ namespace DE {
 		
 		if (data.contains("State")) {
 			std::string state = data["State"];
-			//if (state == "Play")  Restart();
-			//else if (state == "Pause") Pause();
-			//else if (state == "Stop") Stop();
-
 			if (state == "Play") m_state = ParticleState::Playing;
 			else if (state == "Pause") m_state = ParticleState::Paused;
 			else if (state == "Stop") m_state = ParticleState::Stopped;
@@ -158,31 +234,92 @@ namespace DE {
 	void ParticleSystem::Stop()
 	{
 		m_state = ParticleState::Stopped;
-		m_time = 0.f;
-		Reset(); // 버퍼 비우기
+		m_dynamicEmitters.clear();
 	}
 	void ParticleSystem::Restart()
 	{
 		Stop();
+		Reset(); // 버퍼 비우기
 		Play();
 	}
 
-	void ParticleSystem::SetTargetMesh(const MeshData& meshData)
+	void ParticleSystem::SetTargetMesh(const int& modelIdx)
 	{
-		for (auto& emitter : m_emitters) {
-			SpawnModule* sp = emitter->GetModule<SpawnModule>();
-			if (sp) {
-				sp->SetTarget(meshData);
-			}
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		Model* target = ModelManager::Get().GetModel(modelIdx);
+		if (!target || target->meshes.empty())
+			return;
+
+		const Mesh2& meshes = target->meshes[0];
+
+		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
+		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
+
+		m_meshVertex.Initialize(device.Get(), m_vertexCount);
+		m_meshIndices.Initialize(device.Get(), m_indexCount);
+
+		std::vector<Vector3> vertices;
+		for (const auto& vertex : meshes.vertexCPU) {
+			vertices.push_back(vertex.position);
 		}
+
+		m_meshVertex.SetData(vertices);
+		m_meshIndices.SetData(meshes.indexCPU);
+
+		auto& cpuData = m_meshConsts.GetCpu();
+		cpuData.vertexCount = m_vertexCount;
+		cpuData.indexCount = m_indexCount;
+
+		m_meshVertex.Upload(context.Get());
+		m_meshIndices.Upload(context.Get());
+		m_meshConsts.Upload();
+	}
+
+	void ParticleSystem::SetTransform(const MeshConstants& transform)
+	{
+		auto& cpuData = m_meshConsts.GetCpu();
+		cpuData.world = transform.world;
+		cpuData.worldIT = transform.worldIT;
+		m_meshConsts.Upload();
+	}
+
+	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
+	{
+		m_owner = owner;
+		if (modelIdx >= 0) 
+			SetTargetMesh(modelIdx);
+
+		// Transform 초기 설정
+		UpdateTransform();
+	}
+
+	bool ParticleSystem::IsAllEmittersCompleted() const
+	{
+		// Looping이면 절대 완료 안됨
+		//if (m_looping)
+		//	return false;
+
+		// 주 Emitter 체크
+		for (const auto& emitter : m_emitters) {
+			if (!emitter->IsCompleted())
+				return false;
+		}
+
+		// 동적 Sub-Emitter 체크
+		if (!m_dynamicEmitters.empty())
+			return false;
+
+		return true;
 	}
 
 	void ParticleSystem::Reset()
 	{
 		for (auto& emitter : m_emitters)
-		{
 			emitter->Reset();
-		}
+		
+		m_dynamicEmitters.clear();
 	}
 
 	void ParticleSystem::ExecutePreWarm()
@@ -195,11 +332,62 @@ namespace DE {
 
 		while (t < m_preWarmTime)
 		{
-			//m_time += step; // 필요하면 활성화
 			t += step;
 
 			for (auto& emitter : m_emitters)
-				emitter->Update(step, m_time);
+				emitter->Update(step);
+		}
+	}
+
+	void ParticleSystem::UpdateTransform()
+	{
+		if (!m_owner) return;
+
+		TransformComponent* tr = m_owner->GetComponent<TransformComponent>();
+		if (!tr) return;
+
+		// Transform 정보를 ParticleSystem에 전달
+		MeshConstants meshConsts;
+		meshConsts.world = tr->GetTransformMatrix().Transpose();
+		meshConsts.worldIT = meshConsts.world.Invert();
+
+		this->SetTransform(meshConsts);
+	}
+
+	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)
+	{
+		// 해당 Event에 대응하는 Sub-Emitter 생성
+		for (const auto& sub : emitter->GetSubEmitters()) {
+			if (sub.trigger == event) {
+				Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
+				SpawnSubEmitter(sub, pos);
+			}
+		}
+	}
+	void ParticleSystem::SpawnSubEmitter(const SubEmitter& sub, const Vector3& position)
+	{
+		auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
+		if (!subEmitter)
+			return;
+
+		if (sub.inheritPosition)
+			subEmitter->SetSpawnOffset(position);
+
+		// Sub-Emitter도 Event Callback 등록 (중첩 지원, SubEmitter 안에 SubEmitter)
+		subEmitter->SetEventCallback([this](EmitterEvent ev, ParticleEmitter* em) {
+			this->OnEmitterEvent(ev, em); // SubEmitter 생성 함수
+			});
+
+		subEmitter->Initialize();
+		subEmitter->OnSpawn();
+
+		m_dynamicEmitters.emplace_back(std::move(subEmitter));
+	}
+
+	void ParticleSystem::SetSpawnOffset(const Vector3& offset)
+	{
+		for (auto& emitter : m_emitters) {
+			emitter->SetSpawnOffset(offset);
 		}
 	}
 }

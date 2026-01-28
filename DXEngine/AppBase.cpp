@@ -2,6 +2,8 @@
 #include "AppBase.h"
 #include "WindowUtils.h"
 #include "ParticleEditor.h"
+#include "BasicParticleScene.h"
+#include "ParticleEditor.h"
 #include "Scene.h"
 #include "CameraActor.h"
 
@@ -40,7 +42,7 @@ namespace DE {
 		// 콘솔창이 렌더링 창을 덮는 것을 방지
 		::SetForegroundWindow(m_window.hwnd);
 
-		m_scene = std::make_unique<ParticleEditor>();
+		m_scene = std::make_unique<BasicParticleScene>();
 		float aspect = float(m_window.width) / m_window.height;
 		m_scene->GetMainCamera()->SetAspectRatio(this->getAspectRatio());
 		m_scene->Initialize();
@@ -78,6 +80,21 @@ namespace DE {
 		m_inputManager.Update(m_mouseX, m_mouseY, true);
 		m_renderer->Update();
 		m_scene->Update(GetDeltaTime());
+		
+		// FPS 표시
+		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
+		ImGui::SetNextWindowBgAlpha(0.35f); // 반투명 배경
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | 
+		                                 ImGuiWindowFlags_AlwaysAutoResize | 
+		                                 ImGuiWindowFlags_NoSavedSettings | 
+		                                 ImGuiWindowFlags_NoFocusOnAppearing | 
+		                                 ImGuiWindowFlags_NoNav;
+		
+		if (ImGui::Begin("FPS", nullptr, window_flags)) {
+			float fps = 1.0f / GetDeltaTime();
+			ImGui::Text("FPS: %.1f (%.3f ms)", fps, GetDeltaTime() * 1000.0f);
+		}
+		ImGui::End();
 	}
 
 	void AppBase::render() {

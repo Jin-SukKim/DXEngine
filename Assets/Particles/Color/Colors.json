@@ -1,0 +1,19 @@
+{
+  "Name": "EffectEdit",
+  "Transform": {
+    "position": [ 0.0, 0.0, 0.0 ],
+    "rotation": [ 0.0, 0.0, 0.0 ],
+    "size": [ 1.0, 1.0, 1.0 ]
+  },
+  "Looping": true,
+  "Duration": 1.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 0.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Emitters\\Color\\Color1.json",
+    "Particles\\Emitters\\Color\\Color2.json",
+    "Particles\\Emitters\\Color\\Color3.json",
+    "Particles\\Emitters\\Color\\Color4.json"
+  ]
+}

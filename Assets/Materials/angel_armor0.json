@@ -1,0 +1,22 @@
+{
+  "Name": "armored-female-future-soldier/angel_armor.fbx",
+  "Albedo": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "Roughness": 0.5,
+  "Metallic": 0.5,
+  "Emission": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "Textures": {
+    "albedo": "Models\\armored-female-future-soldier\\angel_armor_albedo.jpg",
+    "normal": "Models\\armored-female-future-soldier\\angel_armor_normal.jpg",
+    "metallic": "Models\\armored-female-future-soldier\\angel_armor_metalness.jpg",
+    "roughness": "Models\\armored-female-future-soldier\\angel_armor_roughness.jpg",
+    "emissive": "Models\\armored-female-future-soldier\\angel_armor_e.jpg"
+  }
+}

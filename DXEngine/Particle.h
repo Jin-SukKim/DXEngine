@@ -29,11 +29,11 @@ namespace DE {
         
         Vector2 lifeRange;
         int spawnShape = 0; // 0: Box, 1: Sphere, 2 : Vertex, 3: Surface
-        UINT vertexCount = 0;
-        UINT indexCount = 0;
         UINT bakedCount = 0;
         UINT simulationSpace = 0; // 0 : Local, 1 : world
-        float padding1;
+
+        UINT spawnStartIndex;
+        Vector2 padding1;
     };
 
     struct VisualConsts {
@@ -76,6 +76,13 @@ namespace DE {
         Vector2 padding10;    
     };
 
+    struct OrbitConsts {
+        Vector3 center;
+        float rotationRate;
+        Vector3 axis;
+        float initialOffset;
+    };
+
     struct RenderConsts {
         int textureIdx;
         UINT frameCount;
@@ -83,7 +90,7 @@ namespace DE {
         UINT numMeshes;
         UINT textureMode;
         int singleTextureIdx;
-        float padding11;
+        UINT useSorting; // Ãß°¡
     };
 
     struct ParticleConsts {
@@ -92,5 +99,6 @@ namespace DE {
         ForceConsts force;
         RenderConsts render;
         VortexConsts vortex;
+        OrbitConsts orbit;
     };
 }

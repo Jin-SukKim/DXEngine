@@ -1,0 +1,49 @@
+{
+  "Name": "Magic_Runes",
+  "Duration": 2.0,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [ 0.0, -0.5, 0.0 ],
+    "shape": "Sphere",
+    "spawnVolume": [ 0.8, 0.05, 0.8 ],
+    "spawnInnerRatio": 0.7,
+    "spawnRate": 15.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 32,
+    "lifeRange": [ 1.5, 2.5 ]
+  },
+  "Visual": {
+    "startColor": [ 0.5, 0.8, 1.0, 1.0 ],
+    "endColor": [ 0.3, 0.5, 1.0, 0.0 ],
+    "sizeRange": [ 0.2, 0.15 ],
+    "rotation": {
+      "minRotation": [ 90.0, 0.0, 0.0 ],
+      "maxRotation": [ 90.0, 0.0, 360.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+    }
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
+    "randomDir": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.0
+  },
+  "Orbit": {
+    "center": [ 0.0, -0.5, 0.0 ],
+    "axis": [ 0.0, 1.0, 0.0 ],
+    "rotationRate": 0.5,
+    "offset": 0.0
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "useSingleTexture": true,
+    "texture": "Textures\\explosion2.png",
+    "sprite": {
+      "frameTiles": [ 4, 4 ],
+      "frameCount": 16
+    }
+  }
+}

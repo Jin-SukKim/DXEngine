@@ -1,0 +1,30 @@
+{
+    "Name": "BillboardDemo_TextureArray",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [-2.0, 0.0, 0.0],
+        "shape": "Box",
+        "spawnVolume": [0.5, 0.5, 0.5],
+        "spawnRate": 20.0,
+        "particlesPerSpawn": 3,
+        "maxParticles": 256,
+        "lifeRange": [1.0, 2.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 1.0, 1.0, 1.0],
+        "endColor": [1.0, 1.0, 1.0, 0.0],
+        "sizeRange": [0.3, 0.15]
+    },
+    "Force": {
+        "velocity": [0.0, 0.5, 0.0],
+        "speedRange": [0.1, 0.2],
+        "randomDir": [0.1, 0.0, 0.1],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures/flare0.dds"
+  }
+}

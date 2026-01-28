@@ -16,17 +16,67 @@
 
 #include "ModelComponent.h"
 #include "TextureSpawnBake.h"
+#include "EffectActor.h"
+#include "ParticleSpawner.h"
+#include "ClickEffectManager.h"
+#include "AppBase.h"
+#include "InputManager.h"
+
+#include "ParticleModuleFactory.h"
+
+#include "SpawnModule.h"
+#include "VisualModule.h"
+#include "ForceModule.h"
+#include "VortexModule.h"
+#include "RenderModule.h"	
+#include "MaterialModule.h"	
+#include "Firework.h"
+#include "OrbitModule.h"
+#include "RoseEffect.h"
+#include "ParticleManager.h"
+#include "TestActor.h"
+
 // https://dev.epicgames.com/documentation/en-us/unreal-engine/particle-system-user-guide?application_version=4.27
 namespace DE {
-	ParticleEditor::ParticleEditor() : Scene()
+	ParticleEditor::ParticleEditor() : Scene(), m_click(m_lButton)
 	{
-		ground = AddObject<SquareActor>(L"Ground");
+		ParticleModuleFactory::Register<SpawnModule>("Spawn");
+		ParticleModuleFactory::Register<VisualModule>("Visual");
+		ParticleModuleFactory::Register<ForceModule>("Force");
+		ParticleModuleFactory::Register<VortexModule>("Vortex");
+		ParticleModuleFactory::Register<OrbitModule>("Orbit");
+		ParticleModuleFactory::Register<BillboardRenderModule>("BillboardRender");
+		ParticleModuleFactory::Register<MaterialModule>("Material");
+		ParticleModuleFactory::Register<MeshRenderModule>("MeshRender");
 
-		effect = AddObject<SampleActor>(L"Effect");
+		ClickEffectManager::Get().Initialize();
+		ClickEffectManager::Get().SetScene(this);
+		ground = AddObject<SquareActor>(L"Ground");
+		
+		//m_sample = AddObject<SampleActor>(L"Sample");
+
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this); 
+		//m_spanwer->SetActorType<Firework>();
+		//m_spanwer->SetParticlePreset(L"Particles\\TempEffect.json");
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		//m_spanwer->SetSpawnInterval(0.5f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(20);
+
+		//m_firework = AddObject<Firework>(L"Firework");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+
+		m_test = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Thunder\\System_ThunderStrike.json");
+		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 
 	ParticleEditor::~ParticleEditor()
 	{
+		if (m_test) {
+			ParticleManager::Get().DestroyInstance(m_test);
+			m_test = nullptr;
+		}
 	}
 
 	void ParticleEditor::Initialize()
@@ -40,18 +90,32 @@ namespace DE {
 		//	"emissive", consts, "Models\\DamagedHelmet\\emissive.bin");
 		//exit(0);
 		Scene::Initialize();
+
+		//TransformComponent* tr;
+		
+		//tr = m_sample->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	tr->SetPos(Vector3(-1.f, 0.f, 0.f));
+		//}
+
+		//tr = m_rose->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	//tr->SetPos(Vector3(0.f, -1.f, 0.f));
+		//}
+
+		//tr = m_spanwer->GetComponent<TransformComponent>();
+		//if (tr) {
+		//	Vector3 pos = tr->GetPos();
+		//	pos.z += 4.f;
+		//	tr->SetPos(pos);
+		//}
+
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
-
-		TransformComponent* tr = effect->GetComponent<TransformComponent>();
-		if (tr) {
-			Vector3 pos = tr->GetPos();
-			pos = Vector3::Transform(pos, Matrix::CreateRotationZ(dt * 1.0f));
-			tr->SetPos(pos);
-		}
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
@@ -64,5 +128,15 @@ namespace DE {
 	void ParticleEditor::Render()
 	{
 		Scene::Render();
+	}
+	void ParticleEditor::ClickEvent()
+	{
+		ClickEffectManager::Get().TriggerPreset("Smoke");
+
+		// 또는 직접 Scene에서 생성
+		// InputManager& inputMgr = AppBase::GetInputManager();
+		// Vector2 mouseNDC = inputMgr.GetMouseNDC();
+		// Vector3 worldPos(mouseNDC.x * 10.0f, 0.0f, mouseNDC.y * 10.0f);
+		// SpawnEffect<EffectActor>(L"ClickEffect", L"Particles\\SmokeEffect.json", worldPos);
 	}
 }

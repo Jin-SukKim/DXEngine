@@ -4,7 +4,7 @@ Buffer<uint> activeCount : register(t0);
 ConsumeStructuredBuffer<Particle> inputParticles : register(u0);
 AppendStructuredBuffer<Particle> outputParticles : register(u1);
 
-[numthreads(256, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴

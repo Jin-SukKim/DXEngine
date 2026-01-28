@@ -1,14 +1,12 @@
 #include "pch.h"
 #include "SpawnModule.h"
 #include "ParticleEmitter.h"
-#include "Mesh.h"
-#include "TextureSpawnBake.h"
 
 namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
-		m_spawnCS.Initialize(ctx.device, L"SpawnCS.hlsl");
+		// ComputeShader는 ComputeCommon에서 공유
 	}
 
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
@@ -20,10 +18,30 @@ namespace DE {
 		consts.spawnInnerRatio = m_spawnInnerRatio;
 		consts.spawnShape = m_spawnShape;
 		consts.lifeRange = m_lifeRange;
-		consts.vertexCount = m_vertexCount;
-		consts.indexCount = m_indexCount;
-		consts.bakedCount = m_bakedCount;
+		consts.bakedCount = ctx.bakedCount;
 		consts.simulationSpace = m_simulationSpace;
+		m_burstFired = false;
+		m_spawnAccumulator = 0.0f;
+
+		if (m_spawnShape == 5) // Custom Mode
+		{
+			UINT posCount = (UINT)m_customPositions.size();
+			ctx.customPositions->Initialize(ctx.device, posCount);
+			ctx.customPositions->SetData(m_customPositions);
+			ctx.customPositions->Upload(ctx.context);
+
+			consts.bakedCount = posCount;
+
+			// 1. 이번 프레임의 시작 인덱스를 GPU에 전달
+			consts.spawnStartIndex = m_nextSpawnIndex;
+
+			// 2. 다음 프레임을 위해 인덱스 미리 이동 (Round-Robin)
+			// m_totalSpawnCount는 이번 프레임에 생성될 총 파티클 수입니다.
+			if (posCount > 0)
+			{
+				m_nextSpawnIndex = (m_nextSpawnIndex + m_totalSpawnCount) % posCount;
+			}
+		}
 
 		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
 	}
@@ -31,7 +49,18 @@ namespace DE {
 	void SpawnModule::OnUpdateCPU(SimulationContext& ctx)
 	{
 		ParticleModule::OnUpdateCPU(ctx);
-		m_spawnAccumulator += m_spawnRate * ctx.dt;
+		// Burst 로직: 아직 발사 안 했고, 설정된 Burst 개수가 있다면
+		if (m_burstCount > 0 && !m_burstFired)
+		{
+			m_spawnAccumulator += (float)m_burstCount;
+			m_burstFired = true; // 발사 완료 처리
+		}
+
+		// Rate 로직 (지속 생성)
+		if (m_spawnRate > 0.0f)
+		{
+			m_spawnAccumulator += m_spawnRate * ctx.dt;
+		}
 
 		//m_totalSpawnCount = 1;
 		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
@@ -49,27 +78,43 @@ namespace DE {
 	{
 		ParticleModule::PreUpdate(ctx);
 		
+		// [최적화] 조기 반환
 		if (m_totalSpawnCount == 0)
 			return;
 
 		ID3D11UnorderedAccessView* uav = ctx.consumeBuffer.GetUAV();
 		ctx.context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
+		// [최적화] Shape별 SRV 바인딩 최적화
 		if (m_spawnShape == 2 || m_spawnShape == 3) {
-			ID3D11ShaderResourceView* srvs[] = {
-				m_meshVertex.GetSRV(),
-				m_meshIndices.GetSRV()
-			};
-			ctx.context->CSSetShaderResources(0, 2, srvs);
+
 		}
 		else if (m_spawnShape == 4) {
-			ID3D11ShaderResourceView* srv[] = { m_spawnPos.GetSRV() };
-			ctx.context->CSSetShaderResources(2, 1, srv);
+			if (ctx.bakedSpawnPos) {
+				ID3D11ShaderResourceView* srv = ctx.bakedSpawnPos->GetSRV();
+				ctx.context->CSSetShaderResources(0, 1, &srv);
+			}
+		}
+		else if (m_spawnShape == 5) {
+			if (ctx.customPositions) {
+				ID3D11ShaderResourceView* srv = ctx.customPositions->GetSRV();
+				ctx.context->CSSetShaderResources(0, 1, &srv);
+			}
 		}
 
-		// Spawn Compute Shader
-		UINT groupCount = (m_totalSpawnCount + 255) / 256;
-		m_spawnCS.Dispatch(ctx.context, groupCount, 1, 1);
+		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
+		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
+		
+		// [최적화] Bit shift 사용
+		UINT groupCount = (m_totalSpawnCount + 1023) >> 10;
+		ctx.context->Dispatch(groupCount, 1, 1);
+		
+		// Barrier
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
+		ctx.context->CSSetShaderResources(0, 3, nullSRVs);
+		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void SpawnModule::LoadFromJson(const json& data)
@@ -84,37 +129,53 @@ namespace DE {
 			else if (shape == "Sphere") m_spawnShape = 1;
 			else if (shape == "Vertex") m_spawnShape = 2;
 			else if (shape == "Surface") m_spawnShape = 3;
-			else if (shape == "Texture") {
-				if (data.contains("bakedPath")) {
-					m_spawnShape = 4;
-					std::string path = data["bakedPath"];
-					TextureSpawnBake::Get().LoadBakedData(path, m_spawnPos, m_bakedCount);
+			else if (shape == "Texture") m_spawnShape = 4;
+			else if (shape == "Custom") {
+				if (data.contains("positions") && data["positions"].is_array()) {
+					std::vector<Vector3> positions;
+					// json 배열을 순회하며 Vector3로 변환하여 저장
+					for (const auto& item : data["positions"]) {
+						positions.push_back(JsonToVec3(item));
+					}
+					SetSpawnPosition(positions);
 				}
-				else
-					m_spawnShape = 1;
 			}
 		}
 		if (data.contains("spawnRate")) m_spawnRate = data["spawnRate"];
+		if (data.contains("burst")) m_burstCount = data["burst"];
 		if (data.contains("particlesPerSpawn")) m_particlesPerSpawn = data["particlesPerSpawn"];
 		if (data.contains("maxParticles")) m_maxParticles = data["maxParticles"];
 		if (data.contains("lifeRange")) m_lifeRange = JsonToVec2(data["lifeRange"]);
 	}
 
-	void SpawnModule::SetTarget(const MeshData& meshes)
+	std::unique_ptr<ParticleModule> SpawnModule::Clone() const
 	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+		auto cloned = std::make_unique<SpawnModule>();
 
-		m_vertexCount = static_cast<UINT>(meshes.vertices.size());
-		m_indexCount = static_cast<UINT>(meshes.indices.size());
+		cloned->m_localPos = this->m_localPos;
+		cloned->m_spawnVolume = this->m_spawnVolume;
+		cloned->m_spawnInnerRatio = this->m_spawnInnerRatio;
+		cloned->m_spawnShape = this->m_spawnShape;
+		cloned->m_spawnRate = this->m_spawnRate;
+		cloned->m_particlesPerSpawn = this->m_particlesPerSpawn;
+		cloned->m_maxParticles = this->m_maxParticles;
+		cloned->m_lifeRange = this->m_lifeRange;
+		cloned->m_simulationSpace = this->m_simulationSpace;
+		cloned->m_isEnabled = this->m_isEnabled;
+		cloned->m_burstCount = this->m_burstCount;
+		cloned->m_customPositions = this->m_customPositions;
 
-		m_meshVertex.Initialize(device.Get(), m_vertexCount);
-		m_meshIndices.Initialize(device.Get(), m_indexCount);
+		return cloned;
+	}
+	void SpawnModule::SetSpawnPosition(const std::vector<Vector3>& positions)
+	{
+		// 1. 위치 데이터 저장
+		m_customPositions = positions;
 
-		m_meshVertex.SetData(meshes.vertices);
-		m_meshIndices.SetData(meshes.indices);
+		// 2. 모드를 Custom(5)으로 설정
+		m_spawnShape = 5;
 
-		m_meshVertex.Upload(context.Get());
-		m_meshIndices.Upload(context.Get());
+		// 3. 순차적 인덱스 초기화 (새로운 위치 목록이 들어왔으므로 처음부터 다시 시작)
+		m_nextSpawnIndex = 0;
 	}
 }
