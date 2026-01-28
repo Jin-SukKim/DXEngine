@@ -33,7 +33,6 @@ namespace DE {
         void SetSpawnBox(Vector3 halfExtends);
         void SetAutoDestroy(bool enable);
         void SetLifetime(float lifetime);
-        void SetPoolSize(int size);  // ObjectPool 크기 설정
 
         // [���� ����]
         void Spawn();                   // ���� �Լ� (������)
@@ -84,12 +83,7 @@ namespace DE {
         float m_elapsedTime = 0.0f;
         bool m_stopped = false;
 
-        // ObjectPool 관련 멤버 변수
-        int m_poolSize = 20;                                    // 기본 Pool 크기
-        std::vector<std::unique_ptr<EffectActor>> m_pool;       // Pool에 보관된 EffectActor들
-        std::vector<EffectActor*> m_activeEffects;              // 현재 활성화된 Effect들
-
-        // EffaActor 관리 (호환성 유지)
+        // EffaActor ����
         std::vector<EffectActor*> m_spawnedEffects;
     };
 
