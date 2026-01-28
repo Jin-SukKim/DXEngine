@@ -28,7 +28,7 @@ namespace DE {
 		saveToBin(context, outputPath);
 	}
 
-	void TextureSpawnBake::LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount)
+	void TextureSpawnBake::LoadBakedDataToVector(const std::string& path, std::vector<Vector3>& outData, UINT& outCount)
 	{
 		std::string fullPath = m_presetPath + path;
 
@@ -41,17 +41,17 @@ namespace DE {
 			return;
 		}
 
-		// ÆÄÀÏ Å©±â È®ÀÎ
+		// ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ È®ï¿½ï¿½
 		fin.seekg(0, std::ios::end);
 		size_t fileSize = fin.tellg();
 		fin.seekg(0, std::ios::beg);
 		std::cout << "[Debug] File size: " << fileSize << " bytes" << std::endl;
 
-		// 1. °³¼ö ÀÐ±â
+		// 1. ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½
 		fin.read(reinterpret_cast<char*>(&outCount), sizeof(UINT));
 		std::cout << "[Debug] Read count: " << outCount << std::endl;
 
-		// À¯È¿¼º °Ë»ç
+		// ï¿½ï¿½È¿ï¿½ï¿½ ï¿½Ë»ï¿½
 		size_t expectedSize = sizeof(UINT) + sizeof(Vector3) * outCount;
 		if (fileSize != expectedSize) {
 			std::cout << "[Error] File size mismatch! Expected: " << expectedSize
@@ -67,18 +67,18 @@ namespace DE {
 			return;
 		}
 
-		if (outCount > 1000000) {  // 100¸¸ °³ ÃÊ°ú´Â ºñÁ¤»ó
+		if (outCount > 1000000) {  // 100ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			std::cout << "[Error] Count is abnormally large: " << outCount << std::endl;
 			outCount = 0;
 			fin.close();
 			return;
 		}
 
-		// 2. µ¥ÀÌÅÍ ÀÐ±â
-		std::vector<Vector3> positions(outCount);
-		fin.read(reinterpret_cast<char*>(positions.data()), sizeof(Vector3) * outCount);
+		// 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½
+		outData.resize(outCount);
+		fin.read(reinterpret_cast<char*>(outData.data()), sizeof(Vector3) * outCount);
 
-		// ÀÐ±â ¼º°ø È®ÀÎ
+		// ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 		if (!fin) {
 			std::cout << "[Error] Failed to read data from file" << std::endl;
 			outCount = 0;
@@ -86,24 +86,34 @@ namespace DE {
 			return;
 		}
 
-		// Ã¹ 5°³ Ãâ·Â (µð¹ö±ë)
+		// Ã¹ 5ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½)
 		for (UINT i = 0; i < std::min(5u, outCount); ++i) {
 			std::cout << "[Debug] Loaded point " << i << ":  "
-				<< positions[i].x << ", "
-				<< positions[i].y << ", "
-				<< positions[i].z << std::endl;
+				<< outData[i].x << ", "
+				<< outData[i].y << ", "
+				<< outData[i].z << std::endl;
 		}
 
 		fin.close();
+		std::cout << "[Success] Loaded " << outCount << " points to vector" << std::endl;
+	}
 
-		// 3. GPU ¹öÆÛ »ý¼º ¹× ¾÷·Îµå
+	void TextureSpawnBake::LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount)
+	{
+		std::vector<Vector3> positions;
+		LoadBakedDataToVector(path, positions, outCount);
+
+		if (outCount == 0)
+			return;
+
+		// GPU ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½
 		auto device = GET_SINGLE(RenderBase)->GetDevice();
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		outBuffer.Initialize(device.Get(), outCount);
 		outBuffer.SetData(positions);
 		outBuffer.Upload(context.Get());
-		std::cout << "[Success] Loaded " << outCount << " points to GPU" << std::endl;
+		std::cout << "[Success] Uploaded " << outCount << " points to GPU" << std::endl;
 	}
 
 	void TextureSpawnBake::initBuffers(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, BakeConsts& consts)
@@ -162,25 +172,25 @@ namespace DE {
 		UINT groupCount = (triangleCount + 255) / 256;
 		m_bakeCS.Dispatch(context, groupCount, 1, 1);
 
-		//// SRV ÇØÁ¦ (±âÁ¸ ÄÚµå)
+		//// SRV ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½)
 		//ID3D11ShaderResourceView* nullSRV[3] = { nullptr, nullptr, nullptr };
 		//context->CSSetShaderResources(0, 3, nullSRV);
 
-		//// Sampler ÇØÁ¦ (±âÁ¸ ÄÚµå)
+		//// Sampler ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½)
 		//ID3D11SamplerState* nullSampler = nullptr;
 		//context->CSSetSamplers(0, 1, &nullSampler);
 
-		//// [!!! ÇÊ¼ö Ãß°¡ !!!] UAV ¹ÙÀÎµù ÇØÁ¦
-		//// ÇØÁ¦ÇÏÁö ¾ÊÀ¸¸é ÀÌÈÄ Download()¿¡¼­ GPU->Staging º¹»ç°¡ ½ÇÆÐÇÕ´Ï´Ù.
+		//// [!!! ï¿½Ê¼ï¿½ ï¿½ß°ï¿½ !!!] UAV ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½
+		//// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Download()ï¿½ï¿½ï¿½ï¿½ GPU->Staging ï¿½ï¿½ï¿½ç°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 		//ID3D11UnorderedAccessView* nullUAV = nullptr;
 		//UINT cleanCount = 0;
-		//// AppendBuffer°¡ u0 ½½·ÔÀ» »ç¿ëÇÏ¹Ç·Î 0¹ø ½½·Ô ÇØÁ¦
+		//// AppendBufferï¿½ï¿½ u0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		//context->CSSetUnorderedAccessViews(0, 1, &nullUAV, &cleanCount);
 	}
 
 	void TextureSpawnBake::downloadResult(ID3D11Device* device, ID3D11DeviceContext* context)
 	{
-		// ±¸Á¶Ã¼ Ä«¿îÆ®(À¯È¿ °³¼ö) °¡Á®¿À±â
+		// ï¿½ï¿½ï¿½ï¿½Ã¼ Ä«ï¿½ï¿½Æ®(ï¿½ï¿½È¿ ï¿½ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3D11Buffer> countStagingBuffer;
 		D3D11_BUFFER_DESC countDesc = {};
 		countDesc.ByteWidth = 4;
@@ -196,7 +206,7 @@ namespace DE {
 		context->Unmap(countStagingBuffer.Get(), 0);
 
 		if (m_validCount)
-			// µ¥ÀÌÅÍ ´Ù¿î·Îµå (StructuredBufferÀÇ Download ÇÔ¼ö È°¿ë)
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¿ï¿½Îµï¿½ (StructuredBufferï¿½ï¿½ Download ï¿½Ô¼ï¿½ È°ï¿½ï¿½)
 			m_outputBuffer.Download(context);
 	}
 
@@ -212,7 +222,7 @@ namespace DE {
 			return;
 		}
 
-		// À¯È¿¼º Àç°Ë»ç
+		// ï¿½ï¿½È¿ï¿½ï¿½ ï¿½ï¿½Ë»ï¿½
 		if (m_validCount > m_maxPoints) {
 			std::cout << "[Warning] Clamping validCount from " << m_validCount
 				<< " to " << m_maxPoints << std::endl;
@@ -225,16 +235,16 @@ namespace DE {
 			return;
 		}
 
-		// 1. °³¼ö ÀúÀå
+		// 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		fout.write(reinterpret_cast<const char*>(&m_validCount), sizeof(UINT));
 		std::cout << "[Debug] Wrote count: " << m_validCount << std::endl;
 
-		// 2. µ¥ÀÌÅÍ ÀúÀå
+		// 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		for (UINT i = 0; i < m_validCount; ++i) {
 			Vector3 pos = m_outputBuffer.Get(i);
 			fout.write(reinterpret_cast<const char*>(&pos), sizeof(Vector3));
 
-			// Ã¹ 5°³¸¸ Ãâ·Â (µð¹ö±ë)
+			// Ã¹ 5ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½)
 			if (i < 5) {
 				std::cout << "[Debug] Point " << i << ": "
 					<< pos.x << ", " << pos.y << ", " << pos.z << std::endl;
@@ -243,7 +253,7 @@ namespace DE {
 
 		fout.close();
 
-		// ÆÄÀÏ Å©±â È®ÀÎ
+		// ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ È®ï¿½ï¿½
 		std::ifstream checkFile(fullPath, std::ios::binary | std::ios::ate);
 		size_t fileSize = checkFile.tellg();
 		checkFile.close();

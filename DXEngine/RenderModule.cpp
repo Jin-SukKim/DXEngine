@@ -75,6 +75,20 @@ namespace DE {
 		}
 	}
 
+	void BillboardRenderModule::Initialize(ParticleInitContext& ctx)
+	{
+		RenderModule::Initialize(ctx);
+		
+		// Initialize args buffer
+		DrawInstancedArgs args = {};
+		args.vertexCountPerInstance = 0;  // Will be filled by CopyStructureCount later
+		args.instanceCount = 1;           
+		args.startVertexLocation = 0;
+		args.startInstanceLocation = 0;
+
+		m_argsBuffer.Initialize(ctx.device, args, 4);
+	}
+
 	void BillboardRenderModule::OnSpawn(SimulationContext& ctx)
 	{
 		RenderModule::OnSpawn(ctx);
@@ -85,18 +99,6 @@ namespace DE {
 		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
-		
-
-		m_argsBuffer.Reset();
-		// DrawInstancedIndirectArgs ÃÊ±âÈ­
-		// (VertexCountPerInstance, InstanceCount, StartVertex, StartInstance)
-		DrawInstancedArgs args = {};
-		args.vertexCountPerInstance = 0;  // ³ªÁß¿¡ CopyStructureCount·Î Ã¤¿öÁü
-		args.instanceCount = 1;           
-		args.startVertexLocation = 0;
-		args.startInstanceLocation = 0;
-
-		m_argsBuffer.Initialize(ctx.device, args, 4);
 	}
 
 	void BillboardRenderModule::UpdateArgs(const SimulationContext& ctx)
@@ -123,14 +125,14 @@ namespace DE {
 		switch (m_textureMode)
 		{
 		case BillboardTextureMode::Material:
-			// Material »ç¿ë ½Ã: MaterialModule¿¡°Ô ¹ÙÀÎµù À§ÀÓ (t0 ~ t4 µî »ç¿ë)
+			// Material ï¿½ï¿½ï¿½ ï¿½ï¿½: MaterialModuleï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ (t0 ~ t4 ï¿½ï¿½ ï¿½ï¿½ï¿½)
 			if (ctx.materialModule) {
 				ctx.materialModule->BindMaterialForMesh(0);
 			}
 			break;
 
 		case BillboardTextureMode::SingleTexture:
-			// °³º° ÅØ½ºÃ³ »ç¿ë ½Ã: t15 ½½·Ô¿¡ ¹ÙÀÎµù (ParticleCommon.hlsli¿Í ÀÏÄ¡)
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ ï¿½ï¿½: t15 ï¿½ï¿½ï¿½Ô¿ï¿½ ï¿½ï¿½ï¿½Îµï¿½ (ParticleCommon.hlsliï¿½ï¿½ ï¿½ï¿½Ä¡)
 			if (m_singleTextureIdx >= 0) {
 				texSRV = TextureManager::Get().GetTextureSRV(m_singleTextureIdx);
 				ctx.context->PSSetShaderResources(6, 1, &texSRV);
@@ -139,14 +141,14 @@ namespace DE {
 
 		case BillboardTextureMode::TextureArray:
 		default:
-			// Texture Array´Â º¸Åë GlobalÇÏ°Ô t14¿¡ ¹ÙÀÎµùµÇ¾î ÀÖ´Ù°í °¡Á¤
-			// ¸¸¾à ¿©±â¼­ ¸í½ÃÀûÀ¸·Î ¹ÙÀÎµùÇØ¾ß ÇÑ´Ù¸é TextureManager::Get().BindParticleTextures() È£Ãâ
+			// Texture Arrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Globalï¿½Ï°ï¿½ t14ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½Ç¾ï¿½ ï¿½Ö´Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½Ø¾ï¿½ ï¿½Ñ´Ù¸ï¿½ TextureManager::Get().BindParticleTextures() È£ï¿½ï¿½
 			break;
 		}
 
 		ctx.context->DrawInstancedIndirect(m_argsBuffer.GetBuffer(), 0);
 
-		// Á¤¸®
+		// ï¿½ï¿½ï¿½ï¿½
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
 	}
@@ -183,6 +185,27 @@ namespace DE {
 		RenderModule::Initialize(ctx);
 
 		m_argsUpdateCS.Initialize(ctx.device, L"ParticleMeshArgsUpdateCS.hlsl");
+		
+		// Initialize mesh args buffer if model is already loaded
+		if (m_modelIdx >= 0) {
+			Model* model = ModelManager::Get().GetModel(m_modelIdx);
+			if (model) {
+				m_meshCount = static_cast<UINT>(model->meshes.size());
+				
+				std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
+				for (size_t i = 0; i < model->meshes.size(); ++i) {
+					auto& mesh = model->meshes[i];
+
+					allArgs[i].indexCountPerInstance = mesh.indexCount;
+					allArgs[i].instanceCount = 0;
+					allArgs[i].startIndexLocation = 0;
+					allArgs[i].baseVertexLocation = 0;
+					allArgs[i].startInstanceLocation = 0;
+				}
+
+				m_meshArgs.Initialize(ctx.device, allArgs, m_meshCount, static_cast<UINT>(sizeof(DrawIndexedInstancedArgs)), 5);
+			}
+		}
 	}
 
 	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
@@ -196,21 +219,7 @@ namespace DE {
 		if (!model)
 			return;
 
-		m_meshCount = static_cast<UINT>(model->meshes.size());
 		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
-
-		std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
-		for (size_t i = 0; i < model->meshes.size(); ++i) {
-			auto& mesh = model->meshes[i];
-
-			allArgs[i].indexCountPerInstance = mesh.indexCount;
-			allArgs[i].instanceCount = 0;
-			allArgs[i].startIndexLocation = 0;
-			allArgs[i].baseVertexLocation = 0;
-			allArgs[i].startInstanceLocation = 0;
-		}
-
-		m_meshArgs.Initialize(ctx.device, allArgs, m_meshCount, static_cast<UINT>(sizeof(DrawIndexedInstancedArgs)), 5);
 	}
 
 	void MeshRenderModule::UpdateArgs(const SimulationContext& ctx)
@@ -249,12 +258,12 @@ namespace DE {
 			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-			// Args ±¸Á¶Ã¼´Â 20 byte (5 * 4byte)
+			// Args ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ 20 byte (5 * 4byte)
 			UINT argsOffset = i * 20;
 			ctx.context->DrawIndexedInstancedIndirect(m_meshArgs.GetBuffer(), argsOffset);
 		}
 
-		// Á¤¸®
+		// ï¿½ï¿½ï¿½ï¿½
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
 	}

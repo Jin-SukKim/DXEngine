@@ -9,6 +9,20 @@ namespace DE {
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
 		m_spawnCS.Initialize(ctx.device, L"SpawnCS.hlsl");
+		
+		// Initialize spawn position buffer if needed (for Texture shape)
+		if (m_needsSpawnPosInit && !m_bakedPath.empty()) {
+			std::vector<Vector3> positions;
+			TextureSpawnBake::Get().LoadBakedDataToVector(m_bakedPath, positions, m_bakedCount);
+			
+			if (m_bakedCount > 0) {
+				m_spawnPos.Initialize(ctx.device, m_bakedCount);
+				m_spawnPos.SetData(positions);
+				m_spawnPos.Upload(ctx.context);
+			}
+			
+			m_needsSpawnPosInit = false;
+		}
 	}
 
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
@@ -87,8 +101,8 @@ namespace DE {
 			else if (shape == "Texture") {
 				if (data.contains("bakedPath")) {
 					m_spawnShape = 4;
-					std::string path = data["bakedPath"];
-					TextureSpawnBake::Get().LoadBakedData(path, m_spawnPos, m_bakedCount);
+					m_bakedPath = data["bakedPath"];
+					m_needsSpawnPosInit = true;
 				}
 				else
 					m_spawnShape = 1;

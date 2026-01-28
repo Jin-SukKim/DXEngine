@@ -22,6 +22,7 @@ public:
 
 	void Bake(const std::string& name, const std::string& basePath, bool isGLTF, const std::string& materialName, const std::string& textureType, BakeConsts& consts, const std::string& outputPath);
 	void LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount);
+	void LoadBakedDataToVector(const std::string& path, std::vector<Vector3>& outData, UINT& outCount);
 private:
 	void initBuffers(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, BakeConsts& consts);
 	void setTextureSRV(const int& materialIdx, const std::string& textureType);
@@ -35,7 +36,7 @@ private:
 	StructuredBuffer<uint32_t> m_meshIndices;
 	ConstantBuffer<BakeConsts> m_consts;
 
-	AppendBuffer<Vector3> m_outputBuffer; // Spawn Position¸¸ ÀúÀåÇÒ Buffer
+	AppendBuffer<Vector3> m_outputBuffer; // Spawn Positionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Buffer
 	ComputeShader m_bakeCS;
 	UINT m_maxPoints = 1000000;
 	std::string m_presetPath = "..\\Assets\\";

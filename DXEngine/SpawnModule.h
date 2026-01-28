@@ -37,6 +37,10 @@ private:
 	StructuredBuffer<uint32_t> m_meshIndices;
 	StructuredBuffer<Vector3> m_spawnPos;
 	UINT m_bakedCount = 0;
+	
+	// For deferred buffer initialization
+	std::string m_bakedPath;
+	bool m_needsSpawnPosInit = false;
 };
 }
 

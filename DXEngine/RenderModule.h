@@ -35,20 +35,21 @@ class BillboardRenderModule : public RenderModule
 		Material, SingleTexture, TextureArray
 	};
 public:
+	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
 	void UpdateArgs(const SimulationContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 private:
-	// 0 : TextureArray (Size°¡ °íÁ¤µÇ¾î ÀÖÀ½)
-	// 1 : Single Texture (°³º° Texture 1°³, ´Ù¾çÇÑ ÇØ»óµµ °¡´É)
-	// 2 : MaterialModuleÀ» »ç¿ë (PBR)
+	// 0 : TextureArray (Sizeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	// 1 : Single Texture (ï¿½ï¿½ï¿½ï¿½ Texture 1ï¿½ï¿½, ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	// 2 : MaterialModuleï¿½ï¿½ ï¿½ï¿½ï¿½ (PBR)
 	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
-	// Texture °ü¸®
+	// Texture ï¿½ï¿½ï¿½ï¿½
 	std::string m_texturePath;
 	int m_textureIdx = -1;
 
-	// ´Ù¾çÇÑ ÇØ»óµµÀÇ Texture 1°³¸¸ »ç¿ëÇÒ¶§
+	// ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ï¿½ï¿½ Texture 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½
 	int m_singleTextureIdx = -1;
 
 	Vector2 m_frameTiles = { 1, 1 };
@@ -66,7 +67,7 @@ public:
 	void LoadFromJson(const json& data) override;
 	int GetModelIndex() const override { return m_modelIdx; }
 private:
-	// Texture °ü¸®
+	// Texture ï¿½ï¿½ï¿½ï¿½
 	int m_modelIdx = -1;
 
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>  m_meshArgs;
