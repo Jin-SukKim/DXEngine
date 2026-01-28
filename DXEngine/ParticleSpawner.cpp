@@ -7,7 +7,7 @@
 namespace DE {
 
     ParticleSpawner::ParticleSpawner(const std::wstring& name) : Super(name) {
-        // Spawner À§Ä¡ ÁöÁ¤À» À§ÇØ Transform Ãß°¡
+        // Spawner ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Transform ï¿½ß°ï¿½
         AddComponent<TransformComponent>(L"Transform");
     }
 
@@ -15,6 +15,7 @@ namespace DE {
 
     void ParticleSpawner::Initialize() {
         Super::Initialize();
+        InitializePool();
     }
 
     void ParticleSpawner::Update(const float& deltaTime) {
@@ -25,15 +26,15 @@ namespace DE {
 
         m_elapsedTime += deltaTime;
 
-        // Spawner ÀÚÃ¼ ¼ö¸í °ü¸®
+        // Spawner ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (m_autoDestroy && m_lifetime > 0.0f && m_elapsedTime >= m_lifetime) {
             m_stopped = true;
             return;
         }
 
-        // Á¾·áµÈ Effect Á¤¸®
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ Effect ï¿½ï¿½ï¿½ï¿½
         CleanupDeadSystems();
-        // »õ·Î Spawn
+        // ï¿½ï¿½ï¿½ï¿½ Spawn
         UpdateSpawning(deltaTime);
     }
 
@@ -42,9 +43,9 @@ namespace DE {
     }
 
     void ParticleSpawner::SetParticlePreset(const std::wstring& presetPath) {
-        // °æ·Î ¼³Á¤ (Á¢µÎ¾î Ã³¸® µîÀº ÇÁ·ÎÁ§Æ® ±ÔÄ¢¿¡ µû¸§)
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Î¾ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½Ä¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         m_presetPath = presetPath;
-        // ¿¹: m_presetPath = L"..\\Assets\\" + presetPath;
+        // ï¿½ï¿½: m_presetPath = L"..\\Assets\\" + presetPath;
     }
 
     void ParticleSpawner::SetSpawnMode(SpawnMode mode) {
@@ -72,37 +73,47 @@ namespace DE {
         m_lifetime = lifetime;
     }
 
-    // Spawn ÇÔ¼ö ±¸Çö
+    void ParticleSpawner::SetPoolSize(int size) {
+        if (size <= 0) {
+            size = 1;  // Minimum pool size
+        }
+        m_poolSize = size;
+        // Note: This should be called before Initialize() to take effect
+    }
+
+    // Spawn í•¨ìˆ˜ êµ¬í˜„
     void ParticleSpawner::Spawn() {
         if (!m_scene)
             return;
 
-        // ÃÖ´ë °³¼ö Á¦ÇÑ È®ÀÎ
-        if (m_spawnedEffects.size() >= m_maxActiveParticles) return;
+        // ìµœëŒ€ í™œì„± ê°œìˆ˜ í™•ì¸
+        if (m_activeEffects.size() >= m_maxActiveParticles) return;
 
-        // ÆÑÅä¸®¸¦ ÅëÇØ Actor »ı¼º (EffectActor ¶Ç´Â EffectActor¸¦ »ó¼Ó¹ŞÀº Class µî)
-        auto actor = m_actorFactory(L"SpawnedEffect");
+        // Poolì—ì„œ ê°€ì ¸ì˜¤ê¸°
+        EffectActor* actor = AcquireFromPool();
         if (!actor) return;
 
-        // À§Ä¡ ¼³Á¤ (Spawner À§Ä¡ ±âÁØ ·£´ı ¹İ°æ)
+        // ìœ„ì¹˜ ì„¤ì • (Spawner ìœ„ì¹˜ ê¸°ì¤€ ëœë¤ ë°˜ê²½)
         Vector3 spawnPos = GetRandomSpawnPosition();
         if (auto* tr = actor->GetComponent<TransformComponent>())
             tr->SetPos(spawnPos);
 
-        // ÇÁ¸®¼Â ¼³Á¤ ¿©ºÎ È®ÀÎ
-        if (actor->NeedsExternalPreset() && !m_presetPath.empty()) 
+        // í”„ë¦¬ì…‹ ì¬ì„¤ì • (í•„ìš”ì‹œ)
+        if (actor->NeedsExternalPreset() && !m_presetPath.empty()) {
             actor->SetParticlePreset(m_presetPath);
+        }
 
-        // ÃÊ±âÈ­ 
-        actor->Initialize();
+        // ParticleSystem ì¬ì‹œì‘
+        if (auto* ps = actor->GetParticleSystem()) {
+            ps->Restart();
+            ps->Play();
+        }
 
-        // raw pointer ÀúÀå (ÃßÀû¿ë)
-        EffectActor* rawPtr = actor.get();
-        m_spawnedEffects.push_back(rawPtr);
-
-        // Scene¿¡ Ãß°¡
-        m_scene->SpawnEffect(std::move(actor));
+        // í™œì„± ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
+        m_activeEffects.push_back(actor);
+        m_spawnedEffects.push_back(actor);  // í˜¸í™˜ì„± ìœ ì§€
     }
+
 
     void ParticleSpawner::SpawnBurst(int count) {
         for (int i = 0; i < count; ++i) {
@@ -129,13 +140,13 @@ namespace DE {
             break;
 
         case SpawnMode::OneShot:
-            if (m_spawnedEffects.empty()) {
+            if (m_activeEffects.empty()) {
                 Spawn();
             }
             break;
 
         case SpawnMode::Burst:
-            // Burst ¸ğµå´Â ÀÚµ¿ »ı¼º ¾È ÇÔ (SpawnBurst È£Ãâ ½Ã ÀÛµ¿)
+            // Burst ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ (SpawnBurst È£ï¿½ï¿½ ï¿½ï¿½ ï¿½Ûµï¿½)
             break;
         }
     }
@@ -143,11 +154,31 @@ namespace DE {
     void ParticleSpawner::CleanupDeadSystems() {
         if (!m_scene) return;
 
-        std::erase_if(m_spawnedEffects, [this](EffectActor* effect) {
-            // Scene¿¡ ½ÇÁ¦·Î Á¸ÀçÇÏ´ÂÁö È®ÀÎ
-            return !m_scene->ContainsEffect(effect);
-            });
+        // ì™„ë£Œëœ Effectë“¤ì„ ë³„ë„ ë¦¬ìŠ¤íŠ¸ì— ìˆ˜ì§‘
+        std::vector<EffectActor*> finishedEffects;
+        for (auto* effect : m_activeEffects) {
+            if (effect->IsFinished()) {
+                finishedEffects.push_back(effect);
+            }
+        }
+
+        // ìˆ˜ì§‘ëœ Effectë“¤ì„ Poolë¡œ ë°˜í™˜
+        for (auto* effect : finishedEffects) {
+            ReleaseToPool(effect);
+        }
+
+        // m_activeEffectsì—ì„œ ì œê±°
+        std::erase_if(m_activeEffects, [](EffectActor* effect) {
+            return effect->IsFinished();
+        });
+
+        // m_spawnedEffectsë„ ë™ê¸°í™”
+        std::erase_if(m_spawnedEffects, [](EffectActor* effect) {
+            return effect->IsFinished();
+        });
     }
+
+
 
     Vector3 ParticleSpawner::GetRandomSpawnPosition() {
         auto* transform = GetComponent<TransformComponent>();
@@ -164,6 +195,79 @@ namespace DE {
         basePos.z += distZ(gen);
 
         return basePos;
+    }
+
+    // ObjectPool ê´€ë ¨ ë©”ì„œë“œ êµ¬í˜„
+    void ParticleSpawner::InitializePool() {
+        // Pool ì´ˆê¸°í™”: m_poolSizeë§Œí¼ EffectActorë¥¼ ë¯¸ë¦¬ ìƒì„±
+        m_pool.clear();
+        m_pool.reserve(m_poolSize);
+
+        for (int i = 0; i < m_poolSize; ++i) {
+            auto actor = m_actorFactory(L"PooledEffect_" + std::to_wstring(i));
+            if (actor) {
+                actor->Initialize();
+                m_pool.push_back(std::move(actor));
+            }
+        }
+    }
+
+    EffectActor* ParticleSpawner::AcquireFromPool() {
+        // Poolì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ Actor ê°€ì ¸ì˜¤ê¸°
+        if (m_pool.empty()) {
+            // Poolì´ ë¹„ì–´ìˆìœ¼ë©´ ìƒˆë¡œ ìƒì„± (ë™ì  í™•ì¥)
+            auto actor = m_actorFactory(L"DynamicEffect");
+            if (!actor) return nullptr;
+
+            actor->Initialize();
+            EffectActor* rawPtr = actor.get();
+
+            // Sceneì— ì¶”ê°€
+            if (m_scene) {
+                m_scene->SpawnEffect(std::move(actor));
+            }
+
+            return rawPtr;
+        }
+
+        // Poolì—ì„œ êº¼ë‚´ê¸°
+        auto actor = std::move(m_pool.back());
+        m_pool.pop_back();
+
+        EffectActor* rawPtr = actor.get();
+
+        // Sceneì— ì¶”ê°€
+        if (m_scene) {
+            m_scene->SpawnEffect(std::move(actor));
+        }
+
+        return rawPtr;
+    }
+
+    void ParticleSpawner::ReleaseToPool(EffectActor* effect) {
+        if (!effect || !m_scene) return;
+
+        // Sceneì—ì„œ ì†Œìœ ê¶Œ íšŒìˆ˜
+        auto& effectList = m_scene->GetActorList(Scene::ActorCategory::Effect);
+        
+        for (auto it = effectList.begin(); it != effectList.end(); ++it) {
+            if (it->get() == effect) {
+                // ì†Œìœ ê¶Œì„ ë‹¤ì‹œ ê°€ì ¸ì™€ì„œ Poolì— ì €ì¥
+                auto actor = std::move(*it);
+                effectList.erase(it);
+
+                // Effectë¥¼ ì •ì§€ ìƒíƒœë¡œ ë§Œë“¤ê¸°
+                effect->Stop();
+
+                // Pool í¬ê¸° ì œí•œ í™•ì¸
+                if (m_pool.size() < static_cast<size_t>(m_poolSize)) {
+                    m_pool.push_back(std::move(actor));
+                }
+                // Poolì´ ê°€ë“ ì°¨ë©´ ê·¸ëƒ¥ ì‚­ì œ (unique_ptrì´ ìë™ìœ¼ë¡œ í•´ì œ)
+
+                return;  // ì¦‰ì‹œ ë°˜í™˜í•˜ì—¬ ë¬´íš¨í™”ëœ iterator ì‚¬ìš© ë°©ì§€
+            }
+        }
     }
 
 }

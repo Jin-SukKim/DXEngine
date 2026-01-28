@@ -1,6 +1,6 @@
 #pragma once
 #include "Actor.h"
-#include "EffectActor.h" // EffectActorÀÇ NeedsExternalPreset() »ç¿ëÀ» À§ÇØ ÇÊ¿ä
+#include "EffectActor.h" // EffectActorï¿½ï¿½ NeedsExternalPreset() ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
 
 namespace DE {
     class Scene;
@@ -11,8 +11,25 @@ namespace DE {
         OneShot,
         Burst
     };
-
-    // Effect »ı¼º¸¸ scene¿¡°Ô ¿äÃ» (¼ÒÀ¯±Ç ¾øÀ½)
+    /**
+     * ParticleSpawner - ObjectPool íŒ¨í„´ì„ ì‚¬ìš©í•˜ëŠ” íŒŒí‹°í´ ì´í™íŠ¸ ìƒì„± ê´€ë¦¬ì
+     * 
+     * [ObjectPool êµ¬í˜„]
+     * - GPU Buffer ì¬ì‚¬ìš©ì„ ìœ„í•´ EffectActorë¥¼ ë¯¸ë¦¬ ìƒì„±í•˜ê³  í’€ì— ë³´ê´€
+     * - ì™„ë£Œëœ Effectë¥¼ ì‚­ì œí•˜ì§€ ì•Šê³  í’€ë¡œ ë°˜í™˜í•˜ì—¬ ì¬í™œìš©
+     * - ê¸°ë³¸ í’€ í¬ê¸°: 20ê°œ (SetPoolSizeë¡œ ë³€ê²½ ê°€ëŠ¥)
+     * 
+     * [ë™ì‘ ë°©ì‹]
+     * 1. Initialize ì‹œ m_poolSizeë§Œí¼ EffectActorë¥¼ ë¯¸ë¦¬ ìƒì„±
+     * 2. Spawn í˜¸ì¶œ ì‹œ í’€ì—ì„œ ê°€ì ¸ì™€ì„œ ì¬í™œìš© (í’€ì´ ë¹„ë©´ ë™ì  ìƒì„±)
+     * 3. Effect ì™„ë£Œ ì‹œ Sceneì—ì„œ íšŒìˆ˜í•˜ì—¬ í’€ë¡œ ë°˜í™˜
+     * 
+     * [ì¥ì ]
+     * - GPU Buffer ìƒì„± ë¹„ìš© ìµœì†Œí™” (ìµœì´ˆ 1íšŒë§Œ ìƒì„±)
+     * - ë©”ëª¨ë¦¬ í• ë‹¹/í•´ì œ ë¹ˆë„ ê°ì†Œë¡œ ì„±ëŠ¥ í–¥ìƒ
+     * - ë¦¬ì†ŒìŠ¤ ì¬ì‚¬ìš©ìœ¼ë¡œ ë©”ëª¨ë¦¬ íš¨ìœ¨ ì¦ëŒ€
+     */
+    // Effect ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sceneï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã» (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     class ParticleSpawner : public Actor {
         using Super = Actor;
     public:
@@ -25,7 +42,7 @@ namespace DE {
 
         void SetScene(Scene* scene) { m_scene = scene; }
 
-        // [Spawner ¼³Á¤]
+        // [Spawner ï¿½ï¿½ï¿½ï¿½]
         void SetParticlePreset(const std::wstring& presetPath);
         void SetSpawnMode(SpawnMode mode);
         void SetSpawnInterval(float interval);
@@ -33,21 +50,22 @@ namespace DE {
         void SetSpawnBox(Vector3 halfExtends);
         void SetAutoDestroy(bool enable);
         void SetLifetime(float lifetime);
+        void SetPoolSize(int size);  // ObjectPool í¬ê¸° ì„¤ì •
 
-        // [¼öµ¿ Á¦¾î]
-        void Spawn();                   // »ı¼º ÇÔ¼ö (¼öÁ¤µÊ)
+        // [ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]
+        void Spawn();                   // ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         void SpawnBurst(int count);
         void Stop();
 
-        // ÆÑÅä¸® ÇÔ¼ö Å¸ÀÔ Á¤ÀÇ
+        // ï¿½ï¿½ï¿½ä¸® ï¿½Ô¼ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         using ActorFactory = std::function<std::unique_ptr<EffectActor>(const std::wstring&)>;
 
-        // [¼³Á¤] »ı¼ºÇÒ Actor Å¸ÀÔÀ» ÁöÁ¤ÇÏ´Â ÅÛÇÃ¸´ ÇÔ¼ö
+        // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Actor Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½Ô¼ï¿½
         template <typename T>
         void SetActorType() {
             static_assert(std::is_base_of<EffectActor, T>::value, "T must derive from EffectActor");
 
-            // ÁöÁ¤µÈ Å¸ÀÔ T(¿¹: Firework)¸¦ »ı¼ºÇÏ¿© ¹İÈ¯ÇÏ´Â ¶÷´Ù µî·Ï
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ T(ï¿½ï¿½: Firework)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½È¯ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             m_actorFactory = [](const std::wstring& name) -> std::unique_ptr<EffectActor> {
                 return std::make_unique<T>(name);
             };
@@ -57,8 +75,13 @@ namespace DE {
         void UpdateSpawning(float dt);
         void CleanupDeadSystems();
         Vector3 GetRandomSpawnPosition();
+        
+        // ObjectPool ê´€ë ¨ ë©”ì„œë“œ
+        void InitializePool();
+        EffectActor* AcquireFromPool();
+        void ReleaseToPool(EffectActor* effect);
 
-        // ±âº»°ªÀº EffectActor »ı¼º
+        // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ EffectActor ï¿½ï¿½ï¿½ï¿½
         ActorFactory m_actorFactory = [](const std::wstring& name) {
             return std::make_unique<EffectActor>(name);
         };
@@ -70,7 +93,7 @@ namespace DE {
 
         float m_spawnInterval = 1.0f;
         float m_spawnAccumulator = 0.0f;
-        int m_maxActiveParticles = 10;
+        size_t m_maxActiveParticles = 10;
         Vector3 m_spawnBoxExtents = Vector3(1.f);
 
         bool m_autoDestroy = false;
@@ -78,7 +101,12 @@ namespace DE {
         float m_elapsedTime = 0.0f;
         bool m_stopped = false;
 
-        // EffaActor ÃßÀû
+        // ObjectPool ê´€ë ¨ ë©¤ë²„ ë³€ìˆ˜
+        int m_poolSize = 20;                                    // ê¸°ë³¸ Pool í¬ê¸°
+        std::vector<std::unique_ptr<EffectActor>> m_pool;       // Poolì— ë³´ê´€ëœ EffectActorë“¤
+        std::vector<EffectActor*> m_activeEffects;              // í˜„ì¬ í™œì„±í™”ëœ Effectë“¤
+
+        // EffectActor ê´€ë¦¬ (í˜¸í™˜ì„± ìœ ì§€)
         std::vector<EffectActor*> m_spawnedEffects;
     };
 
