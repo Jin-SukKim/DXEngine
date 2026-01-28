@@ -209,7 +209,6 @@
     <ClInclude Include="ModelManager.h" />
     <ClInclude Include="NecroEffect.h" />
     <ClInclude Include="NightSkyEffect.h" />
-    <ClInclude Include="ObjectPool.h" />
     <ClInclude Include="OrbitEffectsActor.h" />
     <ClInclude Include="OrbitModule.h" />
     <ClInclude Include="ParticleManager.h" />
@@ -317,7 +316,6 @@
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="NecroEffect.cpp" />
     <ClCompile Include="NightSkyEffect.cpp" />
-    <ClCompile Include="ObjectPool.cpp" />
     <ClCompile Include="OrbitEffectsActor.cpp" />
     <ClCompile Include="OrbitModule.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
