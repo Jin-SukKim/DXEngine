@@ -15,6 +15,8 @@ struct ParticleInitContext {
     ID3D11Device* device;
     ParticleConsts& consts;
     ParticleFrameConsts& frameConsts;
+    DrawIndexedInstancedArgs& meshArgs;
+    UINT emitterID;
 };
 
 // Base Context (공통 정보)
@@ -44,7 +46,7 @@ struct SimulationContext : ParticleContext {
     
     // Render 관련 버퍼 (Render Module이 사용)
     BitonicSort* sortBuffer = nullptr;
-    IndirectArgsBuffer<DrawIndexedInstancedArgs>* meshArgsBuffer = nullptr;
+    IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer;
 };
 
 // Render 단계
@@ -56,7 +58,8 @@ struct RenderContext : ParticleContext {
 
     ID3D11Buffer* billboardArgs;
     UINT billbaordArgsOffset;
-    IndirectArgsBuffer<DrawIndexedInstancedArgs>* meshArgsBuffer = nullptr;
+    IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer;
+    UINT meshArgsOffset;
 };
 
 } // namespace DE

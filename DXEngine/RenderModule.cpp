@@ -239,6 +239,14 @@ namespace DE {
 	void MeshRenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		RenderModule::Initialize(ctx);
+
+		Model* model = ModelManager::Get().GetModel(m_modelIdx);
+		if (!model)
+			return;
+
+		// ParticleEmitter의 메시 Args 버퍼 초기화
+		auto& mesh = model->meshes[0];
+		ctx.meshArgs.indexCountPerInstance = mesh.indexCount;
 	}
 
 	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
@@ -254,30 +262,12 @@ namespace DE {
 
 		m_meshCount = static_cast<UINT>(model->meshes.size());
 		ctx.constsData.render.numMeshes = m_meshCount;
-
-		// ParticleEmitter의 메시 Args 버퍼 초기화
-		if (ctx.meshArgsBuffer) {
-			std::vector<DrawIndexedInstancedArgs> allArgs(m_meshCount);
-			for (size_t i = 0; i < model->meshes.size(); ++i) {
-				auto& mesh = model->meshes[i];
-				allArgs[i].indexCountPerInstance = mesh.indexCount;
-				allArgs[i].instanceCount = 0;
-				allArgs[i].startIndexLocation = 0;
-				allArgs[i].baseVertexLocation = 0;
-				allArgs[i].startInstanceLocation = 0;
-			}
-
-			ctx.meshArgsBuffer->Initialize(ctx.device, allArgs, m_meshCount, static_cast<UINT>(sizeof(DrawIndexedInstancedArgs)), 5);
-		}
 	}
 
 	void MeshRenderModule::UpdateArgs(const RenderContext& ctx)
 	{
-		if (!ctx.meshArgsBuffer)
-			return;
-
 		ctx.context->CSSetShaderResources(0, 1, ctx.readCount.GetAddressOfSRV());
-		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer->GetUAV() };
+		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
 		
 		// ComputeCommon의 공용 ComputePSO 사용
@@ -298,7 +288,7 @@ namespace DE {
 	{
 		RenderModule::OnRender(ctx);
 
-		if (!ctx.sortBuffer || !ctx.meshArgsBuffer)
+		if (!ctx.sortBuffer)
 			return;
 
 		Model* model = ModelManager::Get().GetModel(m_modelIdx);
@@ -320,8 +310,7 @@ namespace DE {
 			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-			UINT argsOffset = i * 20;
-			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgsBuffer->GetBuffer(), argsOffset);
+			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgsBuffer.GetBuffer(), ctx.meshArgsOffset);
 		}
 
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };

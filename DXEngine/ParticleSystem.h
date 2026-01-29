@@ -85,6 +85,10 @@ public:
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 16; }
 	
+	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
+	UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
+	DrawIndexedInstancedArgs& GetInitMeshArgs(UINT emitterID) { return m_initMeshArgs[emitterID]; }
+	
 	StructuredBuffer<ParticleConsts>& GetConstsBuffer() { return m_consts; }
 	ParticleConsts& GetConstsData(UINT emitterID) { return m_consts.Get(emitterID); }
 	
@@ -147,6 +151,9 @@ private:
 	std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
 
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
+	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
+	std::vector<DrawIndexedInstancedArgs> m_initMeshArgs;
+
 };
 
 }

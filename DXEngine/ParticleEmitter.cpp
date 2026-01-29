@@ -62,6 +62,8 @@ namespace DE {
 			device.Get(), 
 			m_ownerSystem->GetConstsData(m_emitterID),
 			m_ownerSystem->GetFrameConstsData(m_emitterID),
+			m_ownerSystem->GetInitMeshArgs(m_emitterID),
+			m_emitterID
 		};
 
 		// Render 버퍼 초기화 (RenderModule이 사용)
@@ -111,7 +113,7 @@ namespace DE {
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
-			&m_meshArgsBuffer
+			m_ownerSystem->GetMeshArgs()
 		};
 
 		if (m_spawnOffset != Vector3(0.f)) 
@@ -179,7 +181,7 @@ namespace DE {
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
-			&m_meshArgsBuffer
+			m_ownerSystem->GetMeshArgs()
 		};
 
 		for (auto& mod : m_modules)
@@ -253,7 +255,7 @@ namespace DE {
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
-			&m_meshArgsBuffer
+			m_ownerSystem->GetMeshArgs()
 		};
 
 		m_ownerSystem->BindConstantID(m_emitterID);
@@ -321,7 +323,8 @@ namespace DE {
 			&m_sortBuffer,
 			m_ownerSystem->GetBillboardArgs().GetBuffer(),
 			m_ownerSystem->GetBillboardArgsOffset(m_emitterID),
-			&m_meshArgsBuffer
+			m_ownerSystem->GetMeshArgs(),
+			m_ownerSystem->GetMeshArgsOffset(m_emitterID),
 		};
 
 		m_ownerSystem->BindConstantID(m_emitterID);

@@ -106,10 +106,12 @@ namespace DE {
 		m_billboardArgsBuffer = IndirectArgsBuffer<DrawInstancedArgs>();
 		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
 		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
-
+		
 		m_bakedSpawnPos.Initialize(device, m_maxTotalParticles);
 
 		UpdateTransform();
+
+		m_initMeshArgs = std::vector<DrawIndexedInstancedArgs>(m_maxEmitters, { 0, 0, 0, 0, 0 });
 		for (auto& emitter : m_emitters) {
 			emitter->SetOwner(this);
 			emitter->Initialize();
@@ -124,6 +126,9 @@ namespace DE {
 			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
 			RegisterEmitter(emitter.get(), capacity);
 		}
+
+		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
+		m_meshArgsBuffer.Initialize(device, m_initMeshArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
 
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();

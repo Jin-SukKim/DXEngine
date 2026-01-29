@@ -60,7 +60,6 @@ namespace DE {
 		
 		// Render 버퍼 접근자
 		BitonicSort* GetSortBuffer() { return &m_sortBuffer; }
-		IndirectArgsBuffer<DrawIndexedInstancedArgs>* GetMeshArgsBuffer() { return &m_meshArgsBuffer; }
 		
 		// SubEmitter
 		void SetDuration(float duration) { m_duration = duration; }
@@ -114,7 +113,6 @@ namespace DE {
 		
 		// Render 관련 버퍼
 		BitonicSort m_sortBuffer;
-		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
 		// SubEmitter
 		float m_duration = -1.f; // -1: 무한(Looping), 0 >= : 지정 시간
