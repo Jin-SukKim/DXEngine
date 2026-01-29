@@ -45,8 +45,8 @@ namespace DE {
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 		
 		ID3D11ShaderResourceView* srvs[] = {
-			ctx.particles.GetSRV(),
-			ctx.activeCounts.GetSRV()
+			ctx.readParticles.GetSRV(),
+			ctx.readCount.GetSRV()
 		};
 		ctx.context->CSSetShaderResources(0, 2, srvs);
 		
@@ -145,7 +145,7 @@ namespace DE {
 				0,                                      // Dest subresource
 				0,                                      // Dest X (offset in bytes)
 				0, 0,                                   // Dest Y, Z
-				ctx.activeCounts.GetBuffer(),           // Source buffer
+				ctx.readCount.GetBuffer(),           // Source buffer
 				0,                                      // Source subresource
 				nullptr                                 // Source box (nullptr = entire resource)
 			);
@@ -162,7 +162,7 @@ namespace DE {
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 
 		ID3D11ShaderResourceView* sortSRVs[] = {
-			ctx.particles.GetSRV(),
+			ctx.readCount.GetSRV(),
 			ctx.sortBuffer->GetSRV()
 		};
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
@@ -283,7 +283,7 @@ namespace DE {
 		if (!ctx.meshArgsBuffer)
 			return;
 
-		ctx.context->CSSetShaderResources(0, 1, ctx.activeCounts.GetAddressOfSRV());
+		ctx.context->CSSetShaderResources(0, 1, ctx.readCount.GetAddressOfSRV());
 		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer->GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
 		
@@ -313,7 +313,7 @@ namespace DE {
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 
-		ID3D11ShaderResourceView* sortSRVs[] = { ctx.particles.GetSRV(), ctx.sortBuffer->GetSRV() };
+		ID3D11ShaderResourceView* sortSRVs[] = { ctx.readParticles.GetSRV(), ctx.sortBuffer->GetSRV() };
 		ctx.context->VSSetShaderResources(1, 2, sortSRVs);
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {

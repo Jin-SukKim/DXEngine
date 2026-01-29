@@ -82,6 +82,13 @@ namespace DE {
 		void SetSpawnOffset(const Vector3& offset);
 		const std::wstring& GetName() const;
 
+		StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_currentBuffer]; }
+		StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_currentBuffer]; }
+		StructuredBuffer<uint32_t>& GetReadCount() { return m_activeCounts[m_currentBuffer]; }
+		StructuredBuffer<uint32_t>& GetWriteCount() { return m_activeCounts[1 - m_currentBuffer]; }
+
+		void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
+
 	private:
 		// 초기화 관련 함수들
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
@@ -93,8 +100,9 @@ namespace DE {
 	private:
 		std::wstring m_name;
 		// 파티클 버퍼 (이중 버퍼링)
-		StructuredBuffer<uint32_t> m_activeCounts;
-		StructuredBuffer<Particle> m_particles;
+		StructuredBuffer<uint32_t> m_activeCounts[2];
+		StructuredBuffer<Particle> m_particles[2];
+		UINT m_currentBuffer = 0;
 
 		// 간접 디스패치
 		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;

@@ -9,7 +9,7 @@ public:
 	void Initialize(ParticleInitContext& ctx);
 	void OnSpawn(SimulationContext& ctx) override; 
 	void OnUpdateCPU(SimulationContext& context) override;
-	void PreUpdate(SimulationContext& ctx) override;
+	void LateUpdate(SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
 	void LoadFromJson(const json& data) override;
 

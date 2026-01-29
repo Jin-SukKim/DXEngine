@@ -110,8 +110,10 @@ namespace DE {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
-			m_particles,
-			m_activeCounts,
+			GetReadBuffer(),
+			GetWriteBuffer(),
+			GetReadCount(),
+			GetWriteCount(),
 			0.f,
 			0.f,
 			m_dispatchArgs.GetBuffer(),
@@ -175,18 +177,19 @@ namespace DE {
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
 		// 기존 버퍼 해제
-		m_particles = StructuredBuffer<Particle>();
-		m_activeCounts = StructuredBuffer<uint32_t>();
+		std::vector<uint32_t> initialCount = { 0 };
+		for (UINT i = 0; i < 2; ++i) {
+			m_particles[i] = StructuredBuffer<Particle>();
+			m_activeCounts[i] = StructuredBuffer<uint32_t>();
+
+			m_particles[i].Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
+			m_activeCounts[i].Initialize(device.Get(), 1);
+
+			m_activeCounts[i].SetData(initialCount);
+			m_activeCounts[i].Upload(GET_SINGLE(RenderBase)->GetContext().Get());
+		}
 
 		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
-
-		m_particles.Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
-		m_activeCounts.Initialize(device.Get(), 1);
-
-		std::vector<uint32_t> initialCount = { 0 };
-		m_activeCounts.SetData(initialCount);
-		m_activeCounts.Upload(GET_SINGLE(RenderBase)->GetContext().Get());
-
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
 	}
 
@@ -199,6 +202,10 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
+		// activeCount를 0으로 초기화
+		const UINT clearVal[1] = { 0 };
+		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
+		
 		m_elapsedTime += dt;
 
 		// Duration 체크 (m_duration > 0일 때만)
@@ -225,8 +232,10 @@ namespace DE {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
-			m_particles,
-			m_activeCounts,
+			GetReadBuffer(),
+			GetWriteBuffer(),
+			GetReadCount(),
+			GetWriteCount(),
 			dt,
 			m_elapsedTime,
 			m_dispatchArgs.GetBuffer(),
@@ -257,20 +266,21 @@ namespace DE {
 		};
 		context->CSSetConstantBuffers(4, 2, constBuffers);
 
-		// Duration 종료 전 혹은 Looping일때만 계속 계산
-		if (!m_isDurationEnded) {
-			for (auto& mod : m_modules)
-				mod->PreUpdate(simCtx); // 현재 SpawnModule에서만 Particle을 생성하기 위해 사용중
-		}
-
-		// 더 이상 spawn하지 않아도 남은 Particle 연산 계속 진행
 		UpdateArgsBuffers(context.Get()); 
 
 		for (auto& mod : m_modules)
-			mod->UpdateArgs(simCtx);
+			mod->OnUpdate(simCtx);
+
+		// Duration 종료 전 혹은 Looping일때만 계속 계산
+		if (!m_isDurationEnded) {
+			for (auto& mod : m_modules)
+				mod->LateUpdate(simCtx); // 현재 SpawnModule에서만 Particle을 생성하기 위해 사용중
+		}
+
+		SwapBuffer();
 
 		for (auto& mod : m_modules)
-			mod->OnUpdate(simCtx);
+			mod->UpdateArgs(simCtx);
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
@@ -279,7 +289,7 @@ namespace DE {
 			m_dispatchArgs.GetUAV()
 		};
 
-		context->CSSetShaderResources(0, 1, m_activeCounts.GetAddressOfSRV());
+		context->CSSetShaderResources(0, 1, GetReadCount().GetAddressOfSRV());
 		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
@@ -312,8 +322,10 @@ namespace DE {
 			context,
 			m_consts,
 			m_frameConsts,
-			m_particles,
-			m_activeCounts,
+			GetReadBuffer(),
+			GetWriteBuffer(),
+			GetReadCount(),
+			GetWriteCount(),
 			this->GetModule<MaterialModule>(),
 			&m_sortBuffer,
 			&m_billboardArgsBuffer,

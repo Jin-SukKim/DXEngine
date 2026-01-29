@@ -11,6 +11,13 @@ public:
 	virtual void Initialize(ID3D11Device* device);
 	void Upload(ID3D11DeviceContext* context);
 	void Download(ID3D11DeviceContext* context);
+	friend void swap(StructuredBuffer<T_ELEMENT>& lhs, StructuredBuffer<T_ELEMENT>& rhs) {
+		std::swap(lhs.m_cpu, rhs.m_cpu);
+		std::swap(lhs.m_gpu, rhs.m_gpu);
+		std::swap(lhs.m_srv, rhs.m_srv);
+		std::swap(lhs.m_uav, rhs.m_uav);
+		std::swap(lhs.m_staging, rhs.m_staging);
+	}
 
 	auto GetBuffer() const->ID3D11Buffer*;
 	auto GetSRV() const->ID3D11ShaderResourceView*;

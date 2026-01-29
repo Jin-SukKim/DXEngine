@@ -120,6 +120,9 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (dtID.x >= spawnCount)
         return;
 
+    if (activeCount[0] >= maxParticles)
+        return;
+
     // 시드 초기화
     uint rngState = dtID.x * 1973 + uint(time * 10000.0f);
     rngState = wang_hash(rngState);
@@ -192,10 +195,5 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // counts[0]을 1 증가시키고, '증가되기 전의 값'을 index에 받아옵니다.
     uint index;
     InterlockedAdd(activeCount[0], 1, index);
-
-    // 최대 파티클 개수를 넘지 않는 경우에만 버퍼에 기록합니다.
-    if (index < maxParticles)
-    {
-        particles[index] = p;
-    }
+    particles[index] = p;
 }

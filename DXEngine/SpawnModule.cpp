@@ -7,7 +7,6 @@ namespace DE {
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
 		// ComputeShader는 ComputeCommon에서 공유
-		
 	}
 
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
@@ -75,17 +74,17 @@ namespace DE {
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}
 
-	void SpawnModule::PreUpdate(SimulationContext& ctx)
+	void SpawnModule::LateUpdate(SimulationContext& ctx)
 	{
-		ParticleModule::PreUpdate(ctx);
+		ParticleModule::LateUpdate(ctx);
 		
 		// [최적화] 조기 반환
 		if (m_totalSpawnCount == 0)
 			return;
 
 		ID3D11UnorderedAccessView* uavs[2] = {
-			ctx.particles.GetUAV(),
-			ctx.activeCounts.GetUAV()
+			ctx.writeParticles.GetUAV(),
+			ctx.writeCount.GetUAV()
 		};
 		ctx.context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 

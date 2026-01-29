@@ -22,8 +22,10 @@ struct ParticleContext {
     ID3D11DeviceContext* context;
     ConstantBuffer<ParticleConsts>& constBuffer;
     ConstantBuffer<ParticleFrameConsts>& frameConstBuffer;
-    StructuredBuffer<Particle>& particles;
-    StructuredBuffer<uint32_t>& activeCounts;
+    StructuredBuffer<Particle>& readParticles;
+    StructuredBuffer<Particle>& writeParticles;
+    StructuredBuffer<uint32_t>& readCount;
+    StructuredBuffer<uint32_t>& writeCount;
 };
 
 // Simulation ´Ü°è
