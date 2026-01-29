@@ -18,11 +18,11 @@ namespace DE {
 		consts.spawnInnerRatio = m_spawnInnerRatio;
 		consts.spawnShape = m_spawnShape;
 		consts.lifeRange = m_lifeRange;
-		consts.bakedCount = ctx.bakedCount;
 		consts.simulationSpace = m_simulationSpace;
-		m_burstFired = false;
-		m_spawnAccumulator = 0.0f;
 
+		// bakedCount는 ParticleSystem::RegisterBakedPos()에서 이미 올바르게 설정됨
+		// Texture(4) 모드와 Vertex(2), Surface(3) 모드 모두 RegisterBakedPos()에서 처리
+		// Custom(5) 모드만 여기서 설정
 		if (m_spawnShape == 5) // Custom Mode
 		{
 			UINT posCount = (UINT)m_customPositions.size();

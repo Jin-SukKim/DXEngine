@@ -139,25 +139,24 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
+		// 1. 먼저 Baked 데이터 등록 (bakedCount 설정)
 		for (auto& emitter : m_emitters) {
-			// Baked 데이터가 CPU에 있으면 GPU 버퍼 생성 및 업로드
-			if (emitter->GetBakedCount() > 0) {
+			// bakedPath가 설정되어 있으면 등록
+			if (!emitter->GetBakedPath().empty()) {
 				RegisterBakedPos(emitter.get());
 			}
 		}
 
+		// 2. 그 다음 OnSpawn 호출 (이때 bakedCount가 이미 설정되어 있음)
 		for (auto& emitter : m_emitters)
 			emitter->OnSpawn();
-
 
 		for (auto& id : m_emitterIDs) {
 			id.Upload();
 		}
 
 		m_bakedSpawnPos.Upload(context);
-
 		m_consts.Upload(context);
-		m_consts.Download(context);
 		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
 		ExecutePreWarm();
 		TextureManager::Get().BindParticleTextures();
@@ -180,13 +179,14 @@ namespace DE {
 		const UINT clearVal[1] = { 0 };
 		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
 
+		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+
 		if (m_vertexCount && m_indexCount) {
 			ID3D11ShaderResourceView* srvs[] = {
-				m_consts.GetSRV(),
 				m_meshVertex.GetSRV(),
 				m_meshIndices.GetSRV()
 			};
-			context->CSSetShaderResources(8, 3, srvs);
+			context->CSSetShaderResources(9, 2, srvs);
 		}
 
 		// Main Emitter 업데이트
