@@ -13,14 +13,17 @@ namespace DE {
 		Vector3 rotSpeed = Vector3(0.f);
 	};
 
+    struct EmitterID {
+        UINT particleOffset;
+        UINT emitterID;
+        Vector2 padding;
+    };
+
     struct ParticleFrameConsts {
         float dt;
         float time;
         UINT spawnCount;
         UINT maxParticles;
-        UINT particleOffset;
-        UINT emitterID;
-        Vector2 padding;
     };
 
     struct SpawnConsts {

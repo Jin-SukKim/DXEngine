@@ -82,6 +82,9 @@ public:
 	UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
 	StructuredBuffer<ParticleConsts>& GetConstsBuffer() { return m_consts; }
 	ParticleConsts& GetConstsData(UINT emitterID) { return m_consts.Get(emitterID); }
+	StructuredBuffer<ParticleFrameConsts>& GetFrameConstsBuffer() { return m_frameConsts; }
+	ParticleFrameConsts& GetFrameConstsData(UINT emitterID) { return m_frameConsts.Get(emitterID); }
+	void BindConstantID(UINT emitterID);
 
 	void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
 private:
@@ -127,6 +130,8 @@ private:
 
 	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
 	StructuredBuffer<ParticleConsts> m_consts;
+	StructuredBuffer<ParticleFrameConsts> m_frameConsts;
+	std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
 };
 
 }

@@ -33,6 +33,7 @@ namespace DE {
 
 		void Initialize();
 		void OnSpawn();
+		void PreUpdate(const float& dt);
 		void Update(const float& dt);
 		void Render();
 
@@ -51,8 +52,6 @@ namespace DE {
 		// Texture Bake 데이터 설정 (Spawn 모듈용)
 		void LoadBakedSpawnData(const std::string& path);
 
-		ParticleFrameConsts& GetFrameConstsData() { return m_frameConsts.GetCpu(); }
-		
 		// Baked Spawn Position 접근자
 		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
 		UINT GetBakedCount() const { return m_bakedCount; }
@@ -83,7 +82,7 @@ namespace DE {
 
 		void SetMemoryInfo(UINT offset, UINT index);
 		void SetOwner(ParticleSystem* system);
-		UINT GetMaxParticles();
+		UINT GetEmitterID() { return m_emitterID; };
 	private:
 		// 초기화 관련 함수들
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
@@ -99,9 +98,6 @@ namespace DE {
 		ParticleSystem* m_ownerSystem;
 		UINT m_poolOffset = 0; // Particle Memory 내에서의 시작 index
 		UINT m_emitterID = 0; // Emitter Index (count, constant 접근용)
-
-		// 상수 버퍼
-		ConstantBuffer<ParticleFrameConsts> m_frameConsts;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;
 

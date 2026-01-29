@@ -17,14 +17,17 @@ struct Particle
     float3 rotSpeed;
 };
 
-cbuffer ParticleFrameConsts : register(b4) {
+cbuffer EmitterID : register(b5) {
+    uint particleOffset;
+    uint emitterID;
+    float2 padding0;
+};
+
+struct ParticleFrameConsts {
     float dt;
     float time;
     uint spawnCount;
     uint maxParticles;
-    uint particleOffset;
-    uint emitterID;
-    float2 padding0;
 };
 
 struct SpawnConsts {
@@ -107,6 +110,7 @@ struct ParticleConsts {
     OrbitConsts orbit;
 };
 
+StructuredBuffer<ParticleFrameConsts> frameConsts : register(t7);
 StructuredBuffer<ParticleConsts> consts : register(t8);
 
 cbuffer ParticleMeshConsts : register(b6)

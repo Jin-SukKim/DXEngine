@@ -48,7 +48,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (abs(vortex.vortexStrength) > 0.001 || abs(currentPull) > 0.001) {
         float3 normalizedAxis = normalize(vortex.vortexAxis);
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
-        p.velocity += vForce * dt;
+        p.velocity += vForce * frameConsts[emitterID].dt;
 
         particles[particleOffset + dtID.x].velocity = p.velocity;
     }

@@ -117,14 +117,14 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
-    if (dtID.x >= spawnCount)
+    if (dtID.x >= frameConsts[emitterID].spawnCount)
         return;
 
-    if (activeCount[emitterID] >= maxParticles)
+    if (activeCount[emitterID] >= frameConsts[emitterID].maxParticles)
         return;
 
     // 시드 초기화
-    uint rngState = dtID.x * 1973 + uint(time * 10000.0f);
+    uint rngState = dtID.x * 1973 + uint(frameConsts[emitterID].time * 10000.0f);
     rngState = wang_hash(rngState);
 
     Particle p;

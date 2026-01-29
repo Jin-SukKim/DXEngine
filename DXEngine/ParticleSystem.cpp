@@ -52,7 +52,13 @@ namespace DE {
 
 		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 생성
 		m_consts.SetData(other.m_consts.GetCpu());
+		m_frameConsts.SetData(other.m_frameConsts.GetCpu());
 		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
+
+		m_emitterIDs.resize(other.m_emitterIDs.size());
+		for (UINT i = 0; i < m_maxEmitters; ++i) {
+			m_emitterIDs[i].SetCpuData(other.m_emitterIDs[i].GetCpu());
+		}
 
 		// mesh 데이터도 CPU만 복사
 		m_meshVertex.SetData(other.m_meshVertex.GetCpu());
@@ -77,7 +83,17 @@ namespace DE {
 		}
 
 		m_consts.Initialize(device, m_maxEmitters);
+		m_frameConsts.Initialize(device, m_maxEmitters);
 		m_meshConsts.Initialize();
+
+		for (auto& cb : m_emitterIDs)
+			cb.Initialize();
+
+		for (UINT i = m_emitterIDs.size(); i < m_maxEmitters; ++i) {
+			ConstantBuffer<EmitterID> cb;
+			cb.Initialize();
+			m_emitterIDs.push_back(cb);
+		}
 
 		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
@@ -85,6 +101,7 @@ namespace DE {
 
 		UpdateTransform();
 		for (auto& emitter : m_emitters) {
+			emitter->SetOwner(this);
 			emitter->Initialize();
 
 			// EventCallback 등록
@@ -93,9 +110,13 @@ namespace DE {
 					this->OnEmitterEvent(event, em); // SubEmitter 생성 함수
 				});
 
-			emitter->SetOwner(this);
 			// Buffer 메모리 offet, index 할당
-			RegisterEmitter(emitter.get(), emitter->GetMaxParticles());
+			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
+			RegisterEmitter(emitter.get(), capacity);
+		}
+
+		for (auto& id : m_emitterIDs) {
+			id.Upload();
 		}
 
 		if (m_state == ParticleState::Playing) Restart();
@@ -107,12 +128,11 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		m_consts.Upload(context);
-		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
-
 		for (auto& emitter : m_emitters)
 			emitter->OnSpawn();
 
+		m_consts.Upload(context);
+		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
 		ExecutePreWarm();
 		TextureManager::Get().BindParticleTextures();
 	}
@@ -145,12 +165,28 @@ namespace DE {
 
 		// Main Emitter 업데이트
 		for (auto& emitter : m_emitters)
+			emitter->PreUpdate(newDt);
+
+		// Sub-Emitter 업데이트
+		for (auto& emitter : m_dynamicEmitters)
+			emitter->PreUpdate(newDt);
+
+		m_frameConsts.Upload(context.Get());
+		context->CSSetShaderResources(7, 1, m_frameConsts.GetAddressOfSRV());
+
+		// Main Emitter 업데이트
+		for (auto& emitter : m_emitters)
 			emitter->Update(newDt);
 
 		// Sub-Emitter 업데이트
 		for (auto& emitter : m_dynamicEmitters)
 			emitter->Update(newDt);
 
+
+		ID3D11Buffer* nullB[] = {
+			nullptr
+		};
+		context->CSSetConstantBuffers(4, 1, nullB);
 		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 5, nullSRVs);
 
@@ -181,10 +217,16 @@ namespace DE {
 
 		// Transform Constant Buffer 바인딩 (Slot 1)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
-		context->VSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
-		context->PSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+		ID3D11ShaderResourceView* srvs[2] = {
+			m_frameConsts.GetSRV(),
+			m_consts.GetSRV()
+		};
+		context->CSSetShaderResources(7, 2, srvs);
+		context->VSSetShaderResources(7, 2, srvs);
+		context->VSSetShaderResources(7, 2, srvs);
+		context->PSSetShaderResources(7, 2, srvs);
 
 		// 주 Emitter 렌더링
 		for (auto& emitter : m_emitters)
@@ -194,11 +236,12 @@ namespace DE {
 		for (auto& emitter : m_dynamicEmitters)
 			emitter->Render();
 
-		ID3D11Buffer* nullCB[] = { nullptr };
-		context->CSSetConstantBuffers(8, 1, nullCB);
-		context->VSSetConstantBuffers(6, 1, nullCB);
-		context->VSSetConstantBuffers(8, 1, nullCB);
-		context->PSSetConstantBuffers(8, 1, nullCB);
+		ID3D11ShaderResourceView* nullCB[] = { nullptr, nullptr };
+		context->VSSetConstantBuffers(6, 1, NULL);
+		context->CSSetShaderResources(7, 2, nullCB);
+		context->VSSetShaderResources(7, 2, nullCB);
+		context->PSSetShaderResources(7, 2, nullCB);
+
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)
@@ -362,6 +405,14 @@ namespace DE {
 		return true;
 	}
 
+	void ParticleSystem::BindConstantID(UINT emitterID)
+	{
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+		context->CSSetConstantBuffers(5, 1, m_emitterIDs[emitterID].GetAddressOf());
+		context->PSSetConstantBuffers(5, 1, m_emitterIDs[emitterID].GetAddressOf());
+		context->VSSetConstantBuffers(5, 1, m_emitterIDs[emitterID].GetAddressOf());
+	}
+
 	void ParticleSystem::Reset()
 	{
 		for (auto& emitter : m_emitters)
@@ -406,6 +457,9 @@ namespace DE {
 	{
 		// Emitter에게 할당된 영역 정보를 설정
 		emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+		EmitterID& id = m_emitterIDs[m_currentEmitterIndex].GetCpu();
+		id.emitterID = m_currentEmitterIndex;
+		id.particleOffset = m_currentParticleOffset;
 
 		m_currentParticleOffset += capacity;
 		++m_currentEmitterIndex;

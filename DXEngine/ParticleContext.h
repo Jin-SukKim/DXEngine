@@ -21,7 +21,7 @@ struct ParticleInitContext {
 struct ParticleContext {
     ID3D11DeviceContext* context;
     ParticleConsts& constsData;
-    ConstantBuffer<ParticleFrameConsts>& frameConstBuffer;
+    ParticleFrameConsts& frameConstData;
     StructuredBuffer<Particle>& readParticles;
     StructuredBuffer<Particle>& writeParticles;
     StructuredBuffer<uint32_t>& readCount;

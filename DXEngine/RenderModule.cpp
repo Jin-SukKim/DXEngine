@@ -54,7 +54,7 @@ namespace DE {
 		ctx.context->CSSetShader(initSortKeysCS.computeShader.Get(), 0, 0);
 		
 		// [최적화] Thread group 계산 최적화
-		UINT dispatchCount = (ctx.frameConstBuffer.GetCpu().maxParticles + 1023) >> 10; // division -> bit shift
+		UINT dispatchCount = (ctx.frameConstData.maxParticles + 1023) >> 10; // division -> bit shift
 		ctx.context->Dispatch(dispatchCount, 1, 1);
 		
 		// Barrier

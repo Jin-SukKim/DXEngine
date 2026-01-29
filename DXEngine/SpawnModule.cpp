@@ -43,7 +43,7 @@ namespace DE {
 			}
 		}
 
-		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
+		ctx.frameConstData.maxParticles = m_maxParticles;
 	}
 
 	void SpawnModule::OnPreUpdate(const SimulationContext& ctx)
@@ -71,7 +71,7 @@ namespace DE {
 		if (m_totalSpawnCount < 0)
 			m_totalSpawnCount = 0;
 
-		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
+		ctx.frameConstData.spawnCount = m_totalSpawnCount;
 	}
 
 	void SpawnModule::LateUpdate(SimulationContext& ctx)

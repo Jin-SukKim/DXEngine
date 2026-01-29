@@ -14,6 +14,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     
     Particle p = readParticles[particleOffset + dtID.x];
     
+    float dt = frameConsts[emitterID].dt;
     if (p.life - dt > 0.f) {
         p.life -= dt;
         
