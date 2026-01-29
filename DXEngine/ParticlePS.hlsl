@@ -25,6 +25,7 @@ float4 SampleParticleTexture(float3 uvw)
 {
     float4 color = float4(1, 1, 1, 1);
 
+    RenderConsts render = consts[emitterID].render;
     // [Mode 0: Material]
     if (render.textureMode == 0)
     {
@@ -52,6 +53,7 @@ float4 SampleParticleTexture(float3 uvw)
 }
 
 float4 SpriteTexture(float lifeRatio, float2 uv) {
+    RenderConsts render = consts[emitterID].render;
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
         // 현재 frame
         uint currentFrame = floor(lifeRatio * render.frameCount);
@@ -74,6 +76,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
 {
     float4 finalColor = input.color;
 
+    RenderConsts render = consts[emitterID].render;
     bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
     // Case 1: 텍스처가 있는 경우 (Sprite / Animation)

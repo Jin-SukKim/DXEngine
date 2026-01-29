@@ -133,6 +133,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // 매 시도마다 시드 갱신
     rngState = wang_hash(rngState);
 
+    SpawnConsts spawn = consts[emitterID].spawn;
     if (spawn.spawnShape == 0) // BOX
         spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 1) // SPHERE
@@ -159,6 +160,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     noiseDir.y = rand_signed(rngState);
     noiseDir.z = rand_signed(rngState);
 
+    ForceConsts force = consts[emitterID].force;
     float3 finalDir = normalize(force.velocity + noiseDir * force.randomDir + 1e-5f);
     float speed = lerp(force.speedRange.x, force.speedRange.y, rand_float(rngState));
     float3 localVel = finalDir * speed;
@@ -178,6 +180,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     p.life = lerp(spawn.lifeRange.x, spawn.lifeRange.y, rand_float(rngState));
     p.lifeMax = p.life;
 
+    VisualConsts visual = consts[emitterID].visual;
     // Color & Size
     p.color = visual.startColor;
     p.size = visual.sizeRange.x;

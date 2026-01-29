@@ -8,6 +8,7 @@ class StructuredBuffer
 {
 public:
 	virtual void Initialize(ID3D11Device* device, const UINT numElements);
+	void InitializeArgs(ID3D11Device* device, const UINT numElements);
 	virtual void Initialize(ID3D11Device* device);
 	void Upload(ID3D11DeviceContext* context);
 	void Download(ID3D11DeviceContext* context);
@@ -44,6 +45,16 @@ void StructuredBuffer<T_ELEMENT>::Initialize(ID3D11Device* device, const UINT nu
 {
 	m_cpu.resize(numElements);
 	Initialize(device);
+}
+
+template<typename T_ELEMENT>
+inline void StructuredBuffer<T_ELEMENT>::InitializeArgs(ID3D11Device* device, const UINT numElements)
+{
+	// StructuredBuffer 持失
+	D3D11Utils::CreateArgsStructuredBuffer(device, static_cast<UINT>(m_cpu.size()), sizeof(T_ELEMENT), m_cpu.data(), m_gpu, m_srv, m_uav);
+
+	// StagingBuffer 持失
+	D3D11Utils::CreateStagingBuffer(device, static_cast<UINT>(m_cpu.size()), sizeof(T_ELEMENT), m_cpu.data(), m_staging);
 }
 
 template<typename T_ELEMENT>

@@ -7,6 +7,8 @@
 #include "Mesh.h"
 #include "ModelManager.h"
 #include "ParticleManager.h"
+#include "IndirectArgsBuffer.h"
+#include "StructuredBuffer.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
@@ -49,6 +51,7 @@ namespace DE {
 		}
 
 		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 생성
+		m_consts.SetData(other.m_consts.GetCpu());
 		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 
 		// mesh 데이터도 CPU만 복사
@@ -58,22 +61,28 @@ namespace DE {
 
 	void ParticleSystem::Initialize()
 	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+		ID3D11Device* device = GET_SINGLE(RenderBase)->GetDevice().Get();
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i] = StructuredBuffer<Particle>();
-			m_particles[i].Initialize(device.Get(), m_maxTotalParticles);
+			m_particles[i].Initialize(device, m_maxTotalParticles);
 		
 			m_activeCounts[i] = StructuredBuffer<uint32_t>();
-			m_activeCounts[i].Initialize(device.Get(), m_maxEmitters);
+			m_activeCounts[i].Initialize(device, m_maxEmitters);
 
 			std::vector<uint32_t> initialCount(m_maxEmitters, 0);
 			m_activeCounts[i].SetData(initialCount);
-			m_activeCounts[i].Upload(context.Get());
+			m_activeCounts[i].Upload(context);
 		}
 
+		m_consts.Initialize(device, m_maxEmitters);
 		m_meshConsts.Initialize();
+
+		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
+		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
+		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
+
 		UpdateTransform();
 		for (auto& emitter : m_emitters) {
 			emitter->Initialize();
@@ -96,6 +105,11 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+
+		m_consts.Upload(context);
+		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+
 		for (auto& emitter : m_emitters)
 			emitter->OnSpawn();
 
@@ -122,10 +136,11 @@ namespace DE {
 
 		if (m_vertexCount && m_indexCount) {
 			ID3D11ShaderResourceView* srvs[] = {
+				m_consts.GetSRV(),
 				m_meshVertex.GetSRV(),
 				m_meshIndices.GetSRV()
 			};
-			context->CSSetShaderResources(9, 2, srvs);
+			context->CSSetShaderResources(8, 3, srvs);
 		}
 
 		// Main Emitter 업데이트
@@ -166,7 +181,10 @@ namespace DE {
 
 		// Transform Constant Buffer 바인딩 (Slot 1)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+		context->VSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+		context->PSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
 
 		// 주 Emitter 렌더링
 		for (auto& emitter : m_emitters)
@@ -177,7 +195,10 @@ namespace DE {
 			emitter->Render();
 
 		ID3D11Buffer* nullCB[] = { nullptr };
+		context->CSSetConstantBuffers(8, 1, nullCB);
 		context->VSSetConstantBuffers(6, 1, nullCB);
+		context->VSSetConstantBuffers(8, 1, nullCB);
+		context->PSSetConstantBuffers(8, 1, nullCB);
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)

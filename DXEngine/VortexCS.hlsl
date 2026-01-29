@@ -4,6 +4,8 @@ StructuredBuffer<uint> activeCount : register(t0);
 RWStructuredBuffer<Particle> particles : register(u0);
 
 float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
+
+    VortexConsts vortex = consts[emitterID].vortex;
     float3 fromCenter = pos - vortex.vortexCenter;
 
     // 회전축에 투영된 벡터를 제거 -> 회전 평면 벡터 (회전축에 수직인 벡터)
@@ -32,6 +34,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         return;
 
     Particle p = particles[particleOffset + dtID.x];
+    VortexConsts vortex = consts[emitterID].vortex;
 
     // Vortex(소용돌이)        
     // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)

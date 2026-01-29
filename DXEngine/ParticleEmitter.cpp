@@ -51,7 +51,6 @@ namespace DE {
 		}
 
 		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 새로 생성
-		m_consts.SetCpuData(other.m_consts.GetCpu());
 		m_frameConsts.SetCpuData(other.m_frameConsts.GetCpu());
 
 		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
@@ -64,12 +63,11 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		
-		m_consts.Initialize();
 		m_frameConsts.Initialize();
 
 		ParticleInitContext initCtx = { 
 			device.Get(), 
-			m_consts.GetCpu(),
+			m_ownerSystem->GetConstsData(m_emitterID),
 			m_frameConsts.GetCpu() 
 		};
 
@@ -94,7 +92,7 @@ namespace DE {
 		}
 
 		// 초기 spawn 위치 저장 (Reset 시 복원용)
-		m_initialSpawnPos = m_consts.GetCpu().spawn.localPos;
+		m_initialSpawnPos = m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos;
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -109,7 +107,7 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			m_consts,
+			m_ownerSystem->GetConstsData(m_emitterID),
 			m_frameConsts,
 			m_ownerSystem->GetReadBuffer(),
 			m_ownerSystem->GetWriteBuffer(),
@@ -117,7 +115,8 @@ namespace DE {
 			m_ownerSystem->GetWriteCount(),
 			0.f,
 			0.f,
-			m_dispatchArgs.GetBuffer(),
+			m_ownerSystem->GetDispatchArgs().GetBuffer(),
+			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
 			device.Get(),
 			this->GetModule<RenderModule>(),
 			&m_bakedSpawnPos,
@@ -129,16 +128,13 @@ namespace DE {
 		};
 
 		if (m_spawnOffset != Vector3(0.f)) 
-			m_consts.GetCpu().spawn.localPos += m_spawnOffset;
+			m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos += m_spawnOffset;
 
 		// m_spawnOffset에 최종 위치 저장 (Sub-Emitter 상속용)
-		m_spawnOffset = m_consts.GetCpu().spawn.localPos;
+		m_spawnOffset = m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos;
 
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
-
-		m_consts.Upload();
-		context->CSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 
 		// OnStart 이벤트
 		if (!m_isStarted) {
@@ -156,12 +152,12 @@ namespace DE {
 		m_spawnOffset = Vector3(0.f);
 		
 		// 초기 spawn 위치로 복원
-		m_consts.GetCpu().spawn.localPos = m_initialSpawnPos;
+		m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos = m_initialSpawnPos;
 	}
 
 	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
 	{
-		m_consts.SetCpuData(config);
+		m_ownerSystem->GetConstsData(m_emitterID) = config;
 	}
 
 	void ParticleEmitter::SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id)
@@ -177,8 +173,6 @@ namespace DE {
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
-		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
-		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
 	}
 
 	void ParticleEmitter::Update(const float& dt)
@@ -216,7 +210,7 @@ namespace DE {
 		
 		SimulationContext simCtx = {
 			context.Get(),
-			m_consts,
+			m_ownerSystem->GetConstsData(m_emitterID),
 			m_frameConsts,
 			m_ownerSystem->GetReadBuffer(),
 			m_ownerSystem->GetWriteBuffer(),
@@ -224,7 +218,8 @@ namespace DE {
 			m_ownerSystem->GetWriteCount(),
 			dt,
 			m_elapsedTime,
-			m_dispatchArgs.GetBuffer(),
+			m_ownerSystem->GetDispatchArgs().GetBuffer(),
+			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
 			device.Get(),
 			nullptr,
 			&m_bakedSpawnPos,
@@ -240,10 +235,9 @@ namespace DE {
 
 		m_frameConsts.Upload();
 		ID3D11Buffer* constBuffers[] = {
-			m_frameConsts.Get(),
-			m_consts.Get()
+			m_frameConsts.Get()
 		};
-		context->CSSetConstantBuffers(4, 2, constBuffers);
+		context->CSSetConstantBuffers(4, 1, constBuffers);
 
 		UpdateArgsBuffers(context.Get()); 
 
@@ -269,7 +263,7 @@ namespace DE {
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
 	{
 		ID3D11UnorderedAccessView* argUAVs[] = {
-			m_dispatchArgs.GetUAV()
+			m_ownerSystem->GetDispatchArgs().GetUAV()
 		};
 
 		context->CSSetShaderResources(0, 1, m_ownerSystem->GetReadCount().GetAddressOfSRV());
@@ -303,7 +297,7 @@ namespace DE {
 		
 		RenderContext renderCtx = {
 			context,
-			m_consts,
+			m_ownerSystem->GetConstsData(m_emitterID),
 			m_frameConsts,
 			m_ownerSystem->GetReadBuffer(),
 			m_ownerSystem->GetWriteBuffer(),
@@ -318,15 +312,13 @@ namespace DE {
 
 
 		ID3D11Buffer* constBuffers[] = {
-			m_frameConsts.Get(),
-			m_consts.Get()
+			m_frameConsts.Get()
 		};
-		context->CSSetConstantBuffers(4, 2, constBuffers);
+		context->CSSetConstantBuffers(4, 1, constBuffers);
 		for (auto& mod : m_modules)
 			mod->UpdateArgs(renderCtx);
 
 		context->VSSetConstantBuffers(4, 1, m_frameConsts.GetAddressOf());
-		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 		for (auto& mod : m_modules)
 			mod->OnRender(renderCtx);
 	}

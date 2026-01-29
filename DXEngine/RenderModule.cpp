@@ -23,7 +23,7 @@ namespace DE {
 		SetBlendState();
 		
 		// 정렬 플래그 설정
-		ctx.constBuffer.GetCpu().render.useSorting = 
+		ctx.constsData.render.useSorting = 
 			(blendMode == BlendMode::AlphaBlend) ? 1 : 0;
 	}
 
@@ -71,7 +71,6 @@ namespace DE {
 	{
 		ParticleModule::OnRender(ctx);
 		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
-		ctx.context->VSSetConstantBuffers(5, 1, ctx.constBuffer.GetAddressOf());
 	}
 
 	void RenderModule::SetBlendState()
@@ -113,7 +112,7 @@ namespace DE {
 	{
 		RenderModule::OnSpawn(ctx);
 
-		RenderConsts& consts = ctx.constBuffer.GetCpu().render;
+		RenderConsts& consts = ctx.constsData.render;
 		consts.textureIdx = m_textureIdx;
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
@@ -272,7 +271,7 @@ namespace DE {
 			return;
 
 		m_meshCount = static_cast<UINT>(model->meshes.size());
-		ctx.constBuffer.GetCpu().render.numMeshes = m_meshCount;
+		ctx.constsData.render.numMeshes = m_meshCount;
 
 		// ParticleEmitter의 메시 Args 버퍼 초기화
 		if (ctx.meshArgsBuffer) {

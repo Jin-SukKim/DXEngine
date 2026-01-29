@@ -12,7 +12,7 @@ RWBuffer<uint> drawArgs : register(u0);
 [numthreads(1024, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= render.numMeshes) return;
+    if (DTid.x >= consts[emitterID].render.numMeshes) return;
 
     // 각 Mesh 데이터의 IndirectAgs의 간격(Stride)은 5 uint이고
     // InstanceCount는 2번째 요소(offset 1)

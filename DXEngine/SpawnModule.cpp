@@ -12,7 +12,7 @@ namespace DE {
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		SpawnConsts& consts = ctx.constBuffer.GetCpu().spawn;
+		SpawnConsts& consts = ctx.constsData.spawn;
 		consts.localPos = m_localPos;
 		consts.spawnVolume = m_spawnVolume;
 		consts.spawnInnerRatio = m_spawnInnerRatio;

@@ -78,6 +78,10 @@ public:
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_currentBuffer]; }
 	StructuredBuffer<uint32_t>& GetReadCount() { return m_activeCounts[m_currentBuffer]; }
 	StructuredBuffer<uint32_t>& GetWriteCount() { return m_activeCounts[1 - m_currentBuffer]; }
+	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
+	UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
+	StructuredBuffer<ParticleConsts>& GetConstsBuffer() { return m_consts; }
+	ParticleConsts& GetConstsData(UINT emitterID) { return m_consts.Get(emitterID); }
 
 	void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
 private:
@@ -120,6 +124,9 @@ private:
 	UINT m_currentEmitterIndex = 0; // 다음 emitter에게 할당할 ID
 	UINT m_maxTotalParticles = 1000000; // 최대 Particle 개수
 	UINT m_maxEmitters = 64; // 최대 emitter 개수
+
+	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
+	StructuredBuffer<ParticleConsts> m_consts;
 };
 
 }

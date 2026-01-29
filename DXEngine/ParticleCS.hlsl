@@ -17,6 +17,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (p.life - dt > 0.f) {
         p.life -= dt;
         
+        ForceConsts force = consts[emitterID].force;
         // 1. 물리 연산 (Physics)
 
         // 중력 적용
@@ -30,7 +31,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         p.position += p.velocity * dt;
 
         // 2. 시각 효과 (Visuals)
-
+        VisualConsts visual = consts[emitterID].visual;
         float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
         // 크기 보간 (Start -> End)
         // sizeRange.x = Start Size, sizeRange.y = End Size

@@ -20,7 +20,7 @@ struct ParticleInitContext {
 // Base Context (공통 정보)
 struct ParticleContext {
     ID3D11DeviceContext* context;
-    ConstantBuffer<ParticleConsts>& constBuffer;
+    ParticleConsts& constsData;
     ConstantBuffer<ParticleFrameConsts>& frameConstBuffer;
     StructuredBuffer<Particle>& readParticles;
     StructuredBuffer<Particle>& writeParticles;
@@ -33,6 +33,7 @@ struct SimulationContext : ParticleContext {
     float dt;
     float time;
     ID3D11Buffer* dispatchArgs;
+    UINT argsOffset;
     ID3D11Device* device;
     RenderModule* renderModule;
     

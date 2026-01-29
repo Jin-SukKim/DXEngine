@@ -98,7 +98,7 @@ struct OrbitConsts {
     float initialOffset;
 };
 
-cbuffer ParticleConsts : register(b5) {
+struct ParticleConsts {
     SpawnConsts spawn;
     VisualConsts visual;
     ForceConsts force;
@@ -106,6 +106,8 @@ cbuffer ParticleConsts : register(b5) {
     VortexConsts vortex;
     OrbitConsts orbit;
 };
+
+StructuredBuffer<ParticleConsts> consts : register(t8);
 
 cbuffer ParticleMeshConsts : register(b6)
 {
@@ -115,7 +117,6 @@ cbuffer ParticleMeshConsts : register(b6)
     uint indexCount;
     float2 padding;
 };
-
 
 struct SortElement
 {

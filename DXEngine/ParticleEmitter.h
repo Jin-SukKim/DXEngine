@@ -51,9 +51,7 @@ namespace DE {
 		// Texture Bake 데이터 설정 (Spawn 모듈용)
 		void LoadBakedSpawnData(const std::string& path);
 
-		ParticleConsts& GetConstsData() { return m_consts.GetCpu(); }
 		ParticleFrameConsts& GetFrameConstsData() { return m_frameConsts.GetCpu(); }
-		ConstantBuffer<ParticleConsts>& GetConstBuffer() { return m_consts; }
 		
 		// Baked Spawn Position 접근자
 		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
@@ -102,12 +100,8 @@ namespace DE {
 		UINT m_poolOffset = 0; // Particle Memory 내에서의 시작 index
 		UINT m_emitterID = 0; // Emitter Index (count, constant 접근용)
 
-		// 간접 디스패치
-		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
-
 		// 상수 버퍼
 		ConstantBuffer<ParticleFrameConsts> m_frameConsts;
-		ConstantBuffer<ParticleConsts> m_consts;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;
 

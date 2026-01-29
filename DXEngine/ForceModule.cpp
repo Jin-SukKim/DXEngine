@@ -11,7 +11,7 @@ namespace DE {
 	void ForceModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		ForceConsts& consts = ctx.constBuffer.GetCpu().force;
+		ForceConsts& consts = ctx.constsData.force;
 		consts.velocity = velocity;
 		consts.speedRange = speedRange;
 		consts.randomDir = randomDir;
@@ -35,7 +35,7 @@ namespace DE {
 		// ComputeCommon의 공용 ComputePSO 사용
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
 		ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);
 		
 		// Barrier
 		ID3D11UnorderedAccessView* nullUAVs[4] = { nullptr, nullptr, nullptr, nullptr };

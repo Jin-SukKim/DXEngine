@@ -11,7 +11,7 @@ namespace DE {
 	void VortexModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		VortexConsts& consts = ctx.constBuffer.GetCpu().vortex;
+		VortexConsts& consts = ctx.constsData.vortex;
 		consts.vortexCenter = m_vortexCenter;
 		consts.vortexStrength = m_vortexStrength;
 		consts.vortexAxis = m_vortexAxis;
@@ -30,7 +30,7 @@ namespace DE {
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& vortexCS = RenderBase::computeCommon.particle.vortexCS;
 		ctx.context->CSSetShader(vortexCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);
 		
 		// Barrier
 		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };

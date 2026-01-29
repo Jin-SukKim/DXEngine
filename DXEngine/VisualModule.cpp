@@ -10,7 +10,7 @@ namespace DE {
 	void VisualModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
-		VisualConsts& consts = ctx.constBuffer.GetCpu().visual;
+		VisualConsts& consts = ctx.constsData.visual;
 		consts.startColor = startColor;
 		consts.endColor = endColor;
 		consts.sizeRange = sizeRange;

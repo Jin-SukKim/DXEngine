@@ -13,7 +13,7 @@ namespace DE {
 		ParticleModule::OnSpawn(ctx);
 
 		// ConstantBuffer 구조체에 Orbit 관련 필드가 추가되어야 합니다.
-		auto& consts = ctx.constBuffer.GetCpu().orbit;
+		auto& consts = ctx.constsData.orbit;
 		consts.center = m_center;
 		consts.axis = m_axis;
 		consts.rotationRate = m_rotationRate; // 셰이더에서 dt와 곱해 사용
@@ -32,7 +32,7 @@ namespace DE {
 		// ComputeCommon에 등록된 orbitCS 사용
 		auto& orbitCS = RenderBase::computeCommon.particle.orbitCS;
 		ctx.context->CSSetShader(orbitCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);
 
 		// Unbind
 		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
