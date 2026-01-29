@@ -27,7 +27,7 @@ namespace DE {
 			(blendMode == BlendMode::AlphaBlend) ? 1 : 0;
 	}
 
-	void RenderModule::UpdateArgs(const SimulationContext& ctx)
+	void RenderModule::UpdateArgs(const RenderContext& ctx)
 	{
 		ParticleModule::UpdateArgs(ctx);
 	}
@@ -133,7 +133,7 @@ namespace DE {
 		}
 	}
 
-	void BillboardRenderModule::UpdateArgs(const SimulationContext& ctx)
+	void BillboardRenderModule::UpdateArgs(const RenderContext& ctx)
 	{
 		RenderModule::UpdateArgs(ctx);
 		if (ctx.billboardArgsBuffer) {
@@ -278,7 +278,7 @@ namespace DE {
 		}
 	}
 
-	void MeshRenderModule::UpdateArgs(const SimulationContext& ctx)
+	void MeshRenderModule::UpdateArgs(const RenderContext& ctx)
 	{
 		if (!ctx.meshArgsBuffer)
 			return;

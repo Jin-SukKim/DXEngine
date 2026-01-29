@@ -278,9 +278,6 @@ namespace DE {
 		}
 
 		SwapBuffer();
-
-		for (auto& mod : m_modules)
-			mod->UpdateArgs(simCtx);
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
@@ -331,6 +328,9 @@ namespace DE {
 			&m_billboardArgsBuffer,
 			&m_meshArgsBuffer
 		};
+
+		for (auto& mod : m_modules)
+			mod->UpdateArgs(renderCtx);
 
 		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 		for (auto& mod : m_modules)
