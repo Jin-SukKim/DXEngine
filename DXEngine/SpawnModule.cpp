@@ -62,14 +62,14 @@ namespace DE {
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
 		}
 
-		//m_totalSpawnCount = 1;
-		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
-		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
+		m_totalSpawnCount = 1;
+		//UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
+		//m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
-		if (spawnCycles > 0)
-			m_spawnAccumulator -= static_cast<float>(spawnCycles);
-		if (m_totalSpawnCount < 0)
-			m_totalSpawnCount = 0;
+		//if (spawnCycles > 0)
+		//	m_spawnAccumulator -= static_cast<float>(spawnCycles);
+		//if (m_totalSpawnCount < 0)
+		//	m_totalSpawnCount = 0;
 
 		ctx.frameConstData.spawnCount = m_totalSpawnCount;
 	}
@@ -93,10 +93,7 @@ namespace DE {
 
 		}
 		else if (m_spawnShape == 4) {
-			if (ctx.bakedSpawnPos) {
-				ID3D11ShaderResourceView* srv = ctx.bakedSpawnPos->GetSRV();
-				ctx.context->CSSetShaderResources(0, 1, &srv);
-			}
+			ctx.context->CSSetShaderResources(0, 1, ctx.bakedSpawnPos.GetAddressOfSRV());
 		}
 		else if (m_spawnShape == 5) {
 			if (ctx.customPositions) {

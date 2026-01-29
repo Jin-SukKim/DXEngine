@@ -85,6 +85,7 @@ public:
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConstsBuffer() { return m_frameConsts; }
 	ParticleFrameConsts& GetFrameConstsData(UINT emitterID) { return m_frameConsts.Get(emitterID); }
 	void BindConstantID(UINT emitterID);
+	StructuredBuffer<Vector3>& GetBakedSpawnBuffer() { return m_bakedSpawnPos; }
 
 	void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
 private:
@@ -93,6 +94,7 @@ private:
 	void UpdateTransform();
 
 	void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity);
+	void RegisterBakedPos(ParticleEmitter* emitter);
 
 	// SubEmitter Ã³¸®
 	void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
@@ -132,6 +134,9 @@ private:
 	StructuredBuffer<ParticleConsts> m_consts;
 	StructuredBuffer<ParticleFrameConsts> m_frameConsts;
 	std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
+
+	StructuredBuffer<Vector3> m_bakedSpawnPos;
+	UINT m_currentBakedOffset = 0;
 };
 
 }

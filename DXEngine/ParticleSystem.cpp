@@ -63,6 +63,10 @@ namespace DE {
 		// mesh 데이터도 CPU만 복사
 		m_meshVertex.SetData(other.m_meshVertex.GetCpu());
 		m_meshIndices.SetData(other.m_meshIndices.GetCpu());
+
+		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
+		m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
+
 	}
 
 	void ParticleSystem::Initialize()
@@ -99,6 +103,8 @@ namespace DE {
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
 		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
 
+		m_bakedSpawnPos.Initialize(device, m_maxTotalParticles);
+
 		UpdateTransform();
 		for (auto& emitter : m_emitters) {
 			emitter->SetOwner(this);
@@ -115,10 +121,6 @@ namespace DE {
 			RegisterEmitter(emitter.get(), capacity);
 		}
 
-		for (auto& id : m_emitterIDs) {
-			id.Upload();
-		}
-
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();
 		else if (m_state == ParticleState::Stopped) Stop();
@@ -130,6 +132,19 @@ namespace DE {
 
 		for (auto& emitter : m_emitters)
 			emitter->OnSpawn();
+
+		for (auto& emitter : m_emitters) {
+			// Baked 데이터가 CPU에 있으면 GPU 버퍼 생성 및 업로드
+			if (emitter->GetBakedCount() > 0) {
+				RegisterBakedPos(emitter.get());
+			}
+		}
+
+		for (auto& id : m_emitterIDs) {
+			id.Upload();
+		}
+
+		m_bakedSpawnPos.Upload(context);
 
 		m_consts.Upload(context);
 		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
@@ -456,6 +471,18 @@ namespace DE {
 
 		m_currentParticleOffset += capacity;
 		++m_currentEmitterIndex;
+	}
+
+	void ParticleSystem::RegisterBakedPos(ParticleEmitter* emitter)
+	{
+		emitter->SetBakedInfo(m_currentBakedOffset);
+		auto& positions = m_bakedSpawnPos.GetCpu();
+		EmitterID& id = m_emitterIDs[m_currentEmitterIndex].GetCpu();
+		id.bakedOffset = m_currentBakedOffset;
+
+		UINT bakedCount = emitter->LoadBakedSpawnData(m_bakedSpawnPos);
+		m_currentBakedOffset += bakedCount;
+		m_consts.Get(emitter->GetEmitterID()).spawn.bakedCount = bakedCount;
 	}
 
 	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)

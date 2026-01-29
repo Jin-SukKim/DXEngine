@@ -50,11 +50,12 @@ namespace DE {
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
 		// Texture Bake 데이터 설정 (Spawn 모듈용)
-		void LoadBakedSpawnData(const std::string& path);
+		void SetBakedSpawnPath(const std::string& path);
+		UINT LoadBakedSpawnData(StructuredBuffer<Vector3>& outBakedSpawnPos);
+		void SetBakedInfo(UINT offset) { m_bakedPoolOffset = offset; }
 
 		// Baked Spawn Position 접근자
-		StructuredBuffer<Vector3>* GetBakedSpawnBuffer() { return &m_bakedSpawnPos; }
-		UINT GetBakedCount() const { return m_bakedCount; }
+		UINT& GetBakedCount() { return m_bakedCount; }
 		
 		// Render 버퍼 접근자
 		BitonicSort* GetSortBuffer() { return &m_sortBuffer; }
@@ -106,7 +107,8 @@ namespace DE {
 		FileWatcher::CallbackID m_watcherID = 0;
 		
 		// Baked Spawn Position 데이터 (Texture Spawn용)
-		StructuredBuffer<Vector3> m_bakedSpawnPos;
+		UINT m_bakedPoolOffset = 0;
+		std::string m_bakedPath = "";
 		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_bakedCount = 0;
 		

@@ -145,7 +145,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     else if (spawn.spawnShape == 4) // BAKED POS
     {
         uint idx = rngState % spawn.bakedCount;
-        spawnPos = bakedSpawnPos[idx];
+        spawnPos = bakedSpawnPos[bakedOffset + idx];
     }
     else if (spawn.spawnShape == 5) {
         uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;

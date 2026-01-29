@@ -28,7 +28,7 @@ namespace DE {
 		saveToBin(context, outputPath);
 	}
 
-	void TextureSpawnBake::LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount)
+	void TextureSpawnBake::LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount, UINT offset)
 	{
 		std::string fullPath = m_presetPath + path;
 
@@ -100,9 +100,9 @@ namespace DE {
 		auto device = GET_SINGLE(RenderBase)->GetDevice();
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		outBuffer.Initialize(device.Get(), outCount);
-		outBuffer.SetData(positions);
-		outBuffer.Upload(context.Get());
+		for (UINT i = 0; i < positions.size(); ++i)
+			outBuffer.Get(offset + i) = positions[i];
+
 		std::cout << "[Success] Loaded " << outCount << " points to GPU" << std::endl;
 	}
 

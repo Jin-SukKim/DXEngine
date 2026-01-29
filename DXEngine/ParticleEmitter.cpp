@@ -50,8 +50,6 @@ namespace DE {
 			}
 		}
 
-		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
-		m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
 		m_customPositions.SetData(other.m_customPositions.GetCpu());
 	}
 
@@ -74,11 +72,6 @@ namespace DE {
 
 		InitializeBuffers(device);
 
-		// Baked 데이터가 CPU에 있으면 GPU 버퍼 생성 및 업로드
-		if (m_bakedCount > 0 && m_bakedSpawnPos.Size() > 0) {
-			m_bakedSpawnPos.Initialize(device.Get());
-			m_bakedSpawnPos.Upload(context.Get());
-		}
 
 		// Custom positions도 동일하게 처리
 		if (m_customPositions.Size() > 0) {
@@ -114,7 +107,7 @@ namespace DE {
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
 			device.Get(),
 			this->GetModule<RenderModule>(),
-			&m_bakedSpawnPos,
+			m_ownerSystem->GetBakedSpawnBuffer(),
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
@@ -183,7 +176,7 @@ namespace DE {
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
 			device.Get(),
 			nullptr,
-			&m_bakedSpawnPos,
+			m_ownerSystem->GetBakedSpawnBuffer(),
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
@@ -218,9 +211,17 @@ namespace DE {
 		m_watcherID = id;
 	}
 
-	void ParticleEmitter::LoadBakedSpawnData(const std::string& path)
+	void ParticleEmitter::SetBakedSpawnPath(const std::string& path)
 	{
-		TextureSpawnBake::Get().LoadBakedData(path, m_bakedSpawnPos, m_bakedCount);
+		m_bakedPath = path;
+		m_bakedCount = 1;
+	}
+
+	UINT ParticleEmitter::LoadBakedSpawnData(StructuredBuffer<Vector3>& outBakedSpawnPos)
+	{
+		TextureSpawnBake::Get().LoadBakedData(m_bakedPath, outBakedSpawnPos, m_bakedCount, m_bakedPoolOffset);
+		m_ownerSystem->GetConstsData(m_emitterID).spawn.bakedCount = m_bakedCount;
+		return m_bakedCount;
 	}
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
@@ -250,7 +251,7 @@ namespace DE {
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
 			device.Get(),
 			nullptr,
-			&m_bakedSpawnPos,
+			m_ownerSystem->GetBakedSpawnBuffer(),
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,

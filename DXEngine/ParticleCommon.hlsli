@@ -20,7 +20,8 @@ struct Particle
 cbuffer EmitterID : register(b5) {
     uint particleOffset;
     uint emitterID;
-    float2 padding0;
+    uint bakedOffset;
+    float padding0;
 };
 
 struct ParticleFrameConsts {

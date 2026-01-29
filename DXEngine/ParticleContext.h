@@ -38,7 +38,7 @@ struct SimulationContext : ParticleContext {
     RenderModule* renderModule;
     
     // Baked Spawn Position 데이터 (Texture Spawn용)
-    StructuredBuffer<Vector3>* bakedSpawnPos = nullptr;
+    StructuredBuffer<Vector3>& bakedSpawnPos;
     StructuredBuffer<Vector3>* customPositions = nullptr;
     UINT bakedCount = 0;
     
