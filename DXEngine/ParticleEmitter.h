@@ -53,13 +53,13 @@ namespace DE {
 		void SetBakedSpawnPath(const std::string& path);
 		UINT LoadBakedSpawnData(StructuredBuffer<Vector3>& outBakedSpawnPos);
 		void SetBakedInfo(UINT offset) { m_bakedPoolOffset = offset; }
+		const std::string& GetBakedPath() const { return m_bakedPath; }
 
 		// Baked Spawn Position 접근자
 		UINT& GetBakedCount() { return m_bakedCount; }
 		
 		// Render 버퍼 접근자
 		BitonicSort* GetSortBuffer() { return &m_sortBuffer; }
-		IndirectArgsBuffer<DrawInstancedArgs>* GetBillboardArgsBuffer() { return &m_billboardArgsBuffer; }
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>* GetMeshArgsBuffer() { return &m_meshArgsBuffer; }
 		
 		// SubEmitter
@@ -114,7 +114,6 @@ namespace DE {
 		
 		// Render 관련 버퍼
 		BitonicSort m_sortBuffer;
-		IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
 		// SubEmitter

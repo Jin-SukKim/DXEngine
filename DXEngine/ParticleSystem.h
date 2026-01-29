@@ -78,12 +78,19 @@ public:
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_currentBuffer]; }
 	StructuredBuffer<uint32_t>& GetReadCount() { return m_activeCounts[m_currentBuffer]; }
 	StructuredBuffer<uint32_t>& GetWriteCount() { return m_activeCounts[1 - m_currentBuffer]; }
+	
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 	UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
+	
+	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
+	UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 16; }
+	
 	StructuredBuffer<ParticleConsts>& GetConstsBuffer() { return m_consts; }
 	ParticleConsts& GetConstsData(UINT emitterID) { return m_consts.Get(emitterID); }
+	
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConstsBuffer() { return m_frameConsts; }
 	ParticleFrameConsts& GetFrameConstsData(UINT emitterID) { return m_frameConsts.Get(emitterID); }
+	
 	void BindConstantID(UINT emitterID);
 	StructuredBuffer<Vector3>& GetBakedSpawnBuffer() { return m_bakedSpawnPos; }
 
@@ -137,6 +144,9 @@ private:
 
 	StructuredBuffer<Vector3> m_bakedSpawnPos;
 	UINT m_currentBakedOffset = 0;
+	std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
+
+	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 };
 
 }

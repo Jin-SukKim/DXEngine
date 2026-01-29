@@ -44,7 +44,6 @@ struct SimulationContext : ParticleContext {
     
     // Render 관련 버퍼 (Render Module이 사용)
     BitonicSort* sortBuffer = nullptr;
-    IndirectArgsBuffer<DrawInstancedArgs>* billboardArgsBuffer = nullptr;
     IndirectArgsBuffer<DrawIndexedInstancedArgs>* meshArgsBuffer = nullptr;
 };
 
@@ -54,7 +53,9 @@ struct RenderContext : ParticleContext {
     const UINT& emitterID;
     // Render 관련 버퍼
     BitonicSort* sortBuffer = nullptr;
-    IndirectArgsBuffer<DrawInstancedArgs>* billboardArgsBuffer = nullptr;
+
+    ID3D11Buffer* billboardArgs;
+    UINT billbaordArgsOffset;
     IndirectArgsBuffer<DrawIndexedInstancedArgs>* meshArgsBuffer = nullptr;
 };
 

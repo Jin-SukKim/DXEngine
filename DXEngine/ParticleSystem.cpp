@@ -102,6 +102,10 @@ namespace DE {
 		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
 		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
+		
+		m_billboardArgsBuffer = IndirectArgsBuffer<DrawInstancedArgs>();
+		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
+		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
 
 		m_bakedSpawnPos.Initialize(device, m_maxTotalParticles);
 
@@ -130,15 +134,16 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		for (auto& emitter : m_emitters)
-			emitter->OnSpawn();
-
 		for (auto& emitter : m_emitters) {
 			// Baked 데이터가 CPU에 있으면 GPU 버퍼 생성 및 업로드
 			if (emitter->GetBakedCount() > 0) {
 				RegisterBakedPos(emitter.get());
 			}
 		}
+
+		for (auto& emitter : m_emitters)
+			emitter->OnSpawn();
+
 
 		for (auto& id : m_emitterIDs) {
 			id.Upload();
@@ -147,6 +152,7 @@ namespace DE {
 		m_bakedSpawnPos.Upload(context);
 
 		m_consts.Upload(context);
+		m_consts.Download(context);
 		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
 		ExecutePreWarm();
 		TextureManager::Get().BindParticleTextures();
@@ -475,14 +481,22 @@ namespace DE {
 
 	void ParticleSystem::RegisterBakedPos(ParticleEmitter* emitter)
 	{
+		auto it = m_bakedOffset.find(emitter->GetBakedPath());
+		if (it != m_bakedOffset.end()) {
+			emitter->SetBakedInfo(it->second.first);
+			m_consts.Get(emitter->GetEmitterID()).spawn.bakedCount = it->second.second;
+			return;
+		}
+
 		emitter->SetBakedInfo(m_currentBakedOffset);
 		auto& positions = m_bakedSpawnPos.GetCpu();
-		EmitterID& id = m_emitterIDs[m_currentEmitterIndex].GetCpu();
+		EmitterID& id = m_emitterIDs[emitter->GetEmitterID()].GetCpu();
 		id.bakedOffset = m_currentBakedOffset;
 
 		UINT bakedCount = emitter->LoadBakedSpawnData(m_bakedSpawnPos);
 		m_currentBakedOffset += bakedCount;
 		m_consts.Get(emitter->GetEmitterID()).spawn.bakedCount = bakedCount;
+		m_bakedOffset[emitter->GetBakedPath()] = {id.bakedOffset, bakedCount};
 	}
 
 	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)

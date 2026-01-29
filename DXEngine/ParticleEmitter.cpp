@@ -111,7 +111,6 @@ namespace DE {
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
-			&m_billboardArgsBuffer,
 			&m_meshArgsBuffer
 		};
 
@@ -180,7 +179,6 @@ namespace DE {
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
-			&m_billboardArgsBuffer,
 			&m_meshArgsBuffer
 		};
 
@@ -255,7 +253,6 @@ namespace DE {
 			&m_customPositions,
 			m_bakedCount,
 			&m_sortBuffer,
-			&m_billboardArgsBuffer,
 			&m_meshArgsBuffer
 		};
 
@@ -322,7 +319,8 @@ namespace DE {
 			this->GetModule<MaterialModule>(),
 			m_emitterID,
 			&m_sortBuffer,
-			&m_billboardArgsBuffer,
+			m_ownerSystem->GetBillboardArgs().GetBuffer(),
+			m_ownerSystem->GetBillboardArgsOffset(m_emitterID),
 			&m_meshArgsBuffer
 		};
 

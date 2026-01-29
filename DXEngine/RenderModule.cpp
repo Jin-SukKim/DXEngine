@@ -118,56 +118,38 @@ namespace DE {
 		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
-
-		// ParticleEmitter의 버퍼 초기화
-		if (ctx.billboardArgsBuffer) {
-			ctx.billboardArgsBuffer->Reset();
-			DrawInstancedArgs args = {};
-			args.vertexCountPerInstance = 0;  // activeCount에서 복사될 예정
-			args.instanceCount = 1;
-			args.startVertexLocation = 0;
-			args.startInstanceLocation = 0;
-
-			ctx.billboardArgsBuffer->Initialize(ctx.device, args, 4);
-		}
 	}
 
 	void BillboardRenderModule::UpdateArgs(const RenderContext& ctx)
 	{
 		RenderModule::UpdateArgs(ctx);
-		if (ctx.billboardArgsBuffer) {
-			// [변경] 원본(Global Count Buffer)에서 가져올 영역(Box)을 설정
-			// StructuredBuffer<uint>이므로, 각 ID마다 4바이트(sizeof(uint))씩 떨어져 있습니다.
-			uint32_t srcOffset = ctx.emitterID * sizeof(uint32_t);
 
-			D3D11_BOX srcBox;
-			srcBox.left = srcOffset;
-			srcBox.right = srcOffset + sizeof(uint32_t); // 시작점 + 4바이트 (즉, 1개만 복사)
-			srcBox.top = 0;
-			srcBox.bottom = 1;
-			srcBox.front = 0;
-			srcBox.back = 1;
+		uint32_t srcOffset = ctx.emitterID * sizeof(uint32_t);
 
-			// StructuredBuffer<uint>의 첫 번째 요소(activeCount)를 
-			// DrawInstancedArgs의 vertexCountPerInstance 위치에 복사
-			// activeCount 버퍼의 offset 0에서 4바이트를 billboardArgs의 offset 0으로 복사
-			ctx.context->CopySubresourceRegion(
-				ctx.billboardArgsBuffer->GetBuffer(),  // Dest buffer
-				0,                                      // Dest subresource
-				0,                                      // Dest X (offset in bytes)
-				0, 0,                                   // Dest Y, Z
-				ctx.readCount.GetBuffer(),           // Source buffer
-				0,                                      // Source subresource
-				&srcBox                                 // Source box (nullptr = entire resource)
-			);
-		}
+		D3D11_BOX srcBox;
+		srcBox.left = srcOffset;
+		srcBox.right = srcOffset + sizeof(uint32_t); // 시작점 + 4바이트 (즉, 1개만 복사)
+		srcBox.top = 0;
+		srcBox.bottom = 1;
+		srcBox.front = 0;
+		srcBox.back = 1;
+
+		ctx.context->CopySubresourceRegion(
+			ctx.billboardArgs,  // Dest buffer
+			0,                                      // Dest subresource
+			ctx.billbaordArgsOffset,                                      // Dest X (offset in bytes)
+			0, 0,                                   // Dest Y, Z
+			ctx.readCount.GetBuffer(),           // Source buffer
+			0,                                      // Source subresource
+			&srcBox                                 // Source box (nullptr = entire resource)
+		);
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
 		
-		if (!ctx.sortBuffer || !ctx.billboardArgsBuffer)
+		if (!ctx.sortBuffer)
 			return;
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
@@ -199,7 +181,7 @@ namespace DE {
 			break;
 		}
 
-		ctx.context->DrawInstancedIndirect(ctx.billboardArgsBuffer->GetBuffer(), 0);
+		ctx.context->DrawInstancedIndirect(ctx.billboardArgs, ctx.billbaordArgsOffset);
 
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
