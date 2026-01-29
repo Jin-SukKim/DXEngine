@@ -137,6 +137,18 @@ namespace DE {
 	{
 		RenderModule::UpdateArgs(ctx);
 		if (ctx.billboardArgsBuffer) {
+			// [변경] 원본(Global Count Buffer)에서 가져올 영역(Box)을 설정
+			// StructuredBuffer<uint>이므로, 각 ID마다 4바이트(sizeof(uint))씩 떨어져 있습니다.
+			uint32_t srcOffset = ctx.emitterID * sizeof(uint32_t);
+
+			D3D11_BOX srcBox;
+			srcBox.left = srcOffset;
+			srcBox.right = srcOffset + sizeof(uint32_t); // 시작점 + 4바이트 (즉, 1개만 복사)
+			srcBox.top = 0;
+			srcBox.bottom = 1;
+			srcBox.front = 0;
+			srcBox.back = 1;
+
 			// StructuredBuffer<uint>의 첫 번째 요소(activeCount)를 
 			// DrawInstancedArgs의 vertexCountPerInstance 위치에 복사
 			// activeCount 버퍼의 offset 0에서 4바이트를 billboardArgs의 offset 0으로 복사
@@ -147,7 +159,7 @@ namespace DE {
 				0, 0,                                   // Dest Y, Z
 				ctx.readCount.GetBuffer(),           // Source buffer
 				0,                                      // Source subresource
-				nullptr                                 // Source box (nullptr = entire resource)
+				&srcBox                                 // Source box (nullptr = entire resource)
 			);
 		}
 	}

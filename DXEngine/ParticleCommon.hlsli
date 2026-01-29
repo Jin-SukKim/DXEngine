@@ -1,6 +1,8 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
+
+
 Texture2DArray particleTex : register(t14);
 
 struct Particle

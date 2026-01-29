@@ -38,8 +38,8 @@ namespace DE {
 		ctx.context->DispatchIndirect(ctx.dispatchArgs, 0);
 		
 		// Barrier
-		ID3D11UnorderedAccessView* nullUAVs[2] = { nullptr, nullptr };
-		ctx.context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
+		ID3D11UnorderedAccessView* nullUAVs[4] = { nullptr, nullptr, nullptr, nullptr };
+		ctx.context->CSSetUnorderedAccessViews(0, 4, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 

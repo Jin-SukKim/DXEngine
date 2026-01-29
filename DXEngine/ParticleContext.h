@@ -50,7 +50,7 @@ struct SimulationContext : ParticleContext {
 // Render 단계
 struct RenderContext : ParticleContext {
     MaterialModule* materialModule;
-    
+    const UINT& emitterID;
     // Render 관련 버퍼
     BitonicSort* sortBuffer = nullptr;
     IndirectArgsBuffer<DrawInstancedArgs>* billboardArgsBuffer = nullptr;

@@ -46,9 +46,9 @@ namespace DE {
 		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
 	}
 
-	void SpawnModule::OnUpdate(const SimulationContext& ctx)
+	void SpawnModule::OnPreUpdate(const SimulationContext& ctx)
 	{
-		ParticleModule::OnUpdate(ctx);
+		ParticleModule::OnPreUpdate(ctx);
 		// Burst 로직: 아직 발사 안 했고, 설정된 Burst 개수가 있다면
 		if (m_burstCount > 0 && !m_burstFired)
 		{
@@ -62,14 +62,14 @@ namespace DE {
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
 		}
 
-		m_totalSpawnCount = 1;
-		//UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
-		//m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
+		//m_totalSpawnCount = 1;
+		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
+		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
-		//if (spawnCycles > 0)
-		//	m_spawnAccumulator -= static_cast<float>(spawnCycles);
-		//if (m_totalSpawnCount < 0)
-		//	m_totalSpawnCount = 0;
+		if (spawnCycles > 0)
+			m_spawnAccumulator -= static_cast<float>(spawnCycles);
+		if (m_totalSpawnCount < 0)
+			m_totalSpawnCount = 0;
 
 		ctx.frameConstBuffer.GetCpu().spawnCount = m_totalSpawnCount;
 	}

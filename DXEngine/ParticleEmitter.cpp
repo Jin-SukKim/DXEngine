@@ -235,6 +235,9 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
+		for (auto& mod : m_modules)
+			mod->OnPreUpdate(simCtx);
+
 		m_frameConsts.Upload();
 		ID3D11Buffer* constBuffers[] = {
 			m_frameConsts.Get(),
@@ -254,6 +257,13 @@ namespace DE {
 		} else
 			// Duration 종료 후에는 spawnCount = 0
 			frameConsts.spawnCount = 0;
+
+
+		ID3D11Buffer* nullB[] = {
+			nullptr,
+			nullptr
+		};
+		context->CSSetConstantBuffers(4, 2, nullB);
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
@@ -300,6 +310,7 @@ namespace DE {
 			m_ownerSystem->GetReadCount(),
 			m_ownerSystem->GetWriteCount(),
 			this->GetModule<MaterialModule>(),
+			m_emitterID,
 			&m_sortBuffer,
 			&m_billboardArgsBuffer,
 			&m_meshArgsBuffer
@@ -308,6 +319,7 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->UpdateArgs(renderCtx);
 
+		context->VSSetConstantBuffers(4, 1, m_frameConsts.GetAddressOf());
 		context->PSSetConstantBuffers(5, 1, m_consts.GetAddressOf());
 		for (auto& mod : m_modules)
 			mod->OnRender(renderCtx);

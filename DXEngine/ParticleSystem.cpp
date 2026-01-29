@@ -61,7 +61,6 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		std::vector<uint32_t> initialCount = { 0 };
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i] = StructuredBuffer<Particle>();
 			m_particles[i].Initialize(device.Get(), m_maxTotalParticles);
@@ -69,6 +68,7 @@ namespace DE {
 			m_activeCounts[i] = StructuredBuffer<uint32_t>();
 			m_activeCounts[i].Initialize(device.Get(), m_maxEmitters);
 
+			std::vector<uint32_t> initialCount(m_maxEmitters, 0);
 			m_activeCounts[i].SetData(initialCount);
 			m_activeCounts[i].Upload(context.Get());
 		}
