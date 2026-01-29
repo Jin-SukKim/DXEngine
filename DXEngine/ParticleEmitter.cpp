@@ -316,6 +316,12 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
+
+		ID3D11Buffer* constBuffers[] = {
+			m_frameConsts.Get(),
+			m_consts.Get()
+		};
+		context->CSSetConstantBuffers(4, 2, constBuffers);
 		for (auto& mod : m_modules)
 			mod->UpdateArgs(renderCtx);
 
