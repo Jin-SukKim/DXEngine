@@ -13,7 +13,6 @@ class RenderModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
-	void OnUpdate(const SimulationContext& ctx) override;
 	void UpdateArgs(const RenderContext& ctx) override;
 	virtual void OnRender(const RenderContext& ctx) override;
 	void SetBlendState();

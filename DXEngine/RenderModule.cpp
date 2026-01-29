@@ -14,57 +14,17 @@ namespace DE {
 	void RenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		ParticleModule::Initialize(ctx);
-		// BitonicSort는 ParticleEmitter에서 초기화
 	}
 
 	void RenderModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);
 		SetBlendState();
-		
-		// 정렬 플래그 설정
-		ctx.constsData.render.useSorting = 
-			(blendMode == BlendMode::AlphaBlend) ? 1 : 0;
 	}
 
 	void RenderModule::UpdateArgs(const RenderContext& ctx)
 	{
 		ParticleModule::UpdateArgs(ctx);
-	}
-
-	void RenderModule::OnUpdate(const SimulationContext& ctx)
-	{
-		ParticleModule::OnUpdate(ctx);
-
-		// [최적화] 정렬 제외
-		if (blendMode != BlendMode::AlphaBlend || !ctx.sortBuffer)
-			return;
-
-		// 정렬 초기화
-		ID3D11UnorderedAccessView* uav[1] = { ctx.sortBuffer->GetUAV() };
-		ctx.context->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
-		
-		ID3D11ShaderResourceView* srvs[] = {
-			ctx.readParticles.GetSRV(),
-			ctx.readCount.GetSRV()
-		};
-		ctx.context->CSSetShaderResources(0, 2, srvs);
-		
-		auto& initSortKeysCS = RenderBase::computeCommon.particle.initSortKeysCS;
-		ctx.context->CSSetShader(initSortKeysCS.computeShader.Get(), 0, 0);
-		
-		// [최적화] Thread group 계산 최적화
-		UINT dispatchCount = (ctx.frameConstData.maxParticles + 1023) >> 10; // division -> bit shift
-		ctx.context->Dispatch(dispatchCount, 1, 1);
-		
-		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
-		ctx.context->CSSetShaderResources(0, 2, nullSRVs);
-		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
-		ctx.context->CSSetShader(nullptr, 0, 0);
-
-		ctx.sortBuffer->Sort(ctx.context);
 	}
 
 	void RenderModule::OnRender(const RenderContext& ctx)
@@ -148,17 +108,11 @@ namespace DE {
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
-		
-		if (!ctx.sortBuffer)
-			return;
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 
-		ID3D11ShaderResourceView* sortSRVs[] = {
-			ctx.readParticles.GetSRV(),
-			ctx.sortBuffer->GetSRV()
-		};
-		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
+		ID3D11ShaderResourceView* srvs[] = { ctx.readParticles.GetSRV() };
+		ctx.context->VSSetShaderResources(0, 1, srvs);
 
 		ID3D11ShaderResourceView* texSRV = nullptr;
 		switch (m_textureMode)
@@ -183,8 +137,8 @@ namespace DE {
 
 		ctx.context->DrawInstancedIndirect(ctx.billboardArgs, ctx.billbaordArgsOffset);
 
-		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
-		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		ctx.context->VSSetShaderResources(0, 1, nullSRVs);
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
@@ -288,16 +242,13 @@ namespace DE {
 	{
 		RenderModule::OnRender(ctx);
 
-		if (!ctx.sortBuffer)
-			return;
-
 		Model* model = ModelManager::Get().GetModel(m_modelIdx);
 		if (!model) return;
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 
-		ID3D11ShaderResourceView* sortSRVs[] = { ctx.readParticles.GetSRV(), ctx.sortBuffer->GetSRV() };
-		ctx.context->VSSetShaderResources(1, 2, sortSRVs);
+		ID3D11ShaderResourceView* srvs[] = { ctx.readParticles.GetSRV() };
+		ctx.context->VSSetShaderResources(1, 1, srvs);
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {
 			auto& mesh = model->meshes[i];
@@ -313,8 +264,8 @@ namespace DE {
 			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgsBuffer.GetBuffer(), ctx.meshArgsOffset);
 		}
 
-		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
-		ctx.context->VSSetShaderResources(0, 2, nullSRVs);
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		ctx.context->VSSetShaderResources(1, 1, nullSRVs);
 	}
 
 	void MeshRenderModule::LoadFromJson(const json& data)

@@ -4,7 +4,6 @@
 #include "AppendBuffer.h"
 #include "StagingBuffer.h"
 #include "IndirectArgsBuffer.h"
-#include "BitonicSort.h"
 #include "ParticleModule.h"
 #include "FileWatcher.h"
 #include "MeshData.h"
@@ -55,13 +54,8 @@ namespace DE {
 		void SetBakedInfo(UINT offset) { m_bakedPoolOffset = offset; }
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
-		// Baked Spawn Position 접근자
 		UINT& GetBakedCount() { return m_bakedCount; }
 		
-		// Render 버퍼 접근자
-		BitonicSort* GetSortBuffer() { return &m_sortBuffer; }
-		
-		// SubEmitter
 		void SetDuration(float duration) { m_duration = duration; }
 		void SetCompletionDelay(float delay) { m_completionDelay = delay; }
 		bool IsCompleted() const { return m_isCompleted; }
@@ -110,9 +104,6 @@ namespace DE {
 		std::string m_bakedPath = "";
 		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_bakedCount = 0;
-		
-		// Render 관련 버퍼
-		BitonicSort m_sortBuffer;
 
 		// SubEmitter
 		float m_duration = -1.f; // -1: 무한(Looping), 0 >= : 지정 시간

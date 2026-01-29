@@ -66,9 +66,6 @@ namespace DE {
 			m_emitterID
 		};
 
-		// Render 버퍼 초기화 (RenderModule이 사용)
-		m_sortBuffer.Initialize(device.Get(), m_ownerSystem->GetFrameConstsData(m_emitterID).maxParticles);
-
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
 
@@ -112,7 +109,6 @@ namespace DE {
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			&m_customPositions,
 			m_bakedCount,
-			&m_sortBuffer,
 			m_ownerSystem->GetMeshArgs()
 		};
 
@@ -180,7 +176,6 @@ namespace DE {
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			&m_customPositions,
 			m_bakedCount,
-			&m_sortBuffer,
 			m_ownerSystem->GetMeshArgs()
 		};
 
@@ -254,7 +249,6 @@ namespace DE {
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			&m_customPositions,
 			m_bakedCount,
-			&m_sortBuffer,
 			m_ownerSystem->GetMeshArgs()
 		};
 
@@ -320,7 +314,6 @@ namespace DE {
 			m_ownerSystem->GetWriteCount(),
 			this->GetModule<MaterialModule>(),
 			m_emitterID,
-			&m_sortBuffer,
 			m_ownerSystem->GetBillboardArgs().GetBuffer(),
 			m_ownerSystem->GetBillboardArgsOffset(m_emitterID),
 			m_ownerSystem->GetMeshArgs(),
