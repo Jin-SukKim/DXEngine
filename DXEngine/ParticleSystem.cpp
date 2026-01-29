@@ -114,7 +114,9 @@ namespace DE {
 		m_initMeshArgs = std::vector<DrawIndexedInstancedArgs>(m_maxEmitters, { 0, 0, 0, 0, 0 });
 		for (auto& emitter : m_emitters) {
 			emitter->SetOwner(this);
-			emitter->Initialize();
+			emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+			
+			emitter->Initialize();  // 이제 m_emitterID가 올바르게 설정됨
 
 			// EventCallback 등록
 			emitter->SetEventCallback(
@@ -128,7 +130,7 @@ namespace DE {
 		}
 
 		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
-		m_meshArgsBuffer.Initialize(device, m_initMeshArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
+		m_meshArgsBuffer.Initialize(device, m_initMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();
@@ -475,7 +477,6 @@ namespace DE {
 	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity)
 	{
 		// Emitter에게 할당된 영역 정보를 설정
-		emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
 		EmitterID& id = m_emitterIDs[m_currentEmitterIndex].GetCpu();
 		id.emitterID = m_currentEmitterIndex;
 		id.particleOffset = m_currentParticleOffset;

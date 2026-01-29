@@ -62,14 +62,14 @@ namespace DE {
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
 		}
 
-		m_totalSpawnCount = 1;
-		//UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
-		//m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
+		//m_totalSpawnCount = 1;
+		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
+		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
-		//if (spawnCycles > 0)
-		//	m_spawnAccumulator -= static_cast<float>(spawnCycles);
-		//if (m_totalSpawnCount < 0)
-		//	m_totalSpawnCount = 0;
+		if (spawnCycles > 0)
+			m_spawnAccumulator -= static_cast<float>(spawnCycles);
+		if (m_totalSpawnCount < 0)
+			m_totalSpawnCount = 0;
 
 		ctx.frameConstData.spawnCount = m_totalSpawnCount;
 	}
