@@ -58,6 +58,21 @@ namespace DE {
 
 	void ParticleSystem::Initialize()
 	{
+		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
+		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
+
+		std::vector<uint32_t> initialCount = { 0 };
+		for (UINT i = 0; i < 2; ++i) {
+			m_particles[i] = StructuredBuffer<Particle>();
+			m_particles[i].Initialize(device.Get(), m_maxTotalParticles);
+		
+			m_activeCounts[i] = StructuredBuffer<uint32_t>();
+			m_activeCounts[i].Initialize(device.Get(), m_maxEmitters);
+
+			m_activeCounts[i].SetData(initialCount);
+			m_activeCounts[i].Upload(context.Get());
+		}
+
 		m_meshConsts.Initialize();
 		UpdateTransform();
 		for (auto& emitter : m_emitters) {
@@ -68,6 +83,10 @@ namespace DE {
 				[this](EmitterEvent event, ParticleEmitter* em) {
 					this->OnEmitterEvent(event, em); // SubEmitter 생성 함수
 				});
+
+			emitter->SetOwner(this);
+			// Buffer 메모리 offet, index 할당
+			RegisterEmitter(emitter.get(), emitter->GetMaxParticles());
 		}
 
 		if (m_state == ParticleState::Playing) Restart();
@@ -97,6 +116,10 @@ namespace DE {
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
+		// activeCount를 0으로 초기화
+		const UINT clearVal[1] = { 0 };
+		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
+
 		if (m_vertexCount && m_indexCount) {
 			ID3D11ShaderResourceView* srvs[] = {
 				m_meshVertex.GetSRV(),
@@ -112,6 +135,11 @@ namespace DE {
 		// Sub-Emitter 업데이트
 		for (auto& emitter : m_dynamicEmitters)
 			emitter->Update(newDt);
+
+		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 5, nullSRVs);
+
+		SwapBuffer();
 
 		// 완료된 Sub-Emitter 제거
 		std::erase_if(m_dynamicEmitters, [](const auto& em) {
@@ -129,9 +157,6 @@ namespace DE {
 				// 루핑이 꺼져있다면 완전 정지
 				Stop();
 		}
-
-		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 5, nullSRVs);
 	}
 
 	void ParticleSystem::Render()
@@ -161,6 +186,7 @@ namespace DE {
 
 		std::unique_ptr emitter = ParticleLoader::Load<ParticleEmitter>(name);
 		if (emitter) {
+			emitter->SetOwner(this);
 			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
 				this->OnEmitterEvent(event, em);
 				});
@@ -171,6 +197,7 @@ namespace DE {
 	void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter)
 	{
 		if (emitter) {
+			emitter->SetOwner(this);
 			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
 				this->OnEmitterEvent(event, em);
 				});
@@ -352,6 +379,15 @@ namespace DE {
 		meshConsts.worldIT = meshConsts.world.Invert();
 
 		this->SetTransform(meshConsts);
+	}
+
+	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity)
+	{
+		// Emitter에게 할당된 영역 정보를 설정
+		emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+
+		m_currentParticleOffset += capacity;
+		++m_currentEmitterIndex;
 	}
 
 	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)

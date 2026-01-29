@@ -12,6 +12,7 @@
 #include "ParticleContext.h"
 #include "Mesh.h"
 #include "TextureSpawnBake.h"
+#include "ParticleSystem.h"
 
 namespace DE {
 
@@ -110,10 +111,10 @@ namespace DE {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
-			GetReadBuffer(),
-			GetWriteBuffer(),
-			GetReadCount(),
-			GetWriteCount(),
+			m_ownerSystem->GetReadBuffer(),
+			m_ownerSystem->GetWriteBuffer(),
+			m_ownerSystem->GetReadCount(),
+			m_ownerSystem->GetWriteCount(),
 			0.f,
 			0.f,
 			m_dispatchArgs.GetBuffer(),
@@ -176,19 +177,6 @@ namespace DE {
 
 	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
 	{
-		// 기존 버퍼 해제
-		std::vector<uint32_t> initialCount = { 0 };
-		for (UINT i = 0; i < 2; ++i) {
-			m_particles[i] = StructuredBuffer<Particle>();
-			m_activeCounts[i] = StructuredBuffer<uint32_t>();
-
-			m_particles[i].Initialize(device.Get(), m_frameConsts.GetCpu().maxParticles);
-			m_activeCounts[i].Initialize(device.Get(), 1);
-
-			m_activeCounts[i].SetData(initialCount);
-			m_activeCounts[i].Upload(GET_SINGLE(RenderBase)->GetContext().Get());
-		}
-
 		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
 		m_dispatchArgs.Initialize(device.Get(), { 0, 1, 1 }, 4);
 	}
@@ -202,10 +190,6 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		// activeCount를 0으로 초기화
-		const UINT clearVal[1] = { 0 };
-		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
-		
 		m_elapsedTime += dt;
 
 		// Duration 체크 (m_duration > 0일 때만)
@@ -227,15 +211,17 @@ namespace DE {
 		ParticleFrameConsts& frameConsts = m_frameConsts.GetCpu();
 		frameConsts.dt = dt;
 		frameConsts.time = m_elapsedTime;
+		frameConsts.particleOffset = m_poolOffset;
+		frameConsts.emitterID = m_emitterID;
 		
 		SimulationContext simCtx = {
 			context.Get(),
 			m_consts,
 			m_frameConsts,
-			GetReadBuffer(),
-			GetWriteBuffer(),
-			GetReadCount(),
-			GetWriteCount(),
+			m_ownerSystem->GetReadBuffer(),
+			m_ownerSystem->GetWriteBuffer(),
+			m_ownerSystem->GetReadCount(),
+			m_ownerSystem->GetWriteCount(),
 			dt,
 			m_elapsedTime,
 			m_dispatchArgs.GetBuffer(),
@@ -268,8 +254,6 @@ namespace DE {
 		} else
 			// Duration 종료 후에는 spawnCount = 0
 			frameConsts.spawnCount = 0;
-
-		SwapBuffer();
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
@@ -278,7 +262,7 @@ namespace DE {
 			m_dispatchArgs.GetUAV()
 		};
 
-		context->CSSetShaderResources(0, 1, GetReadCount().GetAddressOfSRV());
+		context->CSSetShaderResources(0, 1, m_ownerSystem->GetReadCount().GetAddressOfSRV());
 		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
@@ -311,10 +295,10 @@ namespace DE {
 			context,
 			m_consts,
 			m_frameConsts,
-			GetReadBuffer(),
-			GetWriteBuffer(),
-			GetReadCount(),
-			GetWriteCount(),
+			m_ownerSystem->GetReadBuffer(),
+			m_ownerSystem->GetWriteBuffer(),
+			m_ownerSystem->GetReadCount(),
+			m_ownerSystem->GetWriteCount(),
 			this->GetModule<MaterialModule>(),
 			&m_sortBuffer,
 			&m_billboardArgsBuffer,
@@ -373,5 +357,18 @@ namespace DE {
 	const std::wstring& ParticleEmitter::GetName() const
 	{
 		return m_name;
+	}
+	void ParticleEmitter::SetMemoryInfo(UINT offset, UINT index)
+	{
+		m_poolOffset = offset;
+		m_emitterID = index;
+	}
+	void ParticleEmitter::SetOwner(ParticleSystem* system)
+	{
+		m_ownerSystem = system;
+	}
+	UINT ParticleEmitter::GetMaxParticles()
+	{
+		return m_frameConsts.GetCpu().maxParticles;
 	}
 }

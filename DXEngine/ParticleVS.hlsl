@@ -31,7 +31,7 @@ float3x3 GetRotationMatrix(float3 rot) {
 GSInput main(uint vertexID : SV_VertexID)
 {
     uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
-    Particle p = particles[particleIdx];
+    Particle p = particles[particleOffset + particleIdx];
 
     GSInput output;
 

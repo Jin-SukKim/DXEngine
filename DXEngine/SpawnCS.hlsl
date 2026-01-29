@@ -120,7 +120,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (dtID.x >= spawnCount)
         return;
 
-    if (activeCount[0] >= maxParticles)
+    if (activeCount[emitterID] >= maxParticles)
         return;
 
     // 시드 초기화
@@ -194,6 +194,6 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     // counts[0]을 1 증가시키고, '증가되기 전의 값'을 index에 받아옵니다.
     uint index;
-    InterlockedAdd(activeCount[0], 1, index);
-    particles[index] = p;
+    InterlockedAdd(activeCount[emitterID], 1, index);
+    particles[particleOffset + index] = p;
 }

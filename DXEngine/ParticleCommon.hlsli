@@ -20,6 +20,9 @@ cbuffer ParticleFrameConsts : register(b4) {
     float time;
     uint spawnCount;
     uint maxParticles;
+    uint particleOffset;
+    uint emitterID;
+    float2 padding0;
 };
 
 struct SpawnConsts {

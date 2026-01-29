@@ -14,10 +14,10 @@ float3 RotateVector(float3 v, float3 axis, float angle)
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
-    if (dtID.x >= activeCount[0])
+    if (dtID.x >= activeCount[emitterID])
         return;
 
-    Particle p = particles[dtID.x];
+    Particle p = particles[particleOffset + dtID.x];
 
     // 1. 회전할 각도 계산 (Rate * DeltaTime)
     // 매 프레임 조금씩 돌립니다.
@@ -44,5 +44,5 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     // 밖으로 튀어 나가거나 이상한 나선형을 그리게 됩니다.
     p.velocity = RotateVector(p.velocity, axis, rotationAngle);
 
-    particles[dtID.x] = p;
+    particles[particleOffset + dtID.x] = p;
 }

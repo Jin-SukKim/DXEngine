@@ -28,10 +28,10 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= activeCount[0])
+    if (dtID.x >= activeCount[emitterID])
         return;
 
-    Particle p = particles[dtID.x];
+    Particle p = particles[particleOffset + dtID.x];
 
     // Vortex(소용돌이)        
     // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
@@ -47,6 +47,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
         p.velocity += vForce * dt;
 
-        particles[dtID.x].velocity = p.velocity;
+        particles[particleOffset + dtID.x].velocity = p.velocity;
     }
 }

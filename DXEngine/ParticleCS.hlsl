@@ -9,10 +9,10 @@ RWStructuredBuffer<uint> writeCount : register(u3);
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= readCount[0])
+    if (dtID.x >= readCount[emitterID])
         return;
     
-    Particle p = readParticles[dtID.x];
+    Particle p = readParticles[particleOffset + dtID.x];
     
     if (p.life - dt > 0.f) {
         p.life -= dt;
@@ -44,7 +44,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 
         // 결과 저장
         uint index;
-        InterlockedAdd(writeCount[0], 1, index);
-        writeParticles[index] = p;
+        InterlockedAdd(writeCount[emitterID], 1, index);
+        writeParticles[particleOffset + index] = p;
     }
 }

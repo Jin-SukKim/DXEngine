@@ -73,10 +73,19 @@ public:
 
 	// 모든 Emitter 종료 확인 (SubEmitter 포함)
 	bool IsAllEmittersCompleted() const;
+
+	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_currentBuffer]; }
+	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_currentBuffer]; }
+	StructuredBuffer<uint32_t>& GetReadCount() { return m_activeCounts[m_currentBuffer]; }
+	StructuredBuffer<uint32_t>& GetWriteCount() { return m_activeCounts[1 - m_currentBuffer]; }
+
+	void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
 private:
 	void Reset();
 	void ExecutePreWarm();
 	void UpdateTransform();
+
+	void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity);
 
 	// SubEmitter 처리
 	void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
@@ -102,6 +111,15 @@ private:
 
 	// 동적으로 생성된 Sub-Emitter
 	std::vector<std::unique_ptr<ParticleEmitter>> m_dynamicEmitters;
+
+	// 파티클 버퍼 (이중 버퍼링)
+	StructuredBuffer<uint32_t> m_activeCounts[2];
+	StructuredBuffer<Particle> m_particles[2];
+	UINT m_currentBuffer = 0;
+	UINT m_currentParticleOffset = 0; // 다음 emitter에게 할당할 particle 시작 위치
+	UINT m_currentEmitterIndex = 0; // 다음 emitter에게 할당할 ID
+	UINT m_maxTotalParticles = 1000000; // 최대 Particle 개수
+	UINT m_maxEmitters = 64; // 최대 emitter 개수
 };
 
 }

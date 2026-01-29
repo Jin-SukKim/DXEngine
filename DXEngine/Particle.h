@@ -18,6 +18,9 @@ namespace DE {
         float time;
         UINT spawnCount;
         UINT maxParticles;
+        UINT particleOffset;
+        UINT emitterID;
+        Vector2 padding;
     };
 
     struct SpawnConsts {

@@ -18,5 +18,5 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // InstanceCount는 2번째 요소(offset 1)
     uint index = DTid.x * 5 + 1;
     // Draw Args의 두 번째 값(Offset 1)이 InstanceCount
-    drawArgs[index] = activeCount[0];
+    drawArgs[index] = activeCount[emitterID];
 }
