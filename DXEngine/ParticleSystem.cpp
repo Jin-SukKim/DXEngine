@@ -235,13 +235,6 @@ namespace DE {
 		// µ¿Àû Sub-Emitter ·»´õ¸µ
 		for (auto& emitter : m_dynamicEmitters)
 			emitter->Render();
-
-		ID3D11ShaderResourceView* nullCB[] = { nullptr, nullptr };
-		context->VSSetConstantBuffers(6, 1, NULL);
-		context->CSSetShaderResources(7, 2, nullCB);
-		context->VSSetShaderResources(7, 2, nullCB);
-		context->PSSetShaderResources(7, 2, nullCB);
-
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)

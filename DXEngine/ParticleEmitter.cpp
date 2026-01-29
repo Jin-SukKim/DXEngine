@@ -258,6 +258,8 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
+		m_ownerSystem->BindConstantID(m_emitterID);
+
 		UpdateArgsBuffers(context.Get()); 
 
 		for (auto& mod : m_modules)
@@ -323,6 +325,7 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
+		m_ownerSystem->BindConstantID(m_emitterID);
 		for (auto& mod : m_modules)
 			mod->UpdateArgs(renderCtx);
 

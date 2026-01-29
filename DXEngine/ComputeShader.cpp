@@ -28,8 +28,8 @@ namespace DE {
 
 	void ComputeShader::ComputeShaderBarrier(ID3D11DeviceContext* context)
 	{
-		ID3D11ShaderResourceView* nullSRVs[8] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[8] = { nullptr };
+		ID3D11ShaderResourceView* nullSRVs[6] = { nullptr };
+		ID3D11UnorderedAccessView* nullUAVs[6] = { nullptr };
 
 		context->CSSetShaderResources(0, 8, nullSRVs);
 		context->CSSetUnorderedAccessViews(0, 8, nullUAVs, nullptr);
