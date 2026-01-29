@@ -46,9 +46,9 @@ namespace DE {
 		ctx.frameConstBuffer.GetCpu().maxParticles = m_maxParticles;
 	}
 
-	void SpawnModule::OnUpdateCPU(SimulationContext& ctx)
+	void SpawnModule::OnUpdate(const SimulationContext& ctx)
 	{
-		ParticleModule::OnUpdateCPU(ctx);
+		ParticleModule::OnUpdate(ctx);
 		// Burst 로직: 아직 발사 안 했고, 설정된 Burst 개수가 있다면
 		if (m_burstCount > 0 && !m_burstFired)
 		{

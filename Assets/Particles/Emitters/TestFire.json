@@ -2,7 +2,7 @@
   "Name": "FireEffect",
   "Spawn": {
     "space": "World",
-    "localPos": [ 0.0, 0.0, -0.1 ],
+    "localPos": [ 1.0, 0.0, -0.1 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
     "shape": "Texture",

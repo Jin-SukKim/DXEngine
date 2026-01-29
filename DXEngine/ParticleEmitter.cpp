@@ -249,16 +249,6 @@ namespace DE {
 			&m_meshArgsBuffer
 		};
 
-		// Duration 종료 전 혹은 Looping일때만 계속 Spawn
-		if (!m_isDurationEnded) {
-			for (auto& mod : m_modules)
-				mod->OnUpdateCPU(simCtx);
-		}
-		else {
-			// Duration 종료 후에는 spawnCount = 0
-			frameConsts.spawnCount = 0;
-		}
-
 		m_frameConsts.Upload();
 		ID3D11Buffer* constBuffers[] = {
 			m_frameConsts.Get(),
@@ -275,7 +265,9 @@ namespace DE {
 		if (!m_isDurationEnded) {
 			for (auto& mod : m_modules)
 				mod->LateUpdate(simCtx); // 현재 SpawnModule에서만 Particle을 생성하기 위해 사용중
-		}
+		} else
+			// Duration 종료 후에는 spawnCount = 0
+			frameConsts.spawnCount = 0;
 
 		SwapBuffer();
 	}

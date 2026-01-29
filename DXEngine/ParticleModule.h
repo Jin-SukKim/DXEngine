@@ -20,9 +20,8 @@ public:
 
 	virtual void Initialize(ParticleInitContext& ctx) {}
 	virtual void OnSpawn(SimulationContext& context) { if (!m_isEnabled) return; }
-	virtual void OnUpdateCPU(SimulationContext& context) { if (!m_isEnabled) return; }
-	virtual void LateUpdate(SimulationContext& context) { if (!m_isEnabled) return; }
 	virtual void OnUpdate(const SimulationContext& context) { if (!m_isEnabled) return; }
+	virtual void LateUpdate(SimulationContext& context) { if (!m_isEnabled) return; }
 	virtual void UpdateArgs(const RenderContext& ctx) { if (!m_isEnabled) return; };
 	virtual void OnRender(const RenderContext& context) { if (!m_isEnabled) return; }
 	//virtual void LoadFromJson();

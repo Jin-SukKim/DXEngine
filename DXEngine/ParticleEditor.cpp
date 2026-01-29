@@ -67,7 +67,7 @@ namespace DE {
 		//m_firework = AddObject<Firework>(L"Firework");
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		m_test = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
+		m_test = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
 		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 
