@@ -162,7 +162,7 @@ namespace DE {
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 
 		ID3D11ShaderResourceView* sortSRVs[] = {
-			ctx.readCount.GetSRV(),
+			ctx.readParticles.GetSRV(),
 			ctx.sortBuffer->GetSRV()
 		};
 		ctx.context->VSSetShaderResources(0, 2, sortSRVs);
