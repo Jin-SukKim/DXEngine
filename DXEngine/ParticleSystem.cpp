@@ -93,7 +93,7 @@ namespace DE {
 		for (auto& cb : m_emitterIDs)
 			cb.Initialize();
 
-		for (UINT i = m_emitterIDs.size(); i < m_maxEmitters; ++i) {
+		for (size_t i = m_emitterIDs.size(); i < m_maxEmitters; ++i) {
 			ConstantBuffer<EmitterID> cb;
 			cb.Initialize();
 			m_emitterIDs.push_back(cb);
@@ -127,6 +127,9 @@ namespace DE {
 			// Buffer 메모리 offet, index 할당
 			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
 			RegisterEmitter(emitter.get(), capacity);
+
+			// SubEmitter 전부 등록
+			LoadSubEmitter(emitter.get());
 		}
 
 		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
@@ -156,6 +159,9 @@ namespace DE {
 		for (auto& id : m_emitterIDs) {
 			id.Upload();
 		}
+
+		for (auto& emitter : m_subEmitterPool)
+			emitter.second->OnSpawn();
 
 		m_bakedSpawnPos.Upload(context);
 		m_consts.Upload(context);
@@ -196,7 +202,7 @@ namespace DE {
 			emitter->PreUpdate(newDt);
 
 		// Sub-Emitter 업데이트
-		for (auto& emitter : m_dynamicEmitters)
+		for (auto& emitter : m_activeSubEmitters)
 			emitter->PreUpdate(newDt);
 
 		m_frameConsts.Upload(context.Get());
@@ -207,7 +213,7 @@ namespace DE {
 			emitter->Update(newDt);
 
 		// Sub-Emitter 업데이트
-		for (auto& emitter : m_dynamicEmitters)
+		for (auto& emitter : m_activeSubEmitters)
 			emitter->Update(newDt);
 
 
@@ -220,10 +226,10 @@ namespace DE {
 
 		SwapBuffer();
 
-		// 완료된 Sub-Emitter 제거
-		std::erase_if(m_dynamicEmitters, [](const auto& em) {
-			return em->IsCompleted();
-			});
+		//// 완료된 Sub-Emitter 제거
+		//std::erase_if(m_activeSubEmitters, [](const auto& em) {
+		//	return em->IsCompleted();
+		//	});
 
 		// Looping이 아니고 모든 Emitter가 종료되면 Stop
 		//if (!m_looping && IsAllEmittersCompleted())
@@ -261,7 +267,7 @@ namespace DE {
 			emitter->Render();
 
 		// 동적 Sub-Emitter 렌더링
-		for (auto& emitter : m_dynamicEmitters)
+		for (auto& emitter : m_activeSubEmitters)
 			emitter->Render();
 	}
 
@@ -293,7 +299,8 @@ namespace DE {
 	void ParticleSystem::ClearEmitters()
 	{
 		m_emitters.clear();
-		m_dynamicEmitters.clear();
+		m_subEmitterPool.clear();
+		m_activeSubEmitters.clear();
 	}
 
 	void ParticleSystem::LoadFromJson(const json& data)
@@ -346,7 +353,6 @@ namespace DE {
 	void ParticleSystem::Stop()
 	{
 		m_state = ParticleState::Stopped;
-		m_dynamicEmitters.clear();
 	}
 	void ParticleSystem::Restart()
 	{
@@ -420,7 +426,7 @@ namespace DE {
 		}
 
 		// 동적 Sub-Emitter 체크
-		if (!m_dynamicEmitters.empty())
+		if (!m_activeSubEmitters.empty())
 			return false;
 
 		return true;
@@ -439,7 +445,7 @@ namespace DE {
 		for (auto& emitter : m_emitters)
 			emitter->Reset();
 		
-		m_dynamicEmitters.clear();
+		m_activeSubEmitters.clear();
 	}
 
 	void ParticleSystem::ExecutePreWarm()
@@ -517,22 +523,52 @@ namespace DE {
 	}
 	void ParticleSystem::SpawnSubEmitter(const SubEmitter& sub, const Vector3& position)
 	{
-		auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
-		if (!subEmitter)
+		// 풀에서 해당 경로의 Emitter 중 현재 사용 중이지 않은 것 찾기
+		ParticleEmitter* target = nullptr;
+
+		auto it = m_subEmitterPool.find(sub.emitterPath);
+		if (it == m_subEmitterPool.end())
 			return;
 
-		if (sub.inheritPosition)
-			subEmitter->SetSpawnOffset(position);
+		target = it->second.get();
 
-		// Sub-Emitter도 Event Callback 등록 (중첩 지원, SubEmitter 안에 SubEmitter)
-		subEmitter->SetEventCallback([this](EmitterEvent ev, ParticleEmitter* em) {
-			this->OnEmitterEvent(ev, em); // SubEmitter 생성 함수
-			});
+		// 상태 리셋 및 활성화
+		target->Reset();
+		if (sub.inheritPosition) target->SetSpawnOffset(position);
+		target->OnSpawn();
 
-		subEmitter->Initialize();
-		subEmitter->OnSpawn();
+		m_activeSubEmitters.push_back(target);
+	}
 
-		m_dynamicEmitters.emplace_back(std::move(subEmitter));
+	void ParticleSystem::LoadSubEmitter(ParticleEmitter* emitter)
+	{
+		auto subEmitters = emitter->GetSubEmitters();
+		for (const auto& sub : subEmitters) {
+			auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
+			if (!subEmitter)
+				return;
+
+			subEmitter->SetOwner(this);
+			subEmitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+
+			subEmitter->Initialize();  // 이제 m_emitterID가 올바르게 설정됨
+
+			subEmitter->SetName(sub.emitterPath);
+			// EventCallback 등록
+			subEmitter->SetEventCallback(
+				[this](EmitterEvent event, ParticleEmitter* em) {
+					this->OnEmitterEvent(event, em); // SubEmitter 생성 함수
+				});
+
+			// Buffer 메모리 offet, index 할당
+			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
+			RegisterEmitter(subEmitter.get(), capacity);
+
+			// SubEmitter 전부 등록
+			LoadSubEmitter(subEmitter.get());
+
+			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
+		}
 	}
 
 	void ParticleSystem::SetSpawnOffset(const Vector3& offset)

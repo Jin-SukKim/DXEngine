@@ -110,6 +110,7 @@ private:
 	// SubEmitter 처리
 	void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 	void SpawnSubEmitter(const SubEmitter& sub, const Vector3& position);
+	void LoadSubEmitter(ParticleEmitter* emitter);
 private:
 	Actor* m_owner = nullptr;
 	bool m_looping = true;
@@ -129,8 +130,10 @@ private:
 	UINT m_vertexCount = 0;
 	UINT m_indexCount = 0;
 
-	// 동적으로 생성된 Sub-Emitter
-	std::vector<std::unique_ptr<ParticleEmitter>> m_dynamicEmitters;
+	// 미리 생성해둔 SubEmitter
+	std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
+	// 활성화된 SubEmitter
+	std::vector<ParticleEmitter*> m_activeSubEmitters;
 
 	// 파티클 버퍼 (이중 버퍼링)
 	StructuredBuffer<uint32_t> m_activeCounts[2];
@@ -138,7 +141,7 @@ private:
 	UINT m_currentBuffer = 0;
 	UINT m_currentParticleOffset = 0; // 다음 emitter에게 할당할 particle 시작 위치
 	UINT m_currentEmitterIndex = 0; // 다음 emitter에게 할당할 ID
-	UINT m_maxTotalParticles = 1000000; // 최대 Particle 개수
+	UINT m_maxTotalParticles = 10000; // 최대 Particle 개수
 	UINT m_maxEmitters = 64; // 최대 emitter 개수
 
 	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;

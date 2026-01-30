@@ -39,10 +39,10 @@
         "trigger": "OnStart",
         "inheritPosition": true
       },
-        {
-            "path": "Effects/Holy_Aura.json",
-            "trigger": "OnComplete",
-            "inheritPosition": true
-        }
+      {
+        "path": "Particles\\Effects\\Combination\\HolySword\\Emitters\\Holy_Aura.json",
+        "trigger": "OnComplete",
+        "inheritPosition": true
+      }
     ]
 }

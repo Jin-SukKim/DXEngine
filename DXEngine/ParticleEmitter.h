@@ -61,6 +61,7 @@ namespace DE {
 		bool IsCompleted() const { return m_isCompleted; }
 		float GetElapsedTime() const { return m_elapsedTime; }
 
+		UINT GetSubEmitterCount() const { return static_cast<UINT>(m_subEmitters.size()); }
 		void AddSubEmitter(const SubEmitter& sub);
 		void ClearSubEmitters();
 		const std::vector<SubEmitter>& GetSubEmitters() const;
@@ -77,6 +78,7 @@ namespace DE {
 		void SetMemoryInfo(UINT offset, UINT index);
 		void SetOwner(ParticleSystem* system);
 		UINT GetEmitterID() { return m_emitterID; };
+		void SetName(std::wstring name) { m_name = name; }
 	private:
 		// 초기화 관련 함수들
 		void InitializeBuffers(ComPtr<ID3D11Device>& device);
