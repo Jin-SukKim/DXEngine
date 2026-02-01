@@ -54,6 +54,10 @@ namespace DE {
 		void SetBakedInfo(UINT offset) { m_bakedPoolOffset = offset; }
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
+		void SetCustomSpawnInfo(UINT offset) { m_customPoolOffset = offset; }
+		bool IsUsingCustomPositions() const { return m_useCustomPositions; }
+		const std::vector<Vector3>& GetCustomPositions() const { return m_customPositions; }
+
 		UINT& GetBakedCount() { return m_bakedCount; }
 		
 		void SetDuration(float duration) { m_duration = duration; }
@@ -104,8 +108,10 @@ namespace DE {
 		// Baked Spawn Position 데이터 (Texture Spawn용)
 		UINT m_bakedPoolOffset = 0;
 		std::string m_bakedPath = "";
-		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_bakedCount = 0;
+		std::vector<Vector3> m_customPositions;
+		UINT m_customPoolOffset = 0;
+		bool m_useCustomPositions = false;
 
 		// SubEmitter
 		float m_duration = -1.f; // -1: 무한(Looping), 0 >= : 지정 시간

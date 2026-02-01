@@ -6,13 +6,9 @@ namespace DE {
 	void SpawnModule::Initialize(ParticleInitContext& ctx)
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
-		// ComputeShader는 ComputeCommon에서 공유
-	}
-
-	void SpawnModule::OnSpawn(SimulationContext& ctx)
-	{
-		ParticleModule::OnSpawn(ctx);
-		SpawnConsts& consts = ctx.constsData.spawn;
+		
+		// 상수 값 초기화 (OnSpawn에서 이동)
+		SpawnConsts& consts = ctx.consts.spawn;
 		consts.localPos = m_localPos;
 		consts.spawnVolume = m_spawnVolume;
 		consts.spawnInnerRatio = m_spawnInnerRatio;
@@ -20,30 +16,16 @@ namespace DE {
 		consts.lifeRange = m_lifeRange;
 		consts.simulationSpace = m_simulationSpace;
 
-		// bakedCount는 ParticleSystem::RegisterBakedPos()에서 이미 올바르게 설정됨
-		// Texture(4) 모드와 Vertex(2), Surface(3) 모드 모두 RegisterBakedPos()에서 처리
-		// Custom(5) 모드만 여기서 설정
+		// Custom(5) 모드만 동적 처리 필요
 		if (m_spawnShape == 5) // Custom Mode
 		{
-			UINT posCount = (UINT)m_customPositions.size();
-			ctx.customPositions->Initialize(ctx.device, posCount);
-			ctx.customPositions->SetData(m_customPositions);
-			ctx.customPositions->Upload(ctx.context);
-
-			consts.bakedCount = posCount;
-
-			// 1. 이번 프레임의 시작 인덱스를 GPU에 전달
-			consts.spawnStartIndex = m_nextSpawnIndex;
-
-			// 2. 다음 프레임을 위해 인덱스 미리 이동 (Round-Robin)
-			// m_totalSpawnCount는 이번 프레임에 생성될 총 파티클 수입니다.
-			if (posCount > 0)
-			{
-				m_nextSpawnIndex = (m_nextSpawnIndex + m_totalSpawnCount) % posCount;
-			}
+			ctx.customPositions = m_customPositions;
+			ctx.consts.spawn.bakedCount = (UINT)m_customPositions.size();
+			ctx.usingCustomPositions = true;
+			ctx.consts.spawn.spawnStartIndex = 0;
 		}
 
-		ctx.frameConstData.maxParticles = m_maxParticles;
+		ctx.frameConsts.maxParticles = m_maxParticles;
 	}
 
 	void SpawnModule::OnPreUpdate(const SimulationContext& ctx)
@@ -96,10 +78,8 @@ namespace DE {
 			ctx.context->CSSetShaderResources(0, 1, ctx.bakedSpawnPos.GetAddressOfSRV());
 		}
 		else if (m_spawnShape == 5) {
-			if (ctx.customPositions) {
-				ID3D11ShaderResourceView* srv = ctx.customPositions->GetSRV();
-				ctx.context->CSSetShaderResources(0, 1, &srv);
-			}
+			ID3D11ShaderResourceView* srv = ctx.customPosBuffer.GetSRV();
+			ctx.context->CSSetShaderResources(0, 1, &srv);
 		}
 
 		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;

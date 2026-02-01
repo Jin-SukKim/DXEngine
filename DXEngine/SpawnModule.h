@@ -7,7 +7,6 @@ class SpawnModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx);
-	void OnSpawn(SimulationContext& ctx) override; 
 	void OnPreUpdate(const SimulationContext& ctx) override;
 	void LateUpdate(SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
@@ -15,6 +14,9 @@ public:
 
 	std::unique_ptr<ParticleModule> Clone() const override;
 	void SetSpawnPosition(const std::vector<Vector3>& positions);
+
+	const std::vector<Vector3>& GetCustomPositions() const { return m_customPositions; }
+	bool IsUsingCustomPositions() const { return m_spawnShape == 5 && !m_customPositions.empty(); }
 private:
 	Vector3 m_localPos = Vector3(0.f);
 	Vector3 m_spawnVolume = Vector3(0.05f, 0.15f, 0.05f);

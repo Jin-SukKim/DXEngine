@@ -17,7 +17,7 @@ namespace DE {
         UINT particleOffset;
         UINT emitterID;
         UINT bakedOffset;
-        float padding;
+        UINT customOffset;
     };
 
     struct ParticleFrameConsts {

@@ -68,11 +68,10 @@ namespace DE {
 
 	// ===== BillboardRenderModule =====
 
-	void BillboardRenderModule::OnSpawn(SimulationContext& ctx)
+	void BillboardRenderModule::Initialize(ParticleInitContext& ctx)
 	{
-		RenderModule::OnSpawn(ctx);
-
-		RenderConsts& consts = ctx.constsData.render;
+		RenderModule::Initialize(ctx);
+		RenderConsts& consts = ctx.consts.render;
 		consts.textureIdx = m_textureIdx;
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
@@ -194,6 +193,8 @@ namespace DE {
 	{
 		RenderModule::Initialize(ctx);
 
+		if (m_modelIdx < 0)
+			return;
 		Model* model = ModelManager::Get().GetModel(m_modelIdx);
 		if (!model)
 			return;
@@ -201,21 +202,8 @@ namespace DE {
 		// ParticleEmitter의 메시 Args 버퍼 초기화
 		auto& mesh = model->meshes[0];
 		ctx.meshArgs.indexCountPerInstance = mesh.indexCount;
-	}
-
-	void MeshRenderModule::OnSpawn(SimulationContext& ctx)
-	{
-		RenderModule::OnSpawn(ctx);
-
-		if (m_modelIdx < 0)
-			return;
-
-		Model* model = ModelManager::Get().GetModel(m_modelIdx);
-		if (!model)
-			return;
-
 		m_meshCount = static_cast<UINT>(model->meshes.size());
-		ctx.constsData.render.numMeshes = m_meshCount;
+		ctx.consts.render.numMeshes = m_meshCount;
 	}
 
 	void MeshRenderModule::UpdateArgs(const RenderContext& ctx)

@@ -6,7 +6,6 @@ class VisualModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnSpawn(SimulationContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	ModulePriority GetPriority() override { return ModulePriority::Visual; }
 	std::unique_ptr<ParticleModule> Clone() const override;

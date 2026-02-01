@@ -8,11 +8,6 @@ namespace DE {
 	void MaterialModule::Initialize(ParticleInitContext& ctx)
 	{
 		ParticleModule::Initialize(ctx);
-	}
-
-	void MaterialModule::OnSpawn(SimulationContext& ctx)
-	{
-		ParticleModule::OnSpawn(ctx);
 
 		if (!m_isLoadedFromJson && ctx.renderModule) {
 			const Model* model = ModelManager::Get().GetModel(ctx.renderModule->GetModelIndex());

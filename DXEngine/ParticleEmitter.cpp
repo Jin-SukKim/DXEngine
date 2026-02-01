@@ -40,7 +40,7 @@ namespace DE {
 		, m_duration(other.m_duration)
 		, m_completionDelay(other.m_completionDelay)
 		, m_subEmitters(other.m_subEmitters)
-		, m_initialSpawnPos(other.m_initialSpawnPos)  // 추가
+		, m_initialSpawnPos(other.m_initialSpawnPos)
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
@@ -49,8 +49,6 @@ namespace DE {
 					m_modules.push_back(std::move(clonedModule));
 			}
 		}
-
-		m_customPositions.SetData(other.m_customPositions.GetCpu());
 	}
 
 	void ParticleEmitter::Initialize()
@@ -63,20 +61,17 @@ namespace DE {
 			m_ownerSystem->GetConstsData(m_emitterID),
 			m_ownerSystem->GetFrameConstsData(m_emitterID),
 			m_ownerSystem->GetInitMeshArgs(m_emitterID),
-			m_emitterID
+			GetModule<RenderModule>(),
+			m_emitterID,
+			m_customPositions,
+			m_useCustomPositions
 		};
 
+		// 모듈들의 상수 설정이 여기서 수행됨
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
 
 		InitializeBuffers(device);
-
-
-		// Custom positions도 동일하게 처리
-		if (m_customPositions.Size() > 0) {
-			m_customPositions.Initialize(device.Get());
-			m_customPositions.Upload(context.Get());
-		}
 
 		// 초기 spawn 위치 저장 (Reset 시 복원용)
 		m_initialSpawnPos = m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos;
@@ -84,13 +79,12 @@ namespace DE {
 
 	void ParticleEmitter::OnSpawn()
 	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		m_elapsedTime = 0.f;
 		m_isDurationEnded = false;
 		m_isCompleted = false;
-		m_isStarted = false;
+		m_isStarted = false;  // OnStart는 첫 Update에서 처리
 
 		SimulationContext simCtx = {
 			context.Get(),
@@ -101,44 +95,41 @@ namespace DE {
 			m_ownerSystem->GetReadCount(),
 			m_ownerSystem->GetWriteCount(),
 			0.f,
-			0.f,
 			m_ownerSystem->GetDispatchArgs().GetBuffer(),
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
-			device.Get(),
-			this->GetModule<RenderModule>(),
 			m_ownerSystem->GetBakedSpawnBuffer(),
-			&m_customPositions,
-			m_bakedCount,
-			m_ownerSystem->GetMeshArgs()
+			m_ownerSystem->GetCustomPositions()
 		};
 
 		if (m_spawnOffset != Vector3(0.f)) 
 			m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos += m_spawnOffset;
 
-		// m_spawnOffset에 최종 위치 저장 (Sub-Emitter 상속용)
 		m_spawnOffset = m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos;
 
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
 
-		// OnStart 이벤트
-		if (!m_isStarted) {
-			ExecuteEvent(EmitterEvent::OnStart);
-			m_isStarted = true;
-		}
+		// ❌ 제거: OnStart 이벤트를 여기서 실행하지 않음
+		// if (!m_isStarted) {
+		//     ExecuteEvent(EmitterEvent::OnStart);
+		//     m_isStarted = true;
+		// }
 	}
 
 	void ParticleEmitter::PreUpdate(const float& dt)
 	{
-		// 완료된 경우 (Loop가 아닐때 종료된 경우)
 		if (m_isCompleted)
 			return;
 
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		m_elapsedTime += dt;
+		// OnStart 이벤트를 첫 Update에서 실행 (지연 실행)
+		if (!m_isStarted) {
+			ExecuteEvent(EmitterEvent::OnStart);
+			m_isStarted = true;
+		}
 
+		m_elapsedTime += dt;
 		// Duration 체크 (m_duration > 0일 때만)
 		if (m_duration > 0.f) {
 			if (!m_isDurationEnded && m_elapsedTime >= m_duration) {
@@ -168,15 +159,10 @@ namespace DE {
 			m_ownerSystem->GetReadCount(),
 			m_ownerSystem->GetWriteCount(),
 			dt,
-			m_elapsedTime,
 			m_ownerSystem->GetDispatchArgs().GetBuffer(),
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
-			device.Get(),
-			nullptr,
 			m_ownerSystem->GetBakedSpawnBuffer(),
-			&m_customPositions,
-			m_bakedCount,
-			m_ownerSystem->GetMeshArgs()
+			m_ownerSystem->GetCustomPositions()
 		};
 
 		for (auto& mod : m_modules)
@@ -229,7 +215,6 @@ namespace DE {
 		if (m_isCompleted)
 			return; 
 
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		SimulationContext simCtx = {
@@ -241,15 +226,10 @@ namespace DE {
 			m_ownerSystem->GetReadCount(),
 			m_ownerSystem->GetWriteCount(),
 			dt,
-			m_elapsedTime,
 			m_ownerSystem->GetDispatchArgs().GetBuffer(),
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
-			device.Get(),
-			nullptr,
 			m_ownerSystem->GetBakedSpawnBuffer(),
-			&m_customPositions,
-			m_bakedCount,
-			m_ownerSystem->GetMeshArgs()
+			m_ownerSystem->GetCustomPositions()
 		};
 
 		m_ownerSystem->BindConstantID(m_emitterID);
@@ -262,7 +242,7 @@ namespace DE {
 		// Duration 종료 전 혹은 Looping일때만 계속 계산
 		if (!m_isDurationEnded) {
 			for (auto& mod : m_modules)
-				mod->LateUpdate(simCtx); // 현재 SpawnModule에서만 Particle을 생성하기 위해 사용중
+				mod->LateUpdate(simCtx);
 		}
 		else
 			// Duration 종료 후에는 spawnCount = 0
@@ -325,7 +305,7 @@ namespace DE {
 			mod->UpdateArgs(renderCtx);
 
 		for (auto& mod : m_modules)
-			mod->OnRender(renderCtx);
+		 mod->OnRender(renderCtx);
 	}
 
 	void ParticleEmitter::AddModule(std::unique_ptr<ParticleModule>&& module) {

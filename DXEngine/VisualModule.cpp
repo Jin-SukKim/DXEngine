@@ -5,12 +5,8 @@
 namespace DE {
 	void VisualModule::Initialize(ParticleInitContext& ctx)
 	{
-	}
-
-	void VisualModule::OnSpawn(SimulationContext& ctx)
-	{
-		ParticleModule::OnSpawn(ctx);
-		VisualConsts& consts = ctx.constsData.visual;
+		// 상수 값 초기화 (OnSpawn에서 이동)
+		VisualConsts& consts = ctx.consts.visual;
 		consts.startColor = startColor;
 		consts.endColor = endColor;
 		consts.sizeRange = sizeRange;

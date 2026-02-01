@@ -5,13 +5,8 @@
 namespace DE {
 	void ForceModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ComputeShader는 ComputeCommon에서 관리
-	}
-
-	void ForceModule::OnSpawn(SimulationContext& ctx)
-	{
-		ParticleModule::OnSpawn(ctx);
-		ForceConsts& consts = ctx.constsData.force;
+		// 상수 값 초기화 (OnSpawn에서 이동)
+		ForceConsts& consts = ctx.consts.force;
 		consts.velocity = velocity;
 		consts.speedRange = speedRange;
 		consts.randomDir = randomDir;
@@ -32,7 +27,7 @@ namespace DE {
 		};
 		ctx.context->CSSetUnorderedAccessViews(0, 4, uavs, nullptr);
 
-		// ComputeCommon의 공용 ComputePSO 사용
+		// ComputeCommon의 공유 ComputePSO 사용
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
 		ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
 		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);

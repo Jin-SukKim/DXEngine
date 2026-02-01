@@ -7,7 +7,6 @@ class MaterialModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnSpawn(SimulationContext& context) override;
 
 	// 특정 서브 메쉬(SubMesh) 인덱스에 해당하는 재질 바인딩
 	void BindMaterialForMesh(int subMeshIndex);

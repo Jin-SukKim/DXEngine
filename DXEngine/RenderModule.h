@@ -34,7 +34,7 @@ class BillboardRenderModule : public RenderModule
 		Material, SingleTexture, TextureArray
 	};
 public:
-	void OnSpawn(SimulationContext& ctx) override;
+	void Initialize(ParticleInitContext& ctx) override;
 	void UpdateArgs(const RenderContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
@@ -60,7 +60,6 @@ class MeshRenderModule : public RenderModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnSpawn(SimulationContext& ctx) override;
 	void UpdateArgs(const RenderContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;

@@ -7,7 +7,6 @@ namespace DE {
 	{
 	public:
 		void Initialize(ParticleInitContext& ctx) override;
-		void OnSpawn(SimulationContext& ctx) override;
 		void OnUpdate(const SimulationContext& context) override;
 
 		// 위치를 강제로 수정하므로 업데이트 우선순위를 높게 잡거나, 물리 연산 이후(Post-Update)에 보정할 수도 있습니다.

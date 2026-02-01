@@ -7,15 +7,24 @@
 
 namespace DE {
 
-    class RenderModule;
-    class MaterialModule;
+class RenderModule;
+class MaterialModule;
+class ParticleSystem;
 
+//=============================================================================
+// ParticleInitContext - 초기화 시 사용
+//=============================================================================
 struct ParticleInitContext {
     ID3D11Device* device;
     ParticleConsts& consts;
     ParticleFrameConsts& frameConsts;
     DrawIndexedInstancedArgs& meshArgs;
+    RenderModule* renderModule;
     UINT emitterID;
+
+    // Custom Spawn Position
+    std::vector<Vector3>& customPositions;
+    bool& usingCustomPositions;
 };
 
 struct ParticleContext {
@@ -30,17 +39,10 @@ struct ParticleContext {
 
 struct SimulationContext : ParticleContext {
     float dt;
-    float time;
     ID3D11Buffer* dispatchArgs;
     UINT argsOffset;
-    ID3D11Device* device;
-    RenderModule* renderModule;
-    
     StructuredBuffer<Vector3>& bakedSpawnPos;
-    StructuredBuffer<Vector3>* customPositions = nullptr;
-    UINT bakedCount = 0;
-    
-    IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer;
+    StructuredBuffer<Vector3>& customPosBuffer;
 };
 
 struct RenderContext : ParticleContext {

@@ -66,6 +66,7 @@ namespace DE {
 
 		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
 		m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
+		m_customPositions.SetData(other.m_customPositions.GetCpu());
 
 	}
 
@@ -108,6 +109,7 @@ namespace DE {
 		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
 		
 		m_bakedSpawnPos.Initialize(device, m_maxTotalParticles);
+		m_customPositions.Initialize(device, m_maxTotalParticles);
 
 		UpdateTransform();
 
@@ -116,7 +118,7 @@ namespace DE {
 			emitter->SetOwner(this);
 			emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
 			
-			emitter->Initialize();  // 이제 m_emitterID가 올바르게 설정됨
+			emitter->Initialize();  // 모듈들의 상수 설정이 여기서 수행됨
 
 			// EventCallback 등록
 			emitter->SetEventCallback(
@@ -130,10 +132,31 @@ namespace DE {
 
 			// SubEmitter 전부 등록
 			LoadSubEmitter(emitter.get());
+
+			// bakedPath가 설정되어 있으면 등록
+			if (!emitter->GetBakedPath().empty()) {
+				RegisterBakedPos(emitter.get());
+			}
+			else if (emitter->IsUsingCustomPositions()) {
+				RegisterCustomPos(emitter.get());
+			}
 		}
 
 		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
 		m_meshArgsBuffer.Initialize(device, m_initMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
+
+		// 초기 상수값 업로드 (모듈들의 Initialize에서 설정된 값)
+		m_consts.Upload(context);
+		m_frameConsts.Upload(context);
+		// Baked/Custom 위치 데이터 업로드
+		m_bakedSpawnPos.Upload(context);
+		m_customPositions.Upload(context);
+
+		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+
+		for (auto& id : m_emitterIDs) {
+			id.Upload();
+		}
 
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();
@@ -144,28 +167,14 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		// 1. 먼저 Baked 데이터 등록 (bakedCount 설정)
+		// 그 다음 OnSpawn 호출 (동적으로 변경되는 값만 처리)
 		for (auto& emitter : m_emitters) {
-			// bakedPath가 설정되어 있으면 등록
-			if (!emitter->GetBakedPath().empty()) {
-				RegisterBakedPos(emitter.get());
-			}
-		}
-
-		// 2. 그 다음 OnSpawn 호출 (이때 bakedCount가 이미 설정되어 있음)
-		for (auto& emitter : m_emitters)
 			emitter->OnSpawn();
-
-		for (auto& id : m_emitterIDs) {
-			id.Upload();
 		}
 
 		for (auto& emitter : m_subEmitterPool)
 			emitter.second->OnSpawn();
-
-		m_bakedSpawnPos.Upload(context);
-		m_consts.Upload(context);
-		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+		
 		ExecutePreWarm();
 		TextureManager::Get().BindParticleTextures();
 	}
@@ -226,10 +235,10 @@ namespace DE {
 
 		SwapBuffer();
 
-		//// 완료된 Sub-Emitter 제거
-		//std::erase_if(m_activeSubEmitters, [](const auto& em) {
-		//	return em->IsCompleted();
-		//	});
+		// 완료된 Sub-Emitter 제거
+		std::erase_if(m_activeSubEmitters, [](const auto& em) {
+			return em->IsCompleted();
+			});
 
 		// Looping이 아니고 모든 Emitter가 종료되면 Stop
 		//if (!m_looping && IsAllEmittersCompleted())
@@ -511,6 +520,21 @@ namespace DE {
 		m_bakedOffset[emitter->GetBakedPath()] = {id.bakedOffset, bakedCount};
 	}
 
+	void ParticleSystem::RegisterCustomPos(ParticleEmitter* emitter)
+	{
+		emitter->SetCustomSpawnInfo(m_currentCustomOffset);
+
+		EmitterID& id = m_emitterIDs[emitter->GetEmitterID()].GetCpu();
+		id.customOffset = m_currentCustomOffset;
+
+		auto& positions = emitter->GetCustomPositions();
+		for (size_t i = 0; i < positions.size(); ++i) {
+			m_customPositions.Get(m_currentCustomOffset + i) = positions[i];
+		}
+
+		m_currentCustomOffset += static_cast<UINT>(positions.size());
+	}
+
 	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)
 	{
 		// 해당 Event에 대응하는 Sub-Emitter 생성
@@ -544,30 +568,43 @@ namespace DE {
 	{
 		auto subEmitters = emitter->GetSubEmitters();
 		for (const auto& sub : subEmitters) {
+			// 이미 등록된 SubEmitter인지 확인
+			if (m_subEmitterPool.contains(sub.emitterPath)) {
+				continue;  // 이미 등록됨, 건너뛰기
+			}
+
 			auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
 			if (!subEmitter)
-				return;
+				continue;  // return -> continue로 변경
 
 			subEmitter->SetOwner(this);
 			subEmitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
 
-			subEmitter->Initialize();  // 이제 m_emitterID가 올바르게 설정됨
+			subEmitter->Initialize();
 
 			subEmitter->SetName(sub.emitterPath);
-			// EventCallback 등록
 			subEmitter->SetEventCallback(
 				[this](EmitterEvent event, ParticleEmitter* em) {
-					this->OnEmitterEvent(event, em); // SubEmitter 생성 함수
+					this->OnEmitterEvent(event, em);
 				});
 
-			// Buffer 메모리 offet, index 할당
 			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
 			RegisterEmitter(subEmitter.get(), capacity);
 
-			// SubEmitter 전부 등록
-			LoadSubEmitter(subEmitter.get());
-
+			// 먼저 풀에 등록 (재귀 호출 전에 등록하여 순환 참조 방지)
+			ParticleEmitter* rawPtr = subEmitter.get();
 			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
+
+			// SubEmitter의 SubEmitter 등록 (순서 변경)
+			LoadSubEmitter(rawPtr);
+
+			// baked/custom 위치 등록
+			if (!rawPtr->GetBakedPath().empty()) {
+				RegisterBakedPos(rawPtr);
+			}
+			else if (rawPtr->IsUsingCustomPositions()) {
+				RegisterCustomPos(rawPtr);
+			}
 		}
 	}
 

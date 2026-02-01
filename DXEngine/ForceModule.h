@@ -7,7 +7,6 @@ class ForceModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnSpawn(SimulationContext& ctx) override; 
 	void OnUpdate(const SimulationContext& context) override;
 
 	ModulePriority GetPriority() override { return ModulePriority::Force; }

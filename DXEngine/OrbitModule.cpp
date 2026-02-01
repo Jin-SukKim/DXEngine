@@ -5,15 +5,8 @@
 namespace DE {
 	void OrbitModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ComputeShader 초기화는 ComputeCommon에서 수행
-	}
-
-	void OrbitModule::OnSpawn(SimulationContext& ctx)
-	{
-		ParticleModule::OnSpawn(ctx);
-
 		// ConstantBuffer 구조체에 Orbit 관련 필드가 추가되어야 합니다.
-		auto& consts = ctx.constsData.orbit;
+		auto& consts = ctx.consts.orbit;
 		consts.center = m_center;
 		consts.axis = m_axis;
 		consts.rotationRate = m_rotationRate; // 셰이더에서 dt와 곱해 사용

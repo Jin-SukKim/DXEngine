@@ -97,6 +97,7 @@ public:
 	
 	void BindConstantID(UINT emitterID);
 	StructuredBuffer<Vector3>& GetBakedSpawnBuffer() { return m_bakedSpawnPos; }
+	StructuredBuffer<Vector3>& GetCustomPositions() { return m_customPositions; }
 
 	void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
 private:
@@ -106,6 +107,7 @@ private:
 
 	void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity);
 	void RegisterBakedPos(ParticleEmitter* emitter);
+	void RegisterCustomPos(ParticleEmitter* emitter);
 
 	// SubEmitter 처리
 	void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
@@ -141,7 +143,7 @@ private:
 	UINT m_currentBuffer = 0;
 	UINT m_currentParticleOffset = 0; // 다음 emitter에게 할당할 particle 시작 위치
 	UINT m_currentEmitterIndex = 0; // 다음 emitter에게 할당할 ID
-	UINT m_maxTotalParticles = 10000; // 최대 Particle 개수
+	UINT m_maxTotalParticles = 10000000; // 최대 Particle 개수
 	UINT m_maxEmitters = 64; // 최대 emitter 개수
 
 	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
@@ -152,6 +154,8 @@ private:
 	StructuredBuffer<Vector3> m_bakedSpawnPos;
 	UINT m_currentBakedOffset = 0;
 	std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
+	StructuredBuffer<Vector3> m_customPositions;
+	UINT m_currentCustomOffset = 0;
 
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;

@@ -5,13 +5,8 @@
 namespace DE {
 	void VortexModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ComputeShader는 ComputeCommon에서 공유
-	}
-
-	void VortexModule::OnSpawn(SimulationContext& ctx)
-	{
-		ParticleModule::OnSpawn(ctx);
-		VortexConsts& consts = ctx.constsData.vortex;
+		// 상수 값 초기화 (OnSpawn에서 이동)
+		VortexConsts& consts = ctx.consts.vortex;
 		consts.vortexCenter = m_vortexCenter;
 		consts.vortexStrength = m_vortexStrength;
 		consts.vortexAxis = m_vortexAxis;

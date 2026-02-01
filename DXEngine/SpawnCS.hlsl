@@ -149,7 +149,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     }
     else if (spawn.spawnShape == 5) {
         uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;
-        spawnPos = bakedSpawnPos[idx];
+        spawnPos = bakedSpawnPos[customOffset + idx];
     }
 
     // 위치 및 속도 설정
