@@ -267,17 +267,13 @@ namespace DE {
 			return;
 
 		float newDt = dt * m_playRate;
-
 		UpdateTransform();
 
-		// Transform을 Compute Shader에 바인딩 (Spawn, Force 등에서 사용)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
-		// activeCount를 0으로 초기화
 		const UINT clearVal[1] = { 0 };
 		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
-
 		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
 
 		if (m_vertexCount && m_indexCount) {
@@ -292,25 +288,20 @@ namespace DE {
 		for (auto& emitter : m_emitters)
 			emitter->PreUpdate(newDt);
 
-		// Sub-Emitter 업데이트
+		// Sub-Emitter 업데이트 (기존 활성화된 것만)
 		for (auto& emitter : m_activeSubEmitters)
 			emitter->PreUpdate(newDt);
 
 		m_frameConsts.Upload(context.Get());
 		context->CSSetShaderResources(7, 1, m_frameConsts.GetAddressOfSRV());
 
-		// Main Emitter 업데이트
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt);
 
-		// Sub-Emitter 업데이트
 		for (auto& emitter : m_activeSubEmitters)
 			emitter->Update(newDt);
 
-
-		ID3D11Buffer* nullB[] = {
-			nullptr
-		};
+		ID3D11Buffer* nullB[] = { nullptr };
 		context->CSSetConstantBuffers(4, 1, nullB);
 		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 5, nullSRVs);
@@ -320,17 +311,18 @@ namespace DE {
 		// 완료된 Sub-Emitter 제거
 		std::erase_if(m_activeSubEmitters, [](const auto& em) {
 			return em->IsCompleted();
-			});
+		});
 
-		// Looping이 아니고 모든 Emitter가 종료되면 Stop
-		//if (!m_looping && IsAllEmittersCompleted())
-		//	Stop();
+		// 지연된 SubEmitter 활성화 (다음 프레임부터 업데이트됨)
+		for (auto& [sub, pos] : m_pendingSubEmitters) {
+			ActivateSubEmitter(sub, pos);
+		}
+		m_pendingSubEmitters.clear();
+
 		if (IsAllEmittersCompleted()) {
 			if (m_looping)
-				// 루핑이 켜져있다면 재시작 (Stop -> Reset -> Play)
 				Restart();
 			else
-				// 루핑이 꺼져있다면 완전 정지
 				Stop();
 		}
 	}
@@ -630,23 +622,31 @@ namespace DE {
 	}
 	void ParticleSystem::SpawnSubEmitter(const SubEmitter& sub, const Vector3& position)
 	{
-		// 풀에서 해당 경로의 Emitter 중 현재 사용 중이지 않은 것 찾기
-		ParticleEmitter* target = nullptr;
+		// 즉시 활성화하지 않고 대기열에 추가
+		m_pendingSubEmitters.push_back({ sub, position });
+	}
 
+	// 실제 활성화 로직 분리
+	void ParticleSystem::ActivateSubEmitter(const SubEmitter& sub, const Vector3& position)
+	{
 		auto it = m_subEmitterPool.find(sub.emitterPath);
 		if (it == m_subEmitterPool.end())
 			return;
 
-		target = it->second.get();
+		ParticleEmitter* target = it->second.get();
 
-		// 상태 리셋 및 활성화
+		// 중복 방지
+		auto activeIt = std::find(m_activeSubEmitters.begin(), m_activeSubEmitters.end(), target);
+		if (activeIt != m_activeSubEmitters.end())
+			return;
+
 		target->Reset();
-		if (sub.inheritPosition) target->SetSpawnOffset(position);
+		if (sub.inheritPosition) 
+			target->SetSpawnOffset(position);
 		target->OnSpawn();
 
 		m_activeSubEmitters.push_back(target);
 	}
-
 	void ParticleSystem::LoadSubEmitter(ParticleEmitter* emitter,
 		std::vector<ParticleConsts>& consts,
 		std::vector<ParticleFrameConsts>& frameConsts,

@@ -139,6 +139,7 @@ private:
 		std::vector<Vector3>& bakedPositions,
 		std::vector<Vector3>& customPositions,
 		std::vector<EmitterID>& emitterIDs);
+	void ActivateSubEmitter(const SubEmitter& sub, const Vector3& position);
 private:
 	Actor* m_owner = nullptr;
 	bool m_looping = true;
@@ -162,6 +163,7 @@ private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
 	// 활성화된 SubEmitter
 	std::vector<ParticleEmitter*> m_activeSubEmitters;
+	std::vector<std::pair<SubEmitter, Vector3>> m_pendingSubEmitters;
 
 	// 파티클 버퍼 (이중 버퍼링)
 	StructuredBuffer<uint32_t> m_activeCounts[2];
