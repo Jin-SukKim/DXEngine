@@ -21,7 +21,7 @@ public:
 	}
 
 	void Bake(const std::string& name, const std::string& basePath, bool isGLTF, const std::string& materialName, const std::string& textureType, BakeConsts& consts, const std::string& outputPath);
-	void LoadBakedData(const std::string& path, StructuredBuffer<Vector3>& outBuffer, UINT& outCount, UINT offset);
+	void LoadBakedData(const std::string& path, std::vector<Vector3>& outBuffer, UINT& outCount);
 private:
 	void initBuffers(ID3D11Device* device, ID3D11DeviceContext* context, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, BakeConsts& consts);
 	void setTextureSRV(const int& materialIdx, const std::string& textureType);

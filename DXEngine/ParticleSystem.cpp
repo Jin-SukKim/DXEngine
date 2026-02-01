@@ -32,6 +32,7 @@ namespace DE {
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
 		: Object(other.m_watcherID + L"_Clone")
+		// 기본 설정 (복사 필요)
 		, m_looping(other.m_looping)
 		, m_duration(other.m_duration)
 		, m_playRate(other.m_playRate)
@@ -41,8 +42,17 @@ namespace DE {
 		, m_watcherID(0)  // Hot-Reload는 복사 안 함
 		, m_vertexCount(other.m_vertexCount)
 		, m_indexCount(other.m_indexCount)
+		//  Initialize에서 재설정되므로 초기값 사용
+		, m_owner(nullptr)
+		, m_currentBuffer(0)
+		, m_currentParticleOffset(0)
+		, m_currentEmitterIndex(0)
+		, m_maxTotalParticles(0)
+		, m_maxEmitters(0)
+		, m_currentBakedOffset(0)
+		, m_currentCustomOffset(0)
 	{
-		// Emitter 복제
+		// Emitter 복제 (핵심 데이터)
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
 				auto clonedEmitter = std::make_unique<ParticleEmitter>(*emitter);
@@ -50,27 +60,103 @@ namespace DE {
 			}
 		}
 
-		// CPU 데이터만 복사, GPU 버퍼는 Initialize()에서 생성
-		m_consts.SetData(other.m_consts.GetCpu());
-		m_frameConsts.SetData(other.m_frameConsts.GetCpu());
-		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
-
-		m_emitterIDs.resize(other.m_emitterIDs.size());
-		for (UINT i = 0; i < m_maxEmitters; ++i) {
-			m_emitterIDs[i].SetCpuData(other.m_emitterIDs[i].GetCpu());
-		}
-
-		// mesh 데이터도 CPU만 복사
-		m_meshVertex.SetData(other.m_meshVertex.GetCpu());
-		m_meshIndices.SetData(other.m_meshIndices.GetCpu());
-
-		// baked 데이터도 CPU만 복사 (Initialize에서 GPU 버퍼 생성)
-		m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
-		m_customPositions.SetData(other.m_customPositions.GetCpu());
+		// GPU 버퍼 관련 코드 모두 제거!
+		// Initialize()에서 InitializeCPU -> InitializeGPU 과정을 통해 
+		// 모든 GPU 리소스가 새로 생성됨
+		
+		// 아래 코드들은 모두 제거:
+		// m_consts.SetData(other.m_consts.GetCpu());
+		// m_frameConsts.SetData(other.m_frameConsts.GetCpu());
+		// m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
+		// m_emitterIDs.resize(other.m_emitterIDs.size());
+		// m_meshVertex.SetData(other.m_meshVertex.GetCpu());
+		// m_meshIndices.SetData(other.m_meshIndices.GetCpu());
+		// m_bakedSpawnPos.SetData(other.m_bakedSpawnPos.GetCpu());
+		// m_customPositions.SetData(other.m_customPositions.GetCpu());
 
 	}
 
 	void ParticleSystem::Initialize()
+	{
+		UpdateTransform();
+
+		// 기존
+		m_maxTotalParticles = 0;
+		m_maxEmitters = 0;
+
+		// 추가 필요
+		m_currentParticleOffset = 0;
+		m_currentEmitterIndex = 0;
+		m_currentBakedOffset = 0;
+		m_currentCustomOffset = 0;
+		m_bakedOffset.clear();
+		m_emitterIDs.clear();  // 기존 데이터 제거
+
+		std::vector<ParticleConsts> consts;
+		std::vector<ParticleFrameConsts> frameConsts;
+		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
+		std::vector<Vector3> bakedPositions;
+		std::vector<Vector3> customPositions;
+		std::vector<EmitterID> emitterIDs;
+			
+		InitializeCPU(consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
+		InitializeGPU(consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
+
+		if (m_state == ParticleState::Playing) Restart();
+		else if (m_state == ParticleState::Paused) Pause();
+		else if (m_state == ParticleState::Stopped) Stop();
+	}
+
+	void ParticleSystem::InitializeCPU(
+		std::vector<ParticleConsts>& consts,
+		std::vector<ParticleFrameConsts>& frameConsts,
+		std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		std::vector<Vector3>& bakedPositions,
+		std::vector<Vector3>& customPositions,
+		std::vector<EmitterID>& emitterIDs)
+	{
+	    for (auto& emitter : m_emitters) {
+	        ParticleConsts pConsts;
+	        ParticleFrameConsts pfConsts;
+	        DrawIndexedInstancedArgs pMeshArgs = {0, 0, 0, 0, 0};
+	        EmitterID eID = { 0, 0, 0, 0 };
+
+	        emitter->SetOwner(this);
+	        emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+
+	        emitter->Initialize(pConsts, pfConsts, pMeshArgs);
+
+	        emitter->SetEventCallback(
+	            [this](EmitterEvent event, ParticleEmitter* em) {
+	                this->OnEmitterEvent(event, em);
+	            });
+
+	        UINT capacity = pfConsts.maxParticles;
+	        RegisterEmitter(emitter.get(), capacity, eID);
+
+	        if (!emitter->GetBakedPath().empty()) {
+	            RegisterBakedPos(emitter.get(), bakedPositions, pConsts, eID);
+	        }
+	        else if (emitter->IsUsingCustomPositions()) {
+	            RegisterCustomPos(emitter.get(), customPositions, eID);
+	        }
+
+	        consts.push_back(pConsts);
+	        frameConsts.push_back(pfConsts);
+	        initMeshArgs.push_back(pMeshArgs);
+	        emitterIDs.push_back(eID);
+
+	        LoadSubEmitter(emitter.get(), consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
+	    }
+	}
+
+	void ParticleSystem::InitializeGPU(
+		const std::vector<ParticleConsts>& consts,
+		const std::vector<ParticleFrameConsts>& frameConsts,
+		const std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		const std::vector<Vector3>& bakedPositions,
+		const std::vector<Vector3>& customPositions,
+		const std::vector<EmitterID>& emitterIDs)
 	{
 		ID3D11Device* device = GET_SINGLE(RenderBase)->GetDevice().Get();
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
@@ -78,7 +164,7 @@ namespace DE {
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i] = StructuredBuffer<Particle>();
 			m_particles[i].Initialize(device, m_maxTotalParticles);
-		
+
 			m_activeCounts[i] = StructuredBuffer<uint32_t>();
 			m_activeCounts[i].Initialize(device, m_maxEmitters);
 
@@ -89,78 +175,45 @@ namespace DE {
 
 		m_consts.Initialize(device, m_maxEmitters);
 		m_frameConsts.Initialize(device, m_maxEmitters);
-		m_meshConsts.Initialize();
 
-		for (auto& cb : m_emitterIDs)
-			cb.Initialize();
+		m_consts.SetData(consts);
+		m_frameConsts.SetData(frameConsts);
 
-		for (size_t i = m_emitterIDs.size(); i < m_maxEmitters; ++i) {
+		m_consts.Upload(context);
+		m_frameConsts.Upload(context);
+
+		if (!bakedPositions.empty()) {
+			m_bakedSpawnPos.Initialize(device, (UINT)bakedPositions.size());
+			m_bakedSpawnPos.SetData(bakedPositions);
+			m_bakedSpawnPos.Upload(context);
+
+		}
+		if (!customPositions.empty()) {
+			m_customPositions.Initialize(device, (UINT)customPositions.size());
+			m_customPositions.SetData(customPositions);
+			m_customPositions.Upload(context);
+		}
+
+		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+
+		for (size_t i = 0; i < emitterIDs.size(); ++i) {
 			ConstantBuffer<EmitterID> cb;
 			cb.Initialize();
+			cb.SetCpuData(emitterIDs[i]);
+			cb.Upload();
 			m_emitterIDs.push_back(cb);
 		}
 
 		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
 		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
-		
+
 		m_billboardArgsBuffer = IndirectArgsBuffer<DrawInstancedArgs>();
 		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
 		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
-		
-		m_bakedSpawnPos.Initialize(device, m_maxTotalParticles);
-		m_customPositions.Initialize(device, m_maxTotalParticles);
-
-		UpdateTransform();
-
-		m_initMeshArgs = std::vector<DrawIndexedInstancedArgs>(m_maxEmitters, { 0, 0, 0, 0, 0 });
-		for (auto& emitter : m_emitters) {
-			emitter->SetOwner(this);
-			emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
-			
-			emitter->Initialize();  // 모듈들의 상수 설정이 여기서 수행됨
-
-			// EventCallback 등록
-			emitter->SetEventCallback(
-				[this](EmitterEvent event, ParticleEmitter* em) {
-					this->OnEmitterEvent(event, em); // SubEmitter 생성 함수
-				});
-
-			// Buffer 메모리 offet, index 할당
-			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
-			RegisterEmitter(emitter.get(), capacity);
-
-			// SubEmitter 전부 등록
-			LoadSubEmitter(emitter.get());
-
-			// bakedPath가 설정되어 있으면 등록
-			if (!emitter->GetBakedPath().empty()) {
-				RegisterBakedPos(emitter.get());
-			}
-			else if (emitter->IsUsingCustomPositions()) {
-				RegisterCustomPos(emitter.get());
-			}
-		}
 
 		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
-		m_meshArgsBuffer.Initialize(device, m_initMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
-
-		// 초기 상수값 업로드 (모듈들의 Initialize에서 설정된 값)
-		m_consts.Upload(context);
-		m_frameConsts.Upload(context);
-		// Baked/Custom 위치 데이터 업로드
-		m_bakedSpawnPos.Upload(context);
-		m_customPositions.Upload(context);
-
-		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
-
-		for (auto& id : m_emitterIDs) {
-			id.Upload();
-		}
-
-		if (m_state == ParticleState::Playing) Restart();
-		else if (m_state == ParticleState::Paused) Pause();
-		else if (m_state == ParticleState::Stopped) Stop();
+		m_meshArgsBuffer.Initialize(device, initMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 	}
 
 	void ParticleSystem::OnSpawn()
@@ -174,7 +227,7 @@ namespace DE {
 
 		for (auto& emitter : m_subEmitterPool)
 			emitter.second->OnSpawn();
-		
+
 		ExecutePreWarm();
 		TextureManager::Get().BindParticleTextures();
 	}
@@ -489,47 +542,46 @@ namespace DE {
 		this->SetTransform(meshConsts);
 	}
 
-	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity)
+	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID)
 	{
 		// Emitter에게 할당된 영역 정보를 설정
-		EmitterID& id = m_emitterIDs[m_currentEmitterIndex].GetCpu();
-		id.emitterID = m_currentEmitterIndex;
-		id.particleOffset = m_currentParticleOffset;
+		eID.emitterID = m_currentEmitterIndex;
+		eID.particleOffset = m_currentParticleOffset;
 
 		m_currentParticleOffset += capacity;
 		++m_currentEmitterIndex;
+
+		++m_maxEmitters;
+		m_maxTotalParticles += capacity;
 	}
 
-	void ParticleSystem::RegisterBakedPos(ParticleEmitter* emitter)
+	void ParticleSystem::RegisterBakedPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, ParticleConsts& pConsts, EmitterID& eID)
 	{
 		auto it = m_bakedOffset.find(emitter->GetBakedPath());
 		if (it != m_bakedOffset.end()) {
 			emitter->SetBakedInfo(it->second.first);
-			m_consts.Get(emitter->GetEmitterID()).spawn.bakedCount = it->second.second;
+			eID.bakedOffset = it->second.first;
+			pConsts.spawn.bakedCount = it->second.second;  // pConsts 수정
 			return;
 		}
 
 		emitter->SetBakedInfo(m_currentBakedOffset);
-		auto& positions = m_bakedSpawnPos.GetCpu();
-		EmitterID& id = m_emitterIDs[emitter->GetEmitterID()].GetCpu();
-		id.bakedOffset = m_currentBakedOffset;
+		eID.bakedOffset = m_currentBakedOffset;
 
-		UINT bakedCount = emitter->LoadBakedSpawnData(m_bakedSpawnPos);
+		UINT bakedCount = emitter->LoadBakedSpawnData(positions);
 		m_currentBakedOffset += bakedCount;
-		m_consts.Get(emitter->GetEmitterID()).spawn.bakedCount = bakedCount;
-		m_bakedOffset[emitter->GetBakedPath()] = {id.bakedOffset, bakedCount};
+		pConsts.spawn.bakedCount = bakedCount;
+		m_bakedOffset[emitter->GetBakedPath()] = { eID.bakedOffset, bakedCount };
 	}
 
-	void ParticleSystem::RegisterCustomPos(ParticleEmitter* emitter)
+	void ParticleSystem::RegisterCustomPos(ParticleEmitter* emitter, std::vector<Vector3>& customPos, EmitterID& eID)
 	{
 		emitter->SetCustomSpawnInfo(m_currentCustomOffset);
-
-		EmitterID& id = m_emitterIDs[emitter->GetEmitterID()].GetCpu();
-		id.customOffset = m_currentCustomOffset;
+		eID.customOffset = m_currentCustomOffset;
 
 		auto& positions = emitter->GetCustomPositions();
 		for (size_t i = 0; i < positions.size(); ++i) {
-			m_customPositions.Get(m_currentCustomOffset + i) = positions[i];
+			customPos.push_back(positions[i]);
 		}
 
 		m_currentCustomOffset += static_cast<UINT>(positions.size());
@@ -564,23 +616,33 @@ namespace DE {
 		m_activeSubEmitters.push_back(target);
 	}
 
-	void ParticleSystem::LoadSubEmitter(ParticleEmitter* emitter)
+	void ParticleSystem::LoadSubEmitter(ParticleEmitter* emitter,
+		std::vector<ParticleConsts>& consts,
+		std::vector<ParticleFrameConsts>& frameConsts,
+		std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		std::vector<Vector3>& bakedPositions,
+		std::vector<Vector3>& customPositions,
+		std::vector<EmitterID>& emitterIDs)
 	{
 		auto subEmitters = emitter->GetSubEmitters();
 		for (const auto& sub : subEmitters) {
-			// 이미 등록된 SubEmitter인지 확인
 			if (m_subEmitterPool.contains(sub.emitterPath)) {
-				continue;  // 이미 등록됨, 건너뛰기
+				continue;
 			}
+
+			ParticleConsts pConsts;
+			ParticleFrameConsts pfConsts;
+			DrawIndexedInstancedArgs pMeshArgs = { 0, 0, 0, 0, 0 };
+			EmitterID eID = { 0, 0, 0, 0 };
 
 			auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
 			if (!subEmitter)
-				continue;  // return -> continue로 변경
+				continue;
 
 			subEmitter->SetOwner(this);
 			subEmitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
 
-			subEmitter->Initialize();
+			subEmitter->Initialize(pConsts, pfConsts, pMeshArgs);
 
 			subEmitter->SetName(sub.emitterPath);
 			subEmitter->SetEventCallback(
@@ -588,23 +650,26 @@ namespace DE {
 					this->OnEmitterEvent(event, em);
 				});
 
-			UINT capacity = m_frameConsts.Get(m_currentEmitterIndex).maxParticles;
-			RegisterEmitter(subEmitter.get(), capacity);
+			UINT capacity = pfConsts.maxParticles;
+			RegisterEmitter(subEmitter.get(), capacity, eID);
 
-			// 먼저 풀에 등록 (재귀 호출 전에 등록하여 순환 참조 방지)
 			ParticleEmitter* rawPtr = subEmitter.get();
 			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
 
-			// SubEmitter의 SubEmitter 등록 (순서 변경)
-			LoadSubEmitter(rawPtr);
-
-			// baked/custom 위치 등록
 			if (!rawPtr->GetBakedPath().empty()) {
-				RegisterBakedPos(rawPtr);
+				RegisterBakedPos(rawPtr, bakedPositions, pConsts, eID);
 			}
 			else if (rawPtr->IsUsingCustomPositions()) {
-				RegisterCustomPos(rawPtr);
+				RegisterCustomPos(rawPtr, customPositions, eID);
 			}
+
+			consts.push_back(pConsts);
+			frameConsts.push_back(pfConsts);
+			initMeshArgs.push_back(pMeshArgs);
+			emitterIDs.push_back(eID);
+
+			// 재귀 호출
+			LoadSubEmitter(rawPtr, consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
 		}
 	}
 

@@ -33,15 +33,34 @@ namespace DE {
 	}
 
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
-		: m_jsonPath(other.m_jsonPath)
-		, m_watcherID(0)
+		: m_name(other.m_name)
+		, m_jsonPath(other.m_jsonPath)
+		, m_watcherID(0)  // Hot-Reload는 복사 안 함
+		// Baked Spawn 관련
+		, m_bakedPath(other.m_bakedPath)           //  추가 (핵심!)
 		, m_bakedCount(other.m_bakedCount)
-		, m_name(other.m_name)
+		, m_bakedPoolOffset(0)                      // Initialize에서 재설정됨
+		// Custom Position 관련
+		, m_customPositions(other.m_customPositions) //  추가
+		, m_customPoolOffset(0)                      // Initialize에서 재설정됨
+		, m_useCustomPositions(other.m_useCustomPositions) //  추가
+		// SubEmitter 관련
 		, m_duration(other.m_duration)
 		, m_completionDelay(other.m_completionDelay)
 		, m_subEmitters(other.m_subEmitters)
+		// 상태 (초기값으로 시작)
+		, m_elapsedTime(0.f)
+		, m_isDurationEnded(false)
+		, m_isCompleted(false)
+		, m_isStarted(false)
+		, m_spawnOffset(Vector3(0.f))
 		, m_initialSpawnPos(other.m_initialSpawnPos)
+		// Initialize에서 설정됨
+		, m_ownerSystem(nullptr)
+		, m_poolOffset(0)
+		, m_emitterID(0)
 	{
+		// 모듈 복제
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
 				auto clonedModule = mod->Clone();
@@ -51,16 +70,16 @@ namespace DE {
 		}
 	}
 
-	void ParticleEmitter::Initialize()
+	void ParticleEmitter::Initialize(ParticleConsts& pConsts, ParticleFrameConsts& pfConsts, DrawIndexedInstancedArgs& pMeshArgs)
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		
 		ParticleInitContext initCtx = { 
 			device.Get(), 
-			m_ownerSystem->GetConstsData(m_emitterID),
-			m_ownerSystem->GetFrameConstsData(m_emitterID),
-			m_ownerSystem->GetInitMeshArgs(m_emitterID),
+			pConsts,
+			pfConsts,
+			pMeshArgs,
 			GetModule<RenderModule>(),
 			m_emitterID,
 			m_customPositions,
@@ -74,7 +93,7 @@ namespace DE {
 		InitializeBuffers(device);
 
 		// 초기 spawn 위치 저장 (Reset 시 복원용)
-		m_initialSpawnPos = m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos;
+		m_initialSpawnPos = pConsts.spawn.localPos;
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -198,10 +217,9 @@ namespace DE {
 		m_bakedCount = 1;
 	}
 
-	UINT ParticleEmitter::LoadBakedSpawnData(StructuredBuffer<Vector3>& outBakedSpawnPos)
+	UINT ParticleEmitter::LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos)
 	{
-		TextureSpawnBake::Get().LoadBakedData(m_bakedPath, outBakedSpawnPos, m_bakedCount, m_bakedPoolOffset);
-		m_ownerSystem->GetConstsData(m_emitterID).spawn.bakedCount = m_bakedCount;
+		TextureSpawnBake::Get().LoadBakedData(m_bakedPath, outBakedSpawnPos, m_bakedCount);
 		return m_bakedCount;
 	}
 

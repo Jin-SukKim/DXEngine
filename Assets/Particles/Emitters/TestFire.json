@@ -9,7 +9,7 @@
     "bakedPath": "Models\\DamagedHelmet\\emissive.bin",
     "spawnRate": 30.0,
     "particlesPerSpawn": 1000,
-    "maxParticles": 500000,
+    "maxParticles": 30000,
     "lifeRange": [ 0.1, 0.5 ]
   },
   "Visual": {

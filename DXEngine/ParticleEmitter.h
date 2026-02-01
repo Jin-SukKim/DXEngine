@@ -30,7 +30,7 @@ namespace DE {
 
 		ParticleEmitter(const ParticleEmitter& other);
 
-		void Initialize();
+		void Initialize(ParticleConsts& pConsts, ParticleFrameConsts& pfConsts, DrawIndexedInstancedArgs& pMeshArgs);
 		void OnSpawn();
 		void PreUpdate(const float& dt);
 		void Update(const float& dt);
@@ -50,7 +50,7 @@ namespace DE {
 		
 		// Texture Bake 데이터 설정 (Spawn 모듈용)
 		void SetBakedSpawnPath(const std::string& path);
-		UINT LoadBakedSpawnData(StructuredBuffer<Vector3>& outBakedSpawnPos);
+		UINT LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos);
 		void SetBakedInfo(UINT offset) { m_bakedPoolOffset = offset; }
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 

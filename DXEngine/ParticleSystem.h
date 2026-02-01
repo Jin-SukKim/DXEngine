@@ -30,6 +30,20 @@ public:
 	UINT GetEmitterCount() const { return static_cast<UINT>(m_emitters.size()); }
 
 	void Initialize() override;
+	void InitializeCPU(
+		std::vector<ParticleConsts>& consts,
+		std::vector<ParticleFrameConsts>& frameConsts,
+		std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		std::vector<Vector3>& bakedPositions,
+		std::vector<Vector3>& customPositions,
+		std::vector<EmitterID>& emitterIDs);
+	void InitializeGPU(
+		const std::vector<ParticleConsts>& consts,
+		const std::vector<ParticleFrameConsts>& frameConsts,
+		const std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		const std::vector<Vector3>& bakedPositions,
+		const std::vector<Vector3>& customPositions,
+		const std::vector<EmitterID>& emitterIDs);
 	void OnSpawn();
 	void Update(const float& dt) override;
 	void Render() override;
@@ -87,7 +101,6 @@ public:
 	
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
-	DrawIndexedInstancedArgs& GetInitMeshArgs(UINT emitterID) { return m_initMeshArgs[emitterID]; }
 	
 	StructuredBuffer<ParticleConsts>& GetConstsBuffer() { return m_consts; }
 	ParticleConsts& GetConstsData(UINT emitterID) { return m_consts.Get(emitterID); }
@@ -105,14 +118,20 @@ private:
 	void ExecutePreWarm();
 	void UpdateTransform();
 
-	void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity);
-	void RegisterBakedPos(ParticleEmitter* emitter);
-	void RegisterCustomPos(ParticleEmitter* emitter);
+	void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID);
+	void RegisterBakedPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, ParticleConsts& pConsts, EmitterID& eID);
+	void RegisterCustomPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, EmitterID& eID);
 
 	// SubEmitter Ã³¸®
 	void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 	void SpawnSubEmitter(const SubEmitter& sub, const Vector3& position);
-	void LoadSubEmitter(ParticleEmitter* emitter);
+	void LoadSubEmitter(ParticleEmitter* emitter,
+		std::vector<ParticleConsts>& consts,
+		std::vector<ParticleFrameConsts>& frameConsts,
+		std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		std::vector<Vector3>& bakedPositions,
+		std::vector<Vector3>& customPositions,
+		std::vector<EmitterID>& emitterIDs);
 private:
 	Actor* m_owner = nullptr;
 	bool m_looping = true;
@@ -159,7 +178,6 @@ private:
 
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
-	std::vector<DrawIndexedInstancedArgs> m_initMeshArgs;
 
 };
 
