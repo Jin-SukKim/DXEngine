@@ -158,4 +158,15 @@ namespace DE {
 		// 3. 순차적 인덱스 초기화 (새로운 위치 목록이 들어왔으므로 처음부터 다시 시작)
 		m_nextSpawnIndex = 0;
 	}
+
+	// SpawnModule::OnSpawn이 호출되는지 확인
+	void SpawnModule::OnSpawn(SimulationContext& ctx)
+	{
+		ParticleModule::OnSpawn(ctx);
+		
+		m_spawnAccumulator = 0.f;
+		m_totalSpawnCount = 0;
+		m_burstFired = false;
+		m_nextSpawnIndex = 0;
+	}
 }

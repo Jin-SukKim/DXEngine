@@ -26,7 +26,7 @@ namespace DE {
 			catch (...) {
 				// 프로그램 종료 시 무시
 			}
-		}	
+		}
 
 		ParticleManager::Get().UnregisterActiveSystem(this);
 	}
@@ -64,7 +64,7 @@ namespace DE {
 		// GPU 버퍼 관련 코드 모두 제거!
 		// Initialize()에서 InitializeCPU -> InitializeGPU 과정을 통해 
 		// 모든 GPU 리소스가 새로 생성됨
-		
+
 		// 아래 코드들은 모두 제거:
 		// m_consts.SetData(other.m_consts.GetCpu());
 		// m_frameConsts.SetData(other.m_frameConsts.GetCpu());
@@ -98,7 +98,7 @@ namespace DE {
 		std::vector<Vector3> bakedPositions;
 		std::vector<Vector3> customPositions;
 		std::vector<EmitterID> emitterIDs;
-			
+
 		InitializeCPU(consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
 		InitializeGPU(consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
 
@@ -116,17 +116,17 @@ namespace DE {
 		std::vector<Vector3>& customPositions,
 		std::vector<EmitterID>& emitterIDs)
 	{
-	    //  1단계: 먼저 모든 Main Emitter 처리
-	    for (auto& emitter : m_emitters) {
-	        ProcessEmitter(emitter.get(), consts, frameConsts, initMeshArgs, 
-	                       bakedPositions, customPositions, emitterIDs);
-	    }
-	    
-	    //  2단계: SubEmitter는 Main Emitter 처리 후에 처리
-	    for (auto& emitter : m_emitters) {
-	        LoadSubEmitter(emitter.get(), consts, frameConsts, initMeshArgs, 
-	                       bakedPositions, customPositions, emitterIDs);
-	    }
+		//  1단계: 먼저 모든 Main Emitter 처리
+		for (auto& emitter : m_emitters) {
+			ProcessEmitter(emitter.get(), consts, frameConsts, initMeshArgs,
+				bakedPositions, customPositions, emitterIDs);
+		}
+
+		//  2단계: SubEmitter는 Main Emitter 처리 후에 처리
+		for (auto& emitter : m_emitters) {
+			LoadSubEmitter(emitter.get(), consts, frameConsts, initMeshArgs,
+				bakedPositions, customPositions, emitterIDs);
+		}
 	}
 
 	//  새 함수: 단일 Emitter 처리 로직 분리
@@ -141,7 +141,7 @@ namespace DE {
 	{
 		ParticleConsts pConsts = {};
 		ParticleFrameConsts pfConsts = {};
-		DrawIndexedInstancedArgs pMeshArgs = {0, 0, 0, 0, 0};
+		DrawIndexedInstancedArgs pMeshArgs = { 0, 0, 0, 0, 0 };
 		EmitterID eID = { 0, 0, 0, 0 };
 
 		//  EmitterID 먼저 설정 (현재 인덱스 사용)
@@ -288,32 +288,56 @@ namespace DE {
 		for (auto& emitter : m_emitters)
 			emitter->PreUpdate(newDt);
 
-		// Sub-Emitter 업데이트 (기존 활성화된 것만)
+		// Sub-Emitter 업데이트
 		for (auto& emitter : m_activeSubEmitters)
 			emitter->PreUpdate(newDt);
 
 		m_frameConsts.Upload(context.Get());
 		context->CSSetShaderResources(7, 1, m_frameConsts.GetAddressOfSRV());
 
+		// Spawn/Simulate 실행
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt);
 
 		for (auto& emitter : m_activeSubEmitters)
 			emitter->Update(newDt);
 
+		// [핵심] SwapBuffer를 ArgsUpdate 전에 실행!
+		SwapBuffer();
+
+		// [수정] Swap 후 ArgsUpdateCS 실행 (이제 ReadCount가 방금 Spawn된 값)
+		{
+			auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
+			context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
+
+			ID3D11UnorderedAccessView* uavs[] = {
+				m_dispatchArgs.GetUAV(),
+				m_billboardArgsBuffer.GetUAV()
+			};
+			UINT initCounts[] = { (UINT)-1, (UINT)-1 };
+			context->CSSetUnorderedAccessViews(0, 2, uavs, initCounts);
+
+			// [핵심] Swap 후의 ReadCount 사용 (Render에서 사용할 버퍼와 동일)
+			context->CSSetShaderResources(0, 1, GetReadCount().GetAddressOfSRV());
+
+			UINT groupCount = (m_maxEmitters + 255) / 256;
+			context->Dispatch(groupCount, 1, 1);
+
+			ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
+			context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
+		}
+
 		ID3D11Buffer* nullB[] = { nullptr };
 		context->CSSetConstantBuffers(4, 1, nullB);
 		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 5, nullSRVs);
-
-		SwapBuffer();
 
 		// 완료된 Sub-Emitter 제거
 		std::erase_if(m_activeSubEmitters, [](const auto& em) {
 			return em->IsCompleted();
 		});
 
-		// 지연된 SubEmitter 활성화 (다음 프레임부터 업데이트됨)
+		// 지연된 SubEmitter 활성화
 		for (auto& [sub, pos] : m_pendingSubEmitters) {
 			ActivateSubEmitter(sub, pos);
 		}
@@ -332,9 +356,9 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		// Transform Constant Buffer 바인딩 (Slot 1)
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
+		// Transform Constant Buffer 바인딩 (Slot 1)
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 		ID3D11ShaderResourceView* srvs[2] = {
 			m_frameConsts.GetSRV(),
@@ -346,12 +370,14 @@ namespace DE {
 		context->PSSetShaderResources(7, 2, srvs);
 
 		// 주 Emitter 렌더링
-		for (auto& emitter : m_emitters)
+		for (auto& emitter : m_emitters) {
 			emitter->Render();
+		}
 
 		// 동적 Sub-Emitter 렌더링
-		for (auto& emitter : m_activeSubEmitters)
+		for (auto& emitter : m_activeSubEmitters) {
 			emitter->Render();
+		}
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)
@@ -408,7 +434,7 @@ namespace DE {
 		if (data.contains("Duration")) m_duration = data["Duration"];
 		if (data.contains("PlayRate")) m_playRate = data["PlayRate"];
 		if (data.contains("PreWarmTime")) m_preWarmTime = data["PreWarmTime"];
-		
+
 		if (data.contains("State")) {
 			std::string state = data["State"];
 			if (state == "Play") m_state = ParticleState::Playing;
@@ -416,7 +442,7 @@ namespace DE {
 			else if (state == "Stop") m_state = ParticleState::Stopped;
 		}
 	}
-	
+
 	void ParticleSystem::SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id)
 	{
 		m_jsonPath = path;
@@ -489,7 +515,7 @@ namespace DE {
 	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
 	{
 		m_owner = owner;
-		if (modelIdx >= 0) 
+		if (modelIdx >= 0)
 			SetTargetMesh(modelIdx);
 
 
@@ -529,7 +555,7 @@ namespace DE {
 	{
 		for (auto& emitter : m_emitters)
 			emitter->Reset();
-		
+
 		m_activeSubEmitters.clear();
 	}
 
@@ -641,7 +667,7 @@ namespace DE {
 			return;
 
 		target->Reset();
-		if (sub.inheritPosition) 
+		if (sub.inheritPosition)
 			target->SetSpawnOffset(position);
 		target->OnSpawn();
 
@@ -657,36 +683,43 @@ namespace DE {
 	{
 		auto subEmitters = emitter->GetSubEmitters();
 		for (const auto& sub : subEmitters) {
+
+			ParticleEmitter* rawPtr = nullptr;
+
+			// 1. 이미 풀에 있다면 가져오기, 없다면 새로 로드
 			if (m_subEmitterPool.contains(sub.emitterPath)) {
-				continue;
+				rawPtr = m_subEmitterPool[sub.emitterPath].get();
 			}
+			else {
+				auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
+				if (!subEmitter) continue;
+
+				subEmitter->SetOwner(this);
+				subEmitter->SetName(sub.emitterPath);
+				subEmitter->SetEventCallback(
+					[this](EmitterEvent event, ParticleEmitter* em) {
+						this->OnEmitterEvent(event, em);
+					});
+
+				rawPtr = subEmitter.get();
+				m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
+			}
+
+			// [중요 수정] continue를 제거하고 기존 객체라도 초기화 정보를 갱신 및 등록해야 함
 
 			ParticleConsts pConsts;
 			ParticleFrameConsts pfConsts;
 			DrawIndexedInstancedArgs pMeshArgs = { 0, 0, 0, 0, 0 };
 			EmitterID eID = { 0, 0, 0, 0 };
 
-			auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
-			if (!subEmitter)
-				continue;
-
-			subEmitter->SetOwner(this);
-			subEmitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
-
-			subEmitter->Initialize(pConsts, pfConsts, pMeshArgs);
-
-			subEmitter->SetName(sub.emitterPath);
-			subEmitter->SetEventCallback(
-				[this](EmitterEvent event, ParticleEmitter* em) {
-					this->OnEmitterEvent(event, em);
-				});
+			// ID 및 오프셋 갱신 (재시작 시 인덱스가 달라질 수 있으므로 필수)
+			rawPtr->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+			rawPtr->Initialize(pConsts, pfConsts, pMeshArgs);
 
 			UINT capacity = pfConsts.maxParticles;
-			RegisterEmitter(subEmitter.get(), capacity, eID);
+			RegisterEmitter(rawPtr, capacity, eID);
 
-			ParticleEmitter* rawPtr = subEmitter.get();
-			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
-
+			// Baked/Custom 데이터 등록
 			if (!rawPtr->GetBakedPath().empty()) {
 				RegisterBakedPos(rawPtr, bakedPositions, pConsts, eID);
 			}
@@ -694,6 +727,7 @@ namespace DE {
 				RegisterCustomPos(rawPtr, customPositions, eID);
 			}
 
+			// 벡터에 데이터 추가 (이 부분이 실행되어야 GPU에 데이터가 넘어감)
 			consts.push_back(pConsts);
 			frameConsts.push_back(pfConsts);
 			initMeshArgs.push_back(pMeshArgs);

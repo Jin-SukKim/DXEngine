@@ -12,6 +12,7 @@ RWStructuredBuffer<Particle> particles : register(u0);
 RWStructuredBuffer<uint> activeCount : register(u1); // 카운팅용 버퍼
 
 StructuredBuffer<float3> bakedSpawnPos : register(t0);
+StructuredBuffer<float3> customSpawnPos : register(t1); 
 StructuredBuffer<float3> meshVertex : register(t9);
 StructuredBuffer<uint> meshIndices : register(t10);
 
@@ -147,9 +148,10 @@ void main(uint3 dtID : SV_DispatchThreadID)
         uint idx = rngState % spawn.bakedCount;
         spawnPos = bakedSpawnPos[bakedOffset + idx];
     }
-    else if (spawn.spawnShape == 5) {
+    else if (spawn.spawnShape == 5)
+    {
         uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;
-        spawnPos = bakedSpawnPos[customOffset + idx];
+        spawnPos = bakedSpawnPos[idx]; // customOffset 제거 (CPU에서 이미 올바른 버퍼 바인딩)
     }
 
     // 위치 및 속도 설정

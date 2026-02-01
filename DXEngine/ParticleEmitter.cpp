@@ -103,7 +103,7 @@ namespace DE {
 		m_elapsedTime = 0.f;
 		m_isDurationEnded = false;
 		m_isCompleted = false;
-		m_isStarted = false;  // OnStart는 첫 Update에서 처리
+		m_isStarted = false;
 
 		SimulationContext simCtx = {
 			context.Get(),
@@ -252,7 +252,7 @@ namespace DE {
 
 		m_ownerSystem->BindConstantID(m_emitterID);
 
-		UpdateArgsBuffers(context.Get()); 
+		//UpdateArgsBuffers(context.Get()); 
 
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);

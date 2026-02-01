@@ -7,6 +7,7 @@ class SpawnModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx);
+	void OnSpawn(SimulationContext& ctx) override;  // Ãß°¡
 	void OnPreUpdate(const SimulationContext& ctx) override;
 	void LateUpdate(SimulationContext& ctx) override;
 	ModulePriority GetPriority() override { return ModulePriority::Spawn; }
