@@ -13,6 +13,7 @@
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
 	{
+		m_meshConsts.Initialize();
 	}
 
 	ParticleSystem::~ParticleSystem()
@@ -68,7 +69,7 @@ namespace DE {
 		// m_consts.SetData(other.m_consts.GetCpu());
 		// m_frameConsts.SetData(other.m_frameConsts.GetCpu());
 		m_meshConsts.Initialize();
-		 m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
+		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 		// m_emitterIDs.resize(other.m_emitterIDs.size());
 		// m_meshVertex.SetData(other.m_meshVertex.GetCpu());
 		// m_meshIndices.SetData(other.m_meshIndices.GetCpu());
@@ -500,7 +501,7 @@ namespace DE {
 			SetTargetMesh(modelIdx);
 
 
-		m_meshConsts.Initialize();
+		//m_meshConsts.Initialize();
 		// Transform 초기 설정
 		UpdateTransform();
 	}
