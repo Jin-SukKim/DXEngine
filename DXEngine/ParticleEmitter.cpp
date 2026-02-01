@@ -252,8 +252,6 @@ namespace DE {
 
 		m_ownerSystem->BindConstantID(m_emitterID);
 
-		//UpdateArgsBuffers(context.Get()); 
-
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
 

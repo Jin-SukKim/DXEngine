@@ -7,14 +7,14 @@ namespace DE {
 	struct Mesh;
 
 	enum class ParticleState {
-		Playing, // 재생
-		Paused, // 멈춘 상태
-		Stopped // Not Visible인것처럼 처리
+		Playing,
+		Paused,
+		Stopped
 	};
 
 	struct ParticleMeshConsts {
 		Matrix world;
-		Matrix worldIT; // World Inverse Transpose (Normal 변환에 사용)
+		Matrix worldIT;
 		UINT vertexCount;
 		UINT indexCount;
 		float padding[2];
@@ -46,6 +46,8 @@ namespace DE {
 			const std::vector<EmitterID>& emitterIDs);
 		void OnSpawn();
 		void Update(const float& dt) override;
+		void ActivateSubEmitters();
+		void UpdateArgs(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context);
 		void Render() override;
 
 		void AddEmitter(const std::string& path);
@@ -61,11 +63,12 @@ namespace DE {
 			std::vector<Vector3>& bakedPositions,
 			std::vector<Vector3>& customPositions,
 			std::vector<EmitterID>& emitterIDs);
+
 		// [제어 함수]
 		void Play();
 		void Pause();
-		void Stop();    // 멈추고 파티클 즉시 삭제
-		void Restart(); // 초기화 후 다시 재생 (Pre-warm 포함)
+		void Stop();
+		void Restart();
 
 		// [속성 설정]
 		void SetLooping(bool loop) { m_looping = loop; }
@@ -88,11 +91,8 @@ namespace DE {
 		void SetState(ParticleState state) { m_state = state; }
 
 		void SetTarget(Actor* owner = nullptr, const int& modelIdx = -1);
-
-		// 위치 오프셋 설정 (모든 Emitter에 적용)
 		void SetSpawnOffset(const Vector3& offset);
 
-		// 모든 Emitter 종료 확인 (SubEmitter 포함)
 		bool IsAllEmittersCompleted() const;
 
 		StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_currentBuffer]; }
@@ -120,6 +120,7 @@ namespace DE {
 		StructuredBuffer<Vector3>& GetCustomPositions() { return m_customPositions; }
 
 		void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
+
 	private:
 		void Reset();
 		void ExecutePreWarm();
@@ -129,50 +130,52 @@ namespace DE {
 		void RegisterBakedPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, ParticleConsts& pConsts, EmitterID& eID);
 		void RegisterCustomPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, EmitterID& eID);
 
-		// SubEmitter 처리
+		// SubEmitter 처리 (단순화)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
-		void SpawnSubEmitter(const SubEmitter& sub, const Vector3& position);
-		void LoadSubEmitter(ParticleEmitter* emitter,
+		void LoadSubEmitters(ParticleEmitter* emitter,
 			std::vector<ParticleConsts>& consts,
 			std::vector<ParticleFrameConsts>& frameConsts,
 			std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
 			std::vector<Vector3>& bakedPositions,
 			std::vector<Vector3>& customPositions,
 			std::vector<EmitterID>& emitterIDs);
-		void ActivateSubEmitter(const SubEmitter& sub, const Vector3& position);
+		void ActivateSubEmitter(ParticleEmitter* subEmitter, const Vector3& position);
+
 	private:
 		Actor* m_owner = nullptr;
 		bool m_looping = true;
 		float m_duration = 5.0f;
 		float m_playRate = 1.0f;
-		float m_preWarmTime = 0.0f; // 시작 시 미리 시뮬레이션 돌릴 시간 (예: 안개)
+		float m_preWarmTime = 0.0f;
 		ParticleState m_state = ParticleState::Playing;
 
+		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
+
+		// SubEmitters (미리 로드됨, 경로 -> Emitter 매핑)
+		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
+		// 현재 활성화된 SubEmitter 포인터들
+		std::vector<ParticleEmitter*> m_activeSubEmitters;
+		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
+
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
 		ConstantBuffer<ParticleMeshConsts> m_meshConsts;
 
-		// Mesh 데이터 (Vertex/Surface Spawn용)
+		// Mesh 데이터
 		StructuredBuffer<Vector3> m_meshVertex;
 		StructuredBuffer<uint32_t> m_meshIndices;
 		UINT m_vertexCount = 0;
 		UINT m_indexCount = 0;
 
-		// 미리 생성해둔 SubEmitter
-		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		// 활성화된 SubEmitter
-		std::vector<ParticleEmitter*> m_activeSubEmitters;
-		std::vector<std::pair<SubEmitter, Vector3>> m_pendingSubEmitters;
-
 		// 파티클 버퍼 (이중 버퍼링)
 		StructuredBuffer<uint32_t> m_activeCounts[2];
 		StructuredBuffer<Particle> m_particles[2];
 		UINT m_currentBuffer = 0;
-		UINT m_currentParticleOffset = 0; // 다음 emitter에게 할당할 particle 시작 위치
-		UINT m_currentEmitterIndex = 0; // 다음 emitter에게 할당할 ID
-		UINT m_maxTotalParticles = 10000000; // 최대 Particle 개수
-		UINT m_maxEmitters = 64; // 최대 emitter 개수
+		UINT m_currentParticleOffset = 0;
+		UINT m_currentEmitterIndex = 0;
+		UINT m_maxTotalParticles = 0;
+		UINT m_maxEmitters = 0;
 
 		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
 		StructuredBuffer<ParticleConsts> m_consts;
@@ -187,7 +190,5 @@ namespace DE {
 
 		IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
-
 	};
-
 }
