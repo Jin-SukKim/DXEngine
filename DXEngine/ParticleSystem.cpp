@@ -67,7 +67,8 @@ namespace DE {
 		// 아래 코드들은 모두 제거:
 		// m_consts.SetData(other.m_consts.GetCpu());
 		// m_frameConsts.SetData(other.m_frameConsts.GetCpu());
-		// m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
+		m_meshConsts.Initialize();
+		 m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 		// m_emitterIDs.resize(other.m_emitterIDs.size());
 		// m_meshVertex.SetData(other.m_meshVertex.GetCpu());
 		// m_meshIndices.SetData(other.m_meshIndices.GetCpu());
@@ -78,8 +79,6 @@ namespace DE {
 
 	void ParticleSystem::Initialize()
 	{
-		UpdateTransform();
-
 		// 기존
 		m_maxTotalParticles = 0;
 		m_maxEmitters = 0;
@@ -102,6 +101,7 @@ namespace DE {
 		InitializeCPU(consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
 		InitializeGPU(consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
 
+		UpdateTransform();
 		if (m_state == ParticleState::Playing) Restart();
 		else if (m_state == ParticleState::Paused) Pause();
 		else if (m_state == ParticleState::Stopped) Stop();
@@ -115,39 +115,67 @@ namespace DE {
 		std::vector<Vector3>& customPositions,
 		std::vector<EmitterID>& emitterIDs)
 	{
+	    //  1단계: 먼저 모든 Main Emitter 처리
 	    for (auto& emitter : m_emitters) {
-	        ParticleConsts pConsts;
-	        ParticleFrameConsts pfConsts;
-	        DrawIndexedInstancedArgs pMeshArgs = {0, 0, 0, 0, 0};
-	        EmitterID eID = { 0, 0, 0, 0 };
-
-	        emitter->SetOwner(this);
-	        emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
-
-	        emitter->Initialize(pConsts, pfConsts, pMeshArgs);
-
-	        emitter->SetEventCallback(
-	            [this](EmitterEvent event, ParticleEmitter* em) {
-	                this->OnEmitterEvent(event, em);
-	            });
-
-	        UINT capacity = pfConsts.maxParticles;
-	        RegisterEmitter(emitter.get(), capacity, eID);
-
-	        if (!emitter->GetBakedPath().empty()) {
-	            RegisterBakedPos(emitter.get(), bakedPositions, pConsts, eID);
-	        }
-	        else if (emitter->IsUsingCustomPositions()) {
-	            RegisterCustomPos(emitter.get(), customPositions, eID);
-	        }
-
-	        consts.push_back(pConsts);
-	        frameConsts.push_back(pfConsts);
-	        initMeshArgs.push_back(pMeshArgs);
-	        emitterIDs.push_back(eID);
-
-	        LoadSubEmitter(emitter.get(), consts, frameConsts, initMeshArgs, bakedPositions, customPositions, emitterIDs);
+	        ProcessEmitter(emitter.get(), consts, frameConsts, initMeshArgs, 
+	                       bakedPositions, customPositions, emitterIDs);
 	    }
+	    
+	    //  2단계: SubEmitter는 Main Emitter 처리 후에 처리
+	    for (auto& emitter : m_emitters) {
+	        LoadSubEmitter(emitter.get(), consts, frameConsts, initMeshArgs, 
+	                       bakedPositions, customPositions, emitterIDs);
+	    }
+	}
+
+	//  새 함수: 단일 Emitter 처리 로직 분리
+	void ParticleSystem::ProcessEmitter(
+		ParticleEmitter* emitter,
+		std::vector<ParticleConsts>& consts,
+		std::vector<ParticleFrameConsts>& frameConsts,
+		std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		std::vector<Vector3>& bakedPositions,
+		std::vector<Vector3>& customPositions,
+		std::vector<EmitterID>& emitterIDs)
+	{
+		ParticleConsts pConsts = {};
+		ParticleFrameConsts pfConsts = {};
+		DrawIndexedInstancedArgs pMeshArgs = {0, 0, 0, 0, 0};
+		EmitterID eID = { 0, 0, 0, 0 };
+
+		//  EmitterID 먼저 설정 (현재 인덱스 사용)
+		eID.emitterID = m_currentEmitterIndex;
+		eID.particleOffset = m_currentParticleOffset;
+
+		emitter->SetOwner(this);
+		emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+		emitter->Initialize(pConsts, pfConsts, pMeshArgs);
+
+		emitter->SetEventCallback(
+			[this](EmitterEvent event, ParticleEmitter* em) {
+				this->OnEmitterEvent(event, em);
+			});
+
+		//  Baked/Custom 등록 (pConsts, eID 수정)
+		if (!emitter->GetBakedPath().empty()) {
+			RegisterBakedPos(emitter, bakedPositions, pConsts, eID);
+		}
+		else if (emitter->IsUsingCustomPositions()) {
+			RegisterCustomPos(emitter, customPositions, eID);
+		}
+
+		//  카운터 증가
+		UINT capacity = pfConsts.maxParticles;
+		m_currentParticleOffset += capacity;
+		++m_currentEmitterIndex;
+		++m_maxEmitters;
+		m_maxTotalParticles += capacity;
+
+		//  데이터 추가 (순서 보장)
+		consts.push_back(pConsts);
+		frameConsts.push_back(pfConsts);
+		initMeshArgs.push_back(pMeshArgs);
+		emitterIDs.push_back(eID);
 	}
 
 	void ParticleSystem::InitializeGPU(
@@ -471,6 +499,8 @@ namespace DE {
 		if (modelIdx >= 0) 
 			SetTargetMesh(modelIdx);
 
+
+		m_meshConsts.Initialize();
 		// Transform 초기 설정
 		UpdateTransform();
 	}

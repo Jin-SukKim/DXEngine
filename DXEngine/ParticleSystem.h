@@ -53,7 +53,14 @@ public:
 	void ClearEmitters();
 	void LoadFromJson(const json& data);
 	void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
-
+	void ProcessEmitter(
+		ParticleEmitter* emitter,
+		std::vector<ParticleConsts>& consts,
+		std::vector<ParticleFrameConsts>& frameConsts,
+		std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
+		std::vector<Vector3>& bakedPositions,
+		std::vector<Vector3>& customPositions,
+		std::vector<EmitterID>& emitterIDs);
 	// [제어 함수]
 	void Play();
 	void Pause();
