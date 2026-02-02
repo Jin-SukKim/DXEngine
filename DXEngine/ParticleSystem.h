@@ -164,6 +164,5 @@ namespace DE {
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
 		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_currentCustomOffset = 0;
-
 	};
 }

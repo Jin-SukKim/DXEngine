@@ -22,11 +22,6 @@ namespace DE {
 		SetBlendState();
 	}
 
-	void RenderModule::UpdateArgs(const RenderContext& ctx)
-	{
-		ParticleModule::UpdateArgs(ctx);
-	}
-
 	void RenderModule::OnRender(const RenderContext& ctx)
 	{
 		ParticleModule::OnRender(ctx);
@@ -77,12 +72,6 @@ namespace DE {
 		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
-	}
-
-	void BillboardRenderModule::UpdateArgs(const RenderContext& ctx)
-	{
-		RenderModule::UpdateArgs(ctx);
-
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -177,11 +166,6 @@ namespace DE {
 		// ParticleEmitter의 메시 Args 버퍼 초기화
 		auto& mesh = model->meshes[0];
 		ctx.consts.render.indexCount = mesh.indexCount;
-	}
-
-	void MeshRenderModule::UpdateArgs(const RenderContext& ctx)
-	{
-
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)

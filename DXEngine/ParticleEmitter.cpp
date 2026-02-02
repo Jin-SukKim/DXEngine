@@ -156,7 +156,7 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			fsConsts.dt,
+			dt,
 			nullptr,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions(),
@@ -207,7 +207,7 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			0.f,
+			dt,
 			&args,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions()
@@ -249,8 +249,6 @@ namespace DE {
 		};
 
 		m_ownerSystem->BindConstantID(m_emitterID);
-		for (auto& mod : m_modules)
-			mod->UpdateArgs(renderCtx);
 
 		for (auto& mod : m_modules)
 		 mod->OnRender(renderCtx);

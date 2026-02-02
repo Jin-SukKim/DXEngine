@@ -7,7 +7,7 @@ namespace DE {
 	void ParticleManager::Initialize()
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
-		m_memoryPool->Initialize(1000000, 100);
+		m_memoryPool->Initialize(10000000, 100);
 	}
 
 	void ParticleManager::Update(const float& dt)
