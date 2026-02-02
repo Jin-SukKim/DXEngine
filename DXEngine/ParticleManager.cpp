@@ -23,14 +23,14 @@ namespace DE {
 			}
 		}
 
+		m_memoryPool->UpdateArgs();
+
 		// 활성 시스템만 업데이트
 		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->Update(dt);
 			}
 		}
-
-		m_memoryPool->UpdateArgs();
 
 		m_memoryPool->UnbindCompute();
 

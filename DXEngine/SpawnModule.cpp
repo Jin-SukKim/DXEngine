@@ -44,7 +44,7 @@ namespace DE {
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
 		}
 
-		//m_totalSpawnCount = 1;
+		m_totalSpawnCount = 1;
 		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
 		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
