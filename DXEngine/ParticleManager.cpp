@@ -26,7 +26,7 @@ namespace DE {
 		// 활성 시스템만 업데이트
 		for (auto* system : m_activeSystems) {
 			if (system) {
-				system->Update(dt, m_memoryPool->GetDispatchArgs());
+				system->Update(dt);
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace DE {
 		// 여기서는 순회만 진행
 		for (auto* system : m_activeSystems) {
 			if (system) {
-				system->Render(m_memoryPool->GetBillboardArgs(), m_memoryPool->GetMeshArgs());
+				system->Render();
 			}
 		}
 		m_memoryPool->UnbindRender();
@@ -116,7 +116,10 @@ namespace DE {
 		PoolHandle handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount());
 		cloned->SetPoolHandle(handle);
 
-		cloned->InitializeGPU(initialData);
+		cloned->InitializeGPU(initialData, 
+			m_memoryPool->GetDispatchArgs(),
+			m_memoryPool->GetBillboardArgs(),
+			m_memoryPool->GetMeshArgs());
 
 		m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);

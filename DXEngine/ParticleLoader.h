@@ -59,7 +59,6 @@ std::unique_ptr<T> ParticleLoader::Load(const std::wstring& filePath) {
 		}
 		else {
 			rawPtr->Initialize();
-			rawPtr->OnSpawn();
 		}
 	};
 

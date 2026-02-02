@@ -42,13 +42,16 @@ namespace DE {
 		void Initialize() override;
 		void Initialize(ParticleInitializer& initialData);
 		void InitializeCPU(ParticleInitializer& initialData);
-		void InitializeGPU(ParticleInitializer& initialData);
+		void InitializeGPU(ParticleInitializer& initialData,
+			IndirectArgsBuffer<DispatchArgs>& m_dispatchArgs,
+			IndirectArgsBuffer<DrawInstancedArgs>& m_billboardArgsBuffer,
+			IndirectArgsBuffer<DrawIndexedInstancedArgs>& m_meshArgsBuffer);
 
 		void OnSpawn();
 		void PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts);
-		void Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
+		void Update(const float& dt);
 		void ActivateSubEmitters();
-		void Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs, IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgs);
+		void Render();
 
 		void AddEmitter(const std::string& path);
 		void AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter);
@@ -104,7 +107,7 @@ namespace DE {
 		PoolHandle GetPoolHandle() const { return m_poolHandle; }
 	private:
 		void Reset();
-		void ExecutePreWarm();
+		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
 		void UpdateTransform();
 
 		void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID);
@@ -164,5 +167,9 @@ namespace DE {
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
 		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_currentCustomOffset = 0;
+
+		IndirectArgsBuffer<DispatchArgs>* m_dispatchArgs = nullptr;
+		IndirectArgsBuffer<DrawInstancedArgs>* m_billboardArgsBuffer = nullptr;
+		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_meshArgsBuffer = nullptr;
 	};
 }

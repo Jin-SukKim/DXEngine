@@ -163,10 +163,18 @@ namespace DE {
 		}
 	}
 
-	void ParticleSystem::InitializeGPU(ParticleInitializer& initialData)
+	void ParticleSystem::InitializeGPU(ParticleInitializer& initialData,
+		IndirectArgsBuffer<DispatchArgs>& dispatchArgs,
+		IndirectArgsBuffer<DrawInstancedArgs>& billboardArgsBuffer,
+		IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer)
 	{
 		ID3D11Device* device = GET_SINGLE(RenderBase)->GetDevice().Get();
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+
+		m_dispatchArgs = &dispatchArgs;
+		m_billboardArgsBuffer = &billboardArgsBuffer;
+		m_meshArgsBuffer = &meshArgsBuffer;
+
 
 		if (!initialData.bakedPositions.empty()) {
 			m_bakedSpawnPos.Initialize(device, (UINT)initialData.bakedPositions.size());
@@ -198,7 +206,7 @@ namespace DE {
 			emitter->OnSpawn();
 		}
 
-		//ExecutePreWarm();
+		ExecutePreWarm(*m_dispatchArgs);
 		TextureManager::Get().BindParticleTextures();
 	}
 
@@ -227,7 +235,7 @@ namespace DE {
 			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
 	}
 
-	void ParticleSystem::Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs)
+	void ParticleSystem::Update(const float& dt)
 	{
 		if (m_state != ParticleState::Playing)
 			return;
@@ -236,13 +244,13 @@ namespace DE {
 		// Update (Main + Sub)
 		for (auto& emitter : m_emitters)
 			emitter->Update(newDt, 
-				{ dispatchArgs.GetBuffer(), 
+				{ m_dispatchArgs->GetBuffer(), 
 				GetDispatchArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID()) 
 				});
 		for (auto* emitter : m_activeSubEmitters)
 			emitter->Update(newDt,
-				{ dispatchArgs.GetBuffer(),
+				{ m_dispatchArgs->GetBuffer(),
 				GetDispatchArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID())
 				});
@@ -269,7 +277,7 @@ namespace DE {
 		m_pendingSubEmitters.clear();
 	}
 
-	void ParticleSystem::Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs, IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgs)
+	void ParticleSystem::Render()
 	{
 		if (m_state == ParticleState::Stopped)
 			return;
@@ -281,12 +289,12 @@ namespace DE {
 		// Main Emitter ·»´õ¸µ
 		for (auto& emitter : m_emitters)
 			emitter->Render({
-				billbaordArgs.GetBuffer(), 
+				m_billboardArgsBuffer->GetBuffer(),
 				GetBillboardArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID()) 
 				},
 				{
-				meshArgs.GetBuffer(),
+				m_meshArgsBuffer->GetBuffer(),
 				GetMeshArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID())
 				});
@@ -295,12 +303,12 @@ namespace DE {
 		for (auto* emitter : m_activeSubEmitters) {
 			if (emitter)
 				emitter->Render({
-				billbaordArgs.GetBuffer(),
+				m_billboardArgsBuffer->GetBuffer(),
 				GetBillboardArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID())
 					},
 				{
-				meshArgs.GetBuffer(),
+				m_meshArgsBuffer->GetBuffer(),
 				GetMeshArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID())
 				});
@@ -513,17 +521,21 @@ namespace DE {
 		m_activeSubEmitters.clear();
 	}
 
-	void ParticleSystem::ExecutePreWarm()
+	void ParticleSystem::ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs)
 	{
-		//if (m_preWarmTime <= 0.f) return;
+		if (m_preWarmTime <= 0.f) return;
 
-		//static const float step = 1.f / 60.f;
-		//float t = 0.f;
-		//while (t < m_preWarmTime) {
-		//	t += step;
-		//	for (auto& emitter : m_emitters)
-		//		emitter->Update(step);
-		//}
+		static const float step = 1.f / 60.f;
+		float t = 0.f;
+		while (t < m_preWarmTime) {
+			t += step;
+			for (auto& emitter : m_emitters)
+				emitter->Update(step,
+					{ dispatchArgs.GetBuffer(),
+				GetDispatchArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID())
+					});
+		}
 	}
 
 	void ParticleSystem::UpdateTransform()
