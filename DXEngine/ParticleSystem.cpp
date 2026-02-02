@@ -514,7 +514,7 @@ namespace DE {
 		meshConsts.worldIT = meshConsts.world.Invert();
 		this->SetTransform(meshConsts);
 
-		// Pool에 업로드 (System slot 사용)
+		// Pool에 업로드 (System 인덱스 사용)
 		ParticleManager::Get().UploadMeshConsts(m_poolHandle.systemSlot, meshConsts);
 	}
 
