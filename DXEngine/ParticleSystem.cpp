@@ -206,7 +206,7 @@ namespace DE {
 			emitter->OnSpawn();
 		}
 
-		ExecutePreWarm(*m_dispatchArgs);
+		//ExecutePreWarm(*m_dispatchArgs);
 		TextureManager::Get().BindParticleTextures();
 	}
 
@@ -214,8 +214,6 @@ namespace DE {
 	{
 		if (m_state != ParticleState::Playing)
 			return;
-
-		ActivateSubEmitters();
 
 		float newDt = dt * m_playRate;
 		UpdateTransform();
@@ -259,6 +257,8 @@ namespace DE {
 
 		// 완료된 SubEmitter 제거
 		std::erase_if(m_activeSubEmitters, [](auto* em) { return em->IsCompleted(); });
+
+		ActivateSubEmitters();
 
 		if (IsAllEmittersCompleted()) {
 			m_looping ? Restart() : Stop();
@@ -529,12 +529,14 @@ namespace DE {
 		float t = 0.f;
 		while (t < m_preWarmTime) {
 			t += step;
-			for (auto& emitter : m_emitters)
+			for (auto& emitter : m_emitters) {
 				emitter->Update(step,
 					{ dispatchArgs.GetBuffer(),
 				GetDispatchArgsOffset(
 					m_poolHandle.emitterID + emitter->GetEmitterID())
 					});
+			}
+				
 		}
 	}
 
