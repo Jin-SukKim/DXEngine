@@ -12,6 +12,9 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
+		// 대기 중인 시스템 재할당 시도
+		ProcessWaitingQueue();
+
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
 
@@ -67,7 +70,6 @@ namespace DE {
 		
 		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
 		if (it != m_activeSystems.end()) {
-			m_memoryPool->Free((*it)->GetPoolHandle());
 			m_activeSystems.erase(it);
 		}
 	}
@@ -96,13 +98,25 @@ namespace DE {
 		cloned->InitializeCPU(initialData);
 
 		UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
+		UINT particleCount = cloned->GetTotalParticleCount();
+		UINT emitterCount = cloned->GetMaxEmitterCount();
 		
-		PoolHandle handle = RequestAllocation(
-			cloned.get(), 
-			cloned->GetTotalParticleCount(), 
-			cloned->GetMaxEmitterCount(), 
-			spawnPosCount
-		);
+		PoolHandle handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
+		
+		// 할당 실패 시 대기 큐에 추가하고 nullptr 반환
+		if (!handle.IsActive()) {
+			PendingSystem pending;
+			pending.system = cloned.get();
+			pending.particleCount = particleCount;
+			pending.emitterCount = emitterCount;
+			pending.spawnPosCount = spawnPosCount;
+			m_waitForSpawn.push(pending);
+			
+			// instance는 저장하되 active에는 등록하지 않음
+			auto* clonedPtr = cloned.get();
+			m_instances.push_back(std::move(cloned));
+			return clonedPtr; // 또는 nullptr 반환하여 호출자에게 알림
+		}
 		
 		cloned->SetPoolHandle(handle);
 
@@ -137,8 +151,16 @@ namespace DE {
 	{
 		if (!system) return;
 
+		// Pool에서 메모리 해제
+		const PoolHandle& handle = system->GetPoolHandle();
+		if (handle.IsActive()) {
+			m_memoryPool->Free(handle);
+		}
+
+		// active 목록에서 제거
 		UnregisterActiveSystem(system);
 
+		// instance 목록에서 제거
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
 			[system](const std::unique_ptr<ParticleSystem>& ptr) {
 				return ptr.get() == system;
@@ -154,13 +176,12 @@ namespace DE {
 		m_memoryPool->BindEmitterID(globalSlotIndex);
 	}
 
-	PoolHandle ParticleManager::RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT spawnPosCount)
+	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
 	{
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
 		if (!handle.IsActive()) {
 			m_memoryPool->PlanDefragmentation(m_activeSystems);
-			m_waitForSpawn.push(system);
 		}
 
 		return handle;
@@ -182,6 +203,66 @@ namespace DE {
 			
 			// Pool에 업로드
 			m_memoryPool->UpdateEmitterID(handle.emitterID + static_cast<UINT>(i), eID);
+		}
+	}
+
+	void ParticleManager::ProcessWaitingQueue()
+	{
+		if (m_waitForSpawn.empty()) return;
+
+		while (!m_waitForSpawn.empty()) {
+			PendingSystem pending = m_waitForSpawn.front();
+			
+			// 시스템이 아직 유효한지 확인
+			auto it = std::find_if(m_instances.begin(), m_instances.end(),
+				[&pending](const std::unique_ptr<ParticleSystem>& ptr) {
+					return ptr.get() == pending.system;
+				});
+			
+			if (it == m_instances.end()) {
+				// 시스템이 이미 삭제됨
+				m_waitForSpawn.pop();
+				continue;
+			}
+
+			// 재할당 시도
+			PoolHandle handle = m_memoryPool->Allocate(
+				pending.particleCount, 
+				pending.emitterCount, 
+				pending.spawnPosCount
+			);
+
+			if (!handle.IsActive()) {
+				// 할당 실패 시 중단 (메모리 부족)
+				break;
+			}
+
+			m_waitForSpawn.pop();
+			
+			ParticleSystem* system = pending.system;
+			system->SetPoolHandle(handle);
+
+			// GPU 초기화 및 등록
+			ParticleInitializer initialData;
+			system->InitializeCPU(initialData);
+
+			if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
+				m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
+			}
+
+			system->InitializeGPU(initialData,
+				m_memoryPool->GetDispatchArgs(),
+				m_memoryPool->GetBillboardArgs(),
+				m_memoryPool->GetMeshArgs());
+
+			UploadEmitterIDs(system, initialData);
+			m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
+			m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);
+
+			system->Initialize(initialData);
+			system->OnSpawn();
+
+			RegisterActiveSystem(system);
 		}
 	}
 }

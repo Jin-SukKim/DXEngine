@@ -153,7 +153,6 @@ namespace DE {
 		UINT m_particleWriteOffset = 0;
 
 		// 파티클 버퍼 (이중 버퍼링)
-		UINT m_currentBuffer = 0;
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;

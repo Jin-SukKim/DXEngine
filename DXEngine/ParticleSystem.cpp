@@ -39,7 +39,6 @@ namespace DE {
 		, m_vertexCount(other.m_vertexCount)
 		, m_indexCount(other.m_indexCount)
 		, m_owner(nullptr)
-		, m_currentBuffer(0)
 		, m_currentParticleOffset(0)
 		, m_currentEmitterIndex(0)
 		, m_maxTotalParticles(0)

@@ -57,48 +57,67 @@ namespace DE {
 
 		for (size_t i = 0; i < m_particleBlockTable.size(); ++i) {
 			if (!m_particleBlockTable[i]) {
+				if (consecutive == 0) {
+					foundBlock = static_cast<UINT>(i); // 시작 위치 저장
+				}
 				if (++consecutive == neededBlocks) {
-					foundBlock = static_cast<UINT>(i - neededBlocks + 1);
 					break;
 				}
 			}
 			else {
 				consecutive = 0;
+				foundBlock = UINT_MAX;
 			}
+		}
+		
+		// consecutive가 neededBlocks보다 작으면 실패
+		if (consecutive < neededBlocks) {
+			foundBlock = UINT_MAX;
 		}
 
 		// 2. Emitter Slot 할당
 		UINT foundSlot = UINT_MAX;
 		consecutive = 0;
+		UINT slotStart = UINT_MAX;
+		
 		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
 			if (!m_emitterSlotTable[i]) {
+				if (consecutive == 0) {
+					slotStart = static_cast<UINT>(i);
+				}
 				if (++consecutive == reqEmitterCount) {
-					foundSlot = static_cast<UINT>(i - reqEmitterCount + 1);
+					foundSlot = slotStart;
 					break;
 				}
 			}
 			else {
 				consecutive = 0;
+				slotStart = UINT_MAX;
 			}
 		}
 
-		// 3. SpawnPosition Block 할당 (reqSpawnPosCount > 0일 때만)
+		// 3. SpawnPosition Block 할당 (reqSpawnPosCount > 0인 경우)
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
 		
 		if (reqSpawnPosCount > 0) {
 			neededSpawnPosBlocks = (reqSpawnPosCount + m_blockSize - 1) / m_blockSize;
 			consecutive = 0;
+			UINT spawnStart = UINT_MAX;
 
 			for (size_t i = 0; i < m_spawnPosBlockTable.size(); ++i) {
 				if (!m_spawnPosBlockTable[i]) {
+					if (consecutive == 0) {
+						spawnStart = static_cast<UINT>(i);
+					}
 					if (++consecutive == neededSpawnPosBlocks) {
-						foundSpawnPosBlock = static_cast<UINT>(i - neededSpawnPosBlocks + 1);
+						foundSpawnPosBlock = spawnStart;
 						break;
 					}
 				}
 				else {
 					consecutive = 0;
+					spawnStart = UINT_MAX;
 				}
 			}
 		}
@@ -131,6 +150,7 @@ namespace DE {
 				handle.spawnPosBlockCount = neededSpawnPosBlocks;
 			}
 		}
+		// 실패 시 handle은 기본값(UINT_MAX)으로 반환되어 IsActive()가 false
 
 		return handle;
 	}
@@ -142,8 +162,10 @@ namespace DE {
 		// Particle blocks 해제
 		size_t startBlock = handle.particleOffset / m_blockSize;
 		for (size_t i = 0; i < handle.blockCount; ++i) {
-			if (startBlock + i < m_particleBlockTable.size())
+			if (startBlock + i < m_particleBlockTable.size()) {
+				assert(m_particleBlockTable[startBlock + i] && "Double-free detected!");
 				m_particleBlockTable[startBlock + i] = false;
+			}
 		}
 
 		// Emitter slots 해제
