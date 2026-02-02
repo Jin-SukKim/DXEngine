@@ -9,7 +9,7 @@
     "spawnInnerRatio": 0.0,
     "spawnRate": 0.0,
     "burst": 1024,
-    "particlesPerSpawn": 0,
+    "particlesPerSpawn": 1,
     "maxParticles": 1024,
     "lifeRange": [ 0.8, 1.2 ]
   },
