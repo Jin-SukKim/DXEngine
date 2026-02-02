@@ -21,7 +21,7 @@ namespace DE {
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
 		ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
 		
 		// Barrier
 		ID3D11UnorderedAccessView* nullUAVs[4] = { nullptr, nullptr, nullptr, nullptr };

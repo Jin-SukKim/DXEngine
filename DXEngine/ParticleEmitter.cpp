@@ -113,7 +113,6 @@ namespace DE {
 			context.Get(),
 			0.f,
 			nullptr,
-			0,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions()
 		};
@@ -159,7 +158,6 @@ namespace DE {
 			context.Get(),
 			fsConsts.dt,
 			nullptr,
-			0,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions(),
 			&fsConsts
@@ -199,7 +197,7 @@ namespace DE {
 		return m_bakedCount;
 	}
 
-	void ParticleEmitter::Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs, UINT dispatchOffset)
+	void ParticleEmitter::Update(const float& dt, ArgsParam args)
 	{
 		// 완료된 경우 (Loop가 아닐때 종료된 경우)
 		if (m_isCompleted)
@@ -210,8 +208,7 @@ namespace DE {
 		SimulationContext simCtx = {
 			context.Get(),
 			0.f,
-			dispatchArgs.GetBuffer(),
-			dispatchOffset,
+			&args,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions()
 		};
@@ -235,7 +232,7 @@ namespace DE {
 			m_eventCallback(event, this);
 	}
 
-	void ParticleEmitter::Render(IndirectArgsBuffer<DrawInstancedArgs>& billboardArgs, UINT billboardOffset)
+	void ParticleEmitter::Render(ArgsParam billboardArgs, ArgsParam meshArgs)
 	{
 		// 완료되면 Skip
 		if (m_isCompleted)
@@ -247,10 +244,8 @@ namespace DE {
 			context,
 			this->GetModule<MaterialModule>(),
 			m_emitterID,
-			billboardArgs,
-			billboardOffset,
-			m_ownerSystem->GetMeshArgs(),
-			m_ownerSystem->GetMeshArgsOffset(m_emitterID),
+			&billboardArgs,
+			&meshArgs,
 		};
 
 		m_ownerSystem->BindConstantID(m_emitterID);

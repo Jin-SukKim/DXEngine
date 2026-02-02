@@ -189,9 +189,6 @@ namespace DE {
 			cb.Upload();
 			m_emitterIDs.push_back(cb);
 		}
-
-		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
-		m_meshArgsBuffer.Initialize(device, initialData.initMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 	}
 
 	void ParticleSystem::OnSpawn()
@@ -238,9 +235,17 @@ namespace DE {
 		float newDt = dt * m_playRate;
 		// Update (Main + Sub)
 		for (auto& emitter : m_emitters)
-			emitter->Update(newDt, dispatchArgs, GetDispatchArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
+			emitter->Update(newDt, 
+				{ dispatchArgs.GetBuffer(), 
+				GetDispatchArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID()) 
+				});
 		for (auto* emitter : m_activeSubEmitters)
-			emitter->Update(newDt, dispatchArgs, GetDispatchArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
+			emitter->Update(newDt,
+				{ dispatchArgs.GetBuffer(),
+				GetDispatchArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID())
+				});
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
@@ -264,7 +269,7 @@ namespace DE {
 		m_pendingSubEmitters.clear();
 	}
 
-	void ParticleSystem::Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs)
+	void ParticleSystem::Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs, IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgs)
 	{
 		if (m_state == ParticleState::Stopped)
 			return;
@@ -275,12 +280,30 @@ namespace DE {
 
 		// Main Emitter ·»´õ¸µ
 		for (auto& emitter : m_emitters)
-			emitter->Render(billbaordArgs, GetBillboardArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
+			emitter->Render({
+				billbaordArgs.GetBuffer(), 
+				GetBillboardArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID()) 
+				},
+				{
+				meshArgs.GetBuffer(),
+				GetMeshArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID())
+				});
 
 		// Active SubEmitter ·»´õ¸µ (null Ã¼Å©)
 		for (auto* emitter : m_activeSubEmitters) {
 			if (emitter)
-				emitter->Render(billbaordArgs, GetBillboardArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
+				emitter->Render({
+				billbaordArgs.GetBuffer(),
+				GetBillboardArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID())
+					},
+				{
+				meshArgs.GetBuffer(),
+				GetMeshArgsOffset(
+					m_poolHandle.emitterID + emitter->GetEmitterID())
+				});
 		}
 	}
 

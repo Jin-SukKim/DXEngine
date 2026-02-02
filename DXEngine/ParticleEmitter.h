@@ -22,6 +22,11 @@ namespace DE {
 		bool inheritPosition = true; // trigger되는 emitter의 위치 상속
 	};
 
+	struct ArgsParam {
+		ID3D11Buffer* buffer;
+		UINT offset;
+	};
+
 	class ParticleEmitter
 	{
 	public:
@@ -33,8 +38,8 @@ namespace DE {
 		void Initialize(ParticleConsts& pConsts, ParticleFrameConsts& pfConsts, DrawIndexedInstancedArgs& pMeshArgs);
 		void OnSpawn();
 		void PreUpdate(const float& dt, ParticleFrameConsts& fsConsts);
-		void Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs, UINT dispatchOffset);
-		void Render(IndirectArgsBuffer<DrawInstancedArgs>& billboardArgs, UINT billboardOffset);
+		void Update(const float& dt, ArgsParam args);
+		void Render(ArgsParam billboardArgs, ArgsParam meshArgs);
 
 		template<typename T>
 		void AddModule(std::unique_ptr<ParticleModule>&& module);

@@ -48,7 +48,7 @@ namespace DE {
 		void PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts);
 		void Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
 		void ActivateSubEmitters();
-		void Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs);
+		void Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs, IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgs);
 
 		void AddEmitter(const std::string& path);
 		void AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter);
@@ -91,10 +91,7 @@ namespace DE {
 		bool IsAllEmittersCompleted() const;
 
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
-
 		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 16; }
-
-		IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 		UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
 
 		void BindConstantID(UINT emitterID);
@@ -168,6 +165,5 @@ namespace DE {
 		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_currentCustomOffset = 0;
 
-		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 	};
 }

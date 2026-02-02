@@ -50,6 +50,7 @@ public:
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConsts() { return m_frameConsts; }
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
+	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 
 private:
 	UINT m_blockSize = 1024; // 1block당 particle 수
@@ -65,6 +66,7 @@ private:
 
 	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
+	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable; // TODO: Bitmap 방식 사용

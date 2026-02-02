@@ -10,6 +10,7 @@ namespace DE {
 class RenderModule;
 class MaterialModule;
 class ParticleSystem;
+struct ArgsParam;
 
 //=============================================================================
 // ParticleInitContext - 초기화 시 사용
@@ -33,8 +34,7 @@ struct ParticleContext {
 
 struct SimulationContext : ParticleContext {
     float dt;
-    ID3D11Buffer* dispatchArgs;
-    UINT argsOffset;
+    ArgsParam* dispatchArgs;
     StructuredBuffer<Vector3>& bakedSpawnPos;
     StructuredBuffer<Vector3>& customPosBuffer;
     ParticleFrameConsts* fsConsts = nullptr;
@@ -44,10 +44,8 @@ struct RenderContext : ParticleContext {
     MaterialModule* materialModule;
     const UINT& emitterID;
 
-    IndirectArgsBuffer<DrawInstancedArgs>& billboardArgs;
-    UINT billbaordArgsOffset;
-    IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer;
-    UINT meshArgsOffset;
+    ArgsParam* billboardArgs;
+    ArgsParam* meshArgs;
 };
 
 } // namespace DE

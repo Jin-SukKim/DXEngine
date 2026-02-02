@@ -94,7 +94,7 @@ namespace DE {
         int textureIdx;
         UINT frameCount;
         Vector2 frameTiles;
-        UINT numMeshes;
+        UINT indexCount;
         UINT textureMode;
         int singleTextureIdx;
         UINT useSorting; // Ãß°¡

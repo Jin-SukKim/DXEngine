@@ -83,7 +83,7 @@ struct RenderConsts {
     int textureIdx;
     uint frameCount;
     float2 frameTiles;
-    uint numMeshes;
+    uint indexCount;
     uint textureMode;
     int singleTextureIdx;
     uint useSorting;

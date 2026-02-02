@@ -33,6 +33,9 @@ namespace DE {
 
 		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
 		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
+	
+		std::vector<DrawIndexedInstancedArgs> initialMeshArgs(m_maxEmitters, { 0, 0, 0, 0, 0 });
+		m_meshArgsBuffer.Initialize(device, initialMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 	}
 
 	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount)
@@ -242,12 +245,16 @@ namespace DE {
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
 		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
 
-		ID3D11UnorderedAccessView* uavs[] = { m_dispatchArgs.GetUAV(), m_billboardArgsBuffer.GetUAV() };
-		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+		ID3D11UnorderedAccessView* uavs[] = { 
+			m_dispatchArgs.GetUAV(), 
+			m_billboardArgsBuffer.GetUAV(),
+			m_meshArgsBuffer.GetUAV() 
+		};
+		context->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
 
 		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
 
-		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(0, 3, nullUAVs, nullptr);
 	}
 }

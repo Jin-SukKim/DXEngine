@@ -21,7 +21,7 @@ namespace DE {
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& vortexCS = RenderBase::computeCommon.particle.vortexCS;
 		ctx.context->CSSetShader(vortexCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
 		
 		// Barrier
 		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };

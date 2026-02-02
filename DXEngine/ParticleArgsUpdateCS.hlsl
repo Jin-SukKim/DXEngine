@@ -3,6 +3,7 @@
 // 바인딩 슬롯 (C++ 코드와 맞춰야 함)
 RWBuffer<uint> dispatchArgs : register(u0); // Update용 (DispatchIndirect)
 RWBuffer<uint> billboardArgs : register(u1); // Render용 (DrawInstancedIndirect) <--- 추가!
+RWBuffer<uint> meshArgs : register(u2);
 
 [numthreads(256, 1, 1)] // 1,1,1은 비효율적이므로 256 권장
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -41,4 +42,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // Index 2, 3: StartVertex, StartInstance (보통 0)
     billboardArgs[drawIdx + 2] = 0;
     billboardArgs[drawIdx + 3] = 0;
+
+    uint meshIdx = myEmitterID * 5;
+
+    meshArgs[meshIdx] = consts[myEmitterID].render.indexCount;
+    meshArgs[meshIdx + 1] = count;
 }

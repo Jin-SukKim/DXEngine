@@ -112,7 +112,7 @@ namespace DE {
 			break;
 		}
 
-		ctx.context->DrawInstancedIndirect(ctx.billboardArgs.GetBuffer(), ctx.billbaordArgsOffset);
+		ctx.context->DrawInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
@@ -176,28 +176,12 @@ namespace DE {
 
 		// ParticleEmitter의 메시 Args 버퍼 초기화
 		auto& mesh = model->meshes[0];
-		ctx.meshArgs.indexCountPerInstance = mesh.indexCount;
-		m_meshCount = static_cast<UINT>(model->meshes.size());
-		ctx.consts.render.numMeshes = m_meshCount;
+		ctx.consts.render.indexCount = mesh.indexCount;
 	}
 
 	void MeshRenderModule::UpdateArgs(const RenderContext& ctx)
 	{
-		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer.GetUAV() };
-		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
-		
-		// ComputeCommon의 공용 ComputePSO 사용
-		auto& meshArgsUpdateCS = RenderBase::computeCommon.particle.meshArgsUpdateCS;
-		ctx.context->CSSetShader(meshArgsUpdateCS.computeShader.Get(), 0, 0);
-		UINT groupCount = (m_meshCount + 1023) / 1024;
-		ctx.context->Dispatch(groupCount, 1, 1);
-		
-		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
-		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
-		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
-		ctx.context->CSSetShader(nullptr, 0, 0);
+
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)
@@ -220,7 +204,7 @@ namespace DE {
 			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
 			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgsBuffer.GetBuffer(), ctx.meshArgsOffset);
+			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgs->buffer, ctx.meshArgs->offset);
 		}
 	}
 

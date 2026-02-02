@@ -47,7 +47,7 @@ namespace DE {
 		// 여기서는 순회만 진행
 		for (auto* system : m_activeSystems) {
 			if (system) {
-				system->Render(m_memoryPool->GetBillboardArgs());
+				system->Render(m_memoryPool->GetBillboardArgs(), m_memoryPool->GetMeshArgs());
 			}
 		}
 		m_memoryPool->UnbindRender();

@@ -20,7 +20,7 @@ namespace DE {
 		// ComputeCommon에 등록된 orbitCS 사용
 		auto& orbitCS = RenderBase::computeCommon.particle.orbitCS;
 		ctx.context->CSSetShader(orbitCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs, ctx.argsOffset);
+		ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
 
 		// Unbind
 		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
