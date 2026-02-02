@@ -175,18 +175,6 @@ namespace DE {
 		m_billboardArgsBuffer = &billboardArgsBuffer;
 		m_meshArgsBuffer = &meshArgsBuffer;
 
-
-		if (!initialData.bakedPositions.empty()) {
-			m_bakedSpawnPos.Initialize(device, (UINT)initialData.bakedPositions.size());
-			m_bakedSpawnPos.SetData(initialData.bakedPositions);
-			m_bakedSpawnPos.Upload(context);
-		}
-		if (!initialData.customPositions.empty()) {
-			m_customPositions.Initialize(device, (UINT)initialData.customPositions.size());
-			m_customPositions.SetData(initialData.customPositions);
-			m_customPositions.Upload(context);
-		}
-
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
 			ConstantBuffer<EmitterID> cb;
 			cb.Initialize();

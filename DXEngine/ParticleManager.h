@@ -30,7 +30,7 @@ public:
 	ParticleSystem* CreateSystem(const std::wstring& path);
 	void DestroyInstance(ParticleSystem* system);
 
-	PoolHandle RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount);
+	PoolHandle RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT customCount);
 private:
 	// 프로토타입 저장소 (파일 경로별 원본)
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;

@@ -98,7 +98,6 @@ namespace DE {
 		UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
 
 		void BindConstantID(UINT emitterID);
-		StructuredBuffer<Vector3>& GetBakedSpawnBuffer() { return m_bakedSpawnPos; }
 		StructuredBuffer<Vector3>& GetCustomPositions() { return m_customPositions; }
 
 		UINT GetTotalParticleCount() const { return m_maxTotalParticles; }
@@ -162,7 +161,6 @@ namespace DE {
 
 		std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
 
-		StructuredBuffer<Vector3> m_bakedSpawnPos;
 		UINT m_currentBakedOffset = 0;
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
 		StructuredBuffer<Vector3> m_customPositions;

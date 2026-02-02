@@ -36,9 +36,11 @@ namespace DE {
 	
 		std::vector<DrawIndexedInstancedArgs> initialMeshArgs(m_maxEmitters, { 0, 0, 0, 0, 0 });
 		m_meshArgsBuffer.Initialize(device, initialMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
+
+		m_customSpawnPos.Initialize(device, maxParticles);
 	}
 
-	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount)
+	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqCustomCount)
 	{
 		PoolHandle handle;
 
@@ -72,16 +74,37 @@ namespace DE {
 				consecutive = 0;
 		}
 
+		UINT neededCustomBlock = (reqCustomCount + m_blockSize - 1) / m_blockSize;
+		UINT foundCustomBlock = -1;
+		consecutive = 0;
+
+		for (size_t i = 0; i < m_customBlockTable.size(); ++i) {
+			if (!m_customBlockTable[i]) {
+				if (++consecutive == neededCustomBlock) {
+					foundCustomBlock = static_cast<UINT>(i - neededCustomBlock + 1);
+					break;
+				}
+			}
+			else
+				consecutive = 0;
+		}
+
 		if (foundBlock != -1 && foundSlot != -1) {
 			for (size_t i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
 			for (size_t i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[foundSlot + i] = true;
+			for (size_t i = 0; i < neededCustomBlock; ++i)
+				m_customBlockTable[foundCustomBlock + i] = true;
 
 			handle.particleOffset = foundBlock * m_blockSize;
 			handle.blockCount = neededBlocks;
 			handle.emitterID = foundSlot;
 			handle.emitterCount = reqEmitterCount;
+			if (foundCustomBlock != -1) {
+				handle.customOffset = foundCustomBlock * m_blockSize;
+				handle.customBlockCount = neededCustomBlock;
+			}
 		}
 
 		return handle;
@@ -100,6 +123,12 @@ namespace DE {
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
 			if (handle.emitterID + i < m_emitterSlotTable.size())
 				m_emitterSlotTable[handle.emitterID + i] = false;
+		}
+
+		startBlock = handle.customOffset / m_blockSize;
+		for (size_t i = 0; i < handle.customBlockCount; ++i) {
+			if (startBlock + i < m_customBlockTable.size())
+				m_customBlockTable[startBlock + i] = false;
 		}
 	}
 
@@ -232,12 +261,6 @@ namespace DE {
 		context->UpdateSubresource(m_frameConsts.GetBuffer(), 0, &box, data.data(), 0, 0);
 	}
 
-	void ParticleMemoryPool::UploadFrameConsts()
-	{
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		m_frameConsts.Upload(context);
-	}
-
 	void ParticleMemoryPool::UpdateArgs()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
@@ -256,5 +279,15 @@ namespace DE {
 
 		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(0, 3, nullUAVs, nullptr);
+	}
+
+	void ParticleMemoryPool::UploadCustomSpawnPositions(UINT offset, const std::vector<Vector3>& positions)
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		D3D11_BOX box;
+		box.left = offset * sizeof(Vector3);
+		box.right = static_cast<UINT>((offset + positions.size()) * sizeof(Vector3));
+		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
+		context->UpdateSubresource(m_customSpawnPos.GetBuffer(), 0, &box, positions.data(), 0, 0);
 	}
 }

@@ -11,6 +11,8 @@ struct PoolHandle {
 	UINT blockCount = 0; // 할당된 block 수
 	UINT emitterID = -1; // Emitter Index
 	UINT emitterCount = 0; // Emitter 개수
+	UINT customOffset = -1;
+	UINT customBlockCount = 0;
 
 	bool IsActive() const {
 		return particleOffset >= 0 && emitterID >= 0;
@@ -23,7 +25,7 @@ public:
 	void Initialize(UINT maxParticles = 1000000, UINT maxEmitters = 10000);
 
 	// 파티클 수와 emitter 개수로 할당 요청
-	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount);
+	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqCustomCount);
 
 	// 반환
 	void Free(const PoolHandle& handle);
@@ -40,8 +42,8 @@ public:
 
 	void UploadConsts(UINT offset, const std::vector<ParticleConsts>& data);
 	void UploadFrameConsts(UINT offset, const std::vector<ParticleFrameConsts>& data);
-	void UploadFrameConsts();
 	void UpdateArgs();
+	void UploadCustomSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
@@ -51,6 +53,7 @@ public:
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
+	StructuredBuffer<Vector3>& GetCustomSpawnBuffer() { return m_customSpawnPos; }
 
 private:
 	UINT m_blockSize = 1024; // 1block당 particle 수
@@ -68,9 +71,13 @@ private:
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
+	StructuredBuffer<Vector3> m_customSpawnPos;
+
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable; // TODO: Bitmap 방식 사용
 	std::vector<bool> m_emitterSlotTable;
+	std::vector<bool> m_customBlockTable;
+
 };
 
 }

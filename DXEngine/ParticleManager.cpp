@@ -113,14 +113,26 @@ namespace DE {
 		// 복제본 초기화 
 		cloned->InitializeCPU(initialData);
 
-		PoolHandle handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount());
+		PoolHandle handle;
+		if (initialData.bakedPositions.size()) {
+			handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount(), -1);
+			m_memoryPool->UploadCustomSpawnPositions(handle.customOffset, initialData.bakedPositions);
+		} 
+		else if (initialData.customPositions.size()) {
+			handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount(), -1);
+			m_memoryPool->UploadCustomSpawnPositions(handle.customOffset, initialData.customPositions);
+		}
+		else {
+			handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount(), -1);
+		}
+		 
 		cloned->SetPoolHandle(handle);
 
 		cloned->InitializeGPU(initialData, 
 			m_memoryPool->GetDispatchArgs(),
 			m_memoryPool->GetBillboardArgs(),
 			m_memoryPool->GetMeshArgs());
-
+			
 		m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);
 
@@ -158,9 +170,9 @@ namespace DE {
 			//printf("[ParticleManager] Destroyed Instance: %p\n", system);
 		}
 	}
-	PoolHandle ParticleManager::RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount)
+	PoolHandle ParticleManager::RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT customCount)
 	{
-		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount);
+		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, customCount);
 
 		if (!handle.IsActive()) {
 			// 메모리 재배치
