@@ -2,7 +2,6 @@
 #include "ParticleCommon.hlsli"
 
 Texture2D g_heightTexture : register(t0); // Height Map
-StructuredBuffer<Particle> particles : register(t1);
 StructuredBuffer<SortElement> sortedElements : register(t2);
 
 // [추가] 3D Euler 각도 -> 회전 행렬 변환 함수

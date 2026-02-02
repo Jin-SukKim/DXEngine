@@ -213,7 +213,7 @@ namespace DE {
 		TextureManager::Get().BindParticleTextures();
 	}
 
-	void ParticleSystem::PreUpdate(const float& dt, StructuredBuffer<ParticleFrameConsts>& fsConsts)
+	void ParticleSystem::PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts)
 	{
 		if (m_state != ParticleState::Playing)
 			return;
@@ -233,9 +233,9 @@ namespace DE {
 
 		// PreUpdate (Main + Sub)
 		for (auto& emitter : m_emitters)
-			emitter->PreUpdate(newDt, fsConsts.Get(m_poolHandle.emitterID + emitter->GetEmitterID()));
+			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
 		for (auto* emitter : m_activeSubEmitters)
-			emitter->PreUpdate(newDt, fsConsts.Get(m_poolHandle.emitterID + emitter->GetEmitterID()));
+			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
 	}
 
 	void ParticleSystem::Update(const float& dt)

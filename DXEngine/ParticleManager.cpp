@@ -15,14 +15,13 @@ namespace DE {
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
 
-		auto& fsConsts = m_memoryPool->GetFrameConsts();
 		for (auto* system : m_activeSystems) {
 			if (system) {
+				std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
 				system->PreUpdate(dt, fsConsts);
+				m_memoryPool->UploadFrameConsts(system->GetPoolHandle().emitterID, fsConsts);
 			}
 		}
-
-		m_memoryPool->UploadFrameConsts();
 
 		// 활성 시스템만 업데이트
 		for (auto* system : m_activeSystems) {
@@ -39,6 +38,7 @@ namespace DE {
 	{
 		if (m_activeSystems.empty()) return;
 
+		m_memoryPool->BindRender();
 		// 파티클 렌더링을 위한 PSO 설정은 RenderModule에서 처리
 		// 여기서는 순회만 진행
 		for (auto* system : m_activeSystems) {

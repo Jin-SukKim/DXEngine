@@ -54,6 +54,7 @@ namespace DE {
 		//	m_totalSpawnCount = 0;
 
 		ctx.fsConsts->spawnCount = m_totalSpawnCount;
+		ctx.fsConsts->maxParticles = m_maxParticles;
 	}
 
 	void SpawnModule::LateUpdate(SimulationContext& ctx)

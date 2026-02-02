@@ -45,7 +45,7 @@ namespace DE {
 		void InitializeGPU(ParticleInitializer& initialData);
 
 		void OnSpawn();
-		void PreUpdate(const float& dt, StructuredBuffer<ParticleFrameConsts>& fsConsts);
+		void PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts);
 		void Update(const float& dt) override;
 		void ActivateSubEmitters();
 		void UpdateArgs(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context);

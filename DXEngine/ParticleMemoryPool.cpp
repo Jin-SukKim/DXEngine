@@ -147,13 +147,15 @@ namespace DE {
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ID3D11ShaderResourceView* srvs[2] = {
+		ID3D11ShaderResourceView* srvs[] = {
+			GetReadBuffer().GetSRV(),
+			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV()
 		};
-		context->CSSetShaderResources(8, 2, srvs);
-		context->VSSetShaderResources(8, 2, srvs);
-		context->PSSetShaderResources(8, 2, srvs);
+		context->CSSetShaderResources(6, 4, srvs);
+		context->VSSetShaderResources(6, 4, srvs);
+		context->PSSetShaderResources(6, 4, srvs);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()

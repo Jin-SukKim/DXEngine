@@ -1,7 +1,6 @@
 #include "Common.hlsli"
 #include "ParticleCommon.hlsli"
 
-StructuredBuffer<Particle> particles : register(t0);
 StructuredBuffer<SortElement> sortedElements : register(t1);
 
 struct GSInput
