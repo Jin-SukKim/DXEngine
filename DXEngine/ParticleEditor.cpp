@@ -66,16 +66,20 @@ namespace DE {
 		//m_firework = AddObject<Firework>(L"Firework");
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		m_test = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		//m_test = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
 		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 
 	ParticleEditor::~ParticleEditor()
 	{
-		if (m_test) {
-			ParticleManager::Get().DestroyInstance(m_test);
-			m_test = nullptr;
+		if (m_test1) {
+			ParticleManager::Get().DestroyInstance(m_test1);
+			m_test1 = nullptr;
+		}
+		if (m_test2) {
+			ParticleManager::Get().DestroyInstance(m_test2);
+			m_test2 = nullptr;
 		}
 	}
 

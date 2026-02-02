@@ -32,7 +32,8 @@ private:
 
 	InputAction m_click;
 
-	ParticleSystem* m_test = nullptr;
+	ParticleSystem* m_test1 = nullptr;
+	ParticleSystem* m_test2 = nullptr;
 	TestActor* m_testActor = nullptr;
 };
 

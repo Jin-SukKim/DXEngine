@@ -254,12 +254,6 @@ namespace DE {
 
 		UpdateArgs(context);
 
-		// Cleanup
-		ID3D11Buffer* nullB[] = { nullptr };
-		context->CSSetConstantBuffers(4, 1, nullB);
-		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 5, nullSRVs);
-
 		// 완료된 SubEmitter 제거
 		std::erase_if(m_activeSubEmitters, [](auto* em) { return em->IsCompleted(); });
 
