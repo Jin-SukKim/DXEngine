@@ -29,12 +29,6 @@ struct ParticleInitContext {
 
 struct ParticleContext {
     ID3D11DeviceContext* context;
-    ParticleConsts& constsData;
-    ParticleFrameConsts& frameConstData;
-    StructuredBuffer<Particle>& readParticles;
-    StructuredBuffer<Particle>& writeParticles;
-    StructuredBuffer<uint32_t>& readCount;
-    StructuredBuffer<uint32_t>& writeCount;
 };
 
 struct SimulationContext : ParticleContext {
@@ -43,6 +37,7 @@ struct SimulationContext : ParticleContext {
     UINT argsOffset;
     StructuredBuffer<Vector3>& bakedSpawnPos;
     StructuredBuffer<Vector3>& customPosBuffer;
+    ParticleFrameConsts* fsConsts = nullptr;
 };
 
 struct RenderContext : ParticleContext {

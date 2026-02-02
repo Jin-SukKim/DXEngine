@@ -17,11 +17,7 @@ namespace DE {
 	void VortexModule::OnUpdate(const SimulationContext& ctx)
 	{
 		ParticleModule::OnUpdate(ctx);
-		
-		ctx.context->CSSetShaderResources(0, 1, ctx.readCount.GetAddressOfSRV());
 
-		ctx.context->CSSetUnorderedAccessViews(0, 1, ctx.readParticles.GetAddressOfUAV(), NULL);
-		
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& vortexCS = RenderBase::computeCommon.particle.vortexCS;
 		ctx.context->CSSetShader(vortexCS.computeShader.Get(), 0, 0);

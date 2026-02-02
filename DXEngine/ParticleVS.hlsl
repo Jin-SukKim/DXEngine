@@ -32,7 +32,7 @@ GSInput main(uint vertexID : SV_VertexID)
 {
     RenderConsts render = consts[emitterID].render;
     uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
-    Particle p = particles[particleOffset + particleIdx];
+    Particle p = readParticles[particleOffset + particleIdx];
 
     GSInput output;
 

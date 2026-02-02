@@ -1,7 +1,6 @@
 // [ParticleMeshArgsUpdateCS.hlsl]
 #include "ParticleCommon.hlsli"
 
-StructuredBuffer<uint> activeCount : register(t0);
 RWBuffer<uint> drawArgs : register(u0);
 
 [numthreads(1024, 1, 1)]
@@ -14,5 +13,5 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint baseOffset = emitterID * 5;  // emitterº° offset Ãß°¡
     uint index = baseOffset + DTid.x * 5 + 1;
     
-    drawArgs[index] = activeCount[emitterID];
+    drawArgs[index] = readCount[emitterID];
 }

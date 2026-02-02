@@ -8,13 +8,10 @@ struct Vertex {
     float3 tangentModel;
 };
 
-RWStructuredBuffer<Particle> particles : register(u0);
-RWStructuredBuffer<uint> activeCount : register(u1); // 카운팅용 버퍼
-
 StructuredBuffer<float3> bakedSpawnPos : register(t0);
 StructuredBuffer<float3> customSpawnPos : register(t1); 
-StructuredBuffer<float3> meshVertex : register(t9);
-StructuredBuffer<uint> meshIndices : register(t10);
+StructuredBuffer<float3> meshVertex : register(t2);
+StructuredBuffer<uint> meshIndices : register(t3);
 
 // --- [Robust Random Functions (Wang Hash)] ---
 
@@ -121,7 +118,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (dtID.x >= frameConsts[emitterID].spawnCount)
         return;
 
-    if (activeCount[emitterID] >= frameConsts[emitterID].maxParticles)
+    if (writeCount[emitterID] >= frameConsts[emitterID].maxParticles)
         return;
 
     // 시드 초기화
@@ -199,6 +196,6 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     // counts[0]을 1 증가시키고, '증가되기 전의 값'을 index에 받아옵니다.
     uint index;
-    InterlockedAdd(activeCount[emitterID], 1, index);
-    particles[particleOffset + index] = p;
+    InterlockedAdd(writeCount[emitterID], 1, index);
+    writeParticles[particleOffset + index] = p;
 }

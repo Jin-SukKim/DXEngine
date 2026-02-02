@@ -110,9 +110,6 @@ namespace DE {
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
 
-		ID3D11ShaderResourceView* srvs[] = { ctx.readParticles.GetSRV() };
-		ctx.context->VSSetShaderResources(0, 1, srvs);
-
 		ID3D11ShaderResourceView* texSRV = nullptr;
 		switch (m_textureMode)
 		{
@@ -125,7 +122,7 @@ namespace DE {
 		case BillboardTextureMode::SingleTexture:
 			if (m_singleTextureIdx >= 0) {
 				texSRV = TextureManager::Get().GetTextureSRV(m_singleTextureIdx);
-				ctx.context->PSSetShaderResources(6, 1, &texSRV);
+				ctx.context->PSSetShaderResources(0, 1, &texSRV);
 			}
 			break;
 
@@ -208,7 +205,6 @@ namespace DE {
 
 	void MeshRenderModule::UpdateArgs(const RenderContext& ctx)
 	{
-		ctx.context->CSSetShaderResources(0, 1, ctx.readCount.GetAddressOfSRV());
 		ID3D11UnorderedAccessView* uavs[] = { ctx.meshArgsBuffer.GetUAV() };
 		ctx.context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
 		
@@ -234,9 +230,6 @@ namespace DE {
 		if (!model) return;
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
-
-		ID3D11ShaderResourceView* srvs[] = { ctx.readParticles.GetSRV() };
-		ctx.context->VSSetShaderResources(1, 1, srvs);
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {
 			auto& mesh = model->meshes[i];

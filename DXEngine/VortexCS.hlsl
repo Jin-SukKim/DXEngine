@@ -1,8 +1,5 @@
 #include "ParticleCommon.hlsli"
 
-StructuredBuffer<uint> activeCount : register(t0);
-RWStructuredBuffer<Particle> particles : register(u0);
-
 float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 
     VortexConsts vortex = consts[emitterID].vortex;
@@ -30,10 +27,10 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= activeCount[emitterID])
+    if (dtID.x >= writeCount[emitterID])
         return;
 
-    Particle p = particles[particleOffset + dtID.x];
+    Particle p = writeParticles[particleOffset + dtID.x];
     VortexConsts vortex = consts[emitterID].vortex;
 
     // Vortex(소용돌이)        
@@ -50,6 +47,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
         p.velocity += vForce * frameConsts[emitterID].dt;
 
-        particles[particleOffset + dtID.x].velocity = p.velocity;
+        writeParticles[particleOffset + dtID.x].velocity = p.velocity;
     }
 }

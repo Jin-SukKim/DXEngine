@@ -17,15 +17,6 @@ namespace DE {
 	void ForceModule::OnUpdate(const SimulationContext& ctx)
 	{
 		ParticleModule::OnUpdate(ctx);
-		
-		// UAV 바인딩 (particles와 activeCounts 모두 RW 접근 필요)
-		ID3D11UnorderedAccessView* uavs[4] = {
-			ctx.readParticles.GetUAV(),
-			ctx.writeParticles.GetUAV(),
-			ctx.readCount.GetUAV(),
-			ctx.writeCount.GetUAV()
-		};
-		ctx.context->CSSetUnorderedAccessViews(0, 4, uavs, nullptr);
 
 		// ComputeCommon의 공유 ComputePSO 사용
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;

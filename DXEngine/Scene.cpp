@@ -74,6 +74,7 @@ namespace DE {
 		// Initialize managers
 		TextureManager::Get().Initialize();
 		MaterialSystem::Get().Initialize();
+		ParticleManager::Get().Initialize();
 
 		// Create core actors
 		m_mainCamera = std::make_unique<CameraActor>(L"MainCamera");

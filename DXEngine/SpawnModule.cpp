@@ -44,16 +44,16 @@ namespace DE {
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
 		}
 
-		//m_totalSpawnCount = 1;
-		UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
-		m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
+		m_totalSpawnCount = 1;
+		//UINT spawnCycles = static_cast<int>(m_spawnAccumulator);
+		//m_totalSpawnCount = spawnCycles * m_particlesPerSpawn;
 
-		if (spawnCycles > 0)
-			m_spawnAccumulator -= static_cast<float>(spawnCycles);
-		if (m_totalSpawnCount < 0)
-			m_totalSpawnCount = 0;
+		//if (spawnCycles > 0)
+		//	m_spawnAccumulator -= static_cast<float>(spawnCycles);
+		//if (m_totalSpawnCount < 0)
+		//	m_totalSpawnCount = 0;
 
-		ctx.frameConstData.spawnCount = m_totalSpawnCount;
+		ctx.fsConsts->spawnCount = m_totalSpawnCount;
 	}
 
 	void SpawnModule::LateUpdate(SimulationContext& ctx)
@@ -63,12 +63,6 @@ namespace DE {
 		// [최적화] 조기 반환
 		if (m_totalSpawnCount == 0)
 			return;
-
-		ID3D11UnorderedAccessView* uavs[2] = {
-			ctx.writeParticles.GetUAV(),
-			ctx.writeCount.GetUAV()
-		};
-		ctx.context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 
 		// [최적화] Shape별 SRV 바인딩 최적화
 		if (m_spawnShape == 2 || m_spawnShape == 3) {

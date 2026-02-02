@@ -1,10 +1,5 @@
 #include "ParticleCommon.hlsli"
 
-RWStructuredBuffer<Particle> readParticles : register(u0);
-RWStructuredBuffer<Particle> writeParticles : register(u1);
-RWStructuredBuffer<uint> readCount : register(u2);
-RWStructuredBuffer<uint> writeCount : register(u3);
-
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {

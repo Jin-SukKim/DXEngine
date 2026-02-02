@@ -1,5 +1,7 @@
 #pragma once
 #include "ParticleSystem.h"
+#include "ParticleMemoryPool.h"
+#include <queue>
 
 namespace DE {
 
@@ -17,6 +19,7 @@ public:
 		return instance;
 	}
 
+	void Initialize();
 	void Update(const float& dt);
 	void Render();
 	
@@ -26,6 +29,8 @@ public:
 
 	ParticleSystem* CreateSystem(const std::wstring& path);
 	void DestroyInstance(ParticleSystem* system);
+
+	PoolHandle RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount);
 private:
 	// 프로토타입 저장소 (파일 경로별 원본)
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
@@ -35,6 +40,10 @@ private:
 	
 	// 렌더링할 활성 시스템들 (포인터만 저장, 소유권 없음)
 	std::vector<ParticleSystem*> m_activeSystems;
+
+	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
+
+	std::queue<ParticleSystem*> m_waitForSpawn;
 };
 
 }

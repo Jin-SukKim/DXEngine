@@ -2,6 +2,7 @@
 #include "Object.h"
 #include "ParticleEmitter.h"
 #include "MeshData.h"
+#include "ParticleMemoryPool.h"
 
 namespace DE {
 	struct Mesh;
@@ -20,6 +21,15 @@ namespace DE {
 		float padding[2];
 	};
 
+	struct ParticleInitializer {
+		std::vector<ParticleConsts> consts;
+		std::vector<ParticleFrameConsts> frameConsts;
+		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
+		std::vector<Vector3> bakedPositions;
+		std::vector<Vector3> customPositions;
+		std::vector<EmitterID> emitterIDs;
+	};
+
 	class ParticleSystem : public Object
 	{
 	public:
@@ -30,21 +40,12 @@ namespace DE {
 		UINT GetEmitterCount() const { return static_cast<UINT>(m_emitters.size()); }
 
 		void Initialize() override;
-		void InitializeCPU(
-			std::vector<ParticleConsts>& consts,
-			std::vector<ParticleFrameConsts>& frameConsts,
-			std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
-			std::vector<Vector3>& bakedPositions,
-			std::vector<Vector3>& customPositions,
-			std::vector<EmitterID>& emitterIDs);
-		void InitializeGPU(
-			const std::vector<ParticleConsts>& consts,
-			const std::vector<ParticleFrameConsts>& frameConsts,
-			const std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
-			const std::vector<Vector3>& bakedPositions,
-			const std::vector<Vector3>& customPositions,
-			const std::vector<EmitterID>& emitterIDs);
+		void Initialize(ParticleInitializer& initialData);
+		void InitializeCPU(ParticleInitializer& initialData);
+		void InitializeGPU(ParticleInitializer& initialData);
+
 		void OnSpawn();
+		void PreUpdate(const float& dt, StructuredBuffer<ParticleFrameConsts>& fsConsts);
 		void Update(const float& dt) override;
 		void ActivateSubEmitters();
 		void UpdateArgs(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context);
@@ -57,12 +58,7 @@ namespace DE {
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		void ProcessEmitter(
 			ParticleEmitter* emitter,
-			std::vector<ParticleConsts>& consts,
-			std::vector<ParticleFrameConsts>& frameConsts,
-			std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
-			std::vector<Vector3>& bakedPositions,
-			std::vector<Vector3>& customPositions,
-			std::vector<EmitterID>& emitterIDs);
+			ParticleInitializer& initialData);
 
 		// [제어 함수]
 		void Play();
@@ -95,11 +91,6 @@ namespace DE {
 
 		bool IsAllEmittersCompleted() const;
 
-		StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_currentBuffer]; }
-		StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_currentBuffer]; }
-		StructuredBuffer<uint32_t>& GetReadCount() { return m_activeCounts[m_currentBuffer]; }
-		StructuredBuffer<uint32_t>& GetWriteCount() { return m_activeCounts[1 - m_currentBuffer]; }
-
 		IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
 
@@ -109,18 +100,16 @@ namespace DE {
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 		UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
 
-		StructuredBuffer<ParticleConsts>& GetConstsBuffer() { return m_consts; }
-		ParticleConsts& GetConstsData(UINT emitterID) { return m_consts.Get(emitterID); }
-
-		StructuredBuffer<ParticleFrameConsts>& GetFrameConstsBuffer() { return m_frameConsts; }
-		ParticleFrameConsts& GetFrameConstsData(UINT emitterID) { return m_frameConsts.Get(emitterID); }
-
 		void BindConstantID(UINT emitterID);
 		StructuredBuffer<Vector3>& GetBakedSpawnBuffer() { return m_bakedSpawnPos; }
 		StructuredBuffer<Vector3>& GetCustomPositions() { return m_customPositions; }
 
 		void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
 
+		UINT GetTotalParticleCount() const { return m_maxTotalParticles; }
+		UINT GetMaxEmitterCount() const { return m_maxEmitters; }
+		void SetPoolHandle(PoolHandle handle) { m_poolHandle = handle; }
+		PoolHandle GetPoolHandle() const { return m_poolHandle; }
 	private:
 		void Reset();
 		void ExecutePreWarm();
@@ -133,12 +122,7 @@ namespace DE {
 		// SubEmitter 처리 (단순화)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
-			std::vector<ParticleConsts>& consts,
-			std::vector<ParticleFrameConsts>& frameConsts,
-			std::vector<DrawIndexedInstancedArgs>& initMeshArgs,
-			std::vector<Vector3>& bakedPositions,
-			std::vector<Vector3>& customPositions,
-			std::vector<EmitterID>& emitterIDs);
+			ParticleInitializer& initialData);
 		void ActivateSubEmitter(ParticleEmitter* subEmitter, const Vector3& position);
 
 	private:
@@ -168,9 +152,13 @@ namespace DE {
 		UINT m_vertexCount = 0;
 		UINT m_indexCount = 0;
 
+		PoolHandle m_poolHandle;
+
+		// Defragmentation때 따로 활용
+		UINT m_particleReadOffset = 0;
+		UINT m_particleWriteOffset = 0;
+
 		// 파티클 버퍼 (이중 버퍼링)
-		StructuredBuffer<uint32_t> m_activeCounts[2];
-		StructuredBuffer<Particle> m_particles[2];
 		UINT m_currentBuffer = 0;
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
@@ -178,8 +166,6 @@ namespace DE {
 		UINT m_maxEmitters = 0;
 
 		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
-		StructuredBuffer<ParticleConsts> m_consts;
-		StructuredBuffer<ParticleFrameConsts> m_frameConsts;
 		std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
 
 		StructuredBuffer<Vector3> m_bakedSpawnPos;

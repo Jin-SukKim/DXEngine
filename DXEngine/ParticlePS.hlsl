@@ -8,8 +8,6 @@ Texture2D metallicTex : register(t3);
 Texture2D roughnessTex : register(t4);
 Texture2D emissiveTex : register(t5);
 
-Texture2D singleTex : register(t6);
-
 struct ParticlePSInput
 {
     float4 pos : SV_POSITION;
@@ -40,7 +38,7 @@ float4 SampleParticleTexture(float3 uvw)
     else if (render.textureMode == 1)
     {
         // 개별 텍스처 샘플링 (uvw.z 인덱스 무시)
-        color = singleTex.Sample(linearClampSampler, uvw.xy);
+        color = albedoTex.Sample(linearClampSampler, uvw.xy);
     }
     // [Mode 2: Texture Array (Default)]
     else

@@ -1,7 +1,6 @@
 #include "ParticleCommon.hlsli"
 
 // 바인딩 슬롯 (C++ 코드와 맞춰야 함)
-StructuredBuffer<uint> activeCount : register(t0);
 RWBuffer<uint> dispatchArgs : register(u0); // Update용 (DispatchIndirect)
 RWBuffer<uint> billboardArgs : register(u1); // Render용 (DrawInstancedIndirect) <--- 추가!
 
@@ -12,7 +11,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint myEmitterID = DTid.x;
 
     // 현재 Emitter의 파티클 개수 가져오기
-    uint count = activeCount[myEmitterID];
+    uint count = readCount[myEmitterID];
 
     // --------------------------------------------------------
     // 1. Dispatch Args 갱신 (Update 단계용)

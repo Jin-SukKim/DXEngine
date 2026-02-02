@@ -473,6 +473,7 @@
       <Filter>public\ParticleSystem\Actor\Combination</Filter>
     </ClInclude>
     <ClInclude Include="ObjectPool.h" />
+    <ClInclude Include="ParticleMemoryPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -749,6 +750,9 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ObjectPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleMemoryPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

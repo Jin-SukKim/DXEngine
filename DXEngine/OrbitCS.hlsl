@@ -1,8 +1,5 @@
 #include "ParticleCommon.hlsli"
 
-StructuredBuffer<uint> activeCount : register(t0);
-RWStructuredBuffer<Particle> particles : register(u0);
-
 // 로드리게스 회전 공식 (Axis-Angle Rotation)
 float3 RotateVector(float3 v, float3 axis, float angle)
 {
@@ -14,10 +11,10 @@ float3 RotateVector(float3 v, float3 axis, float angle)
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
-    if (dtID.x >= activeCount[emitterID])
+    if (dtID.x >= writeCount[emitterID])
         return;
 
-    Particle p = particles[particleOffset + dtID.x];
+    Particle p = writeParticles[particleOffset + dtID.x];
 
     OrbitConsts orbit = consts[emitterID].orbit;
     // 1. 회전할 각도 계산 (Rate * DeltaTime)
@@ -45,5 +42,5 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     // 밖으로 튀어 나가거나 이상한 나선형을 그리게 됩니다.
     p.velocity = RotateVector(p.velocity, axis, rotationAngle);
 
-    particles[particleOffset + dtID.x] = p;
+    writeParticles[particleOffset + dtID.x] = p;
 }

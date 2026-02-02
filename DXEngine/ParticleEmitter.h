@@ -32,7 +32,7 @@ namespace DE {
 
 		void Initialize(ParticleConsts& pConsts, ParticleFrameConsts& pfConsts, DrawIndexedInstancedArgs& pMeshArgs);
 		void OnSpawn();
-		void PreUpdate(const float& dt);
+		void PreUpdate(const float& dt, ParticleFrameConsts& fsConsts);
 		void Update(const float& dt);
 		void Render();
 
@@ -45,7 +45,6 @@ namespace DE {
 		void ClearModules() { m_modules.clear(); }
 		void Reset();
 
-		void SetParticleConfig(const ParticleConsts& config);
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
 		// Texture Bake 데이터 설정 (Spawn 모듈용)

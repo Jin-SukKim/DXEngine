@@ -4,14 +4,35 @@
 #include "RenderBase.h"
 
 namespace DE {
+	void ParticleManager::Initialize()
+	{
+		m_memoryPool = std::make_unique<ParticleMemoryPool>();
+		m_memoryPool->Initialize(1000000, 100);
+	}
+
 	void ParticleManager::Update(const float& dt)
 	{
+		m_memoryPool->ClearWriteCount();
+		m_memoryPool->BindCompute();
+
+		auto& fsConsts = m_memoryPool->GetFrameConsts();
+		for (auto* system : m_activeSystems) {
+			if (system) {
+				system->PreUpdate(dt, fsConsts);
+			}
+		}
+
+		m_memoryPool->UploadFrameConsts();
+
 		// 활성 시스템만 업데이트
 		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->Update(dt);
 			}
 		}
+
+		if (m_memoryPool)
+			m_memoryPool->SwapBuffer();
 	}
 
 	void ParticleManager::Render()
@@ -47,6 +68,7 @@ namespace DE {
 		
 		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
 		if (it != m_activeSystems.end()) {
+			m_memoryPool->Free((*it)->GetPoolHandle());
 			m_activeSystems.erase(it);
 		}
 	}
@@ -74,7 +96,7 @@ namespace DE {
 
 			// 원본 초기화
 			newSystem->Initialize();
-			newSystem->OnSpawn();
+			//newSystem->OnSpawn();
 
 			prototype = newSystem.get();
 			m_prototypes[path] = std::move(newSystem);
@@ -83,8 +105,19 @@ namespace DE {
 		// 복제본 생성
 		auto cloned = std::make_unique<ParticleSystem>(*prototype);
 
-		// 복제본 초기화 (독립 버퍼 생성)
-		cloned->Initialize();
+		ParticleInitializer initialData;
+		// 복제본 초기화 
+		cloned->InitializeCPU(initialData);
+
+		PoolHandle handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount());
+		cloned->SetPoolHandle(handle);
+
+		cloned->InitializeGPU(initialData);
+
+		m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
+		m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);
+
+		cloned->Initialize(initialData);
 		cloned->OnSpawn();
 
 		auto* clonedPtr = cloned.get();
@@ -117,5 +150,17 @@ namespace DE {
 			m_instances.erase(it);
 			//printf("[ParticleManager] Destroyed Instance: %p\n", system);
 		}
+	}
+	PoolHandle ParticleManager::RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount)
+	{
+		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount);
+
+		if (!handle.IsActive()) {
+			// 메모리 재배치
+			m_memoryPool->PlanDefragmentation(m_activeSystems);
+			m_waitForSpawn.push(system); // 다음 프레임에 allocate 요청
+		}
+
+		return handle;
 	}
 }

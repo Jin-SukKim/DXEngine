@@ -42,13 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -213,6 +213,7 @@
     <ClInclude Include="OrbitEffectsActor.h" />
     <ClInclude Include="OrbitModule.h" />
     <ClInclude Include="ParticleManager.h" />
+    <ClInclude Include="ParticleMemoryPool.h" />
     <ClInclude Include="ParticleSpawner.h" />
     <ClInclude Include="PhoenixEffect.h" />
     <ClInclude Include="PortalEffect.h" />
@@ -321,6 +322,7 @@
     <ClCompile Include="OrbitEffectsActor.cpp" />
     <ClCompile Include="OrbitModule.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
+    <ClCompile Include="ParticleMemoryPool.cpp" />
     <ClCompile Include="ParticleSpawner.cpp" />
     <ClCompile Include="PhoenixEffect.cpp" />
     <ClCompile Include="PortalEffect.cpp" />

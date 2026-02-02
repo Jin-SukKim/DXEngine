@@ -94,6 +94,12 @@ namespace DE {
 
 		// 초기 spawn 위치 저장 (Reset 시 복원용)
 		m_initialSpawnPos = pConsts.spawn.localPos;
+
+		if (m_spawnOffset != Vector3(0.f))
+			pConsts.spawn.localPos += m_spawnOffset;
+
+		m_spawnOffset = pConsts.spawn.localPos;
+
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -107,12 +113,6 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			m_ownerSystem->GetConstsData(m_emitterID),
-			m_ownerSystem->GetFrameConstsData(m_emitterID),
-			m_ownerSystem->GetReadBuffer(),
-			m_ownerSystem->GetWriteBuffer(),
-			m_ownerSystem->GetReadCount(),
-			m_ownerSystem->GetWriteCount(),
 			0.f,
 			m_ownerSystem->GetDispatchArgs().GetBuffer(),
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
@@ -120,22 +120,11 @@ namespace DE {
 			m_ownerSystem->GetCustomPositions()
 		};
 
-		if (m_spawnOffset != Vector3(0.f)) 
-			m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos += m_spawnOffset;
-
-		m_spawnOffset = m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos;
-
 		for (auto& mod : m_modules)
 			mod->OnSpawn(simCtx);
-
-		// ❌ 제거: OnStart 이벤트를 여기서 실행하지 않음
-		// if (!m_isStarted) {
-		//     ExecuteEvent(EmitterEvent::OnStart);
-		//     m_isStarted = true;
-		// }
 	}
 
-	void ParticleEmitter::PreUpdate(const float& dt)
+	void ParticleEmitter::PreUpdate(const float& dt, ParticleFrameConsts& fsConsts)
 	{
 		if (m_isCompleted)
 			return;
@@ -164,28 +153,25 @@ namespace DE {
 			}
 		}
 
-		// [최적화] Frame constants 먼저 업데이트
-		ParticleFrameConsts& frameConsts = m_ownerSystem->GetFrameConstsData(m_emitterID);
-		frameConsts.dt = dt;
-		frameConsts.time = m_elapsedTime;
+		// Frame constants 먼저 업데이트
+		fsConsts.dt = dt;
+		fsConsts.time = m_elapsedTime;
 
 		SimulationContext simCtx = {
 			context.Get(),
-			m_ownerSystem->GetConstsData(m_emitterID),
-			m_ownerSystem->GetFrameConstsData(m_emitterID),
-			m_ownerSystem->GetReadBuffer(),
-			m_ownerSystem->GetWriteBuffer(),
-			m_ownerSystem->GetReadCount(),
-			m_ownerSystem->GetWriteCount(),
 			dt,
 			m_ownerSystem->GetDispatchArgs().GetBuffer(),
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
 			m_ownerSystem->GetBakedSpawnBuffer(),
-			m_ownerSystem->GetCustomPositions()
+			m_ownerSystem->GetCustomPositions(),
+			&fsConsts
 		};
 
 		for (auto& mod : m_modules)
 			mod->OnPreUpdate(simCtx);
+
+		if (m_isDurationEnded)
+			fsConsts.spawnCount = 0;
 	}
 
 	void ParticleEmitter::Reset()
@@ -195,14 +181,6 @@ namespace DE {
 		m_isCompleted = false;
 		m_isStarted = false;
 		m_spawnOffset = Vector3(0.f);
-		
-		// 초기 spawn 위치로 복원
-		m_ownerSystem->GetConstsData(m_emitterID).spawn.localPos = m_initialSpawnPos;
-	}
-
-	void ParticleEmitter::SetParticleConfig(const ParticleConsts& config)
-	{
-		m_ownerSystem->GetConstsData(m_emitterID) = config;
 	}
 
 	void ParticleEmitter::SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id)
@@ -237,12 +215,6 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			m_ownerSystem->GetConstsData(m_emitterID),
-			m_ownerSystem->GetFrameConstsData(m_emitterID),
-			m_ownerSystem->GetReadBuffer(),
-			m_ownerSystem->GetWriteBuffer(),
-			m_ownerSystem->GetReadCount(),
-			m_ownerSystem->GetWriteCount(),
 			dt,
 			m_ownerSystem->GetDispatchArgs().GetBuffer(),
 			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
@@ -260,9 +232,6 @@ namespace DE {
 			for (auto& mod : m_modules)
 				mod->LateUpdate(simCtx);
 		}
-		else
-			// Duration 종료 후에는 spawnCount = 0
-			m_ownerSystem->GetFrameConstsData(m_emitterID).spawnCount = 0;
 	}
 
 	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
@@ -271,7 +240,6 @@ namespace DE {
 			m_ownerSystem->GetDispatchArgs().GetUAV()
 		};
 
-		context->CSSetShaderResources(0, 1, m_ownerSystem->GetReadCount().GetAddressOfSRV());
 		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
 
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
@@ -302,12 +270,6 @@ namespace DE {
 		
 		RenderContext renderCtx = {
 			context,
-			m_ownerSystem->GetConstsData(m_emitterID),
-			m_ownerSystem->GetFrameConstsData(m_emitterID),
-			m_ownerSystem->GetReadBuffer(),
-			m_ownerSystem->GetWriteBuffer(),
-			m_ownerSystem->GetReadCount(),
-			m_ownerSystem->GetWriteCount(),
 			this->GetModule<MaterialModule>(),
 			m_emitterID,
 			m_ownerSystem->GetBillboardArgs().GetBuffer(),

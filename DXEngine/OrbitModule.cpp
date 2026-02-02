@@ -17,11 +17,6 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 
-		ctx.context->CSSetShaderResources(0, 1, ctx.readCount.GetAddressOfSRV());
-
-		UINT initCounts[1] = { static_cast<UINT>(-1) };
-		ctx.context->CSSetUnorderedAccessViews(0, 1, ctx.readParticles.GetAddressOfUAV(), initCounts);
-
 		// ComputeCommon에 등록된 orbitCS 사용
 		auto& orbitCS = RenderBase::computeCommon.particle.orbitCS;
 		ctx.context->CSSetShader(orbitCS.computeShader.Get(), 0, 0);

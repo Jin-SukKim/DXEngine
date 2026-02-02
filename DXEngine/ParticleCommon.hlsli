@@ -1,10 +1,6 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
-
-
-Texture2DArray particleTex : register(t14);
-
 struct Particle
 {
     float3 position;
@@ -16,6 +12,13 @@ struct Particle
     float3 rotation;
     float3 rotSpeed;
 };
+
+RWStructuredBuffer<Particle> writeParticles : register(u6);
+RWStructuredBuffer<uint> writeCount : register(u7);
+
+StructuredBuffer<Particle> readParticles : register(t6);
+StructuredBuffer<uint> readCount : register(t7);
+Texture2DArray particleTex : register(t14);
 
 cbuffer EmitterID : register(b5) {
     uint particleOffset;
@@ -111,8 +114,8 @@ struct ParticleConsts {
     OrbitConsts orbit;
 };
 
-StructuredBuffer<ParticleFrameConsts> frameConsts : register(t7);
-StructuredBuffer<ParticleConsts> consts : register(t8);
+StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
+StructuredBuffer<ParticleConsts> consts : register(t9);
 
 cbuffer ParticleMeshConsts : register(b6)
 {
