@@ -25,9 +25,11 @@ namespace DE {
 		std::vector<ParticleConsts> consts;
 		std::vector<ParticleFrameConsts> frameConsts;
 		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
-		std::vector<Vector3> bakedPositions;
-		std::vector<Vector3> customPositions;
 		std::vector<EmitterID> emitterIDs;
+
+		// Baked/Custom 통합
+		std::vector<Vector3> spawnPositions;  // 통합된 SpawnPosition
+		UINT totalSpawnPosCount = 0;          // 총 SpawnPosition 개수
 	};
 
 	class ParticleSystem : public Object
@@ -109,6 +111,7 @@ namespace DE {
 		void UpdateTransform();
 
 		void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID);
+		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
 		void RegisterBakedPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, ParticleConsts& pConsts, EmitterID& eID);
 		void RegisterCustomPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, EmitterID& eID);
 
@@ -160,9 +163,9 @@ namespace DE {
 
 		std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
 
-		UINT m_currentBakedOffset = 0;
-		std::unordered_map<std::string, std::pair<UINT, UINT>> m_bakedOffset;
-		UINT m_currentCustomOffset = 0;
+		// 통합된 SpawnPosition 관리
+		UINT m_currentSpawnPosOffset = 0;
+		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 
 		IndirectArgsBuffer<DispatchArgs>* m_dispatchArgs = nullptr;
 		IndirectArgsBuffer<DrawInstancedArgs>* m_billboardArgsBuffer = nullptr;

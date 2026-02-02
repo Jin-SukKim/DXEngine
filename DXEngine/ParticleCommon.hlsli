@@ -20,21 +20,24 @@ StructuredBuffer<Particle> readParticles : register(t6);
 StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
 
-cbuffer EmitterID : register(b5) {
+cbuffer EmitterID : register(b5)
+{
     uint particleOffset;
     uint emitterID;
-    uint bakedOffset;
-    uint customOffset;
+    uint spawnPosOffset; // bakedOffset + customOffset 통합
+    uint padding_eid;
 };
 
-struct ParticleFrameConsts {
+struct ParticleFrameConsts
+{
     float dt;
     float time;
     uint spawnCount;
     uint maxParticles;
 };
 
-struct SpawnConsts {
+struct SpawnConsts
+{
     float3 localPos;
     float padding;
 
@@ -43,14 +46,15 @@ struct SpawnConsts {
 
     float2 lifeRange;
     int spawnShape;
-    uint bakedCount;
+    uint bakedCount; // Baked/Custom 공용 개수
     uint simulationSpace;
 
     uint spawnStartIndex;
     float2 padding1;
 };
 
-struct VisualConsts {
+struct VisualConsts
+{
     float2 sizeRange;
     float2 padding2;
 
@@ -67,7 +71,8 @@ struct VisualConsts {
     float padding6;
 };
 
-struct ForceConsts {
+struct ForceConsts
+{
     float3 velocity;
     float padding7;
     float2 speedRange;
@@ -79,7 +84,8 @@ struct ForceConsts {
     float padding9;
 };
 
-struct RenderConsts {
+struct RenderConsts
+{
     int textureIdx;
     uint frameCount;
     float2 frameTiles;
@@ -89,7 +95,8 @@ struct RenderConsts {
     uint useSorting;
 };
 
-struct VortexConsts {
+struct VortexConsts
+{
     float vortexStrength;
     float3 vortexCenter;
     float3 vortexAxis;
@@ -98,14 +105,16 @@ struct VortexConsts {
     float2 padding10;
 };
 
-struct OrbitConsts {
+struct OrbitConsts
+{
     float3 center;
     float rotationRate;
     float3 axis;
     float initialOffset;
 };
 
-struct ParticleConsts {
+struct ParticleConsts
+{
     SpawnConsts spawn;
     VisualConsts visual;
     ForceConsts force;
@@ -116,11 +125,12 @@ struct ParticleConsts {
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
+StructuredBuffer<float3> spawnPositions : register(t10); // 통합된 SpawnPosition 버퍼
 
 cbuffer ParticleMeshConsts : register(b6)
 {
     matrix pWorld;
-    matrix pWorldIT; // World Inverse Transpose (Normal 변환에 사용)
+    matrix pWorldIT;
     uint vertexCount;
     uint indexCount;
     float2 padding;

@@ -11,10 +11,10 @@ namespace DE {
 		m_maxParticles = maxParticles;
 		m_maxEmitters = maxEmitters;
 
-		// Particle Buffer
 		UINT blockCount = (maxParticles + m_blockSize - 1) / m_blockSize;
 		m_particleBlockTable.assign(blockCount, false);
 		m_emitterSlotTable.assign(maxEmitters, false);
+		m_spawnPosBlockTable.assign(blockCount, false);  // SpawnPos도 동일 크기
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -37,16 +37,17 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> initialMeshArgs(m_maxEmitters, { 0, 0, 0, 0, 0 });
 		m_meshArgsBuffer.Initialize(device, initialMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 
-		m_customSpawnPos.Initialize(device, maxParticles);
+		// 통합된 SpawnPosition 버퍼
+		m_spawnPositions.Initialize(device, maxParticles);
 	}
 
-	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqCustomCount)
+	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount)
 	{
 		PoolHandle handle;
 
-		// ParticleBlock 찾기
+		// 1. Particle Block 할당
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
-		UINT foundBlock = -1;
+		UINT foundBlock = UINT_MAX;
 		UINT consecutive = 0;
 
 		for (size_t i = 0; i < m_particleBlockTable.size(); ++i) {
@@ -56,12 +57,13 @@ namespace DE {
 					break;
 				}
 			}
-			else
+			else {
 				consecutive = 0;
+			}
 		}
 
-		// Emitter Slot 찾기
-		UINT foundSlot = -1;
+		// 2. Emitter Slot 할당
+		UINT foundSlot = UINT_MAX;
 		consecutive = 0;
 		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
 			if (!m_emitterSlotTable[i]) {
@@ -70,40 +72,58 @@ namespace DE {
 					break;
 				}
 			}
-			else
+			else {
 				consecutive = 0;
+			}
 		}
 
-		UINT neededCustomBlock = (reqCustomCount + m_blockSize - 1) / m_blockSize;
-		UINT foundCustomBlock = -1;
-		consecutive = 0;
+		// 3. SpawnPosition Block 할당 (reqSpawnPosCount > 0일 때만)
+		UINT foundSpawnPosBlock = UINT_MAX;
+		UINT neededSpawnPosBlocks = 0;
+		
+		if (reqSpawnPosCount > 0) {
+			neededSpawnPosBlocks = (reqSpawnPosCount + m_blockSize - 1) / m_blockSize;
+			consecutive = 0;
 
-		for (size_t i = 0; i < m_customBlockTable.size(); ++i) {
-			if (!m_customBlockTable[i]) {
-				if (++consecutive == neededCustomBlock) {
-					foundCustomBlock = static_cast<UINT>(i - neededCustomBlock + 1);
-					break;
+			for (size_t i = 0; i < m_spawnPosBlockTable.size(); ++i) {
+				if (!m_spawnPosBlockTable[i]) {
+					if (++consecutive == neededSpawnPosBlocks) {
+						foundSpawnPosBlock = static_cast<UINT>(i - neededSpawnPosBlocks + 1);
+						break;
+					}
+				}
+				else {
+					consecutive = 0;
 				}
 			}
-			else
-				consecutive = 0;
 		}
 
-		if (foundBlock != -1 && foundSlot != -1) {
-			for (size_t i = 0; i < neededBlocks; ++i)
+		// 할당 성공 여부 확인
+		bool particleOk = (foundBlock != UINT_MAX);
+		bool emitterOk = (foundSlot != UINT_MAX);
+		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
+
+		if (particleOk && emitterOk && spawnPosOk) {
+			// Particle blocks 마킹
+			for (UINT i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
-			for (size_t i = 0; i < reqEmitterCount; ++i)
+			
+			// Emitter slots 마킹
+			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[foundSlot + i] = true;
-			for (size_t i = 0; i < neededCustomBlock; ++i)
-				m_customBlockTable[foundCustomBlock + i] = true;
+			
+			// SpawnPos blocks 마킹
+			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
+				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
 			handle.particleOffset = foundBlock * m_blockSize;
 			handle.blockCount = neededBlocks;
 			handle.emitterID = foundSlot;
 			handle.emitterCount = reqEmitterCount;
-			if (foundCustomBlock != -1) {
-				handle.customOffset = foundCustomBlock * m_blockSize;
-				handle.customBlockCount = neededCustomBlock;
+			
+			if (foundSpawnPosBlock != UINT_MAX) {
+				handle.spawnPosOffset = foundSpawnPosBlock * m_blockSize;
+				handle.spawnPosBlockCount = neededSpawnPosBlocks;
 			}
 		}
 
@@ -114,51 +134,32 @@ namespace DE {
 	{
 		if (!handle.IsActive()) return;
 
+		// Particle blocks 해제
 		size_t startBlock = handle.particleOffset / m_blockSize;
 		for (size_t i = 0; i < handle.blockCount; ++i) {
 			if (startBlock + i < m_particleBlockTable.size())
 				m_particleBlockTable[startBlock + i] = false;
 		}
 
+		// Emitter slots 해제
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
 			if (handle.emitterID + i < m_emitterSlotTable.size())
 				m_emitterSlotTable[handle.emitterID + i] = false;
 		}
 
-		startBlock = handle.customOffset / m_blockSize;
-		for (size_t i = 0; i < handle.customBlockCount; ++i) {
-			if (startBlock + i < m_customBlockTable.size())
-				m_customBlockTable[startBlock + i] = false;
+		// SpawnPos blocks 해제
+		if (handle.spawnPosOffset != UINT_MAX) {
+			startBlock = handle.spawnPosOffset / m_blockSize;
+			for (size_t i = 0; i < handle.spawnPosBlockCount; ++i) {
+				if (startBlock + i < m_spawnPosBlockTable.size())
+					m_spawnPosBlockTable[startBlock + i] = false;
+			}
 		}
 	}
 
 	void ParticleMemoryPool::PlanDefragmentation(const std::vector<ParticleSystem*>& activeSystems)
 	{
-		// 초기화
-		//std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
-
-		//UINT currentCompactOffset = 0;
-
-		//// Active한 System을 앞부터 차례대로 배치
-		//for (auto* system : activeSystems) {
-		//	if (!system) continue;
-
-		//	UINT neededParticles = system->GetMaxParticles();
-		//	// ParticleSystem에게 다음 Frame에 offset을 새 offset을 사용하라고 지정
-		//	system->SetNextOffset(currentCompactOffset);
-
-		//	// 갱신
-		//	UINT neededBlocks = (neededParticles + m_blockSize - 1) / m_blockSize;
-		//	UINT startBlock = currentCompactOffset / m_blockSize;
-
-		//	for (UINT i = 0; i < neededBlocks; ++i) {
-		//		if (startBlock + i < m_particleBlockTable.size())
-		//			m_particleBlockTable[startBlock + i] = true;
-		//	}
-
-		//	// Cursor 이동 (Block 단위 정렬 유지)
-		//	currentCompactOffset += (neededBlocks * m_blockSize);
-		//}
+		// TODO: Defragmentation 구현
 	}
 
 	void ParticleMemoryPool::BindCompute()
@@ -169,34 +170,27 @@ namespace DE {
 			GetWriteBuffer().GetUAV(),
 			GetWriteCount().GetUAV()
 		};
-		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr); // u0
+		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = { 
 			GetReadBuffer().GetSRV(),
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
-			m_consts.GetSRV()
+			m_consts.GetSRV(),
+			m_spawnPositions.GetSRV()  // SpawnPos 버퍼 바인딩
 		};
-		context->CSSetShaderResources(6, 4, srvs); // t5
+		context->CSSetShaderResources(6, 5, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindCompute()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		ID3D11UnorderedAccessView* uavs[] = {
-			nullptr,
-			nullptr
-		};
-		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr); // u0
+		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
 
-		ID3D11ShaderResourceView* srvs[] = {
-			nullptr,
-			nullptr,
-			nullptr,
-			nullptr
-		};
-		context->CSSetShaderResources(6, 4, srvs); // t5
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 5, srvs);
 	}
 	
 	void ParticleMemoryPool::BindRender()
@@ -218,12 +212,7 @@ namespace DE {
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ID3D11ShaderResourceView* srvs[] = {
-			nullptr,
-			nullptr,
-			nullptr,
-			nullptr
-		};
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 4, srvs);
 		context->VSSetShaderResources(6, 4, srvs);
 		context->PSSetShaderResources(6, 4, srvs);
@@ -240,8 +229,6 @@ namespace DE {
 
 	void ParticleMemoryPool::UploadConsts(UINT offset, const std::vector<ParticleConsts>& data)
 	{
-		// 실제로는 UpdateSubresource나 Map/Unmap으로 해당 오프셋 부분만 업데이트
-        // 예시: D3D11_BOX 사용
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		D3D11_BOX box;
 		box.left = offset * sizeof(ParticleConsts);
@@ -264,7 +251,6 @@ namespace DE {
 	void ParticleMemoryPool::UpdateArgs()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		// ArgsUpdateCS
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
 		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
 
@@ -281,13 +267,15 @@ namespace DE {
 		context->CSSetUnorderedAccessViews(0, 3, nullUAVs, nullptr);
 	}
 
-	void ParticleMemoryPool::UploadCustomSpawnPositions(UINT offset, const std::vector<Vector3>& positions)
+	void ParticleMemoryPool::UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions)
 	{
+		if (positions.empty()) return;
+		
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		D3D11_BOX box;
 		box.left = offset * sizeof(Vector3);
 		box.right = static_cast<UINT>((offset + positions.size()) * sizeof(Vector3));
 		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
-		context->UpdateSubresource(m_customSpawnPos.GetBuffer(), 0, &box, positions.data(), 0, 0);
+		context->UpdateSubresource(m_spawnPositions.GetBuffer(), 0, &box, positions.data(), 0, 0);
 	}
 }

@@ -1,15 +1,14 @@
 #include "ParticleCommon.hlsli"
 #include "Common.hlsli"
 
-struct Vertex {
+struct Vertex
+{
     float3 position;
     float3 normalModel;
     float2 texcoord;
     float3 tangentModel;
 };
 
-StructuredBuffer<float3> bakedSpawnPos : register(t0);
-StructuredBuffer<float3> customSpawnPos : register(t1); 
 StructuredBuffer<float3> meshVertex : register(t2);
 StructuredBuffer<uint> meshIndices : register(t3);
 
@@ -112,6 +111,27 @@ void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
     }
 }
 
+// Baked/Custom Position 스폰 (통합)
+float3 SpawnFromPositions(inout uint rngState, uint posCount, uint startIndex, uint threadIdx, bool sequential)
+{
+    if (posCount == 0)
+        return float3(0, 0, 0);
+    
+    uint idx;
+    if (sequential)
+    {
+        // Custom: 순차적 인덱스
+        idx = (startIndex + threadIdx) % posCount;
+    }
+    else
+    {
+        // Baked: 랜덤 인덱스
+        idx = rngState % posCount;
+    }
+    
+    return spawnPositions[spawnPosOffset + idx];
+}
+
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
@@ -128,10 +148,10 @@ void main(uint3 dtID : SV_DispatchThreadID)
     Particle p;
     float3 spawnPos = float3(0, 0, 0);
 
-    // 매 시도마다 시드 갱신
     rngState = wang_hash(rngState);
 
     SpawnConsts spawn = consts[emitterID].spawn;
+    
     if (spawn.spawnShape == 0) // BOX
         spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 1) // SPHERE
@@ -140,18 +160,12 @@ void main(uint3 dtID : SV_DispatchThreadID)
         VertexSpawn(rngState, vertexCount, spawnPos);
     else if (spawn.spawnShape == 3) // SURFACE
         SurfaceSpawn(rngState, indexCount, spawnPos);
-    else if (spawn.spawnShape == 4) // BAKED POS
-    {
-        uint idx = rngState % spawn.bakedCount;
-        spawnPos = bakedSpawnPos[bakedOffset + idx];
-    }
-    else if (spawn.spawnShape == 5)
-    {
-        uint idx = (spawn.spawnStartIndex + dtID.x) % spawn.bakedCount;
-        spawnPos = bakedSpawnPos[idx]; // customOffset 제거 (CPU에서 이미 올바른 버퍼 바인딩)
-    }
+    else if (spawn.spawnShape == 4) // BAKED (랜덤)
+        spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, 0, dtID.x, false);
+    else if (spawn.spawnShape == 5) // CUSTOM (순차)
+        spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, spawn.spawnStartIndex, dtID.x, true);
 
-    // 위치 및 속도 설정
+    // 위치 및 속도 계산
     float3 localPos = spawnPos + spawn.localPos;
 
     float3 noiseDir;
@@ -167,7 +181,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (spawn.simulationSpace == 1) // World Space
     {
         p.position = mul(float4(localPos, 1.0f), pWorld).xyz;
-        p.velocity = mul(localVel, (float3x3)pWorld);
+        p.velocity = mul(localVel, (float3x3) pWorld);
     }
     else // Local Space
     {
@@ -194,7 +208,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     float3 rndRotSpd = float3(rand_float(rngState), rand_float(rngState), rand_float(rngState));
     p.rotSpeed = lerp(visual.minRotSpeed, visual.maxRotSpeed, rndRotSpd);
 
-    // counts[0]을 1 증가시키고, '증가되기 전의 값'을 index에 받아옵니다.
+    // 파티클 추가
     uint index;
     InterlockedAdd(writeCount[emitterID], 1, index);
     writeParticles[particleOffset + index] = p;

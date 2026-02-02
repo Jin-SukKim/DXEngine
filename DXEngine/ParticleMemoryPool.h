@@ -6,16 +6,25 @@
 namespace DE {
 	class ParticleSystem;
 
+// Spawn Position 타입 (Baked/Custom 통합)
+enum class SpawnPosType : uint8_t {
+	None = 0,
+	Baked,      // Texture에서 Bake된 위치
+	Custom      // 코드에서 지정한 위치
+};
+
 struct PoolHandle {
-	UINT particleOffset = -1; // Pool내 시작 index (파티클 단위)
-	UINT blockCount = 0; // 할당된 block 수
-	UINT emitterID = -1; // Emitter Index
-	UINT emitterCount = 0; // Emitter 개수
-	UINT customOffset = -1;
-	UINT customBlockCount = 0;
+	UINT particleOffset = UINT_MAX;
+	UINT blockCount = 0;
+	UINT emitterID = UINT_MAX;
+	UINT emitterCount = 0;
+	
+	// Baked/Custom 통합 → spawnPosOffset
+	UINT spawnPosOffset = UINT_MAX;
+	UINT spawnPosBlockCount = 0;
 
 	bool IsActive() const {
-		return particleOffset >= 0 && emitterID >= 0;
+		return particleOffset != UINT_MAX && emitterID != UINT_MAX;
 	}
 };
 
@@ -24,13 +33,10 @@ class ParticleMemoryPool
 public:
 	void Initialize(UINT maxParticles = 1000000, UINT maxEmitters = 10000);
 
-	// 파티클 수와 emitter 개수로 할당 요청
-	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqCustomCount);
+	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount);
 
-	// 반환
 	void Free(const PoolHandle& handle);
 
-	// 메모리 정리
 	void PlanDefragmentation(const std::vector<ParticleSystem*>& activeSystems);
 
 	void SwapBuffer() { m_bufferIndex = 1 - m_bufferIndex; }
@@ -43,7 +49,9 @@ public:
 	void UploadConsts(UINT offset, const std::vector<ParticleConsts>& data);
 	void UploadFrameConsts(UINT offset, const std::vector<ParticleFrameConsts>& data);
 	void UpdateArgs();
-	void UploadCustomSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
+	
+	// 통합된 SpawnPositions 업로드 (Baked/Custom 공용)
+	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
@@ -53,10 +61,10 @@ public:
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
-	StructuredBuffer<Vector3>& GetCustomSpawnBuffer() { return m_customSpawnPos; }
+	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 
 private:
-	UINT m_blockSize = 1024; // 1block당 particle 수
+	UINT m_blockSize = 1024;
 	UINT m_maxParticles = 0;
 	UINT m_maxEmitters = 0;
 
@@ -71,13 +79,13 @@ private:
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
-	StructuredBuffer<Vector3> m_customSpawnPos;
+	// Baked/Custom 통합 버퍼
+	StructuredBuffer<Vector3> m_spawnPositions;
 
 	// Block Allocator
-	std::vector<bool> m_particleBlockTable; // TODO: Bitmap 방식 사용
+	std::vector<bool> m_particleBlockTable;
 	std::vector<bool> m_emitterSlotTable;
-	std::vector<bool> m_customBlockTable;
-
+	std::vector<bool> m_spawnPosBlockTable;  // 통합된 테이블
 };
 
 }

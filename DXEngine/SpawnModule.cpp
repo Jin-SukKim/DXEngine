@@ -63,17 +63,9 @@ namespace DE {
 		if (m_totalSpawnCount == 0)
 			return;
 
-		// [최적화] Shape별 SRV 바인딩 최적화
-		if (m_spawnShape == 2 || m_spawnShape == 3) {
-
-		}
-		else if (m_spawnShape == 4) {
-			ctx.context->CSSetShaderResources(0, 1, ctx.bakedSpawnPos.GetAddressOfSRV());
-		}
-		else if (m_spawnShape == 5) {
-			ID3D11ShaderResourceView* srv = ctx.customPosBuffer.GetSRV();
-			ctx.context->CSSetShaderResources(0, 1, &srv);
-		}
+		// SpawnPosition 버퍼는 ParticleMemoryPool::BindCompute()에서 이미 바인딩됨
+		// Shape 2,3,4,5 모두 통합된 m_spawnPositions 버퍼 사용 (t10 슬롯)
+		// 별도 바인딩 불필요
 
 		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
 		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
@@ -83,7 +75,7 @@ namespace DE {
 		ctx.context->Dispatch(groupCount, 1, 1);
 		
 		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr, nullptr, nullptr };
 		ID3D11UnorderedAccessView* nullUAVs[2] = { nullptr, nullptr };
 		ctx.context->CSSetShaderResources(0, 3, nullSRVs);
 		ctx.context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
@@ -104,9 +96,9 @@ namespace DE {
 			else if (shape == "Surface") m_spawnShape = 3;
 			else if (shape == "Texture") m_spawnShape = 4;
 			else if (shape == "Custom") {
+				m_spawnShape = 5;
 				if (data.contains("positions") && data["positions"].is_array()) {
 					std::vector<Vector3> positions;
-					// json 배열을 순회하며 Vector3로 변환하여 저장
 					for (const auto& item : data["positions"]) {
 						positions.push_back(JsonToVec3(item));
 					}
@@ -140,19 +132,14 @@ namespace DE {
 
 		return cloned;
 	}
+
 	void SpawnModule::SetSpawnPosition(const std::vector<Vector3>& positions)
 	{
-		// 1. 위치 데이터 저장
 		m_customPositions = positions;
-
-		// 2. 모드를 Custom(5)으로 설정
 		m_spawnShape = 5;
-
-		// 3. 순차적 인덱스 초기화 (새로운 위치 목록이 들어왔으므로 처음부터 다시 시작)
 		m_nextSpawnIndex = 0;
 	}
 
-	// SpawnModule::OnSpawn이 호출되는지 확인
 	void SpawnModule::OnSpawn(SimulationContext& ctx)
 	{
 		ParticleModule::OnSpawn(ctx);

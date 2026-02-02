@@ -84,24 +84,14 @@ namespace DE {
 		ParticleSystem* prototype = nullptr;
 
 		if (prototypeIt != m_prototypes.end()) {
-			// 캐시 히트
 			prototype = prototypeIt->second.get();
-			//printf("[ParticleManager] Cache HIT: %ls\n", path.c_str());
 		}
 		else {
-			// 캐시 미스 - 원본 로드
-			//printf("[ParticleManager] Cache MISS: Loading %ls\n", path.c_str());
-
 			auto newSystem = ParticleLoader::Load<ParticleSystem>(path);
 			if (!newSystem) {
-				//printf("[ParticleManager] Failed to load: %ls\n", path.c_str());
 				return nullptr;
 			}
-
-			// 원본 초기화
 			newSystem->Initialize();
-			//newSystem->OnSpawn();
-
 			prototype = newSystem.get();
 			m_prototypes[path] = std::move(newSystem);
 		}
@@ -110,23 +100,25 @@ namespace DE {
 		auto cloned = std::make_unique<ParticleSystem>(*prototype);
 
 		ParticleInitializer initialData;
-		// 복제본 초기화 
 		cloned->InitializeCPU(initialData);
 
-		PoolHandle handle;
-		if (initialData.bakedPositions.size()) {
-			handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount(), -1);
-			m_memoryPool->UploadCustomSpawnPositions(handle.customOffset, initialData.bakedPositions);
-		} 
-		else if (initialData.customPositions.size()) {
-			handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount(), -1);
-			m_memoryPool->UploadCustomSpawnPositions(handle.customOffset, initialData.customPositions);
-		}
-		else {
-			handle = RequestAllocation(cloned.get(), cloned->GetTotalParticleCount(), cloned->GetMaxEmitterCount(), -1);
-		}
-		 
+		// SpawnPosition 개수 계산
+		UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
+		
+		// 통합된 할당 요청
+		PoolHandle handle = RequestAllocation(
+			cloned.get(), 
+			cloned->GetTotalParticleCount(), 
+			cloned->GetMaxEmitterCount(), 
+			spawnPosCount
+		);
+		
 		cloned->SetPoolHandle(handle);
+
+		// SpawnPositions 업로드 (있을 경우)
+		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
+			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
+		}
 
 		cloned->InitializeGPU(initialData, 
 			m_memoryPool->GetDispatchArgs(),
@@ -141,11 +133,7 @@ namespace DE {
 
 		auto* clonedPtr = cloned.get();
 		m_instances.push_back(std::move(cloned));
-
-		// 자동으로 활성 시스템에 등록
 		RegisterActiveSystem(clonedPtr);
-
-		//printf("[ParticleManager] CreateInstance: %p (Cloned)\n", clonedPtr);
 
 		return clonedPtr;
 	}

@@ -27,7 +27,6 @@ namespace DE {
 				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
 			}
 			catch (...) {
-				// 프로그램 종료 시 무시
 			}
 		}
 	}
@@ -35,32 +34,25 @@ namespace DE {
 	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
 		: m_name(other.m_name)
 		, m_jsonPath(other.m_jsonPath)
-		, m_watcherID(0)  // Hot-Reload는 복사 안 함
-		// Baked Spawn 관련
-		, m_bakedPath(other.m_bakedPath)           //  추가 (핵심!)
+		, m_watcherID(0)
+		, m_bakedPath(other.m_bakedPath)
 		, m_bakedCount(other.m_bakedCount)
-		, m_bakedPoolOffset(0)                      // Initialize에서 재설정됨
-		// Custom Position 관련
-		, m_customPositions(other.m_customPositions) //  추가
-		, m_customPoolOffset(0)                      // Initialize에서 재설정됨
-		, m_useCustomPositions(other.m_useCustomPositions) //  추가
-		// SubEmitter 관련
+		, m_spawnPosPoolOffset(0)
+		, m_customPositions(other.m_customPositions)
+		, m_useCustomPositions(other.m_useCustomPositions)
 		, m_duration(other.m_duration)
 		, m_completionDelay(other.m_completionDelay)
 		, m_subEmitters(other.m_subEmitters)
-		// 상태 (초기값으로 시작)
 		, m_elapsedTime(0.f)
 		, m_isDurationEnded(false)
 		, m_isCompleted(false)
 		, m_isStarted(false)
 		, m_spawnOffset(Vector3(0.f))
 		, m_initialSpawnPos(other.m_initialSpawnPos)
-		// Initialize에서 설정됨
 		, m_ownerSystem(nullptr)
 		, m_poolOffset(0)
 		, m_emitterID(0)
 	{
-		// 모듈 복제
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
 				auto clonedModule = mod->Clone();
@@ -86,18 +78,15 @@ namespace DE {
 			m_useCustomPositions
 		};
 
-		// 모듈들의 상수 설정이 여기서 수행됨
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
 
-		// 초기 spawn 위치 저장 (Reset 시 복원용)
 		m_initialSpawnPos = pConsts.spawn.localPos;
 
 		if (m_spawnOffset != Vector3(0.f))
 			pConsts.spawn.localPos += m_spawnOffset;
 
 		m_spawnOffset = pConsts.spawn.localPos;
-
 	}
 
 	void ParticleEmitter::OnSpawn()
@@ -110,11 +99,10 @@ namespace DE {
 		m_isStarted = false;
 
 		SimulationContext simCtx = {
-			context.Get(),
+			{ context.Get() },
 			0.f,
 			nullptr,
-			m_ownerSystem->GetBakedSpawnBuffer(),
-			m_ownerSystem->GetCustomPositions()
+			nullptr
 		};
 
 		for (auto& mod : m_modules)
@@ -128,21 +116,18 @@ namespace DE {
 
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		// OnStart 이벤트를 첫 Update에서 실행 (지연 실행)
 		if (!m_isStarted) {
 			ExecuteEvent(EmitterEvent::OnStart);
 			m_isStarted = true;
 		}
 
 		m_elapsedTime += dt;
-		// Duration 체크 (m_duration > 0일 때만)
 		if (m_duration > 0.f) {
 			if (!m_isDurationEnded && m_elapsedTime >= m_duration) {
 				m_isDurationEnded = true;
 				ExecuteEvent(EmitterEvent::OnDurationEnd);
 			}
 
-			// Complete 체크 (Duration 후 Delay 경과)
 			if (m_isDurationEnded && m_elapsedTime >= (m_duration + m_completionDelay)) {
 				m_isCompleted = true;
 				ExecuteEvent(EmitterEvent::OnComplete);
@@ -150,16 +135,13 @@ namespace DE {
 			}
 		}
 
-		// Frame constants 먼저 업데이트
 		fsConsts.dt = dt;
 		fsConsts.time = m_elapsedTime;
 
 		SimulationContext simCtx = {
-			context.Get(),
+			{ context.Get() },
 			dt,
 			nullptr,
-			m_ownerSystem->GetBakedSpawnBuffer(),
-			m_ownerSystem->GetCustomPositions(),
 			&fsConsts
 		};
 
@@ -199,18 +181,16 @@ namespace DE {
 
 	void ParticleEmitter::Update(const float& dt, ArgsParam args)
 	{
-		// 완료된 경우 (Loop가 아닐때 종료된 경우)
 		if (m_isCompleted)
 			return; 
 
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		SimulationContext simCtx = {
-			context.Get(),
+			{ context.Get() },
 			dt,
 			&args,
-			m_ownerSystem->GetBakedSpawnBuffer(),
-			m_ownerSystem->GetCustomPositions()
+			nullptr
 		};
 
 		m_ownerSystem->BindConstantID(m_emitterID);
@@ -218,7 +198,6 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
 
-		// Duration 종료 전 혹은 Looping일때만 계속 계산
 		if (!m_isDurationEnded) {
 			for (auto& mod : m_modules)
 				mod->LateUpdate(simCtx);
@@ -227,21 +206,19 @@ namespace DE {
 
 	void ParticleEmitter::ExecuteEvent(EmitterEvent event)
 	{
-		// 현재 이 Emitter가 가진 SubEmitter를 사용해 Emitter 생성
 		if (m_eventCallback)
 			m_eventCallback(event, this);
 	}
 
 	void ParticleEmitter::Render(ArgsParam billboardArgs, ArgsParam meshArgs)
 	{
-		// 완료되면 Skip
 		if (m_isCompleted)
 			return;
 
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		
 		RenderContext renderCtx = {
-			context,
+			{ context },
 			this->GetModule<MaterialModule>(),
 			m_emitterID,
 			&billboardArgs,

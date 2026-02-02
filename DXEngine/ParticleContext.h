@@ -32,11 +32,10 @@ struct ParticleContext {
     ID3D11DeviceContext* context;
 };
 
+// SimulationContext - SpawnPos 버퍼 통합
 struct SimulationContext : ParticleContext {
     float dt;
     ArgsParam* dispatchArgs;
-    StructuredBuffer<Vector3>& bakedSpawnPos;
-    StructuredBuffer<Vector3>& customPosBuffer;
     ParticleFrameConsts* fsConsts = nullptr;
 };
 

@@ -44,8 +44,6 @@ namespace DE {
 		, m_currentEmitterIndex(0)
 		, m_maxTotalParticles(0)
 		, m_maxEmitters(0)
-		, m_currentBakedOffset(0)
-		, m_currentCustomOffset(0)
 	{
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
@@ -62,9 +60,8 @@ namespace DE {
 		m_maxEmitters = 0;
 		m_currentParticleOffset = 0;
 		m_currentEmitterIndex = 0;
-		m_currentBakedOffset = 0;
-		m_currentCustomOffset = 0;
-		m_bakedOffset.clear();
+		m_currentSpawnPosOffset = 0;  // 통합된 offset
+		m_spawnPosCache.clear();      // 통합된 캐시
 		m_emitterIDs.clear();
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
@@ -116,12 +113,8 @@ namespace DE {
 			this->OnEmitterEvent(event, em);
 		});
 
-		if (!emitter->GetBakedPath().empty()) {
-			RegisterBakedPos(emitter, initialData.bakedPositions, pConsts, eID);
-		}
-		else if (emitter->IsUsingCustomPositions()) {
-			RegisterCustomPos(emitter, initialData.customPositions, eID);
-		}
+		// 통합된 SpawnPosition 처리
+		RegisterSpawnPositions(emitter, initialData.spawnPositions, pConsts, eID);
 
 		UINT capacity = pfConsts.maxParticles;
 		m_currentParticleOffset += capacity;
@@ -550,32 +543,45 @@ namespace DE {
 		m_maxTotalParticles += capacity;
 	}
 
-	void ParticleSystem::RegisterBakedPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, ParticleConsts& pConsts, EmitterID& eID)
+	void ParticleSystem::RegisterSpawnPositions(
+		ParticleEmitter* emitter, 
+		std::vector<Vector3>& outPositions, 
+		ParticleConsts& pConsts, 
+		EmitterID& eID)
 	{
-		auto it = m_bakedOffset.find(emitter->GetBakedPath());
-		if (it != m_bakedOffset.end()) {
-			emitter->SetBakedInfo(it->second.first);
-			eID.bakedOffset = it->second.first;
-			pConsts.spawn.bakedCount = it->second.second;
-			return;
+		// Baked Position 처리
+		if (!emitter->GetBakedPath().empty()) {
+			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
+			if (it != m_spawnPosCache.end()) {
+				// 캐시 히트
+				emitter->SetSpawnPosInfo(it->second.first);
+				eID.spawnPosOffset = it->second.first;
+				pConsts.spawn.bakedCount = it->second.second;
+				return;
+			}
+
+			// 캐시 미스
+			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
+			eID.spawnPosOffset = m_currentSpawnPosOffset;
+			
+			UINT bakedCount = emitter->LoadBakedSpawnData(outPositions);
+			pConsts.spawn.bakedCount = bakedCount;
+			
+			m_spawnPosCache[emitter->GetBakedPath()] = { m_currentSpawnPosOffset, bakedCount };
+			m_currentSpawnPosOffset += bakedCount;
 		}
-
-		emitter->SetBakedInfo(m_currentBakedOffset);
-		eID.bakedOffset = m_currentBakedOffset;
-		UINT bakedCount = emitter->LoadBakedSpawnData(positions);
-		m_currentBakedOffset += bakedCount;
-		pConsts.spawn.bakedCount = bakedCount;
-		m_bakedOffset[emitter->GetBakedPath()] = { eID.bakedOffset, bakedCount };
-	}
-
-	void ParticleSystem::RegisterCustomPos(ParticleEmitter* emitter, std::vector<Vector3>& customPos, EmitterID& eID)
-	{
-		emitter->SetCustomSpawnInfo(m_currentCustomOffset);
-		eID.customOffset = m_currentCustomOffset;
-		auto& positions = emitter->GetCustomPositions();
-		for (const auto& pos : positions)
-			customPos.push_back(pos);
-		m_currentCustomOffset += static_cast<UINT>(positions.size());
+		// Custom Position 처리
+		else if (emitter->IsUsingCustomPositions()) {
+			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
+			eID.spawnPosOffset = m_currentSpawnPosOffset;
+			
+			const auto& positions = emitter->GetCustomPositions();
+			for (const auto& pos : positions)
+				outPositions.push_back(pos);
+			
+			pConsts.spawn.bakedCount = static_cast<UINT>(positions.size());
+			m_currentSpawnPosOffset += static_cast<UINT>(positions.size());
+		}
 	}
 
 	void ParticleSystem::SetSpawnOffset(const Vector3& offset)

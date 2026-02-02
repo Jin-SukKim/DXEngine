@@ -20,7 +20,7 @@ public:
 	void Update(const float& deltaTime) override;
 	void UpdateGUI() override;
 	void Render() override;
-
+	
 	void ClickEvent();
 private:
 	SquareActor* ground = nullptr;
