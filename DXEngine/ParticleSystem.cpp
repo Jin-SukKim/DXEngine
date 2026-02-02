@@ -531,7 +531,8 @@ namespace DE {
 		ParticleConsts& pConsts, 
 		EmitterID& eID)
 	{
-		// Baked Position 처리
+		eID.spawnPosOffset = UINT_MAX;  // 기본값: 미사용
+		
 		if (!emitter->GetBakedPath().empty()) {
 			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
 			if (it != m_spawnPosCache.end()) {

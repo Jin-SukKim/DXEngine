@@ -194,14 +194,14 @@ namespace DE {
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
 			EmitterID eID = initialData.emitterIDs[i];
 			
-			// Pool 오프셋 적용
 			eID.emitterID += handle.emitterID;
 			eID.particleOffset += handle.particleOffset;
-			if (handle.spawnPosOffset != UINT_MAX) {
+			
+			// spawnPos를 사용하는 emitter만 오프셋 적용
+			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
 			
-			// Pool에 업로드
 			m_memoryPool->UpdateEmitterID(handle.emitterID + static_cast<UINT>(i), eID);
 		}
 	}
