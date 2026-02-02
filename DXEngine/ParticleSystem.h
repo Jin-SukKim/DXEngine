@@ -13,14 +13,6 @@ namespace DE {
 		Stopped
 	};
 
-	struct ParticleMeshConsts {
-		Matrix world;
-		Matrix worldIT;
-		UINT vertexCount;
-		UINT indexCount;
-		float padding[2];
-	};
-
 	struct ParticleInitializer {
 		std::vector<ParticleConsts> consts;
 		std::vector<ParticleFrameConsts> frameConsts;
@@ -165,5 +157,10 @@ namespace DE {
 		IndirectArgsBuffer<DispatchArgs>* m_dispatchArgs = nullptr;
 		IndirectArgsBuffer<DrawInstancedArgs>* m_billboardArgsBuffer = nullptr;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_meshArgsBuffer = nullptr;
+
+		UINT m_systemIndex = UINT_MAX;  // Manager에서 설정
+	public:
+		void SetSystemIndex(UINT index) { m_systemIndex = index; }
+		UINT GetSystemIndex() const { return m_systemIndex; }
 	};
 }

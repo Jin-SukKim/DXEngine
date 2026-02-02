@@ -3,13 +3,14 @@
 #include "ParticleSystem.h"
 
 namespace DE {
-	void ParticleMemoryPool::Initialize(UINT maxParticles, UINT maxEmitters)
+	void ParticleMemoryPool::Initialize(UINT maxParticles, UINT maxEmitters, UINT maxSystems)
 	{
 		ID3D11Device* device = GET_SINGLE(RenderBase)->GetDevice().Get();
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
 		m_maxParticles = maxParticles;
 		m_maxEmitters = maxEmitters;
+		m_maxSystems = maxSystems;
 
 		UINT blockCount = (maxParticles + m_blockSize - 1) / m_blockSize;
 		m_particleBlockTable.assign(blockCount, false);
@@ -43,6 +44,12 @@ namespace DE {
 		m_emitterIDBuffers.resize(maxEmitters);
 		for (UINT i = 0; i < maxEmitters; ++i) {
 			m_emitterIDBuffers[i].Initialize();
+		}
+
+		// MeshConsts Pool ÃÊ±âÈ­
+		m_meshConstsBuffers.resize(m_maxSystems);
+		for (UINT i = 0; i < m_maxSystems; ++i) {
+			m_meshConstsBuffers[i].Initialize();
 		}
 	}
 
@@ -322,5 +329,22 @@ namespace DE {
 		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
 		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
 		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
+	}
+
+	void ParticleMemoryPool::UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
+	{
+		if (systemIndex >= m_maxSystems) return;
+		
+		m_meshConstsBuffers[systemIndex].SetCpuData(data);
+		m_meshConstsBuffers[systemIndex].Upload();
+	}
+
+	void ParticleMemoryPool::BindMeshConsts(UINT systemIndex)
+	{
+		if (systemIndex >= m_maxSystems) return;
+		
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
+		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
 	}
 }

@@ -513,6 +513,9 @@ namespace DE {
 		meshConsts.world = tr->GetTransformMatrix().Transpose();
 		meshConsts.worldIT = meshConsts.world.Invert();
 		this->SetTransform(meshConsts);
+
+		// Pool에 업로드 (System 인덱스 사용)
+		ParticleManager::Get().UploadMeshConsts(m_systemIndex, meshConsts);
 	}
 
 	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID)

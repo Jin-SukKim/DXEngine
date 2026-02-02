@@ -19,10 +19,18 @@ struct PoolHandle {
 	}
 };
 
+
+struct ParticleMeshConsts {
+	Matrix world;
+	Matrix worldIT;
+	UINT vertexCount;
+	UINT indexCount;
+	float padding[2];
+};
 class ParticleMemoryPool
 {
 public:
-	void Initialize(UINT maxParticles = 1000000, UINT maxEmitters = 10000);
+	void Initialize(UINT maxParticles = 1000000, UINT maxEmitters = 100, UINT maxSystems = 100);
 
 	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount);
 	void Free(const PoolHandle& handle);
@@ -54,6 +62,10 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 
+	// MeshConsts 관리 (System별)
+	void UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data);
+	void BindMeshConsts(UINT systemIndex);
+
 private:
 	UINT m_blockSize = 1024;
 	UINT m_maxParticles = 0;
@@ -74,6 +86,10 @@ private:
 
 	// EmitterID ConstantBuffer Pool
 	std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
+
+	// MeshConsts Pool (System별 - activeSystems 인덱스 사용)
+	UINT m_maxSystems = 100;
+	std::vector<ConstantBuffer<ParticleMeshConsts>> m_meshConstsBuffers;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable;

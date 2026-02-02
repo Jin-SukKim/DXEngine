@@ -28,8 +28,9 @@ namespace DE {
 
 		m_memoryPool->UpdateArgs();
 
-		for (auto* system : m_activeSystems) {
-			if (system) {
+		for (size_t i = 0; i < m_activeSystems.size(); ++i) {
+			if (auto* system = m_activeSystems[i]) {
+				m_memoryPool->BindMeshConsts(static_cast<UINT>(i));
 				system->Update(dt);
 			}
 		}
@@ -45,8 +46,9 @@ namespace DE {
 		if (m_activeSystems.empty()) return;
 
 		m_memoryPool->BindRender();
-		for (auto* system : m_activeSystems) {
-			if (system) {
+		for (size_t i = 0; i < m_activeSystems.size(); ++i) {
+			if (auto* system = m_activeSystems[i]) {
+				m_memoryPool->BindMeshConsts(static_cast<UINT>(i));
 				system->Render();
 			}
 		}
@@ -57,9 +59,9 @@ namespace DE {
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
 	{
 		if (!system) return;
-		
 		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
 		if (it == m_activeSystems.end()) {
+			system->SetSystemIndex(static_cast<UINT>(m_activeSystems.size()));
 			m_activeSystems.push_back(system);
 		}
 	}
@@ -70,7 +72,15 @@ namespace DE {
 		
 		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
 		if (it != m_activeSystems.end()) {
-			m_activeSystems.erase(it);
+			UINT removedIndex = static_cast<UINT>(std::distance(m_activeSystems.begin(), it));
+			
+			// 마지막 요소와 교체 후 제거 (O(1))
+			if (it != m_activeSystems.end() - 1) {
+				ParticleSystem* lastSystem = m_activeSystems.back();
+				*it = lastSystem;
+				lastSystem->SetSystemIndex(removedIndex);
+			}
+			m_activeSystems.pop_back();
 		}
 	}
 
@@ -264,5 +274,21 @@ namespace DE {
 
 			RegisterActiveSystem(system);
 		}
+	}
+
+	void ParticleManager::UploadMeshConsts(UINT systemIndex, const MeshConstants& data)
+	{
+		ParticleMeshConsts pmConsts;
+		pmConsts.world = data.world;
+		pmConsts.worldIT = data.worldIT;
+		pmConsts.vertexCount = 0;
+		pmConsts.indexCount = 0;
+		
+		m_memoryPool->UploadMeshConsts(systemIndex, pmConsts);
+	}
+
+	void ParticleManager::BindMeshConsts(UINT systemIndex)
+	{
+		m_memoryPool->BindMeshConsts(systemIndex);
 	}
 }
