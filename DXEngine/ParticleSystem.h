@@ -112,8 +112,6 @@ namespace DE {
 
 		void RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID);
 		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
-		void RegisterBakedPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, ParticleConsts& pConsts, EmitterID& eID);
-		void RegisterCustomPos(ParticleEmitter* emitter, std::vector<Vector3>& positions, EmitterID& eID);
 
 		// SubEmitter 贸府 (窜鉴拳)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
@@ -160,8 +158,6 @@ namespace DE {
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
-
-		std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
 
 		// 烹钦等 SpawnPosition 包府
 		UINT m_currentSpawnPosOffset = 0;

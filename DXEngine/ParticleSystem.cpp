@@ -62,7 +62,6 @@ namespace DE {
 		m_currentEmitterIndex = 0;
 		m_currentSpawnPosOffset = 0;  // 통합된 offset
 		m_spawnPosCache.clear();      // 통합된 캐시
-		m_emitterIDs.clear();
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
 
@@ -161,23 +160,9 @@ namespace DE {
 		IndirectArgsBuffer<DrawInstancedArgs>& billboardArgsBuffer,
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer)
 	{
-		ID3D11Device* device = GET_SINGLE(RenderBase)->GetDevice().Get();
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-
 		m_dispatchArgs = &dispatchArgs;
 		m_billboardArgsBuffer = &billboardArgsBuffer;
 		m_meshArgsBuffer = &meshArgsBuffer;
-
-		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
-			ConstantBuffer<EmitterID> cb;
-			cb.Initialize();
-
-			initialData.emitterIDs[i].emitterID += m_poolHandle.emitterID;
-			initialData.emitterIDs[i].particleOffset += m_poolHandle.particleOffset;
-			cb.SetCpuData(initialData.emitterIDs[i]);
-			cb.Upload();
-			m_emitterIDs.push_back(cb);
-		}
 	}
 
 	void ParticleSystem::OnSpawn()
@@ -489,10 +474,8 @@ namespace DE {
 
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(5, 1, m_emitterIDs[emitterID].GetAddressOf());
-		context->PSSetConstantBuffers(5, 1, m_emitterIDs[emitterID].GetAddressOf());
-		context->VSSetConstantBuffers(5, 1, m_emitterIDs[emitterID].GetAddressOf());
+		// Manager를 통해 바인딩
+		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterID + emitterID);
 	}
 
 	void ParticleSystem::Reset()

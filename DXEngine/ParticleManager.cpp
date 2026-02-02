@@ -25,7 +25,6 @@ namespace DE {
 
 		m_memoryPool->UpdateArgs();
 
-		// 활성 시스템만 업데이트
 		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->Update(dt);
@@ -43,15 +42,12 @@ namespace DE {
 		if (m_activeSystems.empty()) return;
 
 		m_memoryPool->BindRender();
-		// 파티클 렌더링을 위한 PSO 설정은 RenderModule에서 처리
-		// 여기서는 순회만 진행
 		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->Render();
 			}
 		}
 		m_memoryPool->UnbindRender();
-		// 렌더링 후 BasicPSO로 복원
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 	}
 
@@ -59,7 +55,6 @@ namespace DE {
 	{
 		if (!system) return;
 		
-		// 중복 체크
 		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
 		if (it == m_activeSystems.end()) {
 			m_activeSystems.push_back(system);
@@ -79,7 +74,6 @@ namespace DE {
 
 	ParticleSystem* ParticleManager::CreateSystem(const std::wstring& path)
 	{
-		// 프로토타입 찾기
 		auto prototypeIt = m_prototypes.find(path);
 		ParticleSystem* prototype = nullptr;
 
@@ -96,16 +90,13 @@ namespace DE {
 			m_prototypes[path] = std::move(newSystem);
 		}
 
-		// 복제본 생성
 		auto cloned = std::make_unique<ParticleSystem>(*prototype);
 
 		ParticleInitializer initialData;
 		cloned->InitializeCPU(initialData);
 
-		// SpawnPosition 개수 계산
 		UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
 		
-		// 통합된 할당 요청
 		PoolHandle handle = RequestAllocation(
 			cloned.get(), 
 			cloned->GetTotalParticleCount(), 
@@ -115,7 +106,7 @@ namespace DE {
 		
 		cloned->SetPoolHandle(handle);
 
-		// SpawnPositions 업로드 (있을 경우)
+		// SpawnPositions 업로드
 		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
 			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
 		}
@@ -124,6 +115,9 @@ namespace DE {
 			m_memoryPool->GetDispatchArgs(),
 			m_memoryPool->GetBillboardArgs(),
 			m_memoryPool->GetMeshArgs());
+
+		// EmitterID 업로드 (Manager에서 처리)
+		UploadEmitterIDs(cloned.get(), initialData);
 			
 		m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);
@@ -133,6 +127,7 @@ namespace DE {
 
 		auto* clonedPtr = cloned.get();
 		m_instances.push_back(std::move(cloned));
+
 		RegisterActiveSystem(clonedPtr);
 
 		return clonedPtr;
@@ -142,32 +137,51 @@ namespace DE {
 	{
 		if (!system) return;
 
-		// 1. 활성 리스트에서 제거 (렌더링/업데이트 제외)
 		UnregisterActiveSystem(system);
 
-		// 2. 소유권 리스트(m_instances)에서 찾아 제거
-		// erase가 호출되는 순간 unique_ptr이 소멸되며 자동으로 delete가 호출됩니다.
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
 			[system](const std::unique_ptr<ParticleSystem>& ptr) {
 				return ptr.get() == system;
 			});
 
 		if (it != m_instances.end()) {
-			// 여기서 실제로 메모리가 해제됩니다.
 			m_instances.erase(it);
-			//printf("[ParticleManager] Destroyed Instance: %p\n", system);
 		}
 	}
-	PoolHandle ParticleManager::RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT customCount)
+
+	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
 	{
-		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, customCount);
+		m_memoryPool->BindEmitterID(globalSlotIndex);
+	}
+
+	PoolHandle ParticleManager::RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT spawnPosCount)
+	{
+		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
 		if (!handle.IsActive()) {
-			// 메모리 재배치
 			m_memoryPool->PlanDefragmentation(m_activeSystems);
-			m_waitForSpawn.push(system); // 다음 프레임에 allocate 요청
+			m_waitForSpawn.push(system);
 		}
 
 		return handle;
+	}
+
+	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, ParticleInitializer& initialData)
+	{
+		const PoolHandle& handle = system->GetPoolHandle();
+		
+		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
+			EmitterID eID = initialData.emitterIDs[i];
+			
+			// Pool 오프셋 적용
+			eID.emitterID += handle.emitterID;
+			eID.particleOffset += handle.particleOffset;
+			if (handle.spawnPosOffset != UINT_MAX) {
+				eID.spawnPosOffset += handle.spawnPosOffset;
+			}
+			
+			// Pool에 업로드
+			m_memoryPool->UpdateEmitterID(handle.emitterID + static_cast<UINT>(i), eID);
+		}
 	}
 }

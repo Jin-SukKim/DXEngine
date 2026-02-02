@@ -6,7 +6,7 @@
 namespace DE {
 
 struct ParticlePreset {
-	std::unique_ptr<ParticleSystem> prototype; // 원본
+	std::unique_ptr<ParticleSystem> prototype;
 	std::wstring filePath;
 	FileWatcher::CallbackID watcherID = 0;
 };
@@ -23,26 +23,26 @@ public:
 	void Update(const float& dt);
 	void Render();
 	
-	// 활성 파티클 시스템 등록/해제
 	void RegisterActiveSystem(ParticleSystem* system);
 	void UnregisterActiveSystem(ParticleSystem* system);
 
 	ParticleSystem* CreateSystem(const std::wstring& path);
 	void DestroyInstance(ParticleSystem* system);
 
-	PoolHandle RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT customCount);
+	// EmitterID 바인딩 (Manager에서 처리)
+	void BindEmitterID(UINT globalSlotIndex);
+
+	PoolHandle RequestAllocation(ParticleSystem* system, UINT particleCount, UINT emitterCount, UINT spawnPosCount);
+
 private:
-	// 프로토타입 저장소 (파일 경로별 원본)
+	void UploadEmitterIDs(ParticleSystem* system, ParticleInitializer& initialData);
+
+private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
-	
-	// 생성된 모든 인스턴스 (소유권 관리)
 	std::vector<std::unique_ptr<ParticleSystem>> m_instances;
-	
-	// 렌더링할 활성 시스템들 (포인터만 저장, 소유권 없음)
 	std::vector<ParticleSystem*> m_activeSystems;
 
 	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
-
 	std::queue<ParticleSystem*> m_waitForSpawn;
 };
 

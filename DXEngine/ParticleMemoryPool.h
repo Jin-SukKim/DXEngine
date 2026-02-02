@@ -6,20 +6,11 @@
 namespace DE {
 	class ParticleSystem;
 
-// Spawn Position 타입 (Baked/Custom 통합)
-enum class SpawnPosType : uint8_t {
-	None = 0,
-	Baked,      // Texture에서 Bake된 위치
-	Custom      // 코드에서 지정한 위치
-};
-
 struct PoolHandle {
 	UINT particleOffset = UINT_MAX;
 	UINT blockCount = 0;
 	UINT emitterID = UINT_MAX;
 	UINT emitterCount = 0;
-	
-	// Baked/Custom 통합 → spawnPosOffset
 	UINT spawnPosOffset = UINT_MAX;
 	UINT spawnPosBlockCount = 0;
 
@@ -34,9 +25,7 @@ public:
 	void Initialize(UINT maxParticles = 1000000, UINT maxEmitters = 10000);
 
 	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount);
-
 	void Free(const PoolHandle& handle);
-
 	void PlanDefragmentation(const std::vector<ParticleSystem*>& activeSystems);
 
 	void SwapBuffer() { m_bufferIndex = 1 - m_bufferIndex; }
@@ -49,9 +38,11 @@ public:
 	void UploadConsts(UINT offset, const std::vector<ParticleConsts>& data);
 	void UploadFrameConsts(UINT offset, const std::vector<ParticleFrameConsts>& data);
 	void UpdateArgs();
-	
-	// 통합된 SpawnPositions 업로드 (Baked/Custom 공용)
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
+
+	// EmitterID ConstantBuffer 관리
+	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
+	void BindEmitterID(UINT slotIndex);
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
@@ -79,13 +70,15 @@ private:
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
-	// Baked/Custom 통합 버퍼
 	StructuredBuffer<Vector3> m_spawnPositions;
+
+	// EmitterID ConstantBuffer Pool
+	std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable;
 	std::vector<bool> m_emitterSlotTable;
-	std::vector<bool> m_spawnPosBlockTable;  // 통합된 테이블
+	std::vector<bool> m_spawnPosBlockTable;
 };
 
 }

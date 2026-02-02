@@ -14,7 +14,7 @@ namespace DE {
 		UINT blockCount = (maxParticles + m_blockSize - 1) / m_blockSize;
 		m_particleBlockTable.assign(blockCount, false);
 		m_emitterSlotTable.assign(maxEmitters, false);
-		m_spawnPosBlockTable.assign(blockCount, false);  // SpawnPos도 동일 크기
+		m_spawnPosBlockTable.assign(blockCount, false);
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -33,12 +33,17 @@ namespace DE {
 
 		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
 		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
-	
+
 		std::vector<DrawIndexedInstancedArgs> initialMeshArgs(m_maxEmitters, { 0, 0, 0, 0, 0 });
 		m_meshArgsBuffer.Initialize(device, initialMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 
-		// 통합된 SpawnPosition 버퍼
 		m_spawnPositions.Initialize(device, maxParticles);
+
+		// EmitterID ConstantBuffer Pool 미리 생성
+		m_emitterIDBuffers.resize(maxEmitters);
+		for (UINT i = 0; i < maxEmitters; ++i) {
+			m_emitterIDBuffers[i].Initialize();
+		}
 	}
 
 	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount)
@@ -177,7 +182,7 @@ namespace DE {
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV(),
-			m_spawnPositions.GetSRV()  // SpawnPos 버퍼 바인딩
+			m_spawnPositions.GetSRV()
 		};
 		context->CSSetShaderResources(6, 5, srvs);
 	}
@@ -277,5 +282,23 @@ namespace DE {
 		box.right = static_cast<UINT>((offset + positions.size()) * sizeof(Vector3));
 		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 		context->UpdateSubresource(m_spawnPositions.GetBuffer(), 0, &box, positions.data(), 0, 0);
+	}
+
+	void ParticleMemoryPool::UpdateEmitterID(UINT slotIndex, const EmitterID& data)
+	{
+		if (slotIndex >= m_maxEmitters) return;
+		
+		m_emitterIDBuffers[slotIndex].SetCpuData(data);
+		m_emitterIDBuffers[slotIndex].Upload();
+	}
+
+	void ParticleMemoryPool::BindEmitterID(UINT slotIndex)
+	{
+		if (slotIndex >= m_maxEmitters) return;
+		
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
+		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
+		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
 	}
 }
