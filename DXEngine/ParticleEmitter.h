@@ -33,8 +33,8 @@ namespace DE {
 		void Initialize(ParticleConsts& pConsts, ParticleFrameConsts& pfConsts, DrawIndexedInstancedArgs& pMeshArgs);
 		void OnSpawn();
 		void PreUpdate(const float& dt, ParticleFrameConsts& fsConsts);
-		void Update(const float& dt);
-		void Render();
+		void Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs, UINT dispatchOffset);
+		void Render(IndirectArgsBuffer<DrawInstancedArgs>& billboardArgs, UINT billboardOffset);
 
 		template<typename T>
 		void AddModule(std::unique_ptr<ParticleModule>&& module);
@@ -83,12 +83,6 @@ namespace DE {
 		UINT GetEmitterID() { return m_emitterID; };
 		void SetName(std::wstring name) { m_name = name; }
 	private:
-		// 초기화 관련 함수들
-		void InitializeBuffers(ComPtr<ID3D11Device>& device);
-
-		// 업데이트 단계별 함수들
-		void UpdateArgsBuffers(ID3D11DeviceContext* context);
-
 		void ExecuteEvent(EmitterEvent event);
 	private:
 		std::wstring m_name;

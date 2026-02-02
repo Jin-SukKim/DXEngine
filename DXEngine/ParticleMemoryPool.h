@@ -1,6 +1,7 @@
 #pragma once
 #include "Particle.h"
 #include "StructuredBuffer.h"
+#include "IndirectArgsBuffer.h"
 
 namespace DE {
 	class ParticleSystem;
@@ -40,12 +41,16 @@ public:
 	void UploadConsts(UINT offset, const std::vector<ParticleConsts>& data);
 	void UploadFrameConsts(UINT offset, const std::vector<ParticleFrameConsts>& data);
 	void UploadFrameConsts();
+	void UpdateArgs();
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
 	StructuredBuffer<uint32_t>& GetReadCount() { return m_counts[m_bufferIndex]; }
 	StructuredBuffer<uint32_t>& GetWriteCount() { return m_counts[1 - m_bufferIndex]; }
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConsts() { return m_frameConsts; }
+	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
+	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
+
 private:
 	UINT m_blockSize = 1024; // 1block당 particle 수
 	UINT m_maxParticles = 0;
@@ -57,6 +62,9 @@ private:
 
 	StructuredBuffer<ParticleConsts> m_consts;
 	StructuredBuffer<ParticleFrameConsts> m_frameConsts;
+
+	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
+	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable; // TODO: Bitmap 방식 사용

@@ -90,8 +90,6 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
 
-		InitializeBuffers(device);
-
 		// 초기 spawn 위치 저장 (Reset 시 복원용)
 		m_initialSpawnPos = pConsts.spawn.localPos;
 
@@ -114,8 +112,8 @@ namespace DE {
 		SimulationContext simCtx = {
 			context.Get(),
 			0.f,
-			m_ownerSystem->GetDispatchArgs().GetBuffer(),
-			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
+			nullptr,
+			0,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions()
 		};
@@ -159,9 +157,9 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			dt,
-			m_ownerSystem->GetDispatchArgs().GetBuffer(),
-			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
+			fsConsts.dt,
+			nullptr,
+			0,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions(),
 			&fsConsts
@@ -201,11 +199,7 @@ namespace DE {
 		return m_bakedCount;
 	}
 
-	void ParticleEmitter::InitializeBuffers(ComPtr<ID3D11Device>& device)
-	{
-	}
-
-	void ParticleEmitter::Update(const float& dt)
+	void ParticleEmitter::Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs, UINT dispatchOffset)
 	{
 		// 완료된 경우 (Loop가 아닐때 종료된 경우)
 		if (m_isCompleted)
@@ -215,9 +209,9 @@ namespace DE {
 
 		SimulationContext simCtx = {
 			context.Get(),
-			dt,
-			m_ownerSystem->GetDispatchArgs().GetBuffer(),
-			m_ownerSystem->GetDispatchArgsOffset(m_emitterID),
+			0.f,
+			dispatchArgs.GetBuffer(),
+			dispatchOffset,
 			m_ownerSystem->GetBakedSpawnBuffer(),
 			m_ownerSystem->GetCustomPositions()
 		};
@@ -234,25 +228,6 @@ namespace DE {
 		}
 	}
 
-	void ParticleEmitter::UpdateArgsBuffers(ID3D11DeviceContext* context)
-	{
-		ID3D11UnorderedAccessView* argUAVs[] = {
-			m_ownerSystem->GetDispatchArgs().GetUAV()
-		};
-
-		context->CSSetUnorderedAccessViews(0, 1, argUAVs, nullptr);
-
-		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
-		context->CSSetShader(argsUpdateCS.computeShader.Get(), 0, 0);
-		context->Dispatch(1, 1, 1);
-		
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
-		context->CSSetShaderResources(0, 1, nullSRVs);
-		context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
-		context->CSSetShader(nullptr, 0, 0);
-	}
-
 	void ParticleEmitter::ExecuteEvent(EmitterEvent event)
 	{
 		// 현재 이 Emitter가 가진 SubEmitter를 사용해 Emitter 생성
@@ -260,7 +235,7 @@ namespace DE {
 			m_eventCallback(event, this);
 	}
 
-	void ParticleEmitter::Render()
+	void ParticleEmitter::Render(IndirectArgsBuffer<DrawInstancedArgs>& billboardArgs, UINT billboardOffset)
 	{
 		// 완료되면 Skip
 		if (m_isCompleted)
@@ -272,8 +247,8 @@ namespace DE {
 			context,
 			this->GetModule<MaterialModule>(),
 			m_emitterID,
-			m_ownerSystem->GetBillboardArgs().GetBuffer(),
-			m_ownerSystem->GetBillboardArgsOffset(m_emitterID),
+			billboardArgs,
+			billboardOffset,
 			m_ownerSystem->GetMeshArgs(),
 			m_ownerSystem->GetMeshArgsOffset(m_emitterID),
 		};

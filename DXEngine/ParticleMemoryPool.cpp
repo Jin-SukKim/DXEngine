@@ -28,6 +28,11 @@ namespace DE {
 		m_consts.Initialize(device, maxEmitters);
 		m_frameConsts.Initialize(device, maxEmitters);
 
+		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
+		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
+
+		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
+		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
 	}
 
 	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount)
@@ -228,5 +233,21 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		m_frameConsts.Upload(context);
+	}
+
+	void ParticleMemoryPool::UpdateArgs()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		// ArgsUpdateCS
+		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
+		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
+
+		ID3D11UnorderedAccessView* uavs[] = { m_dispatchArgs.GetUAV(), m_billboardArgsBuffer.GetUAV() };
+		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+
+		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
+
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
 	}
 }

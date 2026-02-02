@@ -67,7 +67,7 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
+		//m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
 		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 

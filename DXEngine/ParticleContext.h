@@ -44,7 +44,7 @@ struct RenderContext : ParticleContext {
     MaterialModule* materialModule;
     const UINT& emitterID;
 
-    ID3D11Buffer* billboardArgs;
+    IndirectArgsBuffer<DrawInstancedArgs>& billboardArgs;
     UINT billbaordArgsOffset;
     IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer;
     UINT meshArgsOffset;

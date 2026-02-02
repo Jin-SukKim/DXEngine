@@ -26,9 +26,11 @@ namespace DE {
 		// 활성 시스템만 업데이트
 		for (auto* system : m_activeSystems) {
 			if (system) {
-				system->Update(dt);
+				system->Update(dt, m_memoryPool->GetDispatchArgs());
 			}
 		}
+
+		m_memoryPool->UpdateArgs();
 
 		m_memoryPool->UnbindCompute();
 
@@ -45,7 +47,7 @@ namespace DE {
 		// 여기서는 순회만 진행
 		for (auto* system : m_activeSystems) {
 			if (system) {
-				system->Render();
+				system->Render(m_memoryPool->GetBillboardArgs());
 			}
 		}
 		m_memoryPool->UnbindRender();

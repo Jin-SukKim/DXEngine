@@ -46,10 +46,9 @@ namespace DE {
 
 		void OnSpawn();
 		void PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts);
-		void Update(const float& dt) override;
+		void Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
 		void ActivateSubEmitters();
-		void UpdateArgs(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context);
-		void Render() override;
+		void Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs);
 
 		void AddEmitter(const std::string& path);
 		void AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter);
@@ -91,10 +90,8 @@ namespace DE {
 
 		bool IsAllEmittersCompleted() const;
 
-		IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
 
-		IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 16; }
 
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
@@ -163,7 +160,6 @@ namespace DE {
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
 		std::vector<ConstantBuffer<EmitterID>> m_emitterIDs;
 
 		StructuredBuffer<Vector3> m_bakedSpawnPos;
@@ -172,7 +168,6 @@ namespace DE {
 		StructuredBuffer<Vector3> m_customPositions;
 		UINT m_currentCustomOffset = 0;
 
-		IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 	};
 }

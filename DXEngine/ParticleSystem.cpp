@@ -190,14 +190,6 @@ namespace DE {
 			m_emitterIDs.push_back(cb);
 		}
 
-		m_dispatchArgs = IndirectArgsBuffer<DispatchArgs>();
-		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
-		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
-
-		m_billboardArgsBuffer = IndirectArgsBuffer<DrawInstancedArgs>();
-		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
-		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
-
 		m_meshArgsBuffer = IndirectArgsBuffer<DrawIndexedInstancedArgs>();
 		m_meshArgsBuffer.Initialize(device, initialData.initMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 	}
@@ -209,7 +201,7 @@ namespace DE {
 			emitter->OnSpawn();
 		}
 
-		ExecutePreWarm();
+		//ExecutePreWarm();
 		TextureManager::Get().BindParticleTextures();
 	}
 
@@ -238,7 +230,7 @@ namespace DE {
 			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
 	}
 
-	void ParticleSystem::Update(const float& dt)
+	void ParticleSystem::Update(const float& dt, IndirectArgsBuffer<DispatchArgs>& dispatchArgs)
 	{
 		if (m_state != ParticleState::Playing)
 			return;
@@ -246,13 +238,11 @@ namespace DE {
 		float newDt = dt * m_playRate;
 		// Update (Main + Sub)
 		for (auto& emitter : m_emitters)
-			emitter->Update(newDt);
+			emitter->Update(newDt, dispatchArgs, GetDispatchArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
 		for (auto* emitter : m_activeSubEmitters)
-			emitter->Update(newDt);
+			emitter->Update(newDt, dispatchArgs, GetDispatchArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		UpdateArgs(context);
 
 		// 완료된 SubEmitter 제거
 		std::erase_if(m_activeSubEmitters, [](auto* em) { return em->IsCompleted(); });
@@ -274,22 +264,7 @@ namespace DE {
 		m_pendingSubEmitters.clear();
 	}
 
-	void ParticleSystem::UpdateArgs(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& context)
-	{
-		// ArgsUpdateCS
-		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
-		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
-
-		ID3D11UnorderedAccessView* uavs[] = { m_dispatchArgs.GetUAV(), m_billboardArgsBuffer.GetUAV() };
-		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
-		
-		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
-
-		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
-	}
-
-	void ParticleSystem::Render()
+	void ParticleSystem::Render(IndirectArgsBuffer<DrawInstancedArgs>& billbaordArgs)
 	{
 		if (m_state == ParticleState::Stopped)
 			return;
@@ -300,12 +275,12 @@ namespace DE {
 
 		// Main Emitter 렌더링
 		for (auto& emitter : m_emitters)
-			emitter->Render();
+			emitter->Render(billbaordArgs, GetBillboardArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
 
 		// Active SubEmitter 렌더링 (null 체크)
 		for (auto* emitter : m_activeSubEmitters) {
 			if (emitter)
-				emitter->Render();
+				emitter->Render(billbaordArgs, GetBillboardArgsOffset(m_poolHandle.emitterID + emitter->GetEmitterID()));
 		}
 	}
 
@@ -517,15 +492,15 @@ namespace DE {
 
 	void ParticleSystem::ExecutePreWarm()
 	{
-		if (m_preWarmTime <= 0.f) return;
+		//if (m_preWarmTime <= 0.f) return;
 
-		static const float step = 1.f / 60.f;
-		float t = 0.f;
-		while (t < m_preWarmTime) {
-			t += step;
-			for (auto& emitter : m_emitters)
-				emitter->Update(step);
-		}
+		//static const float step = 1.f / 60.f;
+		//float t = 0.f;
+		//while (t < m_preWarmTime) {
+		//	t += step;
+		//	for (auto& emitter : m_emitters)
+		//		emitter->Update(step);
+		//}
 	}
 
 	void ParticleSystem::UpdateTransform()

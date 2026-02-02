@@ -10,7 +10,7 @@ namespace DE {
 		virtual ~Object() {}
 
 		virtual void Initialize() = 0;
-		virtual void Update(const float& deltaTime) = 0;
+		virtual void Update(const float& deltaTime) {}
 		virtual void UpdateGui() {}
 		virtual void Render() {}
 

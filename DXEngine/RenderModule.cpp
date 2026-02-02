@@ -83,25 +83,6 @@ namespace DE {
 	{
 		RenderModule::UpdateArgs(ctx);
 
-		//uint32_t srcOffset = ctx.emitterID * sizeof(uint32_t);
-
-		//D3D11_BOX srcBox;
-		//srcBox.left = srcOffset;
-		//srcBox.right = srcOffset + sizeof(uint32_t); // 시작점 + 4바이트 (즉, 1개만 복사)
-		//srcBox.top = 0;
-		//srcBox.bottom = 1;
-		//srcBox.front = 0;
-		//srcBox.back = 1;
-
-		//ctx.context->CopySubresourceRegion(
-		//	ctx.billboardArgs,  // Dest buffer
-		//	0,                                      // Dest subresource
-		//	ctx.billbaordArgsOffset,                                      // Dest X (offset in bytes)
-		//	0, 0,                                   // Dest Y, Z
-		//	ctx.readCount.GetBuffer(),           // Source buffer
-		//	0,                                      // Source subresource
-		//	&srcBox                                 // Source box (nullptr = entire resource)
-		//);
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -131,7 +112,7 @@ namespace DE {
 			break;
 		}
 
-		ctx.context->DrawInstancedIndirect(ctx.billboardArgs, ctx.billbaordArgsOffset);
+		ctx.context->DrawInstancedIndirect(ctx.billboardArgs.GetBuffer(), ctx.billbaordArgsOffset);
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
