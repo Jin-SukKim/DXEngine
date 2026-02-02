@@ -143,6 +143,25 @@ namespace DE {
 		context->CSSetShaderResources(6, 4, srvs); // t5
 	}
 
+	void ParticleMemoryPool::UnbindCompute()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+
+		ID3D11UnorderedAccessView* uavs[] = {
+			nullptr,
+			nullptr
+		};
+		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr); // u0
+
+		ID3D11ShaderResourceView* srvs[] = {
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr
+		};
+		context->CSSetShaderResources(6, 4, srvs); // t5
+	}
+	
 	void ParticleMemoryPool::BindRender()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
@@ -152,6 +171,21 @@ namespace DE {
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV()
+		};
+		context->CSSetShaderResources(6, 4, srvs);
+		context->VSSetShaderResources(6, 4, srvs);
+		context->PSSetShaderResources(6, 4, srvs);
+	}
+
+	void ParticleMemoryPool::UnbindRender()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		ID3D11ShaderResourceView* srvs[] = {
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr
 		};
 		context->CSSetShaderResources(6, 4, srvs);
 		context->VSSetShaderResources(6, 4, srvs);

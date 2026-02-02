@@ -250,7 +250,6 @@ namespace DE {
 		for (auto* emitter : m_activeSubEmitters)
 			emitter->Update(newDt);
 
-		SwapBuffer();
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		UpdateArgs(context);

@@ -30,6 +30,8 @@ namespace DE {
 			}
 		}
 
+		m_memoryPool->UnbindCompute();
+
 		if (m_memoryPool)
 			m_memoryPool->SwapBuffer();
 	}
@@ -46,7 +48,7 @@ namespace DE {
 				system->Render();
 			}
 		}
-
+		m_memoryPool->UnbindRender();
 		// 렌더링 후 BasicPSO로 복원
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 	}

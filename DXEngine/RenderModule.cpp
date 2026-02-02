@@ -132,9 +132,6 @@ namespace DE {
 		}
 
 		ctx.context->DrawInstancedIndirect(ctx.billboardArgs, ctx.billbaordArgsOffset);
-
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		ctx.context->VSSetShaderResources(0, 1, nullSRVs);
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
@@ -244,9 +241,6 @@ namespace DE {
 
 			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgsBuffer.GetBuffer(), ctx.meshArgsOffset);
 		}
-
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		ctx.context->VSSetShaderResources(1, 1, nullSRVs);
 	}
 
 	void MeshRenderModule::LoadFromJson(const json& data)

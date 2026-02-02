@@ -104,8 +104,6 @@ namespace DE {
 		StructuredBuffer<Vector3>& GetBakedSpawnBuffer() { return m_bakedSpawnPos; }
 		StructuredBuffer<Vector3>& GetCustomPositions() { return m_customPositions; }
 
-		void SwapBuffer() { m_currentBuffer = 1 - m_currentBuffer; }
-
 		UINT GetTotalParticleCount() const { return m_maxTotalParticles; }
 		UINT GetMaxEmitterCount() const { return m_maxEmitters; }
 		void SetPoolHandle(PoolHandle handle) { m_poolHandle = handle; }

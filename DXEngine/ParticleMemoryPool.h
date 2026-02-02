@@ -32,7 +32,9 @@ public:
 
 	void SwapBuffer() { m_bufferIndex = 1 - m_bufferIndex; }
 	void BindCompute();
+	void UnbindCompute();
 	void BindRender();
+	void UnbindRender();
 	void ClearWriteCount();
 
 	void UploadConsts(UINT offset, const std::vector<ParticleConsts>& data);
