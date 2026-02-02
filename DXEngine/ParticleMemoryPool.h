@@ -13,12 +13,12 @@ struct PoolHandle {
 	UINT emitterCount = 0;
 	UINT spawnPosOffset = UINT_MAX;
 	UINT spawnPosBlockCount = 0;
+	UINT systemSlot = UINT_MAX;
 
 	bool IsActive() const {
-		return particleOffset != UINT_MAX && emitterID != UINT_MAX;
+		return particleOffset != UINT_MAX && emitterID != UINT_MAX && systemSlot != UINT_MAX;
 	}
 };
-
 
 struct ParticleMeshConsts {
 	Matrix world;
@@ -52,6 +52,10 @@ public:
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
 	void BindEmitterID(UINT slotIndex);
 
+	// MeshConsts 관리
+	void UploadMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
+	void BindMeshConsts(UINT systemSlot);
+
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
 	StructuredBuffer<uint32_t>& GetReadCount() { return m_counts[m_bufferIndex]; }
@@ -62,14 +66,16 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 
-	// MeshConsts 관리 (System별)
-	void UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data);
-	void BindMeshConsts(UINT systemIndex);
+private:
+	// System Slot 관리
+	UINT AllocateSystemSlot();
+	void FreeSystemSlot(UINT slot);
 
 private:
 	UINT m_blockSize = 1024;
 	UINT m_maxParticles = 0;
 	UINT m_maxEmitters = 0;
+	UINT m_maxSystems = 100;
 
 	StructuredBuffer<Particle> m_particles[2];
 	StructuredBuffer<uint32_t> m_counts[2];
@@ -87,14 +93,14 @@ private:
 	// EmitterID ConstantBuffer Pool
 	std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
 
-	// MeshConsts Pool (System별 - activeSystems 인덱스 사용)
-	UINT m_maxSystems = 100;
+	// MeshConsts Pool (System별)
 	std::vector<ConstantBuffer<ParticleMeshConsts>> m_meshConstsBuffers;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable;
 	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
+	std::vector<bool> m_systemSlotTable;
 };
 
 }

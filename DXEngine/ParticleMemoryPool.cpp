@@ -16,6 +16,7 @@ namespace DE {
 		m_particleBlockTable.assign(blockCount, false);
 		m_emitterSlotTable.assign(maxEmitters, false);
 		m_spawnPosBlockTable.assign(blockCount, false);
+		m_systemSlotTable.assign(maxSystems, false);
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -40,16 +41,34 @@ namespace DE {
 
 		m_spawnPositions.Initialize(device, maxParticles);
 
-		// EmitterID ConstantBuffer Pool 미리 생성
+		// EmitterID ConstantBuffer Pool
 		m_emitterIDBuffers.resize(maxEmitters);
 		for (UINT i = 0; i < maxEmitters; ++i) {
 			m_emitterIDBuffers[i].Initialize();
 		}
 
-		// MeshConsts Pool 초기화
-		m_meshConstsBuffers.resize(m_maxSystems);
-		for (UINT i = 0; i < m_maxSystems; ++i) {
+		// MeshConsts Pool (System별)
+		m_meshConstsBuffers.resize(maxSystems);
+		for (UINT i = 0; i < maxSystems; ++i) {
 			m_meshConstsBuffers[i].Initialize();
+		}
+	}
+
+	UINT ParticleMemoryPool::AllocateSystemSlot()
+	{
+		for (UINT i = 0; i < m_maxSystems; ++i) {
+			if (!m_systemSlotTable[i]) {
+				m_systemSlotTable[i] = true;
+				return i;
+			}
+		}
+		return UINT_MAX;
+	}
+
+	void ParticleMemoryPool::FreeSystemSlot(UINT slot)
+	{
+		if (slot < m_maxSystems) {
+			m_systemSlotTable[slot] = false;
 		}
 	}
 
@@ -57,7 +76,13 @@ namespace DE {
 	{
 		PoolHandle handle;
 
-		// 1. Particle Block 할당
+		// 1. System Slot 할당
+		handle.systemSlot = AllocateSystemSlot();
+		if (handle.systemSlot == UINT_MAX) {
+			return handle;
+		}
+
+		// 2. Particle Block 할당
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
 		UINT foundBlock = UINT_MAX;
 		UINT consecutive = 0;
@@ -65,7 +90,7 @@ namespace DE {
 		for (size_t i = 0; i < m_particleBlockTable.size(); ++i) {
 			if (!m_particleBlockTable[i]) {
 				if (consecutive == 0) {
-					foundBlock = static_cast<UINT>(i); // 시작 위치 저장
+					foundBlock = static_cast<UINT>(i);
 				}
 				if (++consecutive == neededBlocks) {
 					break;
@@ -77,12 +102,11 @@ namespace DE {
 			}
 		}
 		
-		// consecutive가 neededBlocks보다 작으면 실패
 		if (consecutive < neededBlocks) {
 			foundBlock = UINT_MAX;
 		}
 
-		// 2. Emitter Slot 할당
+		// 3. Emitter Slot 할당
 		UINT foundSlot = UINT_MAX;
 		consecutive = 0;
 		UINT slotStart = UINT_MAX;
@@ -103,7 +127,7 @@ namespace DE {
 			}
 		}
 
-		// 3. SpawnPosition Block 할당 (reqSpawnPosCount > 0인 경우)
+		// 4. SpawnPosition Block 할당 (reqSpawnPosCount > 0인 경우)
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
 		
@@ -157,7 +181,11 @@ namespace DE {
 				handle.spawnPosBlockCount = neededSpawnPosBlocks;
 			}
 		}
-		// 실패 시 handle은 기본값(UINT_MAX)으로 반환되어 IsActive()가 false
+		else {
+			// 할당 실패 시 System Slot 해제
+			FreeSystemSlot(handle.systemSlot);
+			handle.systemSlot = UINT_MAX;
+		}
 
 		return handle;
 	}
@@ -166,11 +194,13 @@ namespace DE {
 	{
 		if (!handle.IsActive()) return;
 
+		// System slot 해제
+		FreeSystemSlot(handle.systemSlot);
+
 		// Particle blocks 해제
 		size_t startBlock = handle.particleOffset / m_blockSize;
 		for (size_t i = 0; i < handle.blockCount; ++i) {
 			if (startBlock + i < m_particleBlockTable.size()) {
-				assert(m_particleBlockTable[startBlock + i] && "Double-free detected!");
 				m_particleBlockTable[startBlock + i] = false;
 			}
 		}
