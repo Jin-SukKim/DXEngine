@@ -7,12 +7,12 @@ namespace DE {
 	void ParticleManager::Initialize()
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
-		m_memoryPool->Initialize(1000000, 10000, 1000);
+		m_memoryPool->Initialize(10000, 10000, 1000);
 	}
 
 	void ParticleManager::Update(const float& dt)
 	{
-		//CompactParticleOffset();
+		CompactParticleOffset();
 
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
@@ -36,10 +36,10 @@ namespace DE {
 
 		m_memoryPool->UnbindCompute();
 
+		FinishDefragmentation();
+
 		if (m_memoryPool)
 			m_memoryPool->SwapBuffer();
-
-		//FinishDefragmentation();
 	}
 
 	void ParticleManager::Render()
@@ -301,34 +301,48 @@ namespace DE {
 
 	void ParticleManager::FinishDefragmentation()
 	{
-		if (!m_needCompact && !m_memoryPool->IsDefragStarted())
+		// Defrag가 진행된 프레임이 아니면 무시
+		// (CompactParticleOffset에서 m_needCompact를 끄지 않도록 주의해야 함.
+		//  여기서 끄는 게 맞음.)
+		if (!m_memoryPool->IsDefragStarted())
 			return;
 
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		
+		// 이사 간 시스템들 찾아서 주소지 변경
 		for (auto* ps : m_activeSystems) {
 			PoolHandle cur = ps->GetPoolHandle();
 			PoolHandle next = ps->GetNextPoolHandle();
 
-			if (cur == next) continue;
-			
-			const ParticleInitializer& initData = ps->GetInitialData();
+			// 이사 간 경우 (주소가 다름)
+			if (cur.particleOffset != next.particleOffset) {
 
-			ps->SetPoolHandle(next);
+				// 1. 시스템의 핸들을 새 주소로 확정 (Commit)
+				ps->SetPoolHandle(next);
 
-			if (!initData.spawnPositions.empty() && next.spawnPosOffset != UINT_MAX) {
-				m_memoryPool->UploadSpawnPositions(next.spawnPosOffset, initData.spawnPositions);
+				// 2. 쉐이더 상수 버퍼(EmitterID) 업데이트
+				// 중요: 이제 "새 주소"에서 읽어야 하므로 ReadOffset도 업데이트!
+				const auto& slots = next.emitterIDs; // [변경됨] next의 emitterIDs 사용
+
+				for (size_t i = 0; i < slots.size(); ++i) {
+					EmitterID eID;
+					// Read와 Write 모두 새 주소를 가리키게 설정
+					eID.emitterID = slots[i];
+					eID.readParticleOffset = next.particleOffset;  // [중요] New
+					eID.writeParticleOffset = next.particleOffset; // [중요] New
+
+					// SpawnPos도 이사 갔다면 업데이트 (생략 가능하면 생략)
+					if (next.spawnPosOffset != UINT_MAX) {
+						eID.spawnPosOffset = next.spawnPosOffset;
+					}
+
+					// 상수 버퍼 갱신
+					m_memoryPool->UpdateEmitterID(slots[i], eID);
+				}
 			}
-
-			UploadEmitterIDs(ps, initData); // Uses new handle inside
-			m_memoryPool->UploadConsts(next.emitterIDs, initData.consts);
-			m_memoryPool->UploadFrameConsts(next.emitterIDs, initData.frameConsts);
 		}
 
+		// 모든 처리가 끝났으므로 플래그 해제
 		m_needCompact = false;
-		m_memoryPool->FinishDefrag(); // Reset internal flag
-
-		std::cout << "Defragmentation Finished" << std::endl;
+		m_memoryPool->FinishDefrag();
 	}
 
 	void ParticleManager::UploadMeshConsts(UINT systemSlot, const MeshConstants& data)
