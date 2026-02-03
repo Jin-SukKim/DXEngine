@@ -34,6 +34,10 @@ public:
     // 할당 가능 여부 확인
     bool CanAllocate(UINT particleCount, UINT emitterCount, UINT spawnPosCount = 0) const;
 
+    void RenderDebugGUI();
+    ParticleMemoryPool* GetMemoryPool() const { return m_memoryPool.get(); }
+    const std::vector<ParticleSystem*>& GetActiveSystems() const { return m_activeSystems; }
+
 private:
     void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 

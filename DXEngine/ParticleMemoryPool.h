@@ -59,6 +59,27 @@ namespace DE {
 		float padding[2];
 	};
 
+	// 메모리 풀 통계 구조체
+	struct MemoryPoolStats {
+		UINT totalPages = 0;
+		UINT usedPages = 0;
+		UINT freePages = 0;
+		float pageUsagePercent = 0.0f;
+
+		UINT totalSpawnPosPages = 0;
+		UINT usedSpawnPosPages = 0;
+		float spawnPosUsagePercent = 0.0f;
+
+		UINT totalEmitterSlots = 0;
+		UINT usedEmitterSlots = 0;
+		UINT totalSystemSlots = 0;
+		UINT usedSystemSlots = 0;
+
+		UINT maxParticles = 0;
+		UINT allocatedParticleCapacity = 0;
+		float fragmentationRatio = 0.0f;
+	};
+
 	class ParticleMemoryPool
 	{
 	public:
@@ -108,6 +129,11 @@ namespace DE {
 		UINT GetPageSize() const { return PAGE_SIZE; }
 		UINT GetFreePageCount() const;
 		UINT GetFreeSpawnPosPageCount() const;
+
+		MemoryPoolStats GetStats() const;
+		const std::vector<bool>& GetPageUsageMap() const { return m_pageUsed; }
+		UINT GetTotalPages() const { return m_totalPages; }
+		const std::vector<bool>& GetSpawnPosPageUsageMap() const { return m_spawnPosPageUsed; }
 
 	private:
 		UINT AllocateSystemSlot();

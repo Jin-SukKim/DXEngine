@@ -476,4 +476,44 @@ namespace DE {
 		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
 		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
 	}
+
+	MemoryPoolStats ParticleMemoryPool::GetStats() const
+	{
+		MemoryPoolStats stats{};
+
+		stats.totalPages = m_totalPages;
+		stats.freePages = static_cast<UINT>(m_freePageList.size());
+		stats.usedPages = stats.totalPages - stats.freePages;
+		stats.pageUsagePercent = stats.totalPages > 0
+			? (static_cast<float>(stats.usedPages) / stats.totalPages) * 100.0f : 0.0f;
+
+		stats.totalSpawnPosPages = static_cast<UINT>(m_spawnPosPageUsed.size());
+		stats.usedSpawnPosPages = stats.totalSpawnPosPages - static_cast<UINT>(m_freeSpawnPosList.size());
+		stats.spawnPosUsagePercent = stats.totalSpawnPosPages > 0
+			? (static_cast<float>(stats.usedSpawnPosPages) / stats.totalSpawnPosPages) * 100.0f : 0.0f;
+
+		stats.totalEmitterSlots = static_cast<UINT>(m_emitterSlotTable.size());
+		stats.usedEmitterSlots = static_cast<UINT>(std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true));
+		stats.totalSystemSlots = static_cast<UINT>(m_systemSlotTable.size());
+		stats.usedSystemSlots = static_cast<UINT>(std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true));
+
+		stats.maxParticles = m_maxParticles;
+		stats.allocatedParticleCapacity = stats.usedPages * PAGE_SIZE;
+
+		// 단편화 계산
+		UINT freeBlockCount = 0;
+		bool inFreeBlock = false;
+		for (UINT i = 0; i < m_totalPages; ++i) {
+			if (!m_pageUsed[i] && !inFreeBlock) {
+				freeBlockCount++;
+				inFreeBlock = true;
+			} else if (m_pageUsed[i]) {
+				inFreeBlock = false;
+			}
+		}
+		stats.fragmentationRatio = stats.freePages > 1
+			? std::clamp(static_cast<float>(freeBlockCount - 1) / (stats.freePages - 1), 0.0f, 1.0f) : 0.0f;
+
+		return stats;
+	}
 }

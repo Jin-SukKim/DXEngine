@@ -3,6 +3,8 @@
 #include "ParticleLoader.h"
 #include "RenderBase.h"
 
+#include <imgui.h>
+
 namespace DE {
     void ParticleManager::Initialize()
     {
@@ -212,5 +214,67 @@ namespace DE {
     void ParticleManager::BindMeshConsts(UINT systemSlot)
     {
         m_memoryPool->BindMeshConsts(systemSlot);
+    }
+
+    void ParticleManager::RenderDebugGUI()
+    {
+        if (!m_memoryPool) return;
+        if (!ImGui::Begin("Memory Pool Monitor")) {
+            ImGui::End();
+            return;
+        }
+
+        auto stats = m_memoryPool->GetStats();
+
+        // 용량 정보
+        ImGui::Text("Max Particles: %u", stats.maxParticles);
+        ImGui::Text("Allocated:     %u", stats.allocatedParticleCapacity);
+        
+        ImGui::Separator();
+
+        // 슬롯 정보
+        ImGui::Text("Emitters: %u / %u", stats.usedEmitterSlots, stats.totalEmitterSlots);
+        ImGui::Text("Systems:  %u / %u", stats.usedSystemSlots, stats.totalSystemSlots);
+        ImGui::Text("Active:   %u", static_cast<UINT>(m_activeSystems.size()));
+        
+        ImGui::Separator();
+        
+        // 페이지 정보
+        ImGui::Text("Pages:    %u / %u", stats.usedPages, stats.totalPages);
+        ImGui::Text("SpawnPos: %u / %u", stats.usedSpawnPosPages, stats.totalSpawnPosPages);
+
+        ImGui::Separator();
+
+        // 페이지 맵
+        auto DrawPageMap = [](const char* label, const std::vector<bool>& pageMap) {
+            if (ImGui::CollapsingHeader(label)) {
+                ImDrawList* drawList = ImGui::GetWindowDrawList();
+                ImVec2 startPos = ImGui::GetCursorScreenPos();
+                const int cols = 32;
+                const float size = 12.0f;
+                const float gap = 2.0f;
+
+                for (size_t i = 0; i < pageMap.size(); ++i) {
+                    ImVec2 p1(startPos.x + (i % cols) * (size + gap), startPos.y + (i / cols) * (size + gap));
+                    ImVec2 p2(p1.x + size, p1.y + size);
+                    drawList->AddRectFilled(p1, p2, pageMap[i] ? IM_COL32(200, 80, 80, 255) : IM_COL32(80, 180, 80, 255));
+                }
+                ImGui::Dummy(ImVec2(cols * (size + gap), ((pageMap.size() + cols - 1) / cols) * (size + gap)));
+            }
+        };
+
+        DrawPageMap("Page Map", m_memoryPool->GetPageUsageMap());
+        DrawPageMap("SpawnPos Map", m_memoryPool->GetSpawnPosPageUsageMap());
+
+        // 활성 시스템 목록
+        if (ImGui::CollapsingHeader("Active Systems")) {
+            for (size_t i = 0; i < m_activeSystems.size(); ++i) {
+                const auto& h = m_activeSystems[i]->GetPageHandle();
+                ImGui::Text("[%zu] Slot:%u Pages:%u Emitters:%u Cap:%u", 
+                    i, h.systemSlot, h.pageCount, h.emitterCount, h.totalCapacity);
+            }
+        }
+
+        ImGui::End();
     }
 }
