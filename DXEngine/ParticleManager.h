@@ -1,64 +1,48 @@
 #pragma once
 #include "ParticleSystem.h"
 #include "ParticleMemoryPool.h"
-#include <queue>
 
 namespace DE {
-
-struct ParticlePreset {
-	std::unique_ptr<ParticleSystem> prototype;
-	std::wstring filePath;
-	FileWatcher::CallbackID watcherID = 0;
-};
-
-struct PendingSystem {
-	ParticleSystem* system = nullptr;
-	UINT particleCount = 0;
-	UINT emitterCount = 0;
-	UINT spawnPosCount = 0;
-	int retryCount = 0;
-};
 
 class ParticleManager
 {
 public:
-	static ParticleManager& Get() {
-		static ParticleManager instance;
-		return instance;
-	}
+    static ParticleManager& Get() {
+        static ParticleManager instance;
+        return instance;
+    }
 
-	void Initialize();
-	void Update(const float& dt);
-	void Render();
-	
-	void RegisterActiveSystem(ParticleSystem* system);
-	void UnregisterActiveSystem(ParticleSystem* system);
+    void Initialize();
+    void Update(const float& dt);
+    void Render();
+    
+    void RegisterActiveSystem(ParticleSystem* system);
+    void UnregisterActiveSystem(ParticleSystem* system);
 
-	ParticleSystem* CreateSystem(const std::wstring& path);
-	void DestroyInstance(ParticleSystem* system);
+    // 성공 시 포인터, 실패 시 nullptr 반환
+    ParticleSystem* CreateSystem(const std::wstring& path);
+    void DestroyInstance(ParticleSystem* system);
 
-	// EmitterID 바인딩 (Manager에서 처리)
-	void BindEmitterID(UINT globalSlotIndex);
-	
-	// MeshConsts 관련 추가
-	void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
-	void BindMeshConsts(UINT systemIndex);
+    void BindEmitterID(UINT globalSlotIndex);
+    void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
+    void BindMeshConsts(UINT systemIndex);
 
-	// 디버깅/통계용
-	UINT GetFreePageCount() const { return m_memoryPool ? m_memoryPool->GetFreePageCount() : 0; }
-	UINT GetActiveSystemCount() const { return static_cast<UINT>(m_activeSystems.size()); }
-
-private:
-	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
-	void ProcessWaitingQueue();
+    // 통계
+    UINT GetFreePageCount() const { return m_memoryPool ? m_memoryPool->GetFreePageCount() : 0; }
+    UINT GetActiveSystemCount() const { return static_cast<UINT>(m_activeSystems.size()); }
+    
+    // 할당 가능 여부 확인
+    bool CanAllocate(UINT particleCount, UINT emitterCount, UINT spawnPosCount = 0) const;
 
 private:
-	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
-	std::vector<std::unique_ptr<ParticleSystem>> m_instances;
-	std::vector<ParticleSystem*> m_activeSystems;
+    void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 
-	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
-	std::queue<PendingSystem> m_waitForSpawn;
+private:
+    std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
+    std::vector<std::unique_ptr<ParticleSystem>> m_instances;
+    std::vector<ParticleSystem*> m_activeSystems;
+
+    std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 };
 
 }
