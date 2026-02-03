@@ -114,19 +114,19 @@ namespace DE {
 		//	tr->SetPos(pos);
 		//}
 
-		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 	}
 
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
 
-		static float elapsedTime = 0;
-		elapsedTime += dt;
-		if (elapsedTime > 0.1f) {
-			elapsedTime = 0.f;
-			ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
-		}
+		//static float elapsedTime = 0;
+		//elapsedTime += dt;
+		//if (elapsedTime > 0.1f) {
+		//	elapsedTime = 0.f;
+		//	ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
+		//}
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
@@ -142,8 +142,8 @@ namespace DE {
 	}
 	void ParticleEditor::ClickEvent()
 	{
-		ClickEffectManager::Get().TriggerPreset("Smoke");
-
+		//ClickEffectManager::Get().TriggerPreset("Firework");
+		ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
 		// 또는 직접 Scene에서 생성
 		// InputManager& inputMgr = AppBase::GetInputManager();
 		// Vector2 mouseNDC = inputMgr.GetMouseNDC();
