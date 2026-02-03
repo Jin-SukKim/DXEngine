@@ -7,7 +7,8 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (dtID.x >= readCount[emitterID])
         return;
     
-    Particle p = readParticles[readParticleOffset + dtID.x];
+    uint readGlobalIdx = LocalToGlobalIndex(dtID.x);
+    Particle p = readParticles[readGlobalIdx];
     
     float dt = frameConsts[emitterID].dt;
     if (p.life - dt > 0.f) {
@@ -40,8 +41,9 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         p.rotation = fmod(p.rotation + p.rotSpeed * dt, 6.28318530718f);
 
         // 결과 저장
-        uint index;
-        InterlockedAdd(writeCount[emitterID], 1, index);
-        writeParticles[writeParticleOffset + index] = p;
+        uint localWriteIdx;
+        InterlockedAdd(writeCount[emitterID], 1, localWriteIdx);
+        uint writeGlobalIdx = LocalToGlobalIndex(localWriteIdx);
+        writeParticles[writeGlobalIdx] = p;
     }
 }

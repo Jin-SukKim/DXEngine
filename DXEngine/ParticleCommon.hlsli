@@ -20,14 +20,78 @@ StructuredBuffer<Particle> readParticles : register(t6);
 StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
 
-cbuffer EmitterID : register(b5)
+// ============================================
+// 페이지 테이블 (Paging 시스템)
+// ============================================
+struct PageTableEntry
 {
-    uint readParticleOffset;
-    uint writeParticleOffset;
-    uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset 통합
+    uint baseOffset;
+    uint ownerSystem;
+    uint2 padding;
 };
 
+static const uint PAGE_SIZE = 1024;
+
+StructuredBuffer<PageTableEntry> pageTable : register(t11);
+StructuredBuffer<PageTableEntry> spawnPosPageTable : register(t12);
+
+// ============================================
+// EmitterID (페이징 지원)
+// ============================================
+cbuffer EmitterID : register(b5)
+{
+    uint emitterID;
+    uint pageTableStart;
+    uint pageCount;
+    uint localParticleMax;
+    uint spawnPosPageTableStart;
+    uint spawnPosPageCount;
+    uint2 padding_emitter;
+};
+
+// ============================================
+// 파티클 페이지 테이블 헬퍼 함수
+// ============================================
+uint LocalToGlobalIndex(uint localIndex)
+{
+    uint pageLocalIndex = localIndex / PAGE_SIZE;
+    uint inPageOffset = localIndex % PAGE_SIZE;
+    
+    uint pageIdx = pageTableStart + pageLocalIndex;
+    uint globalOffset = pageTable[pageIdx].baseOffset;
+    
+    return globalOffset + inPageOffset;
+}
+
+Particle ReadParticle(uint localIndex)
+{
+    uint globalIndex = LocalToGlobalIndex(localIndex);
+    return readParticles[globalIndex];
+}
+
+void WriteParticle(uint localIndex, Particle p)
+{
+    uint globalIndex = LocalToGlobalIndex(localIndex);
+    writeParticles[globalIndex] = p;
+}
+
+// ============================================
+// SpawnPos 페이지 테이블 헬퍼 함수
+// ============================================
+uint SpawnPosLocalToGlobalIndex(uint localIndex)
+{
+    uint pageLocalIndex = localIndex / PAGE_SIZE;
+    uint inPageOffset = localIndex % PAGE_SIZE;
+    
+    uint pageIdx = spawnPosPageTableStart + pageLocalIndex;
+    uint globalOffset = spawnPosPageTable[pageIdx].baseOffset;
+    
+    return globalOffset + inPageOffset;
+}
+
+// ============================================
+// 기존 구조체들
+// ============================================
 struct ParticleFrameConsts
 {
     float dt;
@@ -46,7 +110,7 @@ struct SpawnConsts
 
     float2 lifeRange;
     int spawnShape;
-    uint bakedCount; // Baked/Custom 공용 개수
+    uint bakedCount;
     uint simulationSpace;
 
     uint spawnStartIndex;
@@ -125,7 +189,7 @@ struct ParticleConsts
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // 통합된 SpawnPosition 버퍼
+StructuredBuffer<float3> spawnPositions : register(t10);
 
 cbuffer ParticleMeshConsts : register(b6)
 {
@@ -133,7 +197,7 @@ cbuffer ParticleMeshConsts : register(b6)
     matrix pWorldIT;
     uint vertexCount;
     uint indexCount;
-    float2 padding;
+    float2 pmPadding;
 };
 
 struct SortElement

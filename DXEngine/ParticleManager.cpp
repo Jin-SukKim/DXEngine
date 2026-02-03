@@ -12,31 +12,28 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		CompactParticleOffset();
-
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
 
+		// 유효한 시스템만 처리
 		for (auto* system : m_activeSystems) {
-			if (system) {
+			if (system && system->GetPageHandle().IsActive()) {
 				std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
 				system->PreUpdate(dt, fsConsts);
-				m_memoryPool->UploadFrameConsts(system->GetPoolHandle().emitterIDs, fsConsts);
+				m_memoryPool->UploadFrameConsts(system->GetPageHandle().emitterIDs, fsConsts);
 			}
 		}
 
 		m_memoryPool->UpdateArgs();
 
 		for (auto* system : m_activeSystems) {
-			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+			if (system && system->GetPageHandle().IsActive()) {
+				m_memoryPool->BindMeshConsts(system->GetPageHandle().systemSlot);
 				system->Update(dt);
 			}
 		}
 
 		m_memoryPool->UnbindCompute();
-
-		FinishDefragmentation();
 
 		if (m_memoryPool)
 			m_memoryPool->SwapBuffer();
@@ -48,8 +45,8 @@ namespace DE {
 
 		m_memoryPool->BindRender();
 		for (auto* system : m_activeSystems) {
-			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+			if (system && system->GetPageHandle().IsActive()) {
+				m_memoryPool->BindMeshConsts(system->GetPageHandle().systemSlot);
 				system->Render();
 			}
 		}
@@ -104,30 +101,34 @@ namespace DE {
 		UINT particleCount = cloned->GetTotalParticleCount();
 		UINT emitterCount = cloned->GetMaxEmitterCount();
 		
-		PoolHandle handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
+		PageHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 		
-		// 할당 실패 시 대기 큐에 추가하고 nullptr 반환
+		// 할당 실패 시 대기 큐에 추가
 		if (!handle.IsActive()) {
-			std::cout << "Failed to Create ParticelSystem" << std::endl;
+			std::cout << "Failed to Create ParticleSystem (Out of pages), adding to queue" << std::endl;
+			
 			PendingSystem pending;
 			pending.system = cloned.get();
 			pending.particleCount = particleCount;
 			pending.emitterCount = emitterCount;
 			pending.spawnPosCount = spawnPosCount;
+			pending.retryCount = 0;
 			m_waitForSpawn.push(pending);
-			m_needCompact = true;
 			
 			// instance는 저장하되 active에는 등록하지 않음
 			auto* clonedPtr = cloned.get();
 			m_instances.push_back(std::move(cloned));
-			return clonedPtr; // 또는 nullptr 반환하여 호출자에게 알림
+			return clonedPtr;
 		}
 		
-		cloned->SetPoolHandle(handle);
+		cloned->SetPageHandle(handle);
 
-		// SpawnPositions 업로드
-		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
-			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
+		// SpawnPositions 업로드 (비연속 페이지)
+		if (!initialData.spawnPositions.empty() && !handle.spawnPosPageIndices.empty()) {
+			m_memoryPool->UploadSpawnPositions(
+				handle.spawnPosPageIndices, 
+				initialData.spawnPositions
+			);
 		}
 
 		cloned->InitializeGPU(initialData, 
@@ -156,16 +157,28 @@ namespace DE {
 	{
 		if (!system) return;
 
-		// Pool에서 메모리 해제
-		const PoolHandle& handle = system->GetPoolHandle();
+		// 1. active 목록에서 먼저 제거
+		UnregisterActiveSystem(system);
+
+		// 2. Pool에서 메모리 해제
+		const PageHandle& handle = system->GetPageHandle();
 		if (handle.IsActive()) {
 			m_memoryPool->Free(handle);
 		}
 
-		// active 목록에서 제거
-		UnregisterActiveSystem(system);
+		// 3. 대기 큐에서도 제거 (있다면)
+		// 큐를 순회하며 해당 시스템 제거
+		std::queue<PendingSystem> tempQueue;
+		while (!m_waitForSpawn.empty()) {
+			PendingSystem pending = m_waitForSpawn.front();
+			m_waitForSpawn.pop();
+			if (pending.system != system) {
+				tempQueue.push(pending);
+			}
+		}
+		m_waitForSpawn = std::move(tempQueue);
 
-		// instance 목록에서 제거
+		// 4. instance 목록에서 제거
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
 			[system](const std::unique_ptr<ParticleSystem>& ptr) {
 				return ptr.get() == system;
@@ -181,31 +194,25 @@ namespace DE {
 		m_memoryPool->BindEmitterID(globalSlotIndex);
 	}
 
-	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
-	{
-		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
-
-		if (!handle.IsActive()) {
-			m_memoryPool->PlanDefragmentation(m_activeSystems);
-		}
-
-		return handle;
-	}
-
 	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
 	{
-		const PoolHandle& handle = system->GetPoolHandle();
+		const PageHandle& handle = system->GetPageHandle();
 		
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
-			EmitterID eID = initialData.emitterIDs[i];
-			
+			EmitterIDPaged eID;
 			eID.emitterID = handle.emitterIDs[i];
-			eID.readParticleOffset += handle.particleOffset;
-			eID.writeParticleOffset += handle.particleOffset;
+			eID.pageTableStart = handle.pageIndices.empty() ? 0 : handle.pageIndices[0];
+			eID.pageCount = handle.pageCount;
+			eID.localParticleMax = handle.totalCapacity / std::max(1u, handle.emitterCount);
 			
-			// spawnPos를 사용하는 emitter만 오프셋 적용
-			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
-				eID.spawnPosOffset += handle.spawnPosOffset;
+			// SpawnPos 페이지 정보 설정
+			if (!handle.spawnPosPageIndices.empty()) {
+				eID.spawnPosPageTableStart = handle.spawnPosPageIndices[0];
+				eID.spawnPosPageCount = handle.spawnPosPageCount;
+			}
+			else {
+				eID.spawnPosPageTableStart = INVALID_PAGE;
+				eID.spawnPosPageCount = 0;
 			}
 			
 			m_memoryPool->UpdateEmitterID(handle.emitterIDs[i], eID);
@@ -216,13 +223,7 @@ namespace DE {
 	{
 		if (m_waitForSpawn.empty()) return;
 
-		// Do not process queue while defragmentation is in progress or scheduled
-		if (m_needCompact || m_memoryPool->IsDefragStarted())
-			return;
-
-		std::cout << "Processing Waiting Queue" << std::endl;
-
-		// Safety mechanism: process only current items to avoid infinite same-frame loops
+		constexpr int MAX_RETRY = 3;
 		size_t qSize = m_waitForSpawn.size();
 
 		for (size_t i = 0; i < qSize; ++i) {
@@ -236,11 +237,11 @@ namespace DE {
 				});
 
 			if (it == m_instances.end()) {
-				continue; // System deleted, skip
+				continue; // System already deleted, skip
 			}
 
 			// Try Allocation
-			PoolHandle handle = m_memoryPool->Allocate(
+			PageHandle handle = m_memoryPool->Allocate(
 				pending.particleCount,
 				pending.emitterCount,
 				pending.spawnPosCount
@@ -248,13 +249,16 @@ namespace DE {
 
 			if (handle.IsActive()) {
 				ParticleSystem* system = pending.system;
-				system->SetPoolHandle(handle);
+				system->SetPageHandle(handle);
 
 				ParticleInitializer initialData;
 				system->InitializeCPU(initialData);
 
-				if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
-					m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
+				if (!initialData.spawnPositions.empty() && !handle.spawnPosPageIndices.empty()) {
+					m_memoryPool->UploadSpawnPositions(
+						handle.spawnPosPageIndices,
+						initialData.spawnPositions
+					);
 				}
 
 				system->InitializeGPU(initialData,
@@ -273,76 +277,22 @@ namespace DE {
 				std::cout << "Success: Spawned Pending System" << std::endl;
 			}
 			else {
-				std::cout << "Failed to allocate pending system (OOM). Dropping it." << std::endl;
-
-				m_instances.erase(it);
-			}
-		}
-	}
-
-	void ParticleManager::CompactParticleOffset()
-	{
-		if (!m_needCompact && !m_memoryPool->IsDefragStarted())
-			return;
-
-		std::cout << "Start Compacting" << std::endl;
-		for (auto* ps : m_activeSystems) {
-			PoolHandle cur = ps->GetPoolHandle();
-			PoolHandle next = ps->GetNextPoolHandle();
-
-			if (cur == next)
-				continue;
-
-			UINT emitterCount = ps->GetMaxEmitterCount();
-			for (UINT i = 0; i < emitterCount; ++i)
-				m_memoryPool->UpdateEmitterID(cur.emitterIDs[i], next, i);
-		}
-	}
-
-	void ParticleManager::FinishDefragmentation()
-	{
-		// Defrag가 진행된 프레임이 아니면 무시
-		// (CompactParticleOffset에서 m_needCompact를 끄지 않도록 주의해야 함.
-		//  여기서 끄는 게 맞음.)
-		if (!m_memoryPool->IsDefragStarted())
-			return;
-
-		// 이사 간 시스템들 찾아서 주소지 변경
-		for (auto* ps : m_activeSystems) {
-			PoolHandle cur = ps->GetPoolHandle();
-			PoolHandle next = ps->GetNextPoolHandle();
-
-			// 이사 간 경우 (주소가 다름)
-			if (cur.particleOffset != next.particleOffset) {
-
-				// 1. 시스템의 핸들을 새 주소로 확정 (Commit)
-				ps->SetPoolHandle(next);
-
-				// 2. 쉐이더 상수 버퍼(EmitterID) 업데이트
-				// 중요: 이제 "새 주소"에서 읽어야 하므로 ReadOffset도 업데이트!
-				const auto& slots = next.emitterIDs; // [변경됨] next의 emitterIDs 사용
-
-				for (size_t i = 0; i < slots.size(); ++i) {
-					EmitterID eID;
-					// Read와 Write 모두 새 주소를 가리키게 설정
-					eID.emitterID = slots[i];
-					eID.readParticleOffset = next.particleOffset;  // [중요] New
-					eID.writeParticleOffset = next.particleOffset; // [중요] New
-
-					// SpawnPos도 이사 갔다면 업데이트 (생략 가능하면 생략)
-					if (next.spawnPosOffset != UINT_MAX) {
-						eID.spawnPosOffset = next.spawnPosOffset;
-					}
-
-					// 상수 버퍼 갱신
-					m_memoryPool->UpdateEmitterID(slots[i], eID);
+				pending.retryCount++;
+				if (pending.retryCount >= MAX_RETRY) {
+					std::cout << "Failed to allocate pending system after " << MAX_RETRY << " retries. Dropping it." << std::endl;
+					
+					// 중요: m_activeSystems에서도 제거 (혹시 등록되어 있다면)
+					UnregisterActiveSystem(pending.system);
+					
+					// m_instances에서 제거
+					m_instances.erase(it);
+				}
+				else {
+					// 다시 큐에 넣음
+					m_waitForSpawn.push(pending);
 				}
 			}
 		}
-
-		// 모든 처리가 끝났으므로 플래그 해제
-		m_needCompact = false;
-		m_memoryPool->FinishDefrag();
 	}
 
 	void ParticleManager::UploadMeshConsts(UINT systemSlot, const MeshConstants& data)

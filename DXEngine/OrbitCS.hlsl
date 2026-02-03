@@ -14,7 +14,8 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (dtID.x >= writeCount[emitterID])
         return;
 
-    Particle p = writeParticles[writeParticleOffset + dtID.x];
+    uint globalIdx = LocalToGlobalIndex(dtID.x);
+    Particle p = writeParticles[globalIdx];
 
     OrbitConsts orbit = consts[emitterID].orbit;
     // 1. 회전할 각도 계산 (Rate * DeltaTime)
@@ -42,5 +43,5 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     // 밖으로 튀어 나가거나 이상한 나선형을 그리게 됩니다.
     p.velocity = RotateVector(p.velocity, axis, rotationAngle);
 
-    writeParticles[writeParticleOffset + dtID.x] = p;
+    writeParticles[globalIdx] = p;
 }

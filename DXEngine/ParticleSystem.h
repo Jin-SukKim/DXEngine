@@ -19,8 +19,8 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
 		std::vector<EmitterID> emitterIDs;
 
-		// Baked/Custom 통합
-		std::vector<Vector3> spawnPositions;  // 통합된 SpawnPosition
+		// Baked/Custom 관련
+		std::vector<Vector3> spawnPositions;  // 병합된 SpawnPosition
 		UINT totalSpawnPosCount = 0;          // 총 SpawnPosition 개수
 	};
 
@@ -69,7 +69,7 @@ namespace DE {
 		void SetPreWarmTime(float time) { m_preWarmTime = time; }
 		void SetTargetMesh(const int& modelIdx);
 
-		// Mesh 데이터 접근자
+		// Mesh 데이터 게터들
 		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
 		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
 		UINT GetVertexCount() const { return m_vertexCount; }
@@ -95,13 +95,13 @@ namespace DE {
 
 		UINT GetTotalParticleCount() const { return m_maxTotalParticles; }
 		UINT GetMaxEmitterCount() const { return m_maxEmitters; }
-		void SetPoolHandle(PoolHandle handle) { m_poolHandle = handle; }
-		PoolHandle GetPoolHandle() const { return m_poolHandle; }
-		void SetNextPoolHandle(const PoolHandle& handle) { m_nextHandle = handle; }
-		PoolHandle GetNextPoolHandle() const { return m_nextHandle; }
-		const PoolHandle& GetCurrentHandle() const { return m_poolHandle; }
+		
+		// PageHandle 관련 (Paging 시스템)
+		void SetPageHandle(const PageHandle& handle) { m_pageHandle = handle; }
+		const PageHandle& GetPageHandle() const { return m_pageHandle; }
 
 		const ParticleInitializer& GetInitialData() const { return m_initialData; }
+		
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
@@ -128,7 +128,7 @@ namespace DE {
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 
-		// SubEmitters (미리 로드됨, 경로 -> Emitter 매핑)
+		// SubEmitters (미리 로드됨, 이름 -> Emitter 매핑)
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
 		// 현재 활성화된 SubEmitter 포인터들
 		std::vector<ParticleEmitter*> m_activeSubEmitters;
@@ -144,20 +144,16 @@ namespace DE {
 		UINT m_vertexCount = 0;
 		UINT m_indexCount = 0;
 
-		PoolHandle m_poolHandle;
-		PoolHandle m_nextHandle;
+		// Paging 시스템용 핸들
+		PageHandle m_pageHandle;
 
-		// Defragmentation때 따로 활용
-		UINT m_particleReadOffset = 0;
-		UINT m_particleWriteOffset = 0;
-
-		// 파티클 버퍼 (이중 버퍼링)
+		// 파티클 관리 (메모리 버퍼링)
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		// 통합된 SpawnPosition 관리
+		// 병합된 SpawnPosition 관리
 		UINT m_currentSpawnPosOffset = 0;
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 

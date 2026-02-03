@@ -40,16 +40,17 @@ public:
 	// EmitterID 바인딩 (Manager에서 처리)
 	void BindEmitterID(UINT globalSlotIndex);
 	
-	// MeshConsts 관리 추가
+	// MeshConsts 관련 추가
 	void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
 	void BindMeshConsts(UINT systemIndex);
 
+	// 디버깅/통계용
+	UINT GetFreePageCount() const { return m_memoryPool ? m_memoryPool->GetFreePageCount() : 0; }
+	UINT GetActiveSystemCount() const { return static_cast<UINT>(m_activeSystems.size()); }
+
 private:
-	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 	void ProcessWaitingQueue();
-	void CompactParticleOffset();
-	void FinishDefragmentation();
 
 private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
@@ -58,7 +59,6 @@ private:
 
 	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 	std::queue<PendingSystem> m_waitForSpawn;
-	bool m_needCompact = false;
 };
 
 }

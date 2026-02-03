@@ -31,7 +31,10 @@ GSInput main(uint vertexID : SV_VertexID)
 {
     RenderConsts render = consts[emitterID].render;
     uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
-    Particle p = readParticles[readParticleOffset + particleIdx];
+    
+    // ÆäÀÌÂ¡: ·ÎÄÃ ÀÎµ¦½º -> ±Û·Î¹ú ÀÎµ¦½º º¯È¯
+    uint globalIdx = LocalToGlobalIndex(particleIdx);
+    Particle p = readParticles[globalIdx];
 
     GSInput output;
 

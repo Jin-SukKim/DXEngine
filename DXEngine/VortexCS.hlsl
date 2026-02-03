@@ -29,8 +29,9 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     // 유효 범위를 벗어나면 리턴
     if (dtID.x >= writeCount[emitterID])
         return;
-
-    Particle p = writeParticles[writeParticleOffset + dtID.x];
+    // 페이징: 로컬 인덱스 -> 글로벌 인덱스 변환
+    uint globalIdx = LocalToGlobalIndex(dtID.x);
+    Particle p = writeParticles[globalIdx];
     VortexConsts vortex = consts[emitterID].vortex;
 
     // Vortex(소용돌이)        
@@ -46,7 +47,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         float3 normalizedAxis = normalize(vortex.vortexAxis);
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
         p.velocity += vForce * frameConsts[emitterID].dt;
-
-        writeParticles[writeParticleOffset + dtID.x].velocity = p.velocity;
+        
+        writeParticles[globalIdx].velocity = p.velocity;
     }
 }

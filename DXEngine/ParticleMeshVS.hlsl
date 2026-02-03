@@ -24,7 +24,9 @@ PSInput main(VSInput input, uint instanceID : SV_InstanceID)
 {
     // 1. 현재 그릴 파티클의 인덱스를 가져옵니다.
     uint particleIdx = consts[emitterID].render.useSorting ? sortedElements[instanceID].value : instanceID;
-    Particle p = readParticles[readParticleOffset + particleIdx];
+    
+    uint globalIdx = LocalToGlobalIndex(particleIdx);
+    Particle p = readParticles[globalIdx];
 
     PSInput output;
 

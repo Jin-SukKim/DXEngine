@@ -59,8 +59,8 @@ namespace DE {
 		m_maxEmitters = 0;
 		m_currentParticleOffset = 0;
 		m_currentEmitterIndex = 0;
-		m_currentSpawnPosOffset = 0;  // 통합된 offset
-		m_spawnPosCache.clear();      // 통합된 캐시
+		m_currentSpawnPosOffset = 0;
+		m_spawnPosCache.clear();
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
 
@@ -103,7 +103,6 @@ namespace DE {
 		EmitterID eID = { 0, 0, 0, 0 };
 
 		eID.emitterID = m_currentEmitterIndex;
-		eID.emitterID = m_currentEmitterIndex;
 		eID.readParticleOffset = m_currentParticleOffset;
 		eID.writeParticleOffset = m_currentParticleOffset;
 
@@ -115,7 +114,7 @@ namespace DE {
 			this->OnEmitterEvent(event, em);
 		});
 
-		// 통합된 SpawnPosition 처리
+		// 병합된 SpawnPosition 처리
 		RegisterSpawnPositions(emitter, initialData.spawnPositions, pConsts, eID);
 
 		UINT capacity = pfConsts.maxParticles;
@@ -134,11 +133,9 @@ namespace DE {
 		ParticleEmitter* emitter,
 		ParticleInitializer& initialData)
 	{
-		// 먼저 현재 emitter의 SubEmitter 경로들을 복사 (iterator 무효화 방지)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
 		
 		for (const auto& sub : subEmittersCopy) {
-			// 이미 로드된 SubEmitter는 스킵
 			if (m_subEmitterPool.contains(sub.emitterPath))
 				continue;
 
@@ -146,14 +143,10 @@ namespace DE {
 			if (!subEmitter)
 				continue;
 
-			// 먼저 풀에 저장 (포인터 획득 전에)
 			ParticleEmitter* rawPtr = subEmitter.get();
 			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
 
-			// SubEmitter 초기화
 			ProcessEmitter(rawPtr, initialData);
-
-			// SubEmitter의 SubEmitter도 재귀적으로 로드
 			LoadSubEmitters(rawPtr, initialData);
 		}
 	}
@@ -170,12 +163,10 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
-		// Main Emitter만 OnSpawn (SubEmitter는 이벤트 발생 시 활성화)
 		for (auto& emitter : m_emitters) {
 			emitter->OnSpawn();
 		}
 
-		//ExecutePreWarm(*m_dispatchArgs);
 		TextureManager::Get().BindParticleTextures();
 	}
 
@@ -195,7 +186,6 @@ namespace DE {
 			context->CSSetShaderResources(2, 2, srvs);
 		}
 
-		// PreUpdate (Main + Sub)
 		for (auto& emitter : m_emitters)
 			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
 		for (auto* emitter : m_activeSubEmitters)
@@ -208,23 +198,29 @@ namespace DE {
 			return;
 
 		float newDt = dt * m_playRate;
-		// Update (Main + Sub)
-		for (auto& emitter : m_emitters)
+		
+		// Main Emitters Update
+		for (auto& emitter : m_emitters) {
+			UINT emitterIdx = emitter->GetEmitterID();
+			UINT globalEmitterID = m_pageHandle.emitterIDs[emitterIdx];
 			emitter->Update(newDt, 
 				{ m_dispatchArgs->GetBuffer(), 
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
+				  GetDispatchArgsOffset(globalEmitterID) 
 				});
-		for (auto* emitter : m_activeSubEmitters)
+		}
+		
+		// SubEmitters Update
+		for (auto* emitter : m_activeSubEmitters) {
+			UINT emitterIdx = emitter->GetEmitterID();
+			UINT globalEmitterID = m_pageHandle.emitterIDs[emitterIdx];
 			emitter->Update(newDt,
 				{ m_dispatchArgs->GetBuffer(),
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+				  GetDispatchArgsOffset(globalEmitterID)
 				});
+		}
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		// 완료된 SubEmitter 제거
 		std::erase_if(m_activeSubEmitters, [](auto* em) { return em->IsCompleted(); });
 
 		ActivateSubEmitters();
@@ -236,7 +232,6 @@ namespace DE {
 
 	void ParticleSystem::ActivateSubEmitters()
 	{
-		// 대기 중인 SubEmitter 활성화
 		for (auto& [emitter, pos] : m_pendingSubEmitters) {
 			emitter->Reset();
 			emitter->SetSpawnOffset(pos);
@@ -256,31 +251,31 @@ namespace DE {
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
 		// Main Emitter 렌더링
-		for (auto& emitter : m_emitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
+		for (auto& emitter : m_emitters) {
+			UINT emitterIdx = emitter->GetEmitterID();
+			UINT globalEmitterID = m_pageHandle.emitterIDs[emitterIdx];
+			emitter->Render(
+				{ m_billboardArgsBuffer->GetBuffer(),
+				  GetBillboardArgsOffset(globalEmitterID) 
 				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+				{ m_meshArgsBuffer->GetBuffer(),
+				  GetMeshArgsOffset(globalEmitterID)
 				});
+		}
 
-		// Active SubEmitter 렌더링 (null 체크)
+		// Active SubEmitter 렌더링
 		for (auto* emitter : m_activeSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+			if (emitter) {
+				UINT emitterIdx = emitter->GetEmitterID();
+				UINT globalEmitterID = m_pageHandle.emitterIDs[emitterIdx];
+				emitter->Render(
+					{ m_billboardArgsBuffer->GetBuffer(),
+					  GetBillboardArgsOffset(globalEmitterID)
 					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
+					{ m_meshArgsBuffer->GetBuffer(),
+					  GetMeshArgsOffset(globalEmitterID)
+					});
+			}
 		}
 	}
 
@@ -297,7 +292,6 @@ namespace DE {
 			ParticleEmitter* subEmitter = it->second.get();
 			Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
 
-			// 중복 체크 후 추가
 			auto isMatch = [subEmitter](const auto& p) { return p.first == subEmitter; };
 			bool alreadyPending = std::ranges::any_of(m_pendingSubEmitters, isMatch);
 			bool alreadyActive = std::ranges::find(m_activeSubEmitters, subEmitter) != m_activeSubEmitters.end();
@@ -312,7 +306,6 @@ namespace DE {
 		if (!subEmitter)
 			return;
 
-		// 이미 활성화된 경우 스킵
 		for (auto* em : m_activeSubEmitters) {
 			if (em == subEmitter)
 				return;
@@ -477,8 +470,10 @@ namespace DE {
 
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
-		// Manager를 통해 바인딩
-		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
+		// PageHandle에서 글로벌 emitterID 조회
+		if (emitterID < m_pageHandle.emitterIDs.size()) {
+			ParticleManager::Get().BindEmitterID(m_pageHandle.emitterIDs[emitterID]);
+		}
 	}
 
 	void ParticleSystem::Reset()
@@ -497,13 +492,13 @@ namespace DE {
 		while (t < m_preWarmTime) {
 			t += step;
 			for (auto& emitter : m_emitters) {
+				UINT emitterIdx = emitter->GetEmitterID();
+				UINT globalEmitterID = m_pageHandle.emitterIDs[emitterIdx];
 				emitter->Update(step,
 					{ dispatchArgs.GetBuffer(),
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+					  GetDispatchArgsOffset(globalEmitterID)
 					});
 			}
-				
 		}
 	}
 
@@ -519,14 +514,17 @@ namespace DE {
 		this->SetTransform(meshConsts);
 
 		// Pool에 업로드 (System 인덱스 사용)
-		ParticleManager::Get().UploadMeshConsts(m_poolHandle.systemSlot, meshConsts);
+		if (m_pageHandle.IsActive()) {
+			ParticleManager::Get().UploadMeshConsts(m_pageHandle.systemSlot, meshConsts);
+		}
 	}
 
 	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID)
 	{
-		eID.emitterID = m_poolHandle.emitterIDs[m_currentEmitterIndex];
-		eID.readParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
-		eID.writeParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
+		// 페이징에서는 로컬 오프셋만 사용, 글로벌 오프셋은 Manager에서 처리
+		eID.emitterID = m_currentEmitterIndex;
+		eID.readParticleOffset = m_currentParticleOffset;
+		eID.writeParticleOffset = m_currentParticleOffset;
 		m_currentParticleOffset += capacity;
 		++m_currentEmitterIndex;
 		++m_maxEmitters;
@@ -539,19 +537,17 @@ namespace DE {
 		ParticleConsts& pConsts, 
 		EmitterID& eID)
 	{
-		eID.spawnPosOffset = UINT_MAX;  // 기본값: 미사용
+		eID.spawnPosOffset = UINT_MAX;
 		
 		if (!emitter->GetBakedPath().empty()) {
 			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
 			if (it != m_spawnPosCache.end()) {
-				// 캐시 히트
 				emitter->SetSpawnPosInfo(it->second.first);
 				eID.spawnPosOffset = it->second.first;
 				pConsts.spawn.bakedCount = it->second.second;
 				return;
 			}
 
-			// 캐시 미스
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
 			
@@ -561,7 +557,6 @@ namespace DE {
 			m_spawnPosCache[emitter->GetBakedPath()] = { m_currentSpawnPosOffset, bakedCount };
 			m_currentSpawnPosOffset += bakedCount;
 		}
-		// Custom Position 처리
 		else if (emitter->IsUsingCustomPositions()) {
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
