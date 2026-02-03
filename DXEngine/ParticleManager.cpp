@@ -9,7 +9,7 @@ namespace DE {
     void ParticleManager::Initialize()
     {
         m_memoryPool = std::make_unique<ParticleMemoryPool>();
-        m_memoryPool->Initialize(10000, 10000, 1000);
+        m_memoryPool->Initialize(1000000, 10000, 1000);
     }
 
     void ParticleManager::Update(const float& dt)
@@ -250,9 +250,9 @@ namespace DE {
             if (ImGui::CollapsingHeader(label)) {
                 ImDrawList* drawList = ImGui::GetWindowDrawList();
                 ImVec2 startPos = ImGui::GetCursorScreenPos();
-                const int cols = 32;
-                const float size = 12.0f;
-                const float gap = 2.0f;
+                const int cols = 64;
+                const float size = 6.0f;
+                const float gap = 1.0f;
 
                 for (size_t i = 0; i < pageMap.size(); ++i) {
                     ImVec2 p1(startPos.x + (i % cols) * (size + gap), startPos.y + (i / cols) * (size + gap));
