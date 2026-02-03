@@ -12,7 +12,7 @@ RWStructuredBuffer<SortElement> sortedElements : register(u0);
 void main( uint3 dtID : SV_DispatchThreadID )
 {
     uint id = dtID.x;
-    uint count = activeCount[readEmitterID];
+    uint count = activeCount[emitterID];
     
     SortElement elem;
     elem.value = id; // Particle index

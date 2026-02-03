@@ -66,8 +66,8 @@ namespace DE {
 		//m_firework = AddObject<Firework>(L"Firework");
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		//m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
 		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 
@@ -114,7 +114,7 @@ namespace DE {
 		//	tr->SetPos(pos);
 		//}
 
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -142,8 +142,8 @@ namespace DE {
 	}
 	void ParticleEditor::ClickEvent()
 	{
-		//ClickEffectManager::Get().TriggerPreset("Firework");
-		ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
+		ClickEffectManager::Get().TriggerPreset("Firework");
+		//ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
 		// 肚绰 流立 Scene俊辑 积己
 		// InputManager& inputMgr = AppBase::GetInputManager();
 		// Vector2 mouseNDC = inputMgr.GetMouseNDC();

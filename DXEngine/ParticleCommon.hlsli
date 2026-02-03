@@ -24,10 +24,8 @@ cbuffer EmitterID : register(b5)
 {
     uint readParticleOffset;
     uint writeParticleOffset;
-    uint readEmitterID;
-    uint writeEmitterID;
+    uint emitterID;
     uint spawnPosOffset;  // bakedOffset + customOffset ХыЧе
-    uint3 padding_id;
 };
 
 struct ParticleFrameConsts

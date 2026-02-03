@@ -102,8 +102,8 @@ namespace DE {
 		DrawIndexedInstancedArgs pMeshArgs = { 0, 0, 0, 0, 0 };
 		EmitterID eID = { 0, 0, 0, 0 };
 
-		eID.readEmitterID = m_currentEmitterIndex;
-		eID.writeEmitterID = m_currentEmitterIndex;
+		eID.emitterID = m_currentEmitterIndex;
+		eID.emitterID = m_currentEmitterIndex;
 		eID.readParticleOffset = m_currentParticleOffset;
 		eID.writeParticleOffset = m_currentParticleOffset;
 
@@ -213,13 +213,13 @@ namespace DE {
 			emitter->Update(newDt, 
 				{ m_dispatchArgs->GetBuffer(), 
 				GetDispatchArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID()) 
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
 				});
 		for (auto* emitter : m_activeSubEmitters)
 			emitter->Update(newDt,
 				{ m_dispatchArgs->GetBuffer(),
 				GetDispatchArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID())
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 				});
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
@@ -260,12 +260,12 @@ namespace DE {
 			emitter->Render({
 				m_billboardArgsBuffer->GetBuffer(),
 				GetBillboardArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID()) 
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
 				},
 				{
 				m_meshArgsBuffer->GetBuffer(),
 				GetMeshArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID())
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 				});
 
 		// Active SubEmitter 렌더링 (null 체크)
@@ -274,12 +274,12 @@ namespace DE {
 				emitter->Render({
 				m_billboardArgsBuffer->GetBuffer(),
 				GetBillboardArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID())
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 					},
 				{
 				m_meshArgsBuffer->GetBuffer(),
 				GetMeshArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID())
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 				});
 		}
 	}
@@ -478,7 +478,7 @@ namespace DE {
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
 		// Manager를 통해 바인딩
-		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterID + emitterID);
+		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
 	}
 
 	void ParticleSystem::Reset()
@@ -500,7 +500,7 @@ namespace DE {
 				emitter->Update(step,
 					{ dispatchArgs.GetBuffer(),
 				GetDispatchArgsOffset(
-					m_poolHandle.emitterID + emitter->GetEmitterID())
+					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 					});
 			}
 				
@@ -524,8 +524,7 @@ namespace DE {
 
 	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID)
 	{
-		eID.readEmitterID = m_currentEmitterIndex + m_poolHandle.emitterID;
-		eID.writeEmitterID = m_currentEmitterIndex + m_poolHandle.emitterID;
+		eID.emitterID = m_poolHandle.emitterIDs[m_currentEmitterIndex];
 		eID.readParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
 		eID.writeParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
 		m_currentParticleOffset += capacity;

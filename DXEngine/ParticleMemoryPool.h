@@ -9,20 +9,19 @@ namespace DE {
 struct PoolHandle {
 	UINT particleOffset = UINT_MAX;
 	UINT blockCount = 0;
-	UINT emitterID = UINT_MAX;
+	std::vector<UINT> emitterIDs;
 	UINT emitterCount = 0;
 	UINT spawnPosOffset = UINT_MAX;
 	UINT spawnPosBlockCount = 0;
 	UINT systemSlot = UINT_MAX;
 
 	bool IsActive() const {
-		return particleOffset != UINT_MAX && emitterID != UINT_MAX && systemSlot != UINT_MAX;
+		return particleOffset != UINT_MAX && !emitterIDs.empty() && systemSlot != UINT_MAX;
 	}
 
 	bool operator==(const PoolHandle& other) {
 		return particleOffset == other.particleOffset
 			&& blockCount == other.blockCount
-			&& emitterID == other.emitterID
 			&& emitterCount == other.emitterCount
 			&& spawnPosOffset == other.spawnPosOffset
 			&& spawnPosBlockCount == other.spawnPosBlockCount
@@ -53,8 +52,8 @@ public:
 	void UnbindRender();
 	void ClearWriteCount();
 
-	void UploadConsts(UINT offset, const std::vector<ParticleConsts>& data);
-	void UploadFrameConsts(UINT offset, const std::vector<ParticleFrameConsts>& data);
+	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
+	void UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data);
 	void UpdateArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 

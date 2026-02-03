@@ -16,10 +16,8 @@ namespace DE {
     struct EmitterID {
         UINT readParticleOffset;
         UINT writeParticleOffset;
-        UINT readEmitterID;
-        UINT writeEmitterID;
+        UINT emitterID;
         UINT spawnPosOffset;  // bakedOffset + customOffset ХыЧе
-        UINT padding[3];
     };
 
     struct ParticleFrameConsts {

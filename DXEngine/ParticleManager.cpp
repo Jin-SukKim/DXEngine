@@ -7,12 +7,12 @@ namespace DE {
 	void ParticleManager::Initialize()
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
-		m_memoryPool->Initialize(20000, 10000, 1000);
+		m_memoryPool->Initialize(1000000, 10000, 1000);
 	}
 
 	void ParticleManager::Update(const float& dt)
 	{
-		CompactParticleOffset();
+		//CompactParticleOffset();
 
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
@@ -21,7 +21,7 @@ namespace DE {
 			if (system) {
 				std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
 				system->PreUpdate(dt, fsConsts);
-				m_memoryPool->UploadFrameConsts(system->GetPoolHandle().emitterID, fsConsts);
+				m_memoryPool->UploadFrameConsts(system->GetPoolHandle().emitterIDs, fsConsts);
 			}
 		}
 
@@ -39,7 +39,7 @@ namespace DE {
 		if (m_memoryPool)
 			m_memoryPool->SwapBuffer();
 
-		FinishDefragmentation();
+		//FinishDefragmentation();
 	}
 
 	void ParticleManager::Render()
@@ -138,8 +138,8 @@ namespace DE {
 		// EmitterID 업로드 (Manager에서 처리)
 		UploadEmitterIDs(cloned.get(), initialData);
 			
-		m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
-		m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);
+		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
+		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
 		cloned->Initialize(initialData);
 		cloned->OnSpawn();
@@ -199,8 +199,7 @@ namespace DE {
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
 			EmitterID eID = initialData.emitterIDs[i];
 			
-			eID.readEmitterID += handle.emitterID;
-			eID.writeEmitterID += handle.emitterID;
+			eID.emitterID = handle.emitterIDs[i];
 			eID.readParticleOffset += handle.particleOffset;
 			eID.writeParticleOffset += handle.particleOffset;
 			
@@ -209,7 +208,7 @@ namespace DE {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
 			
-			m_memoryPool->UpdateEmitterID(handle.emitterID + static_cast<UINT>(i), eID);
+			m_memoryPool->UpdateEmitterID(handle.emitterIDs[i], eID);
 		}
 	}
 
@@ -264,8 +263,8 @@ namespace DE {
 					m_memoryPool->GetMeshArgs());
 
 				UploadEmitterIDs(system, initialData);
-				m_memoryPool->UploadConsts(handle.emitterID, initialData.consts);
-				m_memoryPool->UploadFrameConsts(handle.emitterID, initialData.frameConsts);
+				m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
+				m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
 				system->Initialize(initialData);
 				system->OnSpawn();
@@ -296,7 +295,7 @@ namespace DE {
 
 			UINT emitterCount = ps->GetMaxEmitterCount();
 			for (UINT i = 0; i < emitterCount; ++i)
-				m_memoryPool->UpdateEmitterID(cur.emitterID + i, next, i);
+				m_memoryPool->UpdateEmitterID(cur.emitterIDs[i], next, i);
 		}
 	}
 
@@ -322,8 +321,8 @@ namespace DE {
 			}
 
 			UploadEmitterIDs(ps, initData); // Uses new handle inside
-			m_memoryPool->UploadConsts(next.emitterID, initData.consts);
-			m_memoryPool->UploadFrameConsts(next.emitterID, initData.frameConsts);
+			m_memoryPool->UploadConsts(next.emitterIDs, initData.consts);
+			m_memoryPool->UploadFrameConsts(next.emitterIDs, initData.frameConsts);
 		}
 
 		m_needCompact = false;
