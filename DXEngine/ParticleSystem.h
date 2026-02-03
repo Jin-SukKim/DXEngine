@@ -100,6 +100,8 @@ namespace DE {
 		void SetNextPoolHandle(const PoolHandle& handle) { m_nextHandle = handle; }
 		PoolHandle GetNextPoolHandle() const { return m_nextHandle; }
 		const PoolHandle& GetCurrentHandle() const { return m_poolHandle; }
+
+		const ParticleInitializer& GetInitialData() const { return m_initialData; }
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
@@ -115,6 +117,7 @@ namespace DE {
 		void ActivateSubEmitter(ParticleEmitter* subEmitter, const Vector3& position);
 
 	private:
+		ParticleInitializer m_initialData;
 		Actor* m_owner = nullptr;
 		bool m_looping = true;
 		float m_duration = 5.0f;

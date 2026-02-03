@@ -83,6 +83,9 @@ namespace DE {
         // 팩토리를 통해 Actor 생성 (EffectActor 또는 EffectActor를 상속받은 Class 등)
         auto actor = m_actorFactory(L"SpawnedEffect");
         if (!actor) return;
+        if (actor->FailedToCreate()) 
+            return;
+        
 
         // 위치 설정 (Spawner 위치 기준 랜덤 반경)
         Vector3 spawnPos = GetRandomSpawnPosition();
@@ -145,7 +148,7 @@ namespace DE {
 
         std::erase_if(m_spawnedEffects, [this](EffectActor* effect) {
             // Scene에 실제로 존재하는지 확인
-            return !m_scene->ContainsEffect(effect);
+            return !m_scene->ContainsEffect(effect) || effect->FailedToCreate();
             });
     }
 

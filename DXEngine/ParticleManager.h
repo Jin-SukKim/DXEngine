@@ -16,6 +16,7 @@ struct PendingSystem {
 	UINT particleCount = 0;
 	UINT emitterCount = 0;
 	UINT spawnPosCount = 0;
+	int retryCount = 0;
 };
 
 class ParticleManager
@@ -45,7 +46,7 @@ public:
 
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
-	void UploadEmitterIDs(ParticleSystem* system, ParticleInitializer& initialData);
+	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 	void ProcessWaitingQueue();
 	void CompactParticleOffset();
 	void FinishDefragmentation();

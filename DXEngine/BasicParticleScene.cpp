@@ -58,7 +58,7 @@ namespace DE {
 		spanwer->SetScene(this);
 		spanwer->SetActorType<Firework>();
 		spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
-		spanwer->SetSpawnInterval(0.5f);
+		spanwer->SetSpawnInterval(0.2f);
 		spanwer->SetSpawnBox(Vector3(30.0f, 0.5f, 1.f));
 		spanwer->SetMaxActiveParticles(100);
 
@@ -77,7 +77,7 @@ namespace DE {
 				case 7: spanwer->SetActorType<TsunamiEffect>(); break;
 			}
 			spanwer->SetSpawnMode(SpawnMode::Interval);
-			spanwer->SetSpawnInterval(1.0f);
+			spanwer->SetSpawnInterval(0.5f);
 			spanwer->SetSpawnBox(Vector3(1.f, 1.f, 1.f));
 			spanwer->SetMaxActiveParticles(1);
 

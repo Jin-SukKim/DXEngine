@@ -61,13 +61,13 @@ namespace DE {
 		m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
 		m_spanwer->SetSpawnInterval(0.5f);
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(20);
+		m_spanwer->SetMaxActiveParticles(15);
 
 		//m_firework = AddObject<Firework>(L"Firework");
-		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		//m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
 		//m_testActor = AddObject<TestActor>(L"Test");
 	}
 

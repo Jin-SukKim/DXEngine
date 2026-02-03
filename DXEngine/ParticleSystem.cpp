@@ -89,6 +89,8 @@ namespace DE {
 		for (auto& emitter : m_emitters) {
 			LoadSubEmitters(emitter.get(), initialData);
 		}
+
+		m_initialData = initialData;
 	}
 
 	void ParticleSystem::ProcessEmitter(
