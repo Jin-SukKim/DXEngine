@@ -55,13 +55,13 @@ namespace DE {
 		
 		//m_sample = AddObject<SampleActor>(L"Sample");
 
-		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spanwer->SetScene(this); 
-		m_spanwer->SetActorType<Firework>();
-		m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
-		m_spanwer->SetSpawnInterval(0.5f);
-		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(15);
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this); 
+		//m_spanwer->SetActorType<Firework>();
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		//m_spanwer->SetSpawnInterval(0.5f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(15);
 
 		//m_firework = AddObject<Firework>(L"Firework");
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
@@ -120,6 +120,13 @@ namespace DE {
 	void ParticleEditor::Update(const float& dt)
 	{
 		Scene::Update(dt);
+
+		static float elapsedTime = 0;
+		elapsedTime += dt;
+		if (elapsedTime > 0.1f) {
+			elapsedTime = 0.f;
+			ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
+		}
 
 		FileWatcher::Get().Update(); // File이 변하는지 감시
 	}
