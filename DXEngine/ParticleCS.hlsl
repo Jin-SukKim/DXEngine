@@ -4,16 +4,16 @@
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= readCount[emitterID])
+    if (dtID.x >= readCount[readEmitterID])
         return;
     
-    Particle p = readParticles[particleOffset + dtID.x];
+    Particle p = readParticles[readParticleOffset + dtID.x];
     
-    float dt = frameConsts[emitterID].dt;
+    float dt = frameConsts[readEmitterID].dt;
     if (p.life - dt > 0.f) {
         p.life -= dt;
         
-        ForceConsts force = consts[emitterID].force;
+        ForceConsts force = consts[readEmitterID].force;
         // 1. 물리 연산 (Physics)
 
         // 중력 적용
@@ -27,7 +27,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         p.position += p.velocity * dt;
 
         // 2. 시각 효과 (Visuals)
-        VisualConsts visual = consts[emitterID].visual;
+        VisualConsts visual = consts[readEmitterID].visual;
         float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
         // 크기 보간 (Start -> End)
         // sizeRange.x = Start Size, sizeRange.y = End Size
@@ -41,7 +41,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 
         // 결과 저장
         uint index;
-        InterlockedAdd(writeCount[emitterID], 1, index);
-        writeParticles[particleOffset + index] = p;
+        InterlockedAdd(writeCount[writeEmitterID], 1, index);
+        writeParticles[writeParticleOffset + index] = p;
     }
 }

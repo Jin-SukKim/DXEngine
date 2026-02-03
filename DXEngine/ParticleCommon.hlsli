@@ -22,10 +22,12 @@ Texture2DArray particleTex : register(t14);
 
 cbuffer EmitterID : register(b5)
 {
-    uint particleOffset;
-    uint emitterID;
-    uint spawnPosOffset; // bakedOffset + customOffset 통합
-    uint padding_eid;
+    uint readParticleOffset;
+    uint writeParticleOffset;
+    uint readEmitterID;
+    uint writeEmitterID;
+    uint spawnPosOffset;  // bakedOffset + customOffset 통합
+    uint3 padding_id;
 };
 
 struct ParticleFrameConsts

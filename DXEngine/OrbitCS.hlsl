@@ -11,15 +11,15 @@ float3 RotateVector(float3 v, float3 axis, float angle)
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
-    if (dtID.x >= writeCount[emitterID])
+    if (dtID.x >= writeCount[writeEmitterID])
         return;
 
-    Particle p = writeParticles[particleOffset + dtID.x];
+    Particle p = writeParticles[writeParticleOffset + dtID.x];
 
-    OrbitConsts orbit = consts[emitterID].orbit;
+    OrbitConsts orbit = consts[readEmitterID].orbit;
     // 1. 회전할 각도 계산 (Rate * DeltaTime)
     // 매 프레임 조금씩 돌립니다.
-    float rotationAngle = orbit.rotationRate * frameConsts[emitterID].dt;
+    float rotationAngle = orbit.rotationRate * frameConsts[readEmitterID].dt;
 
     // 2. 중심 기준 상대 좌표 구하기
     float3 relativePos = p.position - orbit.center;
@@ -42,5 +42,5 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     // 밖으로 튀어 나가거나 이상한 나선형을 그리게 됩니다.
     p.velocity = RotateVector(p.velocity, axis, rotationAngle);
 
-    writeParticles[particleOffset + dtID.x] = p;
+    writeParticles[writeParticleOffset + dtID.x] = p;
 }

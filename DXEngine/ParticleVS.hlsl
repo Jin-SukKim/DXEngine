@@ -29,13 +29,13 @@ float3x3 GetRotationMatrix(float3 rot) {
 
 GSInput main(uint vertexID : SV_VertexID)
 {
-    RenderConsts render = consts[emitterID].render;
+    RenderConsts render = consts[readEmitterID].render;
     uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
-    Particle p = readParticles[particleOffset + particleIdx];
+    Particle p = readParticles[readParticleOffset + particleIdx];
 
     GSInput output;
 
-    SpawnConsts spawn = consts[emitterID].spawn;
+    SpawnConsts spawn = consts[readEmitterID].spawn;
     // 로컬/월드 모드에 따라 렌더링 위치 결정
     if (spawn.simulationSpace == 1)
     {

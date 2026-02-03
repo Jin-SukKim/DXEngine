@@ -23,8 +23,8 @@ float3x3 GetRotationMatrix(float3 rot)
 PSInput main(VSInput input, uint instanceID : SV_InstanceID)
 {
     // 1. 현재 그릴 파티클의 인덱스를 가져옵니다.
-    uint particleIdx = consts[emitterID].render.useSorting ? sortedElements[instanceID].value : instanceID;
-    Particle p = readParticles[particleOffset + particleIdx];
+    uint particleIdx = consts[readEmitterID].render.useSorting ? sortedElements[instanceID].value : instanceID;
+    Particle p = readParticles[readParticleOffset + particleIdx];
 
     PSInput output;
 
@@ -60,7 +60,7 @@ PSInput main(VSInput input, uint instanceID : SV_InstanceID)
     // -------------------------------------------------------------------------
     float4 localPosResult = float4(rotatedPos + p.position, 1.0f);
 
-    SpawnConsts spawn = consts[emitterID].spawn;
+    SpawnConsts spawn = consts[readEmitterID].spawn;
     // -------------------------------------------------------------------------
     // 4. World Transformation: 시뮬레이션 공간에 따른 처리
     // -------------------------------------------------------------------------

@@ -97,6 +97,9 @@ namespace DE {
 		UINT GetMaxEmitterCount() const { return m_maxEmitters; }
 		void SetPoolHandle(PoolHandle handle) { m_poolHandle = handle; }
 		PoolHandle GetPoolHandle() const { return m_poolHandle; }
+		void SetNextPoolHandle(const PoolHandle& handle) { m_nextHandle = handle; }
+		PoolHandle GetNextPoolHandle() const { return m_nextHandle; }
+		const PoolHandle& GetCurrentHandle() const { return m_poolHandle; }
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
@@ -139,6 +142,7 @@ namespace DE {
 		UINT m_indexCount = 0;
 
 		PoolHandle m_poolHandle;
+		PoolHandle m_nextHandle;
 
 		// Defragmentation때 따로 활용
 		UINT m_particleReadOffset = 0;

@@ -100,8 +100,10 @@ namespace DE {
 		DrawIndexedInstancedArgs pMeshArgs = { 0, 0, 0, 0, 0 };
 		EmitterID eID = { 0, 0, 0, 0 };
 
-		eID.emitterID = m_currentEmitterIndex;
-		eID.particleOffset = m_currentParticleOffset;
+		eID.readEmitterID = m_currentEmitterIndex;
+		eID.writeEmitterID = m_currentEmitterIndex;
+		eID.readParticleOffset = m_currentParticleOffset;
+		eID.writeParticleOffset = m_currentParticleOffset;
 
 		emitter->SetOwner(this);
 		emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
@@ -520,8 +522,10 @@ namespace DE {
 
 	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID)
 	{
-		eID.emitterID = m_currentEmitterIndex + m_poolHandle.emitterID;
-		eID.particleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
+		eID.readEmitterID = m_currentEmitterIndex + m_poolHandle.emitterID;
+		eID.writeEmitterID = m_currentEmitterIndex + m_poolHandle.emitterID;
+		eID.readParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
+		eID.writeParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
 		m_currentParticleOffset += capacity;
 		++m_currentEmitterIndex;
 		++m_maxEmitters;

@@ -2,7 +2,7 @@
 
 float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 
-    VortexConsts vortex = consts[emitterID].vortex;
+    VortexConsts vortex = consts[readEmitterID].vortex;
     float3 fromCenter = pos - vortex.vortexCenter;
 
     // 회전축에 투영된 벡터를 제거 -> 회전 평면 벡터 (회전축에 수직인 벡터)
@@ -27,11 +27,11 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
     // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= writeCount[emitterID])
+    if (dtID.x >= writeCount[writeEmitterID])
         return;
 
-    Particle p = writeParticles[particleOffset + dtID.x];
-    VortexConsts vortex = consts[emitterID].vortex;
+    Particle p = writeParticles[writeParticleOffset + dtID.x];
+    VortexConsts vortex = consts[readEmitterID].vortex;
 
     // Vortex(소용돌이)        
     // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
@@ -45,8 +45,8 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (abs(vortex.vortexStrength) > 0.001 || abs(currentPull) > 0.001) {
         float3 normalizedAxis = normalize(vortex.vortexAxis);
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
-        p.velocity += vForce * frameConsts[emitterID].dt;
+        p.velocity += vForce * frameConsts[readEmitterID].dt;
 
-        writeParticles[particleOffset + dtID.x].velocity = p.velocity;
+        writeParticles[writeParticleOffset + dtID.x].velocity = p.velocity;
     }
 }

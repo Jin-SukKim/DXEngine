@@ -18,6 +18,16 @@ struct PoolHandle {
 	bool IsActive() const {
 		return particleOffset != UINT_MAX && emitterID != UINT_MAX && systemSlot != UINT_MAX;
 	}
+
+	bool operator==(const PoolHandle& other) {
+		return particleOffset == other.particleOffset
+			&& blockCount == other.blockCount
+			&& emitterID == other.emitterID
+			&& emitterCount == other.emitterCount
+			&& spawnPosOffset == other.spawnPosOffset
+			&& spawnPosBlockCount == other.spawnPosBlockCount
+			&& systemSlot == other.systemSlot;
+	}
 };
 
 struct ParticleMeshConsts {
@@ -50,6 +60,7 @@ public:
 
 	// EmitterID ConstantBuffer 包府
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
+	void UpdateEmitterID(UINT slotIndex, const PoolHandle& next, const UINT& emitterID);
 	void BindEmitterID(UINT slotIndex);
 
 	// MeshConsts 包府
@@ -61,11 +72,17 @@ public:
 	StructuredBuffer<uint32_t>& GetReadCount() { return m_counts[m_bufferIndex]; }
 	StructuredBuffer<uint32_t>& GetWriteCount() { return m_counts[1 - m_bufferIndex]; }
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConsts() { return m_frameConsts; }
+	StructuredBuffer<ParticleConsts>& GetConsts() { return m_consts; }
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
+	std::vector<ConstantBuffer<EmitterID>>& GetEmitterIDs() { return m_emitterIDBuffers; }
+	std::vector<ConstantBuffer<ParticleMeshConsts>>& GetMeshConsts() { return m_meshConstsBuffers; }
 
+	bool IsDefragStarted() const { return m_startDefrag; }
+	void FinishDefrag() { m_startDefrag = false; }
+	UINT GetBlockSize() { return m_blockSize; }
 private:
 	// System Slot 包府
 	UINT AllocateSystemSlot();
@@ -101,6 +118,8 @@ private:
 	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
 	std::vector<bool> m_systemSlotTable;
+
+	bool m_startDefrag = false;
 };
 
 }

@@ -223,7 +223,80 @@ namespace DE {
 
 	void ParticleMemoryPool::PlanDefragmentation(const std::vector<ParticleSystem*>& activeSystems)
 	{
-		// TODO: Defragmentation 구현
+		// 1. 모든 관리 테이블 초기화 (싹 비우기)
+		std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
+		std::fill(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), false);
+		std::fill(m_spawnPosBlockTable.begin(), m_spawnPosBlockTable.end(), false);
+		std::fill(m_systemSlotTable.begin(), m_systemSlotTable.end(), false);
+
+		// 2. 커서(Cursor) 초기화 - 모두 0번지부터 다시 시작
+		UINT particleCursor = 0; // 블록 단위
+		UINT emitterCursor = 0;  // 개수 단위
+		UINT spawnPosCursor = 0; // 블록 단위
+		UINT systemCursor = 0;   // 개수 단위
+
+		// 3. 활성 시스템 순회 및 재배치 (Compaction)
+		for (auto* system : activeSystems)
+		{
+			if (!system) continue;
+
+			// 현재 시스템이 가지고 있는 핸들(정보) 가져오기
+			PoolHandle oldHandle = system->GetPoolHandle();
+			if (!oldHandle.IsActive()) continue;
+
+			PoolHandle newHandle;
+
+			// --- A. Particle Offset 재할당 (Block 단위) ---
+			newHandle.blockCount = oldHandle.blockCount;
+			newHandle.particleOffset = particleCursor * m_blockSize;
+
+			// 테이블 마킹
+			for (UINT i = 0; i < newHandle.blockCount; ++i) {
+				if (particleCursor + i < m_particleBlockTable.size())
+					m_particleBlockTable[particleCursor + i] = true;
+			}
+			particleCursor += newHandle.blockCount;
+
+			// --- B. Emitter ID 재할당 (Slot 단위) ---
+			newHandle.emitterCount = oldHandle.emitterCount;
+			newHandle.emitterID = emitterCursor;
+
+			for (UINT i = 0; i < newHandle.emitterCount; ++i) {
+				if (emitterCursor + i < m_emitterSlotTable.size())
+					m_emitterSlotTable[emitterCursor + i] = true;
+			}
+			emitterCursor += newHandle.emitterCount;
+
+			// --- C. SpawnPos Offset 재할당 (Block 단위) ---
+			if (oldHandle.spawnPosOffset != UINT_MAX)
+			{
+				newHandle.spawnPosBlockCount = oldHandle.spawnPosBlockCount;
+				newHandle.spawnPosOffset = spawnPosCursor * m_blockSize;
+
+				for (UINT i = 0; i < newHandle.spawnPosBlockCount; ++i) {
+					if (spawnPosCursor + i < m_spawnPosBlockTable.size())
+						m_spawnPosBlockTable[spawnPosCursor + i] = true;
+				}
+				spawnPosCursor += newHandle.spawnPosBlockCount;
+			}
+			else
+			{
+				newHandle.spawnPosOffset = UINT_MAX;
+				newHandle.spawnPosBlockCount = 0;
+			}
+
+			// --- D. System Slot 재할당 (Slot 단위) ---
+			newHandle.systemSlot = systemCursor;
+			if (systemCursor < m_systemSlotTable.size())
+				m_systemSlotTable[systemCursor] = true;
+			systemCursor++;
+
+			// 4. 시스템에게 "다음 프레임부터 이 핸들을 써라"고 통보
+			// (이 함수는 다음 프레임 Update 전까지 m_nextHandle에 저장해둠)
+			system->SetNextPoolHandle(newHandle);
+		}
+
+		m_startDefrag = true;
 	}
 
 	void ParticleMemoryPool::BindCompute()
@@ -348,6 +421,16 @@ namespace DE {
 		if (slotIndex >= m_maxEmitters) return;
 		
 		m_emitterIDBuffers[slotIndex].SetCpuData(data);
+		m_emitterIDBuffers[slotIndex].Upload();
+	}
+
+	void ParticleMemoryPool::UpdateEmitterID(UINT slotIndex, const PoolHandle& next, const UINT& emitterID)
+	{
+		if (slotIndex >= m_maxEmitters) return;
+
+		m_emitterIDBuffers[slotIndex].GetCpu().writeEmitterID = next.emitterID + emitterID;
+		m_emitterIDBuffers[slotIndex].GetCpu().writeParticleOffset = next.particleOffset;
+
 		m_emitterIDBuffers[slotIndex].Upload();
 	}
 
