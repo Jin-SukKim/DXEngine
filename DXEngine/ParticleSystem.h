@@ -97,9 +97,6 @@ namespace DE {
 		UINT GetMaxEmitterCount() const { return m_maxEmitters; }
 		void SetPoolHandle(PoolHandle handle) { m_poolHandle = handle; }
 		PoolHandle GetPoolHandle() const { return m_poolHandle; }
-		void SetNextPoolHandle(const PoolHandle& handle) { m_nextHandle = handle; }
-		PoolHandle GetNextPoolHandle() const { return m_nextHandle; }
-		const PoolHandle& GetCurrentHandle() const { return m_poolHandle; }
 
 		const ParticleInitializer& GetInitialData() const { return m_initialData; }
 
@@ -155,11 +152,6 @@ namespace DE {
 		UINT m_indexCount = 0;
 
 		PoolHandle m_poolHandle;
-		PoolHandle m_nextHandle;
-
-		// Defragmentation때 따로 활용
-		UINT m_particleReadOffset = 0;
-		UINT m_particleWriteOffset = 0;
 
 		// 파티클 버퍼 (이중 버퍼링)
 		UINT m_currentEmitterIndex = 0;
