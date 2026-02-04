@@ -42,8 +42,7 @@ namespace DE {
 		, m_currentEmitterIndex(0)
 		, m_maxTotalParticles(0)
 		, m_maxEmitters(0)
-		, m_totalBlockCount(0)
-		, m_isPageTableDirty(true)
+		, m_currentParticleOffset(0)
 	{
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
@@ -57,17 +56,16 @@ namespace DE {
 	void ParticleSystem::Initialize()
 	{
 		m_maxTotalParticles = 0;
-		m_totalBlockCount = 0;
+		m_currentParticleOffset = 0;
 		m_maxEmitters = 0;
 		m_currentEmitterIndex = 0;
 		m_currentSpawnPosOffset = 0;  // 통합된 offset
 		m_spawnPosCache.clear();      // 통합된 캐시
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
-		m_isPageTableDirty = true;
 
 		ParticleInitializer initialData;
-		InitializeCPU(initialData, 1024);
+		InitializeCPU(initialData);
 		UpdateTransform();
 	}
 
@@ -80,16 +78,16 @@ namespace DE {
 	}
 
 	void ParticleSystem::InitializeCPU(
-		ParticleInitializer& initialData, UINT blockSize)
+		ParticleInitializer& initialData)
 	{
 		// 1단계: Main Emitter 처리
 		for (auto& emitter : m_emitters) {
-			ProcessEmitter(emitter.get(), initialData, blockSize);
+			ProcessEmitter(emitter.get(), initialData);
 		}
 
 		// 2단계: SubEmitter 로드 (Main Emitter 처리 후)
 		for (auto& emitter : m_emitters) {
-			LoadSubEmitters(emitter.get(), initialData, blockSize);
+			LoadSubEmitters(emitter.get(), initialData);
 		}
 
 		m_initialData = initialData;
@@ -97,7 +95,7 @@ namespace DE {
 
 	void ParticleSystem::ProcessEmitter(
 		ParticleEmitter* emitter,
-		ParticleInitializer& initialData, UINT blockSize)
+		ParticleInitializer& initialData)
 	{
 		ParticleConsts pConsts = {};
 		ParticleFrameConsts pfConsts = {};
@@ -105,6 +103,8 @@ namespace DE {
 		EmitterID eID = { 0, 0, 0, 0 };
 
 		eID.emitterID = m_currentEmitterIndex;
+		eID.readParticleOffset = m_currentParticleOffset;
+		eID.writeParticleOffset = m_currentParticleOffset;
 
 		emitter->SetOwner(this);
 		emitter->SetMemoryInfo(m_currentEmitterIndex);
@@ -119,12 +119,10 @@ namespace DE {
 
 		UINT capacity = pfConsts.maxParticles;
 
-		eID.blockCount = (capacity + blockSize - 1) / blockSize;
-
+		m_currentParticleOffset += capacity;
 		++m_currentEmitterIndex;
 		++m_maxEmitters;
 		m_maxTotalParticles += capacity;
-		m_totalBlockCount += eID.blockCount;
 
 		initialData.consts.push_back(pConsts);
 		initialData.frameConsts.push_back(pfConsts);
@@ -134,7 +132,7 @@ namespace DE {
 
 	void ParticleSystem::LoadSubEmitters(
 		ParticleEmitter* emitter,
-		ParticleInitializer& initialData, UINT blockSize)
+		ParticleInitializer& initialData)
 	{
 		// 먼저 현재 emitter의 SubEmitter 경로들을 복사 (iterator 무효화 방지)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
@@ -153,10 +151,10 @@ namespace DE {
 			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
 
 			// SubEmitter 초기화
-			ProcessEmitter(rawPtr, initialData, blockSize);
+			ProcessEmitter(rawPtr, initialData);
 
 			// SubEmitter의 SubEmitter도 재귀적으로 로드
-			LoadSubEmitters(rawPtr, initialData, blockSize);
+			LoadSubEmitters(rawPtr, initialData);
 		}
 	}
 

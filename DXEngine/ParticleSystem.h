@@ -35,7 +35,7 @@ namespace DE {
 
 		void Initialize() override;
 		void Initialize(ParticleInitializer& initialData);
-		void InitializeCPU(ParticleInitializer& initialData, UINT blockSize);
+		void InitializeCPU(ParticleInitializer& initialData);
 		void InitializeGPU(ParticleInitializer& initialData,
 			IndirectArgsBuffer<DispatchArgs>& m_dispatchArgs,
 			IndirectArgsBuffer<DrawInstancedArgs>& m_billboardArgsBuffer,
@@ -54,7 +54,7 @@ namespace DE {
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		void ProcessEmitter(
 			ParticleEmitter* emitter,
-			ParticleInitializer& initialData, UINT blockSize);
+			ParticleInitializer& initialData);
 
 		// [제어 함수]
 		void Play();
@@ -99,17 +99,6 @@ namespace DE {
 		PoolHandle GetPoolHandle() const { return m_poolHandle; }
 
 		const ParticleInitializer& GetInitialData() const { return m_initialData; }
-
-		void SetPageTableOffset(UINT offset) {
-			if (m_pageTableOffset != offset) {
-				m_pageTableOffset = offset;
-				m_isPageTableDirty = true; // 값이 바뀔 때만 Dirty 설정
-			}
-		}
-		bool IsPageTableDirty() const { return m_isPageTableDirty; }
-		void ClearPageTableDirty() { m_isPageTableDirty = false; }
-		UINT GetPageTableOffset() const { return m_pageTableOffset; }
-		UINT GetTotalBlockCount() const { return m_totalBlockCount; }
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
@@ -120,7 +109,7 @@ namespace DE {
 		// SubEmitter 처리 (단순화)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
-			ParticleInitializer& initialData, UINT blockSize);
+			ParticleInitializer& initialData);
 		void ActivateSubEmitter(ParticleEmitter* subEmitter, const Vector3& position);
 
 	private:
@@ -154,12 +143,10 @@ namespace DE {
 		PoolHandle m_poolHandle;
 
 		// 파티클 버퍼 (이중 버퍼링)
+		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
-		UINT m_pageTableOffset = 0;
-		UINT m_totalBlockCount = 0;
-		bool m_isPageTableDirty = true;
 
 		// 통합된 SpawnPosition 관리
 		UINT m_currentSpawnPosOffset = 0;

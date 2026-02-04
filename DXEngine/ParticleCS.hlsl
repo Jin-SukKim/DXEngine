@@ -7,8 +7,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (dtID.x >= readCount[emitterID])
         return;
     
-    uint index = GetPageTableIndex(dtID.x);
-    Particle p = readParticles[index];
+    Particle p = readParticles[readParticleOffset + dtID.x];
     
     float dt = frameConsts[emitterID].dt;
     if (p.life - dt > 0.f) {
@@ -43,7 +42,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         // 결과 저장
         uint writeIndex;
         InterlockedAdd(writeCount[emitterID], 1, writeIndex);
-        writeIndex = GetPageTableIndex(writeIndex);
-        writeParticles[writeIndex] = p;
+        writeParticles[writeParticleOffset + writeIndex] = p;
     }
 }

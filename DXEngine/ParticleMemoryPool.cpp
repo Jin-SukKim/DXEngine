@@ -19,8 +19,6 @@ namespace DE {
 		m_spawnPosBlockTable.assign(blockCount, false);
 		m_systemSlotTable.assign(maxSystems, false);
 
-		m_pageTable.Initialize(device, blockCount);
-
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
 			m_counts[i].Initialize(device, maxEmitters);
@@ -75,12 +73,11 @@ namespace DE {
 		}
 	}
 
-	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleBlockCount, UINT reqEmitterCount, UINT reqSpawnPosCount)
+	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount)
 	{
 		PoolHandle handle;
 
-		if (reqParticleBlockCount >= m_particleBlockTable.size() ||
-			reqEmitterCount >= m_emitterSlotTable.size())
+		if (reqEmitterCount >= m_emitterSlotTable.size())
 			return handle;
 
 		// 1. System Slot 할당
@@ -90,15 +87,27 @@ namespace DE {
 		}
 
 		// 2. Particle Block 할당
-		std::vector<uint32_t> particleIndices;
+		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
+		UINT foundBlock = UINT_MAX;
+		UINT consecutive = 0;
 
 		for (size_t i = 0; i < m_particleBlockTable.size(); ++i) {
 			if (!m_particleBlockTable[i]) {
-				particleIndices.push_back(i);
-				if (particleIndices.size() == reqParticleBlockCount) {
+				if (consecutive == 0) {
+					foundBlock = static_cast<UINT>(i);
+				}
+				if (++consecutive == neededBlocks) {
 					break;
 				}
 			}
+			else {
+				consecutive = 0;
+				foundBlock = UINT_MAX;
+			}
+		}
+
+		if (consecutive < neededBlocks) {
+			foundBlock = UINT_MAX;
 		}
 
 		// 3. Emitter Slot 할당
@@ -119,7 +128,7 @@ namespace DE {
 		
 		if (reqSpawnPosCount > 0) {
 			neededSpawnPosBlocks = (reqSpawnPosCount + m_blockSize - 1) / m_blockSize;
-			UINT consecutive = 0;
+			consecutive = 0;
 			UINT spawnStart = UINT_MAX;
 
 			for (size_t i = 0; i < m_spawnPosBlockTable.size(); ++i) {
@@ -140,14 +149,14 @@ namespace DE {
 		}
 
 		// 할당 성공 여부 확인
-		bool particleOk = (particleIndices.size() == reqParticleBlockCount);
+		bool particleOk = (foundBlock != UINT_MAX);
 		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
 		if (particleOk && emitterOk && spawnPosOk) {
 			// Particle blocks 마킹
-			for (UINT i = 0; i < reqParticleBlockCount; ++i)
-				m_particleBlockTable[particleIndices[i]] = true;
+			for (UINT i = 0; i < neededBlocks; ++i)
+				m_particleBlockTable[foundBlock + i] = true;
 			
 			// Emitter slots 마킹
 			for (UINT i = 0; i < reqEmitterCount; ++i)
@@ -157,8 +166,8 @@ namespace DE {
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
-			handle.particleIndices = particleIndices;
-			handle.blockCount = reqParticleBlockCount;
+			handle.particleOffset = foundBlock * m_blockSize;
+			handle.blockCount = neededBlocks;
 			handle.emitterIDs = IDs;
 			handle.emitterCount = reqEmitterCount;
 			
@@ -184,9 +193,10 @@ namespace DE {
 		FreeSystemSlot(handle.systemSlot);
 
 		// Particle blocks 해제
+		size_t startBlock = handle.particleOffset / m_blockSize;
 		for (size_t i = 0; i < handle.blockCount; ++i) {
-			if (handle.particleIndices[i] < m_particleBlockTable.size()) {
-				m_particleBlockTable[handle.particleIndices[i]] = false;
+			if (startBlock + i < m_particleBlockTable.size()) {
+				m_particleBlockTable[startBlock + i] = false;
 			}
 		}
 
@@ -197,7 +207,6 @@ namespace DE {
 		}
 
 		// SpawnPos blocks 해제
-		size_t startBlock;
 		if (handle.spawnPosOffset != UINT_MAX) {
 			startBlock = handle.spawnPosOffset / m_blockSize;
 			for (size_t i = 0; i < handle.spawnPosBlockCount; ++i) {
@@ -225,7 +234,6 @@ namespace DE {
 			m_spawnPositions.GetSRV()
 		};
 		context->CSSetShaderResources(6, 5, srvs);
-		context->CSSetShaderResources(16, 1, m_pageTable.GetAddressOfSRV());
 	}
 
 	void ParticleMemoryPool::UnbindCompute()
@@ -237,8 +245,6 @@ namespace DE {
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(6, 5, srvs);
-		ID3D11ShaderResourceView* nullSRV = nullptr;
-		context->CSSetShaderResources(16, 1, &nullSRV);
 	}
 	
 	void ParticleMemoryPool::BindRender()
@@ -254,10 +260,6 @@ namespace DE {
 		context->CSSetShaderResources(6, 4, srvs);
 		context->VSSetShaderResources(6, 4, srvs);
 		context->PSSetShaderResources(6, 4, srvs);
-
-		context->CSSetShaderResources(16, 1, m_pageTable.GetAddressOfSRV());
-		context->VSSetShaderResources(16, 1, m_pageTable.GetAddressOfSRV());
-		context->PSSetShaderResources(16, 1, m_pageTable.GetAddressOfSRV());
 	}
 
 	void ParticleMemoryPool::UnbindRender()
@@ -268,11 +270,6 @@ namespace DE {
 		context->CSSetShaderResources(6, 4, srvs);
 		context->VSSetShaderResources(6, 4, srvs);
 		context->PSSetShaderResources(6, 4, srvs);
-
-		ID3D11ShaderResourceView* nullSRV = nullptr;
-		context->CSSetShaderResources(16, 1, &nullSRV);
-		context->VSSetShaderResources(16, 1, &nullSRV);
-		context->PSSetShaderResources(16, 1, &nullSRV);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()
@@ -373,17 +370,6 @@ namespace DE {
 		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
 		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
 		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
-	}
-
-	void ParticleMemoryPool::UploadPageTable(const std::vector<UINT>& pageTableData)
-	{
-		if (pageTableData.empty()) return;
-
-		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
-
-		// CPU 벡터를 GPU 버퍼로 전송
-		m_pageTable.SetData(pageTableData);
-		m_pageTable.Upload(context);
 	}
 
 	void ParticleMemoryPool::UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)

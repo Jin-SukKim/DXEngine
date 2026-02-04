@@ -211,6 +211,6 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // 파티클 추가
     uint index;
     InterlockedAdd(writeCount[emitterID], 1, index);
-    index = GetPageTableIndex(index);
-    writeParticles[index] = p;
+
+    writeParticles[writeParticleOffset + index] = p;
 }

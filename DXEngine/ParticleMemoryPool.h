@@ -7,7 +7,7 @@ namespace DE {
 	class ParticleSystem;
 
 struct PoolHandle {
-	std::vector<UINT> particleIndices;
+	UINT particleOffset = UINT_MAX;
 	UINT blockCount = 0;
 	std::vector<UINT> emitterIDs;
 	UINT emitterCount = 0;
@@ -16,11 +16,11 @@ struct PoolHandle {
 	UINT systemSlot = UINT_MAX;
 
 	bool IsActive() const {
-		return !particleIndices.empty() && !emitterIDs.empty() && systemSlot != UINT_MAX;
+		return particleOffset != UINT_MAX && !emitterIDs.empty() && systemSlot != UINT_MAX;
 	}
 
 	bool operator==(const PoolHandle& other) {
-		return particleIndices == other.particleIndices
+		return particleOffset == other.particleOffset
 			&& blockCount == other.blockCount
 			&& emitterCount == other.emitterCount
 			&& spawnPosOffset == other.spawnPosOffset
@@ -42,7 +42,7 @@ class ParticleMemoryPool
 public:
 	void Initialize(UINT maxParticles = 1000000, UINT maxEmitters = 100, UINT maxSystems = 100);
 
-	PoolHandle Allocate(UINT reqParticleBlockCount, UINT reqEmitterCount, UINT reqSpawnPosCount);
+	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount);
 	void Free(const PoolHandle& handle);
 	
 	void SwapBuffer() { m_bufferIndex = 1 - m_bufferIndex; }
@@ -52,7 +52,6 @@ public:
 	void UnbindRender();
 	void ClearWriteCount();
 
-	void UploadPageTable(const std::vector<UINT>& pageTableData);
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
 	void UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data);
 	void UpdateArgs();
@@ -61,7 +60,7 @@ public:
 	// EmitterID ConstantBuffer 包府
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
 	void BindEmitterID(UINT slotIndex);
-
+	
 	// MeshConsts 包府
 	void UploadMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
 	void BindMeshConsts(UINT systemSlot);
@@ -120,7 +119,6 @@ private:
 	UINT m_maxSystems = 100;
 	UINT m_blockCount = 0;
 
-	StructuredBuffer<uint32_t> m_pageTable;
 	StructuredBuffer<Particle> m_particles[2];
 	StructuredBuffer<uint32_t> m_counts[2];
 	UINT m_bufferIndex = 0;

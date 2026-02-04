@@ -30,8 +30,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (dtID.x >= writeCount[emitterID])
         return;
 
-    uint index = GetPageTableIndex(dtID.x);
-    Particle p = writeParticles[index];
+    Particle p = writeParticles[writeParticleOffset + dtID.x];
     VortexConsts vortex = consts[emitterID].vortex;
 
     // Vortex(소용돌이)        
@@ -48,6 +47,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
         p.velocity += vForce * frameConsts[emitterID].dt;
 
-        writeParticles[index].velocity = p.velocity;
+        writeParticles[writeParticleOffset + dtID.x].velocity = p.velocity;
     }
 }

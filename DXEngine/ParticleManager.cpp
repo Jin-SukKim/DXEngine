@@ -12,38 +12,6 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		std::vector<uint32_t> pageTableData;
-		pageTableData.reserve(m_memoryPool->GetBlockCount());
-
-		UINT maxPageTableSize = m_memoryPool->GetBlockCount();
-		for (auto* system : m_activeSystems) {
-			if (!system)
-				continue;
-
-			UINT currentOffset = static_cast<UINT>(pageTableData.size());
-			system->SetPageTableOffset(currentOffset);
-
-			// Block Index LIst 추가
-			const std::vector<UINT>& blocks = system->GetPoolHandle().particleIndices;
-			
-			// [안전 장치] 버퍼 용량을 초과하면 경고하고 중단 (Crash 방지)
-			if (pageTableData.size() + blocks.size() > maxPageTableSize) {
-				std::cout << "Global Page Table Overflow! Too many active particles." << std::endl;
-				break; // 더 이상 추가하지 않음
-			}
-			
-			pageTableData.insert(pageTableData.end(), blocks.begin(), blocks.end());
-
-			// EmitterID 업로드 (Manager에서 처리)
-			if (system->IsPageTableDirty()) {
-				UploadEmitterIDs(system, system->GetInitialData());
-				system->ClearPageTableDirty();
-			}
-		}
-
-		if (!pageTableData.empty())
-			m_memoryPool->UploadPageTable(pageTableData);
-
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
 
@@ -125,13 +93,13 @@ namespace DE {
 		auto cloned = std::make_unique<ParticleSystem>(*prototype);
 
 		ParticleInitializer initialData;
-		cloned->InitializeCPU(initialData, m_memoryPool->GetBlockSize());
+		cloned->InitializeCPU(initialData);
 
 		UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
-		UINT blockCount = cloned->GetTotalBlockCount();
+		UINT particleCount = cloned->GetTotalParticleCount();
 		UINT emitterCount = cloned->GetMaxEmitterCount();
 		
-		PoolHandle handle = RequestAllocation(blockCount, emitterCount, spawnPosCount);
+		PoolHandle handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
 		
 		// 할당 실패 시 대기 큐에 추가하고 nullptr 반환
 		if (!handle.IsActive()) {
@@ -149,7 +117,8 @@ namespace DE {
 			m_memoryPool->GetDispatchArgs(),
 			m_memoryPool->GetBillboardArgs(),
 			m_memoryPool->GetMeshArgs());
-			
+
+		UploadEmitterIDs(cloned.get(), cloned->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
@@ -230,18 +199,6 @@ namespace DE {
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
 				std::vector<std::string> blockOwners(totalBlocks, "Free");
 
-				for (auto* system : m_activeSystems) {
-					if (!system) continue;
-					const auto& indices = system->GetPoolHandle().particleIndices;
-					std::string name = std::string(system->GetName().begin(), system->GetName().end()); // wstring -> string
-
-					for (UINT blockIdx : indices) {
-						if (blockIdx < totalBlocks) {
-							blockOwners[blockIdx] = name;
-						}
-					}
-				}
-
 				const auto& table = m_memoryPool->GetParticleBlockTable();
 				int columns = 32; // 한 줄에 보여줄 블록 개수
 				float cellSize = 10.0f;
@@ -303,13 +260,12 @@ namespace DE {
 	{
 		const PoolHandle& handle = system->GetPoolHandle();
 		
-		UINT blockCount = 0;
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
 			EmitterID eID = initialData.emitterIDs[i];
 			
 			eID.emitterID = handle.emitterIDs[i];
-			eID.pageTableOffset = system->GetPageTableOffset() + blockCount;
-			blockCount += eID.blockCount;
+			eID.readParticleOffset = handle.particleOffset;
+			eID.writeParticleOffset = handle.particleOffset;
 			
 			// spawnPos를 사용하는 emitter만 오프셋 적용
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
