@@ -15,7 +15,7 @@ namespace DE {
 		// Page Table 20% 이상 단편화되면 재구성
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			// ★ 재구성 시간 측정
+			//  재구성 시간 측정
 			auto start = std::chrono::high_resolution_clock::now();
 			
 			m_memoryPool->RebuildPageTable(m_activeSystems);
@@ -217,7 +217,7 @@ namespace DE {
 				// Page Table 크기 (Paging 방식)
 				ImGui::Text("Page Table Used: %d entries", m_memoryPool->GetPageTableUsedSize());
 			}
-			// ★ 성능 메트릭 섹션 추가
+			//  성능 메트릭 섹션 추가
 			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::Text("Rebuild Count: %d", m_rebuildCount);

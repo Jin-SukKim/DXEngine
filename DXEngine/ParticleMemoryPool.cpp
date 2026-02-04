@@ -143,6 +143,8 @@ namespace DE {
 			for (UINT i = 0; i < reqParticleBlockCount; ++i)
 				m_particleBlockTable[particleIndices[i]] = true;
 			
+			m_activeBlockCount += reqParticleBlockCount;  //  캐싱 업데이트
+			
 			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[IDs[i]] = true;
 			
@@ -178,6 +180,8 @@ namespace DE {
 				m_particleBlockTable[handle.particleIndices[i]] = false;
 			}
 		}
+		
+		m_activeBlockCount -= handle.blockCount;  //  캐싱 업데이트
 
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
 			if (handle.emitterIDs[i] < m_emitterSlotTable.size())
@@ -399,6 +403,8 @@ namespace DE {
 
 	void ParticleMemoryPool::RebuildPageTable(const std::vector<ParticleSystem*>& activeSystems)
 	{
+		// 변경된 부분만 추적
+		UINT oldSize = m_pageTableUsedSize;
 		m_pageTableUsedSize = 0;
 		
 		for (auto* system : activeSystems) {
@@ -407,36 +413,32 @@ namespace DE {
 			const auto& handle = system->GetPoolHandle();
 			UINT newOffset = m_pageTableUsedSize;
 			
-			for (UINT blockIdx : handle.particleIndices) {
-				m_pageTableCPU[m_pageTableUsedSize++] = blockIdx;
-			}
+			// memcpy로 블록 복사 (루프 대신)
+			std::memcpy(&m_pageTableCPU[m_pageTableUsedSize], 
+						handle.particleIndices.data(),
+						handle.particleIndices.size() * sizeof(UINT));
+			m_pageTableUsedSize += static_cast<UINT>(handle.particleIndices.size());
 			
 			// 오프셋 업데이트
 			system->SetPageTableOffset(newOffset);
 		}
 		
-		// 전체 업로드
+		// 변경된 범위만 업로드
 		if (m_pageTableUsedSize > 0) {
 			auto context = GET_SINGLE(RenderBase)->GetContext().Get();
-			m_pageTable.SetData(std::vector<UINT>(m_pageTableCPU.begin(), 
-				m_pageTableCPU.begin() + m_pageTableUsedSize));
-			m_pageTable.Upload(context);
+			D3D11_BOX box = { 0, 0, 0, m_pageTableUsedSize * sizeof(UINT), 1, 1 };
+			context->UpdateSubresource(m_pageTable.GetBuffer(), 0, &box, 
+				m_pageTableCPU.data(), 0, 0);
 		}
 	}
 
 	float ParticleMemoryPool::GetFragmentationRatio() const
 	{
 		if (m_pageTableUsedSize == 0) return 0.0f;
+		if (m_activeBlockCount == 0) return 1.0f;
+		if (m_pageTableUsedSize <= m_activeBlockCount) return 0.0f;
 		
-		UINT totalActiveBlocks = 0;
-		for (bool used : m_particleBlockTable) {
-			if (used) ++totalActiveBlocks;
-		}
-		
-		if (totalActiveBlocks == 0) return 1.0f;  // 모두 삭제됨
-		if (m_pageTableUsedSize <= totalActiveBlocks) return 0.0f;
-		
-		UINT gapEntries = m_pageTableUsedSize - totalActiveBlocks;
+		UINT gapEntries = m_pageTableUsedSize - m_activeBlockCount;
 		return static_cast<float>(gapEntries) / m_pageTableUsedSize;
 	}
 }

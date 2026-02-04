@@ -138,6 +138,9 @@ private:
 	// PageTable 관리 (간소화)
 	std::vector<UINT> m_pageTableCPU;
 	UINT m_pageTableUsedSize = 0;
+
+	// private 멤버 추가
+	UINT m_activeBlockCount = 0;  // 캐싱된 활성 블록 수
 };
 
 }
