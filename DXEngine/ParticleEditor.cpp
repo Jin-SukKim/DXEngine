@@ -145,7 +145,7 @@ namespace DE {
 				randomDeleteTimer = 0.0f;
 
 				// 한 번에 삭제할 개수 결정 (예: 3개 ~ 8개 사이 랜덤)
-				int deleteCount = (rand() % 10) + 3;
+				int deleteCount = (rand() % 100) + 3;
 
 				for (int i = 0; i < deleteCount; ++i)
 				{
