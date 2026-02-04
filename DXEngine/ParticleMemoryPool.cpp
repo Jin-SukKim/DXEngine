@@ -140,8 +140,8 @@ namespace DE {
 		}
 
 		// 할당 성공 여부 확인
-		bool particleOk = !particleIndices.empty();
-		bool emitterOk = !IDs.empty();
+		bool particleOk = (particleIndices.size() == reqParticleBlockCount);
+		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
 		if (particleOk && emitterOk && spawnPosOk) {
