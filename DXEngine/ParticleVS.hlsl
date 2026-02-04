@@ -31,7 +31,8 @@ GSInput main(uint vertexID : SV_VertexID)
 {
     RenderConsts render = consts[emitterID].render;
     uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
-    Particle p = readParticles[readParticleOffset + particleIdx];
+    particleIdx = GetPageTableIndex(particleIdx);
+    Particle p = readParticles[particleIdx];
 
     GSInput output;
 

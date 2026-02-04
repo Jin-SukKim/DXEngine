@@ -47,9 +47,6 @@ public:
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
-	void ProcessWaitingQueue();
-	void CompactParticleOffset();
-	void FinishDefragmentation();
 
 private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
@@ -57,8 +54,6 @@ private:
 	std::vector<ParticleSystem*> m_activeSystems;
 
 	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
-	std::queue<PendingSystem> m_waitForSpawn;
-	bool m_needCompact = false;
 };
 
 }

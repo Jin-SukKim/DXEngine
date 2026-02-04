@@ -39,10 +39,11 @@ namespace DE {
 		, m_vertexCount(other.m_vertexCount)
 		, m_indexCount(other.m_indexCount)
 		, m_owner(nullptr)
-		, m_currentParticleOffset(0)
 		, m_currentEmitterIndex(0)
 		, m_maxTotalParticles(0)
 		, m_maxEmitters(0)
+		, m_totalBlockCount(0)
+		, m_isPageTableDirty(true)
 	{
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
@@ -56,16 +57,17 @@ namespace DE {
 	void ParticleSystem::Initialize()
 	{
 		m_maxTotalParticles = 0;
+		m_totalBlockCount = 0;
 		m_maxEmitters = 0;
-		m_currentParticleOffset = 0;
 		m_currentEmitterIndex = 0;
 		m_currentSpawnPosOffset = 0;  // 통합된 offset
 		m_spawnPosCache.clear();      // 통합된 캐시
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
+		m_isPageTableDirty = true;
 
 		ParticleInitializer initialData;
-		InitializeCPU(initialData);
+		InitializeCPU(initialData, 1024);
 		UpdateTransform();
 	}
 
@@ -78,16 +80,16 @@ namespace DE {
 	}
 
 	void ParticleSystem::InitializeCPU(
-		ParticleInitializer& initialData)
+		ParticleInitializer& initialData, UINT blockSize)
 	{
 		// 1단계: Main Emitter 처리
 		for (auto& emitter : m_emitters) {
-			ProcessEmitter(emitter.get(), initialData);
+			ProcessEmitter(emitter.get(), initialData, blockSize);
 		}
 
 		// 2단계: SubEmitter 로드 (Main Emitter 처리 후)
 		for (auto& emitter : m_emitters) {
-			LoadSubEmitters(emitter.get(), initialData);
+			LoadSubEmitters(emitter.get(), initialData, blockSize);
 		}
 
 		m_initialData = initialData;
@@ -95,7 +97,7 @@ namespace DE {
 
 	void ParticleSystem::ProcessEmitter(
 		ParticleEmitter* emitter,
-		ParticleInitializer& initialData)
+		ParticleInitializer& initialData, UINT blockSize)
 	{
 		ParticleConsts pConsts = {};
 		ParticleFrameConsts pfConsts = {};
@@ -103,12 +105,9 @@ namespace DE {
 		EmitterID eID = { 0, 0, 0, 0 };
 
 		eID.emitterID = m_currentEmitterIndex;
-		eID.emitterID = m_currentEmitterIndex;
-		eID.readParticleOffset = m_currentParticleOffset;
-		eID.writeParticleOffset = m_currentParticleOffset;
 
 		emitter->SetOwner(this);
-		emitter->SetMemoryInfo(m_currentParticleOffset, m_currentEmitterIndex);
+		emitter->SetMemoryInfo(m_currentEmitterIndex);
 		emitter->Initialize(pConsts, pfConsts, pMeshArgs);
 
 		emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
@@ -119,10 +118,13 @@ namespace DE {
 		RegisterSpawnPositions(emitter, initialData.spawnPositions, pConsts, eID);
 
 		UINT capacity = pfConsts.maxParticles;
-		m_currentParticleOffset += capacity;
+
+		eID.blockCount = (capacity + blockSize - 1) / blockSize;
+
 		++m_currentEmitterIndex;
 		++m_maxEmitters;
 		m_maxTotalParticles += capacity;
+		m_totalBlockCount += eID.blockCount;
 
 		initialData.consts.push_back(pConsts);
 		initialData.frameConsts.push_back(pfConsts);
@@ -132,7 +134,7 @@ namespace DE {
 
 	void ParticleSystem::LoadSubEmitters(
 		ParticleEmitter* emitter,
-		ParticleInitializer& initialData)
+		ParticleInitializer& initialData, UINT blockSize)
 	{
 		// 먼저 현재 emitter의 SubEmitter 경로들을 복사 (iterator 무효화 방지)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
@@ -151,10 +153,10 @@ namespace DE {
 			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
 
 			// SubEmitter 초기화
-			ProcessEmitter(rawPtr, initialData);
+			ProcessEmitter(rawPtr, initialData, blockSize);
 
 			// SubEmitter의 SubEmitter도 재귀적으로 로드
-			LoadSubEmitters(rawPtr, initialData);
+			LoadSubEmitters(rawPtr, initialData, blockSize);
 		}
 	}
 
@@ -520,17 +522,6 @@ namespace DE {
 
 		// Pool에 업로드 (System 인덱스 사용)
 		ParticleManager::Get().UploadMeshConsts(m_poolHandle.systemSlot, meshConsts);
-	}
-
-	void ParticleSystem::RegisterEmitter(ParticleEmitter* emitter, uint32_t capacity, EmitterID& eID)
-	{
-		eID.emitterID = m_poolHandle.emitterIDs[m_currentEmitterIndex];
-		eID.readParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
-		eID.writeParticleOffset = m_currentParticleOffset + m_poolHandle.particleOffset;
-		m_currentParticleOffset += capacity;
-		++m_currentEmitterIndex;
-		++m_maxEmitters;
-		m_maxTotalParticles += capacity;
 	}
 
 	void ParticleSystem::RegisterSpawnPositions(

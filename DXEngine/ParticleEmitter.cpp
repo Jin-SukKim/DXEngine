@@ -50,7 +50,6 @@ namespace DE {
 		, m_spawnOffset(Vector3(0.f))
 		, m_initialSpawnPos(other.m_initialSpawnPos)
 		, m_ownerSystem(nullptr)
-		, m_poolOffset(0)
 		, m_emitterID(0)
 	{
 		for (const auto& mod : other.m_modules) {
@@ -276,9 +275,8 @@ namespace DE {
 	{
 		return m_name;
 	}
-	void ParticleEmitter::SetMemoryInfo(UINT offset, UINT index)
+	void ParticleEmitter::SetMemoryInfo(UINT index)
 	{
-		m_poolOffset = offset;
 		m_emitterID = index;
 	}
 	void ParticleEmitter::SetOwner(ParticleSystem* system)

@@ -14,8 +14,8 @@ namespace DE {
 	};
 
     struct EmitterID {
-        UINT readParticleOffset;
-        UINT writeParticleOffset;
+        UINT pageTableOffset;
+        UINT blockCount;
         UINT emitterID;
         UINT spawnPosOffset;  // bakedOffset + customOffset ХыЧе
     };

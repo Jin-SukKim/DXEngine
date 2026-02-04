@@ -83,7 +83,7 @@ namespace DE {
 		void SetSpawnOffset(const Vector3& offset);
 		const std::wstring& GetName() const;
 
-		void SetMemoryInfo(UINT offset, UINT index);
+		void SetMemoryInfo(UINT index);
 		void SetOwner(ParticleSystem* system);
 		UINT GetEmitterID() { return m_emitterID; };
 		void SetName(std::wstring name) { m_name = name; }
@@ -93,7 +93,6 @@ namespace DE {
 		std::wstring m_name;
 
 		ParticleSystem* m_ownerSystem;
-		UINT m_poolOffset = 0;
 		UINT m_emitterID = 0;
 
 		std::vector<std::unique_ptr<ParticleModule>> m_modules;

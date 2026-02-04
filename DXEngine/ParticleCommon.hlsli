@@ -1,6 +1,8 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
+static const uint BLOCK_SIZE = 1024;
+
 struct Particle
 {
     float3 position;
@@ -19,15 +21,38 @@ RWStructuredBuffer<uint> writeCount : register(u7);
 StructuredBuffer<Particle> readParticles : register(t6);
 StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
+StructuredBuffer<uint> pageTable : register(t16);
 
 cbuffer EmitterID : register(b5)
 {
-    uint readParticleOffset;
-    uint writeParticleOffset;
+    uint pageTableOffset;
+    uint blockCount;
     uint emitterID;
     uint spawnPosOffset;  // bakedOffset + customOffset 통합
 };
 
+uint GetPageTableIndex(uint local) {
+    // ====================================================
+    // [페이징 주소 변환]
+    // ====================================================
+
+    // 나는 몇 번째 블록에 속해 있는가?
+    // 예: ID 1500, BlockSize 1024 -> 1번째 블록 (인덱스 1)
+    uint logicalBlockIdx = local / BLOCK_SIZE;
+
+    // 블록 내에서 나는 몇 번째 칸인가?
+    // 예: ID 1500 -> 1024개 빼고 476번째 칸
+    uint offsetInBlock = local % BLOCK_SIZE;
+
+    // [지도 조회] 전역 테이블에서 '진짜 물리 블록 번호'를 찾아온다.
+    // 위치 = 내 시스템의 시작점(PageTableOffset) + 나의 블록 순서(logicalBlockIdx)
+    uint physicalBlockID = pageTable[pageTableOffset + logicalBlockIdx];
+
+    // 최종 물리 메모리 주소 계산
+    // 진짜 블록 위치로 가서(physicalBlockID * BlockSize) + 칸만큼 이동(offsetInBlock)
+    uint realAddress = (physicalBlockID * BLOCK_SIZE) + offsetInBlock;
+    return realAddress;
+}
 struct ParticleFrameConsts
 {
     float dt;
