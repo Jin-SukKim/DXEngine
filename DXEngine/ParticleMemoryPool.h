@@ -48,9 +48,8 @@ public:
 	
 	// PageTable 관리 (간소화)
 	UINT AppendToPageTable(const std::vector<UINT>& blockIndices);  // 끝에 추가, 오프셋 반환
-	void MarkPageTableDirty() { m_pageTableDirty = true; }
 	void RebuildPageTable(const std::vector<ParticleSystem*>& activeSystems);
-	bool IsPageTableDirty() const { return m_pageTableDirty; }
+	float GetFragmentationRatio() const;
 	
 	void SwapBuffer() { m_bufferIndex = 1 - m_bufferIndex; }
 	void BindCompute();
@@ -68,7 +67,7 @@ public:
 	void BindEmitterID(UINT slotIndex);
 
 	void UploadMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
-	void BindMeshConsts(UINT systemSlot);
+	 void BindMeshConsts(UINT systemSlot);
 
 	// Getters (기존과 동일)
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
@@ -138,7 +137,6 @@ private:
 	// PageTable 관리 (간소화)
 	std::vector<UINT> m_pageTableCPU;
 	UINT m_pageTableUsedSize = 0;
-	bool m_pageTableDirty = false;
 };
 
 }

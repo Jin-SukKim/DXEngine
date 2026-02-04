@@ -22,7 +22,6 @@ namespace DE {
 		m_pageTable.Initialize(device, blockCount);
 		m_pageTableCPU.resize(m_blockCount, 0);
 		m_pageTableUsedSize = 0;
-		m_pageTableDirty = false;
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -423,7 +422,21 @@ namespace DE {
 				m_pageTableCPU.begin() + m_pageTableUsedSize));
 			m_pageTable.Upload(context);
 		}
+	}
+
+	float ParticleMemoryPool::GetFragmentationRatio() const
+	{
+		if (m_pageTableUsedSize == 0) return 0.0f;
 		
-		m_pageTableDirty = false;
+		UINT totalActiveBlocks = 0;
+		for (bool used : m_particleBlockTable) {
+			if (used) ++totalActiveBlocks;
+		}
+		
+		if (totalActiveBlocks == 0) return 1.0f;  // ¸ðµÎ »èÁ¦µÊ
+		if (m_pageTableUsedSize <= totalActiveBlocks) return 0.0f;
+		
+		UINT gapEntries = m_pageTableUsedSize - totalActiveBlocks;
+		return static_cast<float>(gapEntries) / m_pageTableUsedSize;
 	}
 }

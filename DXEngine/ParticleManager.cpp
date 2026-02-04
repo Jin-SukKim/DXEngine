@@ -12,11 +12,12 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		// 삭제로 인한 재구성 (dirty일 때만)
-		if (m_memoryPool->IsPageTableDirty()) {
+		// Page Table 20% 이상 단편화되면 재구성
+		constexpr float DEFRAG_THRESHOLD = 0.2f;
+		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
 			m_memoryPool->RebuildPageTable(m_activeSystems);
 			
-			// EmitterID 업로드 (오프셋 변경됨)
+			// EmitterID 업로드 (PageTable 오프셋 변경됨)
 			for (auto* system : m_activeSystems) {
 				if (system) {
 					UploadEmitterIDs(system, system->GetInitialData());
@@ -110,7 +111,7 @@ namespace DE {
 		UINT blockCount = cloned->GetTotalBlockCount();
 		UINT emitterCount = cloned->GetMaxEmitterCount();
 		
-		PoolHandle handle = RequestAllocation(blockCount, emitterCount, spawnPosCount);
+		PoolHandle handle = m_memoryPool->Allocate(blockCount, emitterCount, spawnPosCount);
 		
 		if (!handle.IsActive()) {
 			return nullptr;
@@ -135,10 +136,7 @@ namespace DE {
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
 		cloned->Initialize(initialData);
-		
-		// EmitterID 업로드 (생성 시 1회)
 		UploadEmitterIDs(cloned.get(), initialData);
-		
 		cloned->OnSpawn();
 
 		ParticleSystem* rawPtr = cloned.get();
@@ -158,7 +156,6 @@ namespace DE {
 		}
 
 		UnregisterActiveSystem(system);
-		m_memoryPool->MarkPageTableDirty();  // 삭제 시 dirty 표시
 
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
 			[system](const std::unique_ptr<ParticleSystem>& ptr) {
@@ -185,16 +182,15 @@ namespace DE {
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
 				UINT usedBlocks = m_memoryPool->GetUsedBlockCount();
-				float usage = (totalBlocks > 0) ? (float)usedBlocks / totalBlocks : 0.0f;
+				float usage = (totalBlocks > 0) ? static_cast<float>(usedBlocks) / totalBlocks : 0.0f;
 
 				ImGui::Text("Particle Blocks: %d / %d (Size: %d)", usedBlocks, totalBlocks, m_memoryPool->GetBlockSize());
 				ImGui::ProgressBar(usage, ImVec2(-1, 0), "Particle Memory Usage");
-
 				ImGui::Text("Max Total Particles Count : %d", usedBlocks * m_memoryPool->GetBlockSize());
 
 				UINT totalEmitters = m_memoryPool->GetTotalEmitterSlots();
 				UINT usedEmitters = m_memoryPool->GetUsedEmitterSlots();
-				float emitterUsage = (totalEmitters > 0) ? (float)usedEmitters / totalEmitters : 0.0f;
+				float emitterUsage = (totalEmitters > 0) ? static_cast<float>(usedEmitters) / totalEmitters : 0.0f;
 
 				ImGui::Text("Emitter Slots: %d / %d", usedEmitters, totalEmitters);
 				ImGui::ProgressBar(emitterUsage, ImVec2(-1, 0), "Emitter Slot Usage");
@@ -202,6 +198,10 @@ namespace DE {
 				UINT totalSystems = m_memoryPool->GetTotalSystemSlots();
 				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
+				
+				// Page Table 단편화율 표시
+				float fragRatio = m_memoryPool->GetFragmentationRatio();
+				ImGui::Text("Page Table Fragmentation: %.1f%%", fragRatio * 100.0f);
 			}
 
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
@@ -262,12 +262,6 @@ namespace DE {
 			}
 		}
 		ImGui::End();
-	}
-
-	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
-	{
-		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
-		return handle;
 	}
 
 	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
