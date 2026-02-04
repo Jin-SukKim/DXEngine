@@ -48,12 +48,16 @@ public:
 	void RenderMemoryPoolGUI();
 	void Defragment();
 
+	UINT GetRebuildCount() const { return m_rebuildCount; }
+	float GetAvgRebuildTime() const { return m_avgRebuildTime; }
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 	void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
 
 	void SyncReadOffsets();
+
+	void ResetMetrics();
 
 private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
@@ -65,6 +69,11 @@ private:
 	// ¸â¹ö º¯¼ö Ãß°¡
 	bool m_needsDefragment = false;
 	bool m_needsSyncReadOffset = false;
+
+	// private ¸â¹ö Ãß°¡
+	UINT m_rebuildCount = 0;
+	float m_totalRebuildTime = 0.0f;
+	float m_avgRebuildTime = 0.0f;
 };
 
 }

@@ -145,7 +145,7 @@ namespace DE {
 				randomDeleteTimer = 0.0f;
 
 				// 한 번에 삭제할 개수 결정 (예: 3개 ~ 8개 사이 랜덤)
-				int deleteCount = (rand() % 10) + 3;
+				int deleteCount = (rand() % 100) + 3;
 
 				for (int i = 0; i < deleteCount; ++i)
 				{
@@ -212,6 +212,12 @@ namespace DE {
 			burstTimer = 0.0f;
 			spawnTimer = 0.0f;
 			randomDeleteTimer = 0.0f;
+
+			// 25초 주기 완료 시 로그 출력
+			OutputDebugStringA(("=== Cycle Complete ===\n"
+				"Rebuild Count: " + std::to_string(ParticleManager::Get().GetRebuildCount()) + "\n"
+				"Avg Rebuild Time: " + std::to_string(ParticleManager::Get().GetAvgRebuildTime()) + " ms\n"
+			).c_str());
 		}
 	}
 

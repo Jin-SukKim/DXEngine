@@ -12,12 +12,20 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		// 20% 이상 단편화되면 Defragment 실행
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
+			// ★ 재구성 시간 측정
+			auto start = std::chrono::high_resolution_clock::now();
 			Defragment();
+			
+			auto end = std::chrono::high_resolution_clock::now();
+			float elapsed = std::chrono::duration<float, std::milli>(end - start).count();
+			
+			m_rebuildCount++;
+			m_totalRebuildTime += elapsed;
+			m_avgRebuildTime = m_totalRebuildTime / m_rebuildCount;
 		}
-
+		
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
 
@@ -177,7 +185,6 @@ namespace DE {
 
 		if (ImGui::Begin("Particle Memory Pool Status"))
 		{
-			// 1. 기본 통계 (Progress Bar)
 			if (ImGui::CollapsingHeader("Stats Overview", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
@@ -199,8 +206,28 @@ namespace DE {
 				UINT totalSystems = m_memoryPool->GetTotalSystemSlots();
 				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
+				
+				// ★ 단편화 비율
+				float fragRatio = m_memoryPool->GetFragmentationRatio();
+				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0,1,0,1) : 
+								(fragRatio < 0.5f) ? ImVec4(1,1,0,1) : ImVec4(1,0,0,1);
+				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
 			}
-
+			
+			// ★ 성능 메트릭 섹션 추가
+			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
+				ImGui::Text("Avg Rebuild Time: %.3f ms", m_avgRebuildTime);
+				ImGui::Text("Total Rebuild Time: %.3f ms", m_totalRebuildTime);
+				
+				if (ImGui::Button("Reset Metrics")) {
+					m_rebuildCount = 0;
+					m_avgRebuildTime = 0.0f;
+					m_totalRebuildTime = 0.0f;
+				}
+			}
+			
 			// 2. 블록 시각화 (Grid Visualizer)
 			// 녹색: 사용 중, 회색: 빈 공간
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
@@ -356,5 +383,12 @@ namespace DE {
 				m_memoryPool->SyncReadOffset(emitterID);
 			}
 		}
+	}
+
+	void ParticleManager::ResetMetrics()
+	{
+		m_rebuildCount = 0;
+		m_avgRebuildTime = 0.0f;
+		m_totalRebuildTime = 0.0f;
 	}
 }
