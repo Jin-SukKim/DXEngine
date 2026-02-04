@@ -15,6 +15,7 @@ namespace DE {
 		std::vector<uint32_t> pageTableData;
 		pageTableData.reserve(m_memoryPool->GetBlockCount());
 
+		UINT maxPageTableSize = m_memoryPool->GetBlockCount();
 		for (auto* system : m_activeSystems) {
 			if (!system)
 				continue;
@@ -24,6 +25,13 @@ namespace DE {
 
 			// Block Index LIst 추가
 			const std::vector<UINT>& blocks = system->GetPoolHandle().particleIndices;
+			
+			// [안전 장치] 버퍼 용량을 초과하면 경고하고 중단 (Crash 방지)
+			if (pageTableData.size() + blocks.size() > maxPageTableSize) {
+				std::cout << "Global Page Table Overflow! Too many active particles." << std::endl;
+				break; // 더 이상 추가하지 않음
+			}
+			
 			pageTableData.insert(pageTableData.end(), blocks.begin(), blocks.end());
 
 			// EmitterID 업로드 (Manager에서 처리)
@@ -183,6 +191,101 @@ namespace DE {
 	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
 	{
 		m_memoryPool->BindEmitterID(globalSlotIndex);
+	}
+
+	void ParticleManager::RenderMemoryPoolGUI()
+	{
+		if (!m_memoryPool) return;
+
+		if (ImGui::Begin("Particle Memory Pool Status"))
+		{
+			// 1. 기본 통계 (Progress Bar)
+			if (ImGui::CollapsingHeader("Stats Overview", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
+				UINT usedBlocks = m_memoryPool->GetUsedBlockCount();
+				float usage = (totalBlocks > 0) ? (float)usedBlocks / totalBlocks : 0.0f;
+
+				ImGui::Text("Particle Blocks: %d / %d (Size: %d)", usedBlocks, totalBlocks, m_memoryPool->GetBlockSize());
+				ImGui::ProgressBar(usage, ImVec2(-1, 0), "Particle Memory Usage");
+
+				ImGui::Text("Max Total Particles Count : %d", usedBlocks * m_memoryPool->GetBlockSize());
+
+				UINT totalEmitters = m_memoryPool->GetTotalEmitterSlots();
+				UINT usedEmitters = m_memoryPool->GetUsedEmitterSlots();
+				float emitterUsage = (totalEmitters > 0) ? (float)usedEmitters / totalEmitters : 0.0f;
+
+				ImGui::Text("Emitter Slots: %d / %d", usedEmitters, totalEmitters);
+				ImGui::ProgressBar(emitterUsage, ImVec2(-1, 0), "Emitter Slot Usage");
+
+				UINT totalSystems = m_memoryPool->GetTotalSystemSlots();
+				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
+				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
+			}
+
+			// 2. 블록 시각화 (Grid Visualizer)
+			// 녹색: 사용 중, 회색: 빈 공간
+			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
+				std::vector<std::string> blockOwners(totalBlocks, "Free");
+
+				for (auto* system : m_activeSystems) {
+					if (!system) continue;
+					const auto& indices = system->GetPoolHandle().particleIndices;
+					std::string name = std::string(system->GetName().begin(), system->GetName().end()); // wstring -> string
+
+					for (UINT blockIdx : indices) {
+						if (blockIdx < totalBlocks) {
+							blockOwners[blockIdx] = name;
+						}
+					}
+				}
+
+				const auto& table = m_memoryPool->GetParticleBlockTable();
+				int columns = 32; // 한 줄에 보여줄 블록 개수
+				float cellSize = 10.0f;
+				float spacing = 2.0f;
+
+				ImVec2 p = ImGui::GetCursorScreenPos();
+				float startX = p.x;
+				float startY = p.y;
+
+				for (size_t i = 0; i < table.size(); ++i)
+				{
+					float x = startX + (i % columns) * (cellSize + spacing);
+					float y = startY + (i / columns) * (cellSize + spacing);
+
+					ImU32 color = table[i] ? IM_COL32(50, 205, 50, 255) : IM_COL32(50, 50, 50, 255); // Green vs Gray
+
+					ImGui::GetWindowDrawList()->AddRectFilled(
+						ImVec2(x, y),
+						ImVec2(x + cellSize, y + cellSize),
+						color
+					);
+
+					// 마우스 오버 시 블록 번호 툴팁
+					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
+					{
+						ImGui::BeginTooltip();
+						// [변경] 소유자 이름까지 출력
+						ImGui::Text("Block ID: %llu", i);
+						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
+							"Status: %s", table[i] ? "Used" : "Free");
+
+						if (table[i]) {
+							ImGui::Text("Owner: %s", blockOwners[i].c_str());
+						}
+						ImGui::EndTooltip();
+					}
+				}
+
+				// 그리드 높이만큼 커서 이동
+				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
+				ImGui::Dummy(ImVec2(0, totalHeight));
+			}
+		}
+		ImGui::End();
 	}
 
 	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)

@@ -43,7 +43,9 @@ public:
 	// MeshConsts 관리 추가
 	void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
 	void BindMeshConsts(UINT systemIndex);
-
+	
+	// Debug
+	void RenderMemoryPoolGUI();
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);

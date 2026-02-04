@@ -36,6 +36,7 @@ struct ParticleMeshConsts {
 	UINT indexCount;
 	float padding[2];
 };
+
 class ParticleMemoryPool
 {
 public:
@@ -80,6 +81,33 @@ public:
 
 	UINT GetBlockSize() { return m_blockSize; }
 	UINT GetBlockCount() const { return m_blockCount; }
+
+	// Debug
+	// 디버깅용 Getter 추가
+	UINT GetTotalBlockCount() const { return m_blockCount; }
+	UINT GetBlockSize() const { return m_blockSize; }
+
+	// 사용 중인 블록 개수 카운트
+	UINT GetUsedBlockCount() const {
+		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
+	}
+
+	// 전체/사용중 Emitter 슬롯
+	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
+	UINT GetUsedEmitterSlots() const {
+		return (UINT)std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true);
+	}
+
+	// 전체/사용중 System 슬롯
+	UINT GetTotalSystemSlots() const { return m_maxSystems; }
+	UINT GetUsedSystemSlots() const {
+		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
+	}
+
+	// 시각화를 위해 테이블 자체에 대한 참조 반환 (const)
+	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
+	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
+
 private:
 	// System Slot 관리
 	UINT AllocateSystemSlot();

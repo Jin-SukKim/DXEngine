@@ -134,6 +134,8 @@ namespace DE {
 	void ParticleEditor::UpdateGUI()
 	{
 		Scene::UpdateGUI();
+
+		ParticleManager::Get().RenderMemoryPoolGUI();
 	}
 
 	void ParticleEditor::Render()
