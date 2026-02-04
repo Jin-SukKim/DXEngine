@@ -15,14 +15,23 @@ namespace DE {
 		// Page Table 20% 이상 단편화되면 재구성
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
+			// ★ 재구성 시간 측정
+			auto start = std::chrono::high_resolution_clock::now();
+			
 			m_memoryPool->RebuildPageTable(m_activeSystems);
 			
-			// EmitterID 업로드 (PageTable 오프셋 변경됨)
 			for (auto* system : m_activeSystems) {
 				if (system) {
 					UploadEmitterIDs(system, system->GetInitialData());
 				}
 			}
+			
+			auto end = std::chrono::high_resolution_clock::now();
+			float elapsed = std::chrono::duration<float, std::milli>(end - start).count();
+			
+			m_rebuildCount++;
+			m_totalRebuildTime += elapsed;
+			m_avgRebuildTime = m_totalRebuildTime / m_rebuildCount;
 		}
 
 		m_memoryPool->ClearWriteCount();
@@ -201,9 +210,26 @@ namespace DE {
 				
 				// Page Table 단편화율 표시
 				float fragRatio = m_memoryPool->GetFragmentationRatio();
-				ImGui::Text("Page Table Fragmentation: %.1f%%", fragRatio * 100.0f);
-			}
+				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0, 1, 0, 1) :
+					(fragRatio < 0.5f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
+				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
 
+				// Page Table 크기 (Paging 방식)
+				ImGui::Text("Page Table Used: %d entries", m_memoryPool->GetPageTableUsedSize());
+			}
+			// ★ 성능 메트릭 섹션 추가
+			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
+				ImGui::Text("Avg Rebuild Time: %.3f ms", m_avgRebuildTime);
+				ImGui::Text("Total Rebuild Time: %.3f ms", m_totalRebuildTime);
+
+				if (ImGui::Button("Reset Metrics")) {
+					m_rebuildCount = 0;
+					m_avgRebuildTime = 0.0f;
+					m_totalRebuildTime = 0.0f;
+				}
+			}
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();

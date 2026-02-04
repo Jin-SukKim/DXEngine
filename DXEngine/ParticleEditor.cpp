@@ -212,6 +212,12 @@ namespace DE {
 			burstTimer = 0.0f;
 			spawnTimer = 0.0f;
 			randomDeleteTimer = 0.0f;
+
+			// 25초 주기 완료 시 로그 출력
+			OutputDebugStringA(("=== Cycle Complete ===\n"
+				"Rebuild Count: " + std::to_string(ParticleManager::Get().GetRebuildCount()) + "\n"
+				"Avg Rebuild Time: " + std::to_string(ParticleManager::Get().GetAvgRebuildTime()) + " ms\n"
+			).c_str());
 		}
 	}
 

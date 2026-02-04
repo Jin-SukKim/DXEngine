@@ -101,6 +101,7 @@ public:
 	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
 	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
 
+	UINT GetPageTableUsedSize() const { return m_pageTableUsedSize; }
 private:
 	UINT AllocateSystemSlot();
 	void FreeSystemSlot(UINT slot);

@@ -43,6 +43,9 @@ public:
 	void BindMeshConsts(UINT systemIndex);
 	
 	void RenderMemoryPoolGUI();
+
+	UINT GetRebuildCount() { return m_rebuildCount; }
+	float GetAvgRebuildTime() { return m_avgRebuildTime; }
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
@@ -53,6 +56,10 @@ private:
 	std::vector<ParticleSystem*> m_activeSystems;
 
 	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
+
+	UINT m_rebuildCount = 0;
+	float m_totalRebuildTime = 0.0f;
+	float m_avgRebuildTime = 0.0f;
 };
 
 }
