@@ -12,37 +12,17 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		std::vector<uint32_t> pageTableData;
-		pageTableData.reserve(m_memoryPool->GetBlockCount());
-
-		UINT maxPageTableSize = m_memoryPool->GetBlockCount();
-		for (auto* system : m_activeSystems) {
-			if (!system)
-				continue;
-
-			UINT currentOffset = static_cast<UINT>(pageTableData.size());
-			system->SetPageTableOffset(currentOffset);
-
-			// Block Index LIst 추가
-			const std::vector<UINT>& blocks = system->GetPoolHandle().particleIndices;
+		// 삭제로 인한 재구성 (dirty일 때만)
+		if (m_memoryPool->IsPageTableDirty()) {
+			m_memoryPool->RebuildPageTable(m_activeSystems);
 			
-			// [안전 장치] 버퍼 용량을 초과하면 경고하고 중단 (Crash 방지)
-			if (pageTableData.size() + blocks.size() > maxPageTableSize) {
-				std::cout << "Global Page Table Overflow! Too many active particles." << std::endl;
-				break; // 더 이상 추가하지 않음
-			}
-			
-			pageTableData.insert(pageTableData.end(), blocks.begin(), blocks.end());
-
-			// EmitterID 업로드 (Manager에서 처리)
-			if (system->IsPageTableDirty()) {
-				UploadEmitterIDs(system, system->GetInitialData());
-				system->ClearPageTableDirty();
+			// EmitterID 업로드 (오프셋 변경됨)
+			for (auto* system : m_activeSystems) {
+				if (system) {
+					UploadEmitterIDs(system, system->GetInitialData());
+				}
 			}
 		}
-
-		if (!pageTableData.empty())
-			m_memoryPool->UploadPageTable(pageTableData);
 
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
@@ -83,7 +63,6 @@ namespace DE {
 		}
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
-
 	}
 
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
@@ -133,14 +112,16 @@ namespace DE {
 		
 		PoolHandle handle = RequestAllocation(blockCount, emitterCount, spawnPosCount);
 		
-		// 할당 실패 시 대기 큐에 추가하고 nullptr 반환
 		if (!handle.IsActive()) {
-			return nullptr; // 또는 nullptr 반환하여 호출자에게 알림
+			return nullptr;
 		}
 		
 		cloned->SetPoolHandle(handle);
 
-		// SpawnPositions 업로드
+		// PageTable에 추가 (끝에 append)
+		UINT pageTableOffset = m_memoryPool->AppendToPageTable(handle.particleIndices);
+		cloned->SetPageTableOffset(pageTableOffset);
+
 		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
 			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
 		}
@@ -154,30 +135,31 @@ namespace DE {
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
 		cloned->Initialize(initialData);
+		
+		// EmitterID 업로드 (생성 시 1회)
+		UploadEmitterIDs(cloned.get(), initialData);
+		
 		cloned->OnSpawn();
 
-		auto* clonedPtr = cloned.get();
+		ParticleSystem* rawPtr = cloned.get();
 		m_instances.push_back(std::move(cloned));
+		RegisterActiveSystem(rawPtr);
 
-		RegisterActiveSystem(clonedPtr);
-
-		return clonedPtr;
+		return rawPtr;
 	}
 	
 	void ParticleManager::DestroyInstance(ParticleSystem* system)
 	{
 		if (!system) return;
 
-		// Pool에서 메모리 해제
 		const PoolHandle& handle = system->GetPoolHandle();
 		if (handle.IsActive()) {
 			m_memoryPool->Free(handle);
 		}
 
-		// active 목록에서 제거
 		UnregisterActiveSystem(system);
+		m_memoryPool->MarkPageTableDirty();  // 삭제 시 dirty 표시
 
-		// instance 목록에서 제거
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
 			[system](const std::unique_ptr<ParticleSystem>& ptr) {
 				return ptr.get() == system;
@@ -199,7 +181,6 @@ namespace DE {
 
 		if (ImGui::Begin("Particle Memory Pool Status"))
 		{
-			// 1. 기본 통계 (Progress Bar)
 			if (ImGui::CollapsingHeader("Stats Overview", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
@@ -223,8 +204,6 @@ namespace DE {
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
 			}
 
-			// 2. 블록 시각화 (Grid Visualizer)
-			// 녹색: 사용 중, 회색: 빈 공간
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
@@ -233,7 +212,7 @@ namespace DE {
 				for (auto* system : m_activeSystems) {
 					if (!system) continue;
 					const auto& indices = system->GetPoolHandle().particleIndices;
-					std::string name = std::string(system->GetName().begin(), system->GetName().end()); // wstring -> string
+					std::string name = std::string(system->GetName().begin(), system->GetName().end());
 
 					for (UINT blockIdx : indices) {
 						if (blockIdx < totalBlocks) {
@@ -243,7 +222,7 @@ namespace DE {
 				}
 
 				const auto& table = m_memoryPool->GetParticleBlockTable();
-				int columns = 32; // 한 줄에 보여줄 블록 개수
+				int columns = 32;
 				float cellSize = 10.0f;
 				float spacing = 2.0f;
 
@@ -256,7 +235,7 @@ namespace DE {
 					float x = startX + (i % columns) * (cellSize + spacing);
 					float y = startY + (i / columns) * (cellSize + spacing);
 
-					ImU32 color = table[i] ? IM_COL32(50, 205, 50, 255) : IM_COL32(50, 50, 50, 255); // Green vs Gray
+					ImU32 color = table[i] ? IM_COL32(50, 205, 50, 255) : IM_COL32(50, 50, 50, 255);
 
 					ImGui::GetWindowDrawList()->AddRectFilled(
 						ImVec2(x, y),
@@ -264,11 +243,9 @@ namespace DE {
 						color
 					);
 
-					// 마우스 오버 시 블록 번호 툴팁
 					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
 					{
 						ImGui::BeginTooltip();
-						// [변경] 소유자 이름까지 출력
 						ImGui::Text("Block ID: %llu", i);
 						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
 							"Status: %s", table[i] ? "Used" : "Free");
@@ -280,7 +257,6 @@ namespace DE {
 					}
 				}
 
-				// 그리드 높이만큼 커서 이동
 				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
 				ImGui::Dummy(ImVec2(0, totalHeight));
 			}
@@ -291,11 +267,6 @@ namespace DE {
 	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
 	{
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
-
-		if (!handle.IsActive()) {
-			return handle;
-		}
-
 		return handle;
 	}
 
@@ -311,7 +282,6 @@ namespace DE {
 			eID.pageTableOffset = system->GetPageTableOffset() + blockCount;
 			blockCount += eID.blockCount;
 			
-			// spawnPos를 사용하는 emitter만 오프셋 적용
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}

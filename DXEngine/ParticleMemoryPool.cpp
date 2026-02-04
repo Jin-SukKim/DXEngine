@@ -20,6 +20,9 @@ namespace DE {
 		m_systemSlotTable.assign(maxSystems, false);
 
 		m_pageTable.Initialize(device, blockCount);
+		m_pageTableCPU.resize(m_blockCount, 0);
+		m_pageTableUsedSize = 0;
+		m_pageTableDirty = false;
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -44,13 +47,11 @@ namespace DE {
 
 		m_spawnPositions.Initialize(device, maxParticles);
 
-		// EmitterID ConstantBuffer Pool
 		m_emitterIDBuffers.resize(maxEmitters);
 		for (UINT i = 0; i < maxEmitters; ++i) {
 			m_emitterIDBuffers[i].Initialize();
 		}
 
-		// MeshConsts Pool (System별)
 		m_meshConstsBuffers.resize(maxSystems);
 		for (UINT i = 0; i < maxSystems; ++i) {
 			m_meshConstsBuffers[i].Initialize();
@@ -83,37 +84,33 @@ namespace DE {
 			reqEmitterCount >= m_emitterSlotTable.size())
 			return handle;
 
-		// 1. System Slot 할당
 		handle.systemSlot = AllocateSystemSlot();
 		if (handle.systemSlot == UINT_MAX) {
 			return handle;
 		}
 
-		// 2. Particle Block 할당
 		std::vector<uint32_t> particleIndices;
 
 		for (size_t i = 0; i < m_particleBlockTable.size(); ++i) {
 			if (!m_particleBlockTable[i]) {
-				particleIndices.push_back(i);
+				particleIndices.push_back(static_cast<UINT>(i));
 				if (particleIndices.size() == reqParticleBlockCount) {
 					break;
 				}
 			}
 		}
 
-		// 3. Emitter Slot 할당
 		std::vector<UINT> IDs;
 
 		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
 			if (!m_emitterSlotTable[i]) {
-				IDs.push_back(i);
+				IDs.push_back(static_cast<UINT>(i));
 				if (IDs.size() == reqEmitterCount) {
 					break;
 				}
 			}
 		}
 
-		// 4. SpawnPosition Block 할당 (reqSpawnPosCount > 0인 경우)
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
 		
@@ -139,21 +136,17 @@ namespace DE {
 			}
 		}
 
-		// 할당 성공 여부 확인
 		bool particleOk = (particleIndices.size() == reqParticleBlockCount);
 		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
 		if (particleOk && emitterOk && spawnPosOk) {
-			// Particle blocks 마킹
 			for (UINT i = 0; i < reqParticleBlockCount; ++i)
 				m_particleBlockTable[particleIndices[i]] = true;
 			
-			// Emitter slots 마킹
 			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[IDs[i]] = true;
 			
-			// SpawnPos blocks 마킹
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
@@ -168,7 +161,6 @@ namespace DE {
 			}
 		}
 		else {
-			// 할당 실패 시 System Slot 해제
 			FreeSystemSlot(handle.systemSlot);
 			handle.systemSlot = UINT_MAX;
 		}
@@ -180,23 +172,19 @@ namespace DE {
 	{
 		if (!handle.IsActive()) return;
 
-		// System slot 해제
 		FreeSystemSlot(handle.systemSlot);
 
-		// Particle blocks 해제
 		for (size_t i = 0; i < handle.blockCount; ++i) {
 			if (handle.particleIndices[i] < m_particleBlockTable.size()) {
 				m_particleBlockTable[handle.particleIndices[i]] = false;
 			}
 		}
 
-		// Emitter slots 해제
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
 			if (handle.emitterIDs[i] < m_emitterSlotTable.size())
 				m_emitterSlotTable[handle.emitterIDs[i]] = false;
 		}
 
-		// SpawnPos blocks 해제
 		size_t startBlock;
 		if (handle.spawnPosOffset != UINT_MAX) {
 			startBlock = handle.spawnPosOffset / m_blockSize;
@@ -286,26 +274,23 @@ namespace DE {
 
 	void ParticleMemoryPool::UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data)
 	{
-		if (emitterIDs.size() != data.size()) return; // 안전 장치
+		if (emitterIDs.size() != data.size()) return;
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
 		{
 			D3D11_BOX box;
-			// GPU 버퍼 내의 위치 (비연속적인 슬롯 ID 사용)
 			box.left = emitterIDs[i] * sizeof(ParticleConsts);
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// 중요: CPU 데이터 소스 위치를 i만큼 이동시켜야 함
 			const void* pSrcData = data.data() + i;
 
 			context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
 	}
 
-	// FrameConsts도 동일하게 수정
 	void ParticleMemoryPool::UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
@@ -319,7 +304,6 @@ namespace DE {
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleFrameConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// 중요: 소스 데이터 포인터 오프셋 적용
 			const void* pSrcData = data.data() + i;
 
 			context->UpdateSubresource(m_frameConsts.GetBuffer(), 0, &box, pSrcData, 0, 0);
@@ -375,17 +359,6 @@ namespace DE {
 		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
 	}
 
-	void ParticleMemoryPool::UploadPageTable(const std::vector<UINT>& pageTableData)
-	{
-		if (pageTableData.empty()) return;
-
-		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
-
-		// CPU 벡터를 GPU 버퍼로 전송
-		m_pageTable.SetData(pageTableData);
-		m_pageTable.Upload(context);
-	}
-
 	void ParticleMemoryPool::UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
 	{
 		if (systemIndex >= m_maxSystems) return;
@@ -401,5 +374,56 @@ namespace DE {
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
 		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
+	}
+
+	UINT ParticleMemoryPool::AppendToPageTable(const std::vector<UINT>& blockIndices)
+	{
+		UINT offset = m_pageTableUsedSize;
+		
+		for (UINT blockIdx : blockIndices) {
+			if (m_pageTableUsedSize < m_pageTableCPU.size()) {
+				m_pageTableCPU[m_pageTableUsedSize++] = blockIdx;
+			}
+		}
+		
+		// 추가된 부분만 GPU에 업로드
+		if (!blockIndices.empty()) {
+			auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+			D3D11_BOX box = { offset * sizeof(UINT), 0, 0, 
+				m_pageTableUsedSize * sizeof(UINT), 1, 1 };
+			context->UpdateSubresource(m_pageTable.GetBuffer(), 0, &box, 
+				&m_pageTableCPU[offset], 0, 0);
+		}
+		
+		return offset;
+	}
+
+	void ParticleMemoryPool::RebuildPageTable(const std::vector<ParticleSystem*>& activeSystems)
+	{
+		m_pageTableUsedSize = 0;
+		
+		for (auto* system : activeSystems) {
+			if (!system) continue;
+			
+			const auto& handle = system->GetPoolHandle();
+			UINT newOffset = m_pageTableUsedSize;
+			
+			for (UINT blockIdx : handle.particleIndices) {
+				m_pageTableCPU[m_pageTableUsedSize++] = blockIdx;
+			}
+			
+			// 오프셋 업데이트
+			system->SetPageTableOffset(newOffset);
+		}
+		
+		// 전체 업로드
+		if (m_pageTableUsedSize > 0) {
+			auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+			m_pageTable.SetData(std::vector<UINT>(m_pageTableCPU.begin(), 
+				m_pageTableCPU.begin() + m_pageTableUsedSize));
+			m_pageTable.Upload(context);
+		}
+		
+		m_pageTableDirty = false;
 	}
 }

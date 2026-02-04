@@ -37,14 +37,11 @@ public:
 	ParticleSystem* CreateSystem(const std::wstring& path);
 	void DestroyInstance(ParticleSystem* system);
 
-	// EmitterID 바인딩 (Manager에서 처리)
 	void BindEmitterID(UINT globalSlotIndex);
 	
-	// MeshConsts 관리 추가
 	void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
 	void BindMeshConsts(UINT systemIndex);
 	
-	// Debug
 	void RenderMemoryPoolGUI();
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
