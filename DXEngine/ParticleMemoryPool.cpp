@@ -388,4 +388,44 @@ namespace DE {
 		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
 		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
 	}
+
+	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)
+	{
+	    std::vector<UINT> newOffsets;
+	    newOffsets.reserve(activeHandles.size());
+	    
+	    // 블록 테이블 초기화
+	    std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
+	    
+	    UINT currentBlock = 0;
+	    for (const auto& handle : activeHandles) {
+	        newOffsets.push_back(currentBlock * m_blockSize);
+	        
+	        // 블록 테이블 업데이트
+	        for (UINT i = 0; i < handle.blockCount; ++i) {
+	            m_particleBlockTable[currentBlock + i] = true;
+	        }
+	        currentBlock += handle.blockCount;
+	    }
+	    
+	    return newOffsets;
+	}
+
+	void ParticleMemoryPool::UpdateWriteOffset(UINT slotIndex, UINT newWriteOffset)
+	{
+	    if (slotIndex >= m_maxEmitters) return;
+	    
+	    EmitterID& eID = m_emitterIDBuffers[slotIndex].GetCpu();
+	    eID.writeParticleOffset = newWriteOffset;
+	    m_emitterIDBuffers[slotIndex].Upload();
+	}
+
+	void ParticleMemoryPool::SyncReadOffset(UINT slotIndex)
+	{
+	    if (slotIndex >= m_maxEmitters) return;
+	    
+	    EmitterID& eID = m_emitterIDBuffers[slotIndex].GetCpu();
+	    eID.readParticleOffset = eID.writeParticleOffset;
+	    m_emitterIDBuffers[slotIndex].Upload();
+	}
 }

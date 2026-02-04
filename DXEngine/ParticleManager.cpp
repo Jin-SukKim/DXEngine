@@ -12,6 +12,12 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
+		// Defragment는 SwapBuffer 직후, Compute 시작 전에 실행
+		if (m_needsDefragment) {
+			Defragment();
+			m_needsDefragment = false;
+		}
+
 		m_memoryPool->ClearWriteCount();
 		m_memoryPool->BindCompute();
 
@@ -33,6 +39,12 @@ namespace DE {
 		}
 
 		m_memoryPool->UnbindCompute();
+
+		// Compute 후, SwapBuffer 전에 Read 오프셋 동기화
+		if (m_needsSyncReadOffset) {
+			SyncReadOffsets();
+			m_needsSyncReadOffset = false;
+		}
 
 		if (m_memoryPool)
 			m_memoryPool->SwapBuffer();
@@ -137,16 +149,13 @@ namespace DE {
 	{
 		if (!system) return;
 
-		// Pool에서 메모리 해제
 		const PoolHandle& handle = system->GetPoolHandle();
 		if (handle.IsActive()) {
 			m_memoryPool->Free(handle);
 		}
 
-		// active 목록에서 제거
 		UnregisterActiveSystem(system);
 
-		// instance 목록에서 제거
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
 			[system](const std::unique_ptr<ParticleSystem>& ptr) {
 				return ptr.get() == system;
@@ -155,6 +164,9 @@ namespace DE {
 		if (it != m_instances.end()) {
 			m_instances.erase(it);
 		}
+
+		// 즉시 실행하지 않고 플래그만 설정
+		m_needsDefragment = true;
 	}
 
 	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
@@ -247,13 +259,14 @@ namespace DE {
 
 	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
 	{
-		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
+	    PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
-		if (!handle.IsActive()) {
-			return handle;
-		}
+	    // 할당 실패 시 다음 프레임 Defragment 예약 (즉시 실행 X)
+	    if (!handle.IsActive()) {
+	        m_needsDefragment = true;
+	    }
 
-		return handle;
+	    return handle;
 	}
 
 	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
@@ -290,5 +303,61 @@ namespace DE {
 	void ParticleManager::BindMeshConsts(UINT systemSlot)
 	{
 		m_memoryPool->BindMeshConsts(systemSlot);
+	}
+
+	void ParticleManager::Defragment()
+	{
+		if (m_activeSystems.empty()) return;
+
+		std::vector<PoolHandle> activeHandles;
+		for (auto* system : m_activeSystems) {
+			if (system && system->GetPoolHandle().IsActive()) {
+				activeHandles.push_back(system->GetPoolHandle());
+			}
+		}
+
+		std::vector<UINT> newOffsets = m_memoryPool->Defragment(activeHandles);
+
+		size_t idx = 0;
+		for (auto* system : m_activeSystems) {
+			if (!system || !system->GetPoolHandle().IsActive()) continue;
+			
+			PoolHandle& handle = system->GetPoolHandle();
+			UINT newOffset = newOffsets[idx++];
+			
+			if (handle.particleOffset != newOffset) {
+				RecalculateEmitterOffsets(system, newOffset);
+			}
+		}
+
+		m_needsSyncReadOffset = true;  // 이번 프레임 Compute 후 동기화
+	}
+
+	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
+	{
+		PoolHandle& handle = system->GetPoolHandle();
+		const ParticleInitializer& initialData = system->GetInitialData();
+
+		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
+            // writeParticleOffset만 새 위치로 갱신
+            UINT globalEmitterID = handle.emitterIDs[i];
+            UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
+            
+            m_memoryPool->UpdateWriteOffset(globalEmitterID, newParticleOffset + localOffset);
+        }
+
+        handle.particleOffset = newParticleOffset;
+	}
+
+	void ParticleManager::SyncReadOffsets()
+	{
+		for (auto* system : m_activeSystems) {
+			if (!system || !system->GetPoolHandle().IsActive()) continue;
+			
+			const PoolHandle& handle = system->GetPoolHandle();
+			for (UINT emitterID : handle.emitterIDs) {
+				m_memoryPool->SyncReadOffset(emitterID);
+			}
+		}
 	}
 }

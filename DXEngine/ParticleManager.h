@@ -46,9 +46,14 @@ public:
 	
 	// Debug
 	void RenderMemoryPoolGUI();
+	void Defragment();
+
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
+	void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
+
+	void SyncReadOffsets();
 
 private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
@@ -56,6 +61,10 @@ private:
 	std::vector<ParticleSystem*> m_activeSystems;
 
 	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
+
+	// 멤버 변수 추가
+	bool m_needsDefragment = false;
+	bool m_needsSyncReadOffset = false;
 };
 
 }

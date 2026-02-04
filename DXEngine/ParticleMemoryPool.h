@@ -63,7 +63,7 @@ public:
 	
 	// MeshConsts 관리
 	void UploadMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
-	void BindMeshConsts(UINT systemSlot);
+	 void BindMeshConsts(UINT systemSlot);
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
@@ -106,6 +106,14 @@ public:
 	// 시각화를 위해 테이블 자체에 대한 참조 반환 (const)
 	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
 	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
+
+	// ParticleMemoryPool.h에 추가
+	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
+	void UpdateBlockTable(const std::vector<PoolHandle>& activeHandles);
+	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
+	void UpdateWriteOffset(UINT slotIndex, UINT newWriteOffset);
+
+	void SyncReadOffset(UINT slotIndex);
 
 private:
 	// System Slot 관리

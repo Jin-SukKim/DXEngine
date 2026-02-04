@@ -96,7 +96,7 @@ namespace DE {
 		UINT GetTotalParticleCount() const { return m_maxTotalParticles; }
 		UINT GetMaxEmitterCount() const { return m_maxEmitters; }
 		void SetPoolHandle(PoolHandle handle) { m_poolHandle = handle; }
-		PoolHandle GetPoolHandle() const { return m_poolHandle; }
+		PoolHandle& GetPoolHandle() { return m_poolHandle; }
 
 		const ParticleInitializer& GetInitialData() const { return m_initialData; }
 	private:
