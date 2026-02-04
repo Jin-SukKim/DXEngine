@@ -36,7 +36,7 @@ namespace DE {
 		void Initialize() override;
 		void Initialize(ParticleInitializer& initialData);
 		void InitializeCPU(ParticleInitializer& initialData, UINT blockSize);
-		void InitializeGPU(ParticleInitializer& initialData,
+		void InitializeGPU(
 			IndirectArgsBuffer<DispatchArgs>& m_dispatchArgs,
 			IndirectArgsBuffer<DrawInstancedArgs>& m_billboardArgsBuffer,
 			IndirectArgsBuffer<DrawIndexedInstancedArgs>& m_meshArgsBuffer);

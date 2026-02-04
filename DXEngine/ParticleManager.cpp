@@ -95,6 +95,7 @@ namespace DE {
 
 	ParticleSystem* ParticleManager::CreateSystem(const std::wstring& path)
 	{
+		// 1. Prototype 로드 또는 캐시에서 가져오기
 		auto prototypeIt = m_prototypes.find(path);
 		ParticleSystem* prototype = nullptr;
 
@@ -102,49 +103,51 @@ namespace DE {
 			prototype = prototypeIt->second.get();
 		}
 		else {
+			// Prototype 최초 로드 시에만 InitializeCPU 실행
 			auto newSystem = ParticleLoader::Load<ParticleSystem>(path);
-			if (!newSystem) {
-				return nullptr;
-			}
-			newSystem->Initialize();
+			if (!newSystem) return nullptr;
+			
+			ParticleInitializer initialData;
+			newSystem->InitializeCPU(initialData, m_memoryPool->GetBlockSize());  // InitializeCPU 포함
+			
 			prototype = newSystem.get();
 			m_prototypes[path] = std::move(newSystem);
 		}
 
+		// 2. Clone 생성 (복사 생성자만 - InitializeCPU 생략)
 		auto cloned = std::make_unique<ParticleSystem>(*prototype);
-
-		ParticleInitializer initialData;
-		cloned->InitializeCPU(initialData, m_memoryPool->GetBlockSize());
-
-		UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
-		UINT blockCount = cloned->GetTotalBlockCount();
-		UINT emitterCount = cloned->GetMaxEmitterCount();
 		
-		PoolHandle handle = m_memoryPool->Allocate(blockCount, emitterCount, spawnPosCount);
+		// 3. Prototype의 캐싱된 initialData 재사용
+		const ParticleInitializer& initialData = prototype->GetInitialData();
+
+		// 4. 메모리 할당
+		PoolHandle handle = m_memoryPool->Allocate(
+			prototype->GetTotalBlockCount(),
+			prototype->GetMaxEmitterCount(),
+			static_cast<UINT>(initialData.spawnPositions.size())
+		);
 		
-		if (!handle.IsActive()) {
-			return nullptr;
-		}
+		if (!handle.IsActive()) return nullptr;
 		
 		cloned->SetPoolHandle(handle);
 
-		// PageTable에 추가 (끝에 append)
+		// 5. PageTable 추가
 		UINT pageTableOffset = m_memoryPool->AppendToPageTable(handle.particleIndices);
 		cloned->SetPageTableOffset(pageTableOffset);
 
+		// 6. GPU 업로드 (Prototype의 데이터 재사용)
 		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
 			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
 		}
 
-		cloned->InitializeGPU(initialData, 
+		cloned->InitializeGPU(
 			m_memoryPool->GetDispatchArgs(),
 			m_memoryPool->GetBillboardArgs(),
 			m_memoryPool->GetMeshArgs());
-			
+
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
-		cloned->Initialize(initialData);
 		UploadEmitterIDs(cloned.get(), initialData);
 		cloned->OnSpawn();
 

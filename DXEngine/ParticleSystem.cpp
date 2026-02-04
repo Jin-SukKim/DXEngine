@@ -39,17 +39,42 @@ namespace DE {
 		, m_vertexCount(other.m_vertexCount)
 		, m_indexCount(other.m_indexCount)
 		, m_owner(nullptr)
-		, m_currentEmitterIndex(0)
-		, m_maxTotalParticles(0)
-		, m_maxEmitters(0)
-		, m_totalBlockCount(0)
+		, m_currentEmitterIndex(other.m_currentEmitterIndex)
+		, m_maxTotalParticles(other.m_maxTotalParticles)
+		, m_maxEmitters(other.m_maxEmitters)
+		, m_totalBlockCount(other.m_totalBlockCount)
+		, m_currentSpawnPosOffset(other.m_currentSpawnPosOffset)
+		, m_spawnPosCache(other.m_spawnPosCache)
+		, m_initialData(other.m_initialData)
 		, m_isPageTableDirty(true)
 	{
-		for (const auto& emitter : other.m_emitters) {
-			if (emitter) {
-				m_emitters.push_back(std::make_unique<ParticleEmitter>(*emitter));
+		// Emitter 복사 + Owner 설정
+		for (size_t i = 0; i < other.m_emitters.size(); ++i) {
+			if (other.m_emitters[i]) {
+				auto cloned = std::make_unique<ParticleEmitter>(*other.m_emitters[i]);
+				cloned->SetOwner(this);                    //  새 Owner 설정
+				cloned->SetMemoryInfo(static_cast<UINT>(i)); //  EmitterID 설정
+				cloned->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+					this->OnEmitterEvent(event, em);
+				});
+				m_emitters.push_back(std::move(cloned));
 			}
 		}
+
+		// SubEmitter Pool 복사 + Owner 설정
+		UINT subIdx = static_cast<UINT>(m_emitters.size());
+		for (const auto& [path, emitter] : other.m_subEmitterPool) {
+			if (emitter) {
+				auto cloned = std::make_unique<ParticleEmitter>(*emitter);
+				cloned->SetOwner(this);                    //  새 Owner 설정
+				cloned->SetMemoryInfo(subIdx++);          //  EmitterID 설정
+				cloned->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
+					this->OnEmitterEvent(event, em);
+				});
+				m_subEmitterPool[path] = std::move(cloned);
+			}
+		}
+
 		m_meshConsts.Initialize();
 		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 	}
@@ -160,7 +185,7 @@ namespace DE {
 		}
 	}
 
-	void ParticleSystem::InitializeGPU(ParticleInitializer& initialData,
+	void ParticleSystem::InitializeGPU(
 		IndirectArgsBuffer<DispatchArgs>& dispatchArgs,
 		IndirectArgsBuffer<DrawInstancedArgs>& billboardArgsBuffer,
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer)
