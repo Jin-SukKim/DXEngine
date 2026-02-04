@@ -264,8 +264,8 @@ namespace DE {
 			EmitterID eID = initialData.emitterIDs[i];
 			
 			eID.emitterID = handle.emitterIDs[i];
-			eID.readParticleOffset = handle.particleOffset;
-			eID.writeParticleOffset = handle.particleOffset;
+			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
+			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
 			
 			// spawnPos를 사용하는 emitter만 오프셋 적용
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
