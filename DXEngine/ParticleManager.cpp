@@ -39,8 +39,6 @@ namespace DE {
 		}
 
 		m_memoryPool->UnbindCompute();
-		if (m_memoryPool)
-			m_memoryPool->SwapBuffer();
 
 		// Compute 후, SwapBuffer 전에 Read 오프셋 동기화
 		if (m_needsSyncReadOffset) {
@@ -48,6 +46,8 @@ namespace DE {
 			m_needsSyncReadOffset = false;
 		}
 
+		if (m_memoryPool)
+			m_memoryPool->SwapBuffer();
 	}
 
 	void ParticleManager::Render()
