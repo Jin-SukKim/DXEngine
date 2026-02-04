@@ -12,10 +12,10 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		// Defragment는 SwapBuffer 직후, Compute 시작 전에 실행
-		if (m_needsDefragment) {
+		// 20% 이상 단편화되면 Defragment 실행
+		constexpr float DEFRAG_THRESHOLD = 0.2f;
+		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
 			Defragment();
-			m_needsDefragment = false;
 		}
 
 		m_memoryPool->ClearWriteCount();
@@ -164,9 +164,6 @@ namespace DE {
 		if (it != m_instances.end()) {
 			m_instances.erase(it);
 		}
-
-		// 즉시 실행하지 않고 플래그만 설정
-		m_needsDefragment = true;
 	}
 
 	void ParticleManager::BindEmitterID(UINT globalSlotIndex)

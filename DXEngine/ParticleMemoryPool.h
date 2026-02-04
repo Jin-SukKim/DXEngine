@@ -115,6 +115,9 @@ public:
 
 	void SyncReadOffset(UINT slotIndex);
 
+	// public 멤버 함수에 추가
+	float GetFragmentationRatio() const;
+
 private:
 	// System Slot 관리
 	UINT AllocateSystemSlot();

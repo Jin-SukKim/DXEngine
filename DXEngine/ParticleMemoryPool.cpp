@@ -428,4 +428,25 @@ namespace DE {
 	    eID.readParticleOffset = eID.writeParticleOffset;
 	    m_emitterIDBuffers[slotIndex].Upload();
 	}
+	float ParticleMemoryPool::GetFragmentationRatio() const
+	{
+		if (m_particleBlockTable.empty()) return 0.0f;
+
+		// 마지막으로 사용 중인 블록 찾기
+		UINT lastUsedBlock = 0;
+		UINT totalUsedBlocks = 0;
+
+		for (UINT i = 0; i < static_cast<UINT>(m_particleBlockTable.size()); ++i) {
+			if (m_particleBlockTable[i]) {
+				lastUsedBlock = i + 1;  // 사용 범위의 끝
+				++totalUsedBlocks;
+			}
+		}
+
+		if (lastUsedBlock == 0 || totalUsedBlocks == 0) return 0.0f;
+
+		// 단편화율 = (사용 범위 내 빈 공간) / (사용 범위)
+		UINT gapBlocks = lastUsedBlock - totalUsedBlocks;
+		return static_cast<float>(gapBlocks) / lastUsedBlock;
+	}
 }
