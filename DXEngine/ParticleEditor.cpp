@@ -137,13 +137,21 @@ namespace DE {
 			}
 		}
 
-		// [신규] 4. [5~25초 전구간] 랜덤하게 선택된 Effect 갑자기 삭제 (메모리 풀 구멍 뚫기 테스트)
-		// 이펙트들이 쌓여있다면 0.8초마다 하나씩 무작위로 삭제해봅니다.
+		// [신규] 4. [5~25초 전구간] 랜덤하게 선택된 Effect 다수 삭제 (Cluster Deletion)
+		// 0.8초마다 "3개 ~ 8개" 정도의 이펙트를 한꺼번에 제거하여 큰 구멍을 만듭니다.
 		if (m_stressTime >= 5.0f && m_stressTime < 25.0f) {
 			randomDeleteTimer += dt;
 			if (randomDeleteTimer >= 0.8f) {
 				randomDeleteTimer = 0.0f;
-				if (!m_stressSystems.empty()) {
+
+				// 한 번에 삭제할 개수 결정 (예: 3개 ~ 8개 사이 랜덤)
+				int deleteCount = (rand() % 10) + 3;
+
+				for (int i = 0; i < deleteCount; ++i)
+				{
+					// 더 이상 지울 게 없으면 중단 (안전 장치)
+					if (m_stressSystems.empty()) break;
+
 					// 랜덤 인덱스 선택
 					int idx = rand() % m_stressSystems.size();
 					ParticleSystem* victim = m_stressSystems[idx];
