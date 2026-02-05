@@ -113,7 +113,7 @@ namespace DE {
 		// SubEmitter 처리 (단순화)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
-			ParticleInitializer& initialData);
+			ParticleInitializer& initialData, std::set<std::wstring>& processedPaths);
 		void ActivateSubEmitter(ParticleEmitter* subEmitter, const Vector3& position);
 
 	private:
