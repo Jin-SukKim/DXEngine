@@ -10,6 +10,7 @@ public:
 	virtual void Initialize(ID3D11Device* device, const UINT numElements);
 	void InitializeArgs(ID3D11Device* device, const UINT numElements);
 	virtual void Initialize(ID3D11Device* device);
+	void InitializeDynamicSRV(ID3D11Device* device, const UINT numElements);
 	void Upload(ID3D11DeviceContext* context);
 	void Download(ID3D11DeviceContext* context);
 	friend void swap(StructuredBuffer<T_ELEMENT>& lhs, StructuredBuffer<T_ELEMENT>& rhs) {
@@ -31,6 +32,7 @@ public:
 	auto Get(UINT idx) -> T_ELEMENT&;
 	auto Size() -> UINT;
 	const std::vector<T_ELEMENT>& GetCpu() const { return m_cpu; }
+	std::vector<T_ELEMENT>& GetCpu() { return m_cpu; }
 protected:
 	std::vector<T_ELEMENT> m_cpu;
 	ComPtr<ID3D11Buffer> m_gpu;
@@ -38,6 +40,7 @@ protected:
 
 	ComPtr<ID3D11ShaderResourceView> m_srv;
 	ComPtr<ID3D11UnorderedAccessView> m_uav;
+	bool m_isDynamic;
 };
 
 template<typename T_ELEMENT>
@@ -68,14 +71,31 @@ void StructuredBuffer<T_ELEMENT>::Initialize(ID3D11Device* device)
 }
 
 template<typename T_ELEMENT>
+inline void StructuredBuffer<T_ELEMENT>::InitializeDynamicSRV(ID3D11Device* device, const UINT numElements)
+{
+	m_cpu.resize(numElements);
+	D3D11Utils::CreateStructuredBufferSRV(device, static_cast<UINT>(m_cpu.size()), sizeof(T_ELEMENT), m_cpu.data(), m_gpu, m_srv);
+	m_isDynamic = true;
+}
+
+template<typename T_ELEMENT>
 void StructuredBuffer<T_ELEMENT>::Upload(ID3D11DeviceContext* context)
 {
-	// CPU -> Staging 
-	D3D11Utils::CopyToStagingBuffer(context, m_staging.Get(), 
-		static_cast<UINT>(m_cpu.size() * sizeof(T_ELEMENT)), m_cpu.data());
+	if (m_isDynamic) {
+		// ★ Dynamic 버퍼: Map / Unmap (DISCARD) 사용 -> 가장 빠름!
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		context->Map(m_gpu.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		memcpy(mappedResource.pData, m_cpu.data(), m_cpu.size() * sizeof(T_ELEMENT));
+		context->Unmap(m_gpu.Get(), 0);
+	}
+	else {
+		// CPU -> Staging 
+		D3D11Utils::CopyToStagingBuffer(context, m_staging.Get(), 
+			static_cast<UINT>(m_cpu.size() * sizeof(T_ELEMENT)), m_cpu.data());
 
-	// Staging -> GPU
-	context->CopyResource(m_gpu.Get(), m_staging.Get());
+		// Staging -> GPU
+		context->CopyResource(m_gpu.Get(), m_staging.Get());
+	}
 }
 
 template<typename T_ELEMENT>

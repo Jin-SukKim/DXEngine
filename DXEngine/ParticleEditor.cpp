@@ -54,22 +54,49 @@ namespace DE {
 		ground = AddObject<SquareActor>(L"Ground");
 
 		// 기존 Spawner는 잠시 꺼두거나 유지해도 됨 (여기선 유지)
-		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spanwer->SetScene(this);
-		m_spanwer->SetActorType<Firework>();
-		m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		m_spanwer->SetSpawnInterval(0.05f);
-		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(500);
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this);
+		//m_spanwer->SetActorType<Firework>();
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval);
+		//m_spanwer->SetSpawnInterval(0.05f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(500);
 
-		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 
 		// m_test2는 시나리오 중간(15초)에 생성하기 위해 비워둠
 		m_test2 = nullptr;
 		m_test3 = nullptr;
+
+		ClickEffectManager::Get().Initialize();
+		ClickEffectManager::Get().SetScene(this);
+		ground = AddObject<SquareActor>(L"Ground");
+
+		// [부하 테스트 시나리오]
+		// 시작하자마자 IceExplosion 1700개 생성 (메모리 풀 한계 테스트)
+		OutputDebugStringA(">>> [STRESS TEST START] Spawning 1700 IceExplosions... <<<\n");
+
+		for (int i = 0; i < 1650; ++i)
+		{
+			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
+			if (sys) {
+				m_stressSystems.push_back(sys);
+
+				// (선택) 시각적으로 겹치지 않게 하려면 위치 랜덤 분산
+				// sys->SetSpawnOffset(Vector3(rand()%100, 0, rand()%100)); 
+			}
+			else {
+				// 풀이 가득 차면 중단
+				OutputDebugStringA(">>> [LIMIT REACHED] Pool Full at index: ");
+				OutputDebugStringA(std::to_string(i).c_str());
+				OutputDebugStringA("\n");
+				break;
+			}
+		}
+		OutputDebugStringA(">>> [STRESS TEST SETUP COMPLETE] <<<\n");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -97,8 +124,8 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -106,6 +133,11 @@ namespace DE {
 		Scene::Update(dt);
 		FileWatcher::Get().Update();
 
+		//StressTest(dt);
+	}
+
+	void ParticleEditor::StressTest(const float& dt)
+	{
 		// =========================================================
 		// [Dynamic Stress Test Scenario]
 		// =========================================================
@@ -115,9 +147,9 @@ namespace DE {
 		static float spawnTimer = 0.0f;
 		static float randomDeleteTimer = 0.0f; // [추가] 랜덤 삭제용 타이머
 
-		// 1. [0~5초] 평온한 상태 (HolySword만 재생됨)
+											   // 1. [0~5초] 평온한 상태 (HolySword만 재생됨)
 
-		// 2. [5~10초] 순간적인 이펙트 (Firework) 0.5초마다 폭발
+											   // 2. [5~10초] 순간적인 이펙트 (Firework) 0.5초마다 폭발
 		if (m_stressTime >= 5.0f && m_stressTime < 10.0f) {
 			burstTimer += dt;
 			if (burstTimer >= 0.5f) {
@@ -217,7 +249,7 @@ namespace DE {
 			OutputDebugStringA(("=== Cycle Complete ===\n"
 				"Rebuild Count: " + std::to_string(ParticleManager::Get().GetRebuildCount()) + "\n"
 				"Avg Rebuild Time: " + std::to_string(ParticleManager::Get().GetAvgRebuildTime()) + " ms\n"
-			).c_str());
+				).c_str());
 		}
 	}
 

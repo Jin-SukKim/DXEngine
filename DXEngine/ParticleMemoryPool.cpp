@@ -29,7 +29,7 @@ namespace DE {
 		}
 
 		m_consts.Initialize(device, maxEmitters);
-		m_frameConsts.Initialize(device, maxEmitters);
+		m_frameConsts.InitializeDynamicSRV(device, maxEmitters);
 
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
 		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
@@ -321,6 +321,12 @@ namespace DE {
 
 			context->UpdateSubresource(m_frameConsts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
+	}
+
+	void ParticleMemoryPool::UploadFrameConsts()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+		m_frameConsts.Upload(context);
 	}
 
 	void ParticleMemoryPool::UpdateArgs()

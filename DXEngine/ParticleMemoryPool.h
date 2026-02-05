@@ -54,6 +54,7 @@ public:
 
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
 	void UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data);
+	void UploadFrameConsts();
 	void UpdateArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 

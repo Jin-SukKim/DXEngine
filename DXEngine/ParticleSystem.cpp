@@ -218,9 +218,9 @@ namespace DE {
 
 		// PreUpdate (Main + Sub)
 		for (auto& emitter : m_emitters)
-			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
+			emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
 		for (auto* emitter : m_activeSubEmitters)
-			emitter->PreUpdate(newDt, fsConsts[emitter->GetEmitterID()]);
+			emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
 	}
 
 	void ParticleSystem::Update(const float& dt)

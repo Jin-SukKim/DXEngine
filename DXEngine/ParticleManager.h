@@ -19,6 +19,8 @@ struct PendingSystem {
 	int retryCount = 0;
 };
 
+
+
 class ParticleManager
 {
 public:
@@ -59,6 +61,37 @@ private:
 
 	void ResetMetrics();
 
+	struct RuntimeProfile {
+		float update = 0.f;         // Update 전체 시간
+		float render = 0.f;
+		float destroy = 0.f;
+		float defrag = 0.f;
+
+		// ★ Update 세부 항목 추가
+		float update_prepare = 0.f; // FrameConsts 업로드 등 준비 시간
+		// Prepare 상세 분할
+		float update_prepare_setup = 0.f;   // ClearWriteCount, BindCompute
+		float update_prepare_cpu = 0.f;     // PreUpdate 루프 (CPU 연산 & 할당)
+		float update_prepare_upload = 0.f;  // UploadFrameConsts (GPU 전송)
+		
+		float update_args = 0.f;    // Indirect Args Update 시간
+		float update_dispatch = 0.f;// 실제 Compute Shader Dispatch 시간
+		float update_swap = 0.f;    // SwapBuffer 시간
+
+		// Private/Internal helpers
+		float requestAlloc = 0.f;
+		float uploadIDs = 0.f;
+		float recalculateOffsets = 0.f;
+		float syncReadOffsets = 0.f;
+
+		void Reset() { *this = RuntimeProfile(); }
+	} m_runtimeProfile;
+
+	// EMA 적용 함수
+	void UpdateMetric(float& metric, float newValue) {
+		if (metric == 0.f) metric = newValue;
+		else metric = metric * 0.9f + newValue * 0.1f;
+	}
 private:
 	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
 	std::vector<std::unique_ptr<ParticleSystem>> m_instances;

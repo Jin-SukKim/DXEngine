@@ -12,66 +12,95 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
+		// 1. Update 전체 통합 시간 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.update, t); });
+
+		// Defragment는 별도 함수 내부에서 측정 중
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			// ★ 재구성 시간 측정
-			auto start = std::chrono::high_resolution_clock::now();
 			Defragment();
-			
-			auto end = std::chrono::high_resolution_clock::now();
-			float elapsed = std::chrono::duration<float, std::milli>(end - start).count();
-			
-			m_rebuildCount++;
-			m_totalRebuildTime += elapsed;
-			m_avgRebuildTime = m_totalRebuildTime / m_rebuildCount;
 		}
-		
-		m_memoryPool->ClearWriteCount();
-		m_memoryPool->BindCompute();
 
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
-				system->PreUpdate(dt, fsConsts);
-				m_memoryPool->UploadFrameConsts(system->GetPoolHandle().emitterIDs, fsConsts);
+		// 2. [세부 측정] 데이터 준비 및 업로드 (Frame Constants)
+		{
+			ScopedTimer tPrepare([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare, t); });
+
+			// (A) Setup: Compute 쉐이더 바인딩 및 초기화
+			{
+				ScopedTimer tSetup([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_setup, t); });
+				m_memoryPool->ClearWriteCount();
+				m_memoryPool->BindCompute();
+			}
+
+			// (B) CPU: 데이터 갱신 루프 (PreUpdate)
+			{
+				ScopedTimer tCpu([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_cpu, t); });
+
+				for (auto* system : m_activeSystems) {
+					if (system) {
+						// 주의: 루프 내부 할당이 성능에 영향을 줄 수 있음
+						std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
+						system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
+					}
+				}
+			}
+
+			// (C) GPU: 데이터 업로드
+			{
+				ScopedTimer tUpload([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_upload, t); });
+				m_memoryPool->UploadFrameConsts();
 			}
 		}
 
-		m_memoryPool->UpdateArgs();
-
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-				system->Update(dt);
-			}
+		// 3. [세부 측정] Indirect Args Update
+		{
+			ScopedTimer tArgs([&](float t) { UpdateMetric(m_runtimeProfile.update_args, t); });
+			m_memoryPool->UpdateArgs();
 		}
 
-		m_memoryPool->UnbindCompute();
+		// 4. [세부 측정] System Logic Dispatch
+		{
+			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 
-		// Compute 후, SwapBuffer 전에 Read 오프셋 동기화
+			for (auto* system : m_activeSystems) {
+				if (system) {
+					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					system->Update(dt);
+				}
+			}
+			m_memoryPool->UnbindCompute();
+		}
+
+		// SyncReadOffsets는 내부에서 측정 중
 		if (m_needsSyncReadOffset) {
 			SyncReadOffsets();
 			m_needsSyncReadOffset = false;
 		}
 
+		// 5. [세부 측정] Swap Buffer
 		if (m_memoryPool)
+		{
+			ScopedTimer tSwap([&](float t) { UpdateMetric(m_runtimeProfile.update_swap, t); });
 			m_memoryPool->SwapBuffer();
+		}
 	}
 
 	void ParticleManager::Render()
 	{
-		if (m_activeSystems.empty()) return;
+		// ★ Render 시간 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
-		m_memoryPool->BindRender();
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-				system->Render();
+		if (!m_activeSystems.empty()) {
+			m_memoryPool->BindRender();
+			for (auto* system : m_activeSystems) {
+				if (system) {
+					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					system->Render();
+				}
 			}
+			m_memoryPool->UnbindRender();
 		}
-		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
-
 	}
 
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
@@ -160,23 +189,18 @@ namespace DE {
 	
 	void ParticleManager::DestroyInstance(ParticleSystem* system)
 	{
+		// ★ Destroy 시간 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.destroy, t); });
+
 		if (!system) return;
-
 		const PoolHandle& handle = system->GetPoolHandle();
-		if (handle.IsActive()) {
-			m_memoryPool->Free(handle);
-		}
-
+		if (handle.IsActive()) { m_memoryPool->Free(handle); }
 		UnregisterActiveSystem(system);
 
 		auto it = std::find_if(m_instances.begin(), m_instances.end(),
-			[system](const std::unique_ptr<ParticleSystem>& ptr) {
-				return ptr.get() == system;
-			});
+			[system](const std::unique_ptr<ParticleSystem>& ptr) { return ptr.get() == system; });
 
-		if (it != m_instances.end()) {
-			m_instances.erase(it);
-		}
+		if (it != m_instances.end()) { m_instances.erase(it); }
 	}
 
 	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
@@ -284,36 +308,88 @@ namespace DE {
 			}
 		}
 		ImGui::End();
+		if (ImGui::Begin("Particle Manager Performance"))
+		{
+			if (ImGui::CollapsingHeader("Runtime Execution Metrics", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				if (ImGui::BeginTable("RuntimeMetricsTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+				{
+					ImGui::TableSetupColumn("Function / Component");
+					ImGui::TableSetupColumn("Avg Time (ms)");
+					ImGui::TableHeadersRow();
+
+					auto AddRow = [](const char* name, float val, ImVec4 color = ImVec4(1, 1, 1, 1)) {
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0); ImGui::Text("%s", name);
+						ImGui::TableSetColumnIndex(1); ImGui::TextColored(color, "%.4f ms", val);
+					};
+
+					// [변경] Update 상세 내역 계층화
+					AddRow("Update (Total)", m_runtimeProfile.update, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
+
+					ImVec4 subColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+					AddRow("  - Prepare & Upload (Total)", m_runtimeProfile.update_prepare, subColor);
+
+					// ★ Prepare 세부 항목 (들여쓰기)
+					ImVec4 detailColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+					AddRow("      > Setup (Bind)", m_runtimeProfile.update_prepare_setup, detailColor);
+					AddRow("      > CPU PreUpdate", m_runtimeProfile.update_prepare_cpu, detailColor);
+					AddRow("      > GPU Upload", m_runtimeProfile.update_prepare_upload, detailColor);
+
+					AddRow("  - Update Args", m_runtimeProfile.update_args, subColor);
+					AddRow("  - Dispatch Logic", m_runtimeProfile.update_dispatch, subColor);
+					AddRow("  - Swap Buffer", m_runtimeProfile.update_swap, subColor);
+
+					ImGui::TableNextRow(); // 공백
+
+					AddRow("Render (Total)", m_runtimeProfile.render, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+					AddRow("DestroyInstance", m_runtimeProfile.destroy);
+					AddRow("Defragment (Check+Run)", m_runtimeProfile.defrag, (m_runtimeProfile.defrag > 0.1f) ? ImVec4(1, 0, 0, 1) : ImVec4(1, 1, 1, 1));
+
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("--- Internal Helpers ---");
+
+					AddRow("  RequestAllocation", m_runtimeProfile.requestAlloc);
+					AddRow("  UploadEmitterIDs", m_runtimeProfile.uploadIDs);
+					AddRow("  RecalculateOffsets", m_runtimeProfile.recalculateOffsets);
+					AddRow("  SyncReadOffsets", m_runtimeProfile.syncReadOffsets);
+
+					ImGui::EndTable();
+				}
+
+				if (ImGui::Button("Reset All Runtime Metrics", ImVec2(-1, 0))) {
+					m_runtimeProfile.Reset();
+				}
+			}
+		}
+		ImGui::End();
 	}
 
 	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
 	{
-	    PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
+		// ★ 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.requestAlloc, t); });
 
-	    // 할당 실패 시 다음 프레임 Defragment 예약 (즉시 실행 X)
-	    if (!handle.IsActive()) {
-	        m_needsDefragment = true;
-	    }
-
-	    return handle;
+		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
+		if (!handle.IsActive()) { m_needsDefragment = true; }
+		return handle;
 	}
 
 	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
 	{
+		// ★ 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.uploadIDs, t); });
+
 		const PoolHandle& handle = system->GetPoolHandle();
-		
+
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
 			EmitterID eID = initialData.emitterIDs[i];
-			
 			eID.emitterID = handle.emitterIDs[i];
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
-			
-			// spawnPos를 사용하는 emitter만 오프셋 적용
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
-			
 			m_memoryPool->UpdateEmitterID(handle.emitterIDs[i], eID);
 		}
 	}
@@ -336,6 +412,9 @@ namespace DE {
 
 	void ParticleManager::Defragment()
 	{
+		// ★ 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.defrag, t); });
+
 		if (m_activeSystems.empty()) return;
 
 		std::vector<PoolHandle> activeHandles;
@@ -350,39 +429,41 @@ namespace DE {
 		size_t idx = 0;
 		for (auto* system : m_activeSystems) {
 			if (!system || !system->GetPoolHandle().IsActive()) continue;
-			
+
 			PoolHandle& handle = system->GetPoolHandle();
 			UINT newOffset = newOffsets[idx++];
-			
+
 			if (handle.particleOffset != newOffset) {
 				RecalculateEmitterOffsets(system, newOffset);
 			}
 		}
 
-		m_needsSyncReadOffset = true;  // 이번 프레임 Compute 후 동기화
+		m_needsSyncReadOffset = true;
 	}
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
 	{
+		// ★ 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.recalculateOffsets, t); });
+
 		PoolHandle& handle = system->GetPoolHandle();
 		const ParticleInitializer& initialData = system->GetInitialData();
 
 		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
-            // writeParticleOffset만 새 위치로 갱신
-            UINT globalEmitterID = handle.emitterIDs[i];
-            UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
-            
-            m_memoryPool->UpdateWriteOffset(globalEmitterID, newParticleOffset + localOffset);
-        }
-
-        handle.particleOffset = newParticleOffset;
+			UINT globalEmitterID = handle.emitterIDs[i];
+			UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
+			m_memoryPool->UpdateWriteOffset(globalEmitterID, newParticleOffset + localOffset);
+		}
+		handle.particleOffset = newParticleOffset;
 	}
 
 	void ParticleManager::SyncReadOffsets()
 	{
+		// ★ 측정
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.syncReadOffsets, t); });
+
 		for (auto* system : m_activeSystems) {
 			if (!system || !system->GetPoolHandle().IsActive()) continue;
-			
 			const PoolHandle& handle = system->GetPoolHandle();
 			for (UINT emitterID : handle.emitterIDs) {
 				m_memoryPool->SyncReadOffset(emitterID);

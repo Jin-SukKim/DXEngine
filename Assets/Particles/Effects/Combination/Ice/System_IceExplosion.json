@@ -1,6 +1,6 @@
 {
     "Name": "IceExplosion",
-    "Looping": false,
+    "Looping": true,
     "Duration": 5.0,
     "PlayRate": 1.0,
     "PreWarmTime": 0.0,
