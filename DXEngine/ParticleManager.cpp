@@ -113,6 +113,8 @@ namespace DE {
 			float tFileLoad = 0.f;
 			bool isCacheHit = false;
 			bool isSuccess = false;
+			float tSetupMain = 0.f;
+			float tSetupSub = 0.f;
 
 			CreateProfiler(ParticleManager* m) : owner(m) {}
 
@@ -138,9 +140,15 @@ namespace DE {
 					owner->m_totalAllocTime += tAllocTotal;
 					owner->m_avgAllocTime = owner->m_totalAllocTime / owner->m_createCount;
 
-					// ★ 3-A. CPU Setup (신규)
+					// ★ [3-A] Setup 상세 통계 갱신
 					owner->m_totalSetupTime += tSetup;
 					owner->m_avgSetupTime = owner->m_totalSetupTime / owner->m_createCount;
+
+					owner->m_totalInitMainTime += tSetupMain;
+					owner->m_avgInitMainTime = owner->m_totalInitMainTime / owner->m_createCount;
+
+					owner->m_totalInitSubTime += tSetupSub;
+					owner->m_avgInitSubTime = owner->m_totalInitSubTime / owner->m_createCount;
 
 					// ★ 3-B. Pool Alloc (신규)
 					owner->m_totalPoolAllocTime += tPoolAlloc;
@@ -223,7 +231,11 @@ namespace DE {
 			// [A] InitializeCPU 측정
 			{
 				ScopedTimer timer([&](float t) { profiler.tSetup = t; });
-				cloned->InitializeCPU(initialData);
+
+				// ★ 여기서 반환값(stats)을 받아서 프로파일러에 기록
+				CPUInitStats stats = cloned->InitializeCPU(initialData);
+				profiler.tSetupMain = stats.mainEmitterTime;
+				profiler.tSetupSub = stats.subEmitterTime;
 			}
 
 			// [B] RequestAllocation 측정
@@ -484,7 +496,17 @@ namespace DE {
 					ImGui::TableSetColumnIndex(0); ImGui::Text("   - InitCPU (Logic)");
 					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalSetupTime);
 					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(0.6f, 1.0f, 0.6f, 1.0f), "%.3f", m_avgSetupTime);
+					// ★★★ [상세] Main Emitter
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0); ImGui::Text("     > Main Emitters");
+					ImGui::TableSetColumnIndex(1); ImGui::Text("-");
+					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "%.4f", m_avgInitMainTime);
 
+					// ★★★ [상세] Sub Emitter (병목 지점)
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0); ImGui::Text("     > Sub Emitters");
+					ImGui::TableSetColumnIndex(1); ImGui::Text("-");
+					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "%.4f", m_avgInitSubTime);
 					// ★ 3-B. Pool (RequestAllocation)
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0); ImGui::Text("   - Pool Alloc (Search)");
@@ -539,6 +561,8 @@ namespace DE {
 					m_totalAllocTime = 0.0f; m_avgAllocTime = 0.0f;
 					m_totalGpuTime = 0.0f; m_avgGpuTime = 0.0f;
 					m_totalInitalizeTime = 0.0f; m_avgInitializeTime = 0.0f;
+					m_totalInitMainTime = 0.0f; m_avgInitMainTime = 0.0f;
+					m_totalInitSubTime = 0.0f; m_avgInitSubTime = 0.0f;
 				}
 			}
 		}

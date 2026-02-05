@@ -77,20 +77,39 @@ namespace DE {
 		else if (m_state == ParticleState::Stopped) Stop();
 	}
 
-	void ParticleSystem::InitializeCPU(
+	CPUInitStats ParticleSystem::InitializeCPU(
 		ParticleInitializer& initialData)
 	{
-		// 1단계: Main Emitter 처리
-		for (auto& emitter : m_emitters) {
-			ProcessEmitter(emitter.get(), initialData);
+		CPUInitStats stats;
+		std::set<std::wstring> processedPaths;
+
+		// 1. Main Emitter 처리 구간 측정
+		{
+			auto start = std::chrono::high_resolution_clock::now();
+
+			for (auto& emitter : m_emitters) {
+				ProcessEmitter(emitter.get(), initialData);
+			}
+
+			auto end = std::chrono::high_resolution_clock::now();
+			stats.mainEmitterTime = std::chrono::duration<float, std::milli>(end - start).count();
 		}
 
-		// 2단계: SubEmitter 로드 (Main Emitter 처리 후)
-		for (auto& emitter : m_emitters) {
-			LoadSubEmitters(emitter.get(), initialData);
+		// 2. SubEmitter 처리 구간 측정 (여기가 병목 예상 지점)
+		{
+			auto start = std::chrono::high_resolution_clock::now();
+
+			for (auto& emitter : m_emitters) {
+				LoadSubEmitters(emitter.get(), initialData);
+			}
+
+			auto end = std::chrono::high_resolution_clock::now();
+			stats.subEmitterTime = std::chrono::duration<float, std::milli>(end - start).count();
 		}
 
 		m_initialData = initialData;
+
+		return stats;
 	}
 
 	void ParticleSystem::ProcessEmitter(

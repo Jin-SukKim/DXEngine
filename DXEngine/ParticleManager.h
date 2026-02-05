@@ -108,6 +108,12 @@ private:
 
 	float m_totalPoolAllocTime = 0.0f;  // RequestAllocation 시간 합계
 	float m_avgPoolAllocTime = 0.0f;    // RequestAllocation 시간 평균
+
+	float m_totalInitMainTime = 0.0f;
+	float m_avgInitMainTime = 0.0f;
+
+	float m_totalInitSubTime = 0.0f;
+	float m_avgInitSubTime = 0.0f;
 };
 
 }

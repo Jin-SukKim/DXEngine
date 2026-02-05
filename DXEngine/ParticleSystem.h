@@ -24,6 +24,10 @@ namespace DE {
 		UINT totalSpawnPosCount = 0;          // 총 SpawnPosition 개수
 	};
 
+	struct CPUInitStats {
+		float mainEmitterTime = 0.0f; // Main Emitter 처리 시간
+		float subEmitterTime = 0.0f;  // Sub Emitter 로딩 및 처리 시간
+	};
 	class ParticleSystem : public Object
 	{
 	public:
@@ -35,7 +39,7 @@ namespace DE {
 
 		void Initialize() override;
 		void Initialize(ParticleInitializer& initialData);
-		void InitializeCPU(ParticleInitializer& initialData);
+		CPUInitStats InitializeCPU(ParticleInitializer& initialData);
 		void InitializeGPU(ParticleInitializer& initialData,
 			IndirectArgsBuffer<DispatchArgs>& m_dispatchArgs,
 			IndirectArgsBuffer<DrawInstancedArgs>& m_billboardArgsBuffer,
