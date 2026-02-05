@@ -11,8 +11,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // [수정 1] emitterID(상수) 대신 스레드 ID 사용
     uint myEmitterID = DTid.x;
 
+    if (myEmitterID >= TOTAL_MAX_EMITTERS) return;
+
     // 현재 Emitter의 파티클 개수 가져오기
     uint count = readCount[myEmitterID];
+    uint startOffset = emitterIDs[myEmitterID].particleOffset;
 
     // --------------------------------------------------------
     // 1. Dispatch Args 갱신 (Update 단계용)
@@ -40,11 +43,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     billboardArgs[drawIdx + 1] = 1;
 
     // Index 2, 3: StartVertex, StartInstance (보통 0)
-    billboardArgs[drawIdx + 2] = 0;
+    billboardArgs[drawIdx + 2] = startOffset;
     billboardArgs[drawIdx + 3] = 0;
 
     uint meshIdx = myEmitterID * 5;
 
     meshArgs[meshIdx] = consts[myEmitterID].render.indexCount;
     meshArgs[meshIdx + 1] = count;
+    meshArgs[meshIdx + 4] = startOffset;
 }

@@ -216,7 +216,7 @@ namespace DE {
 			return;
 
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		
+
 		RenderContext renderCtx = {
 			{ context },
 			this->GetModule<MaterialModule>(),

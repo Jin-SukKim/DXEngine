@@ -2,6 +2,7 @@
 #define __PARTICLE_COMMON_HLSLI__
 
 #define TOTAL_MAX_PARTICLES 10000000
+#define TOTAL_MAX_EMITTERS 10000
 
 struct Particle
 {
