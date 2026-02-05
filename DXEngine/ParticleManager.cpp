@@ -95,48 +95,85 @@ namespace DE {
 	ParticleSystem* ParticleManager::CreateSystem(const std::wstring& path)
 	{
 		// =================================================================================
-		// [1] 자동 집계용 프로파일러 (함수 스코프 전체를 관장)
+		// [1] 자동 집계용 프로파일러
 		// =================================================================================
 		struct CreateProfiler {
 			ParticleManager* owner;
 			float tProto = 0.f;
 			float tClone = 0.f;
-			float tInit = 0.f;
+
+			// [변경] tAlloc을 두 개로 분할
+			float tSetup = 0.f;      // InitializeCPU (데이터 구성)
+			float tPoolAlloc = 0.f;  // RequestAllocation (메모리 탐색)
+
+			float tGPU = 0.f;
+			float tFinal = 0.f;
+
+			float tCacheSearch = 0.f;
+			float tFileLoad = 0.f;
+			bool isCacheHit = false;
 			bool isSuccess = false;
 
-			// 생성자
 			CreateProfiler(ParticleManager* m) : owner(m) {}
 
-			// 소멸자: 함수가 리턴될 때 무조건 호출됨
 			~CreateProfiler() {
-				float total = tProto + tClone + tInit;
+				// 전체 시간 합산 (tAlloc = tSetup + tPoolAlloc)
+				float tAllocTotal = tSetup + tPoolAlloc;
+				float total = tProto + tClone + tAllocTotal + tGPU + tFinal;
 
 				if (isSuccess) {
-					// [성공 시 집계]
 					owner->m_createCount++;
 					owner->m_totalCreateTime += total;
 					owner->m_avgCreateTime = owner->m_totalCreateTime / owner->m_createCount;
 
-					// 세부 구간 평균 갱신
+					// 1. Prototype
 					owner->m_totalPrototypeTime += tProto;
 					owner->m_avgPrototypeTime = owner->m_totalPrototypeTime / owner->m_createCount;
 
+					// 2. Clone
 					owner->m_totalCloneTime += tClone;
 					owner->m_avgCloneTime = owner->m_totalCloneTime / owner->m_createCount;
 
-					owner->m_totalInitalizeTime += tInit;
+					// 3. CPU Alloc (합계 저장)
+					owner->m_totalAllocTime += tAllocTotal;
+					owner->m_avgAllocTime = owner->m_totalAllocTime / owner->m_createCount;
+
+					// ★ 3-A. CPU Setup (신규)
+					owner->m_totalSetupTime += tSetup;
+					owner->m_avgSetupTime = owner->m_totalSetupTime / owner->m_createCount;
+
+					// ★ 3-B. Pool Alloc (신규)
+					owner->m_totalPoolAllocTime += tPoolAlloc;
+					owner->m_avgPoolAllocTime = owner->m_totalPoolAllocTime / owner->m_createCount;
+
+					// 4. GPU Upload
+					owner->m_totalGpuTime += tGPU;
+					owner->m_avgGpuTime = owner->m_totalGpuTime / owner->m_createCount;
+
+					// 5. Finalize
+					float initTotal = tAllocTotal + tGPU + tFinal;
+					owner->m_totalInitalizeTime += initTotal;
 					owner->m_avgInitializeTime = owner->m_totalInitalizeTime / owner->m_createCount;
+
+					// Cache 통계
+					if (isCacheHit) {
+						owner->m_cacheHitCount++;
+						owner->m_totalCacheSearchTime += tCacheSearch;
+						owner->m_avgCacheSearchTime = owner->m_totalCacheSearchTime / owner->m_cacheHitCount;
+					}
+					else {
+						owner->m_cacheMissCount++;
+						owner->m_totalFileLoadTime += tFileLoad;
+						owner->m_avgFileLoadTime = owner->m_totalFileLoadTime / owner->m_cacheMissCount;
+					}
 				}
 				else {
-					// [실패 시 집계]
 					owner->m_failCount++;
 					owner->m_totalFailTime += total;
-					// 실패는 평균 시간에 섞지 않고 따로 보는 게 일반적입니다.
 				}
 			}
 		};
 
-		// 프로파일러 선언 (이제부터 이 함수가 끝나면 무조건 ~CreateProfiler가 실행됨)
 		CreateProfiler profiler(this);
 
 		// =================================================================================
@@ -148,18 +185,21 @@ namespace DE {
 
 		// 1. Prototype Load
 		{
-			// 람다에서 profiler.tProto에 바로 값을 넣습니다.
-			ScopedTimer timer([&](float t) { profiler.tProto = t; });
+			ScopedTimer protoTimer([&](float t) { profiler.tProto = t; });
 
-			auto prototypeIt = m_prototypes.find(path);
-			if (prototypeIt != m_prototypes.end()) {
-				prototype = prototypeIt->second.get();
-			}
-			else {
-				auto newSystem = ParticleLoader::Load<ParticleSystem>(path);
-				if (!newSystem) {
-					return nullptr; // ★ 여기서 리턴해도 profiler 소멸자가 호출되어 "실패 통계"에 기록됨
+			{
+				ScopedTimer cacheTimer([&](float t) { profiler.tCacheSearch = t; });
+				auto prototypeIt = m_prototypes.find(path);
+				if (prototypeIt != m_prototypes.end()) {
+					prototype = prototypeIt->second.get();
+					profiler.isCacheHit = true;
 				}
+			}
+
+			if (!profiler.isCacheHit) {
+				ScopedTimer loadTimer([&](float t) { profiler.tFileLoad = t; });
+				auto newSystem = ParticleLoader::Load<ParticleSystem>(path);
+				if (!newSystem) return nullptr;
 				newSystem->Initialize();
 				prototype = newSystem.get();
 				m_prototypes[path] = std::move(newSystem);
@@ -174,25 +214,38 @@ namespace DE {
 
 		ParticleSystem* clonedPtr = cloned.get();
 
-		// 3. Initialize & Allocation
+		// 데이터 준비 (이 변수들은 스코프 밖에서 유지되어야 함)
+		ParticleInitializer initialData;
+		PoolHandle handle;
+
+		// 3-1. CPU Init & Allocation (구간 분리)
 		{
-			ScopedTimer timer([&](float t) { profiler.tInit = t; });
+			// [A] InitializeCPU 측정
+			{
+				ScopedTimer timer([&](float t) { profiler.tSetup = t; });
+				cloned->InitializeCPU(initialData);
+			}
 
-			ParticleInitializer initialData;
-			cloned->InitializeCPU(initialData);
+			// [B] RequestAllocation 측정
+			{
+				ScopedTimer timer([&](float t) { profiler.tPoolAlloc = t; });
 
-			UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
-			UINT particleCount = cloned->GetTotalParticleCount();
-			UINT emitterCount = cloned->GetMaxEmitterCount();
+				UINT spawnPosCount = static_cast<UINT>(initialData.spawnPositions.size());
+				UINT particleCount = cloned->GetTotalParticleCount();
+				UINT emitterCount = cloned->GetMaxEmitterCount();
 
-			PoolHandle handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
-
-			// ★ 할당 실패
+				handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
+			}
 			if (!handle.IsActive()) {
-				return nullptr; // 여기서 리턴하면 tProto + tClone + tInit(여기까지 측정된 값)이 실패 시간에 누적됨
+				return nullptr;
 			}
 
 			cloned->SetPoolHandle(handle);
+		}
+
+		// 3-2. GPU Upload (구간 분리)
+		{
+			ScopedTimer timer([&](float t) { profiler.tGPU = t; });
 
 			if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX) {
 				m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
@@ -206,6 +259,11 @@ namespace DE {
 			UploadEmitterIDs(cloned.get(), cloned->GetInitialData());
 			m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 			m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
+		}
+
+		// 3-3. Finalize
+		{
+			ScopedTimer timer([&](float t) { profiler.tFinal = t; });
 
 			cloned->Initialize(initialData);
 			cloned->OnSpawn();
@@ -214,9 +272,7 @@ namespace DE {
 			RegisterActiveSystem(clonedPtr);
 		}
 
-		// ★ 모든 과정 통과! 성공 플래그를 켭니다.
 		profiler.isSuccess = true;
-
 		return clonedPtr;
 	}
 	
@@ -353,9 +409,25 @@ namespace DE {
 			{
 				// 1. 전체 요약 정보
 				ImGui::Text("Create Count: %d", m_createCount);
+
+				// ★ Cache 통계 추가
+				if (m_createCount > 0) {
+					ImGui::Spacing();
+					ImGui::Separator();
+					ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "Cache Statistics");
+					ImGui::Text("  Cache Hit : %d times", m_cacheHitCount);
+					ImGui::Text("  Cache Miss: %d times", m_cacheMissCount);
+
+					if (m_cacheHitCount + m_cacheMissCount > 0) {
+						float hitRate = (float)m_cacheHitCount / (m_cacheHitCount + m_cacheMissCount) * 100.0f;
+						ImVec4 hitColor = (hitRate > 80.0f) ? ImVec4(0, 1, 0, 1) :
+							(hitRate > 50.0f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
+						ImGui::TextColored(hitColor, "  Hit Rate  : %.1f%%", hitRate);
+					}
+				}
+
 				ImGui::Separator();
 
-				// (주의: 기존 코드에서 Total과 Avg 변수가 반대로 매핑되어 있어 수정했습니다)
 				ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Total Create Time: %.3f ms", m_totalCreateTime);
 				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Avg Create Time  : %.3f ms", m_avgCreateTime);
 
@@ -364,7 +436,7 @@ namespace DE {
 				ImGui::Text("Detailed Breakdown (Avg per Call)");
 				ImGui::Separator();
 
-				// 2. 구간별 상세 시간 (Table 형식이 보기 좋습니다)
+				// 2. 구간별 상세 시간
 				if (ImGui::BeginTable("DetailedMetrics", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 				{
 					ImGui::TableSetupColumn("Step");
@@ -378,18 +450,52 @@ namespace DE {
 					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalPrototypeTime);
 					ImGui::TableSetColumnIndex(2); ImGui::Text("%.3f", m_avgPrototypeTime);
 
+					// ★ Prototype 세부 정보 (들여쓰기)
+					if (m_cacheHitCount > 0) {
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0); ImGui::Text("   - Cache Search");
+						ImGui::TableSetColumnIndex(1); ImGui::Text("-");
+						ImGui::TableSetColumnIndex(2);
+						ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%.4f", m_avgCacheSearchTime);
+					}
+
+					if (m_cacheMissCount > 0) {
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0); ImGui::Text("   - File Load");
+						ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalFileLoadTime);
+						ImGui::TableSetColumnIndex(2);
+						ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "%.3f", m_avgFileLoadTime);
+					}
+
 					// Row 2: Instance Clone
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0); ImGui::Text("2. Clone");
 					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalCloneTime);
 					ImGui::TableSetColumnIndex(2); ImGui::Text("%.3f", m_avgCloneTime);
 
-					// Row 3: Initialize & Upload
+					// 3. Init & Alloc (CPU Total)
 					ImGui::TableNextRow();
-					ImGui::TableSetColumnIndex(0); ImGui::Text("3. Init & GPU");
-					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalInitalizeTime);
-					ImGui::TableSetColumnIndex(2); ImGui::Text("%.3f", m_avgInitializeTime);
+					ImGui::TableSetColumnIndex(0); ImGui::Text("3. Init (CPU Total)");
+					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalAllocTime);
+					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%.3f", m_avgAllocTime);
 
+					// ★ 3-A. Setup (InitializeCPU)
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0); ImGui::Text("   - InitCPU (Logic)");
+					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalSetupTime);
+					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(0.6f, 1.0f, 0.6f, 1.0f), "%.3f", m_avgSetupTime);
+
+					// ★ 3-B. Pool (RequestAllocation)
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0); ImGui::Text("   - Pool Alloc (Search)");
+					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalPoolAllocTime);
+					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(0.6f, 1.0f, 0.6f, 1.0f), "%.3f", m_avgPoolAllocTime);
+
+					// 4. Init (GPU Upload)
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0); ImGui::Text("4. Init (GPU Upload)");
+					ImGui::TableSetColumnIndex(1); ImGui::Text("%.3f", m_totalGpuTime);
+					ImGui::TableSetColumnIndex(2); ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%.3f", m_avgGpuTime);
 					ImGui::EndTable();
 				}
 
@@ -404,12 +510,14 @@ namespace DE {
 
 				ImGui::Separator();
 
-				// 3. 리셋 버튼 (모든 변수 초기화)
+				// 3. 리셋 버튼
 				if (ImGui::Button("Reset Metrics", ImVec2(-1, 0))) {
 					m_createCount = 0;
+					m_failCount = 0;
 
 					m_totalCreateTime = 0.0f;
 					m_avgCreateTime = 0.0f;
+					m_totalFailTime = 0.0f;
 
 					m_totalPrototypeTime = 0.0f;
 					m_avgPrototypeTime = 0.0f;
@@ -419,8 +527,18 @@ namespace DE {
 
 					m_totalInitalizeTime = 0.0f;
 					m_avgInitializeTime = 0.0f;
-					m_failCount = 0;       // 리셋
-					m_totalFailTime = 0.f; // 리셋
+
+					// ★ Cache 통계 초기화
+					m_cacheHitCount = 0;
+					m_cacheMissCount = 0;
+					m_totalCacheSearchTime = 0.0f;
+					m_avgCacheSearchTime = 0.0f;
+					m_totalFileLoadTime = 0.0f;
+					m_avgFileLoadTime = 0.0f;
+
+					m_totalAllocTime = 0.0f; m_avgAllocTime = 0.0f;
+					m_totalGpuTime = 0.0f; m_avgGpuTime = 0.0f;
+					m_totalInitalizeTime = 0.0f; m_avgInitializeTime = 0.0f;
 				}
 			}
 		}

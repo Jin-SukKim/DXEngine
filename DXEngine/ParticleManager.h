@@ -82,15 +82,32 @@ private:
 	float m_totalPrototypeTime = 0.f;
 	float m_avgPrototypeTime = 0.f;
 
+	UINT m_cacheHitCount = 0;
+	UINT m_cacheMissCount = 0;
+	float m_totalCacheSearchTime = 0.0f;
+	float m_avgCacheSearchTime = 0.0f;
+	float m_totalFileLoadTime = 0.0f;
+	float m_avgFileLoadTime = 0.0f;
+
 	float m_totalCloneTime = 0.f;
 	float m_avgCloneTime = 0.f;
 
 	float m_totalInitalizeTime = 0.f;
 	float m_avgInitializeTime = 0.f;
 
-	// [기존 변수들 아래에 추가]
+	float m_totalAllocTime = 0.f;
+	float m_avgAllocTime = 0.f;
+
+	float m_totalGpuTime = 0.f;
+	float m_avgGpuTime = 0.f;
+
 	UINT m_failCount = 0;           // 생성 실패 횟수
 	float m_totalFailTime = 0.f;    // 실패하는 데 걸린 총 시간 (낭비된 시간)
+	float m_totalSetupTime = 0.0f;      // InitializeCPU 시간 합계
+	float m_avgSetupTime = 0.0f;        // InitializeCPU 시간 평균
+
+	float m_totalPoolAllocTime = 0.0f;  // RequestAllocation 시간 합계
+	float m_avgPoolAllocTime = 0.0f;    // RequestAllocation 시간 평균
 };
 
 }
