@@ -96,9 +96,9 @@ namespace DE {
 	ParticleSystem* ParticleManager::CreateSystem(const std::wstring& path)
 	{
 		// 1. Prototype 로드 또는 캐시에서 가져오기
-		auto prototypeIt = m_prototypes.find(path);
 		ParticleSystem* prototype = nullptr;
 
+		auto prototypeIt = m_prototypes.find(path);
 		if (prototypeIt != m_prototypes.end()) {
 			prototype = prototypeIt->second.get();
 		}
@@ -145,10 +145,10 @@ namespace DE {
 			m_memoryPool->GetBillboardArgs(),
 			m_memoryPool->GetMeshArgs());
 
+		UploadEmitterIDs(cloned.get(), initialData);
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
-		UploadEmitterIDs(cloned.get(), initialData);
 		cloned->OnSpawn();
 
 		ParticleSystem* rawPtr = cloned.get();

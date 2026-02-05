@@ -107,6 +107,7 @@ namespace DE {
 	void ParticleSystem::InitializeCPU(
 		ParticleInitializer& initialData, UINT blockSize)
 	{
+		std::set<std::wstring> processedPaths;
 		// 1단계: Main Emitter 처리
 		for (auto& emitter : m_emitters) {
 			ProcessEmitter(emitter.get(), initialData, blockSize);
@@ -114,7 +115,7 @@ namespace DE {
 
 		// 2단계: SubEmitter 로드 (Main Emitter 처리 후)
 		for (auto& emitter : m_emitters) {
-			LoadSubEmitters(emitter.get(), initialData, blockSize);
+			LoadSubEmitters(emitter.get(), initialData, blockSize, processedPaths);
 		}
 
 		m_initialData = initialData;
@@ -159,31 +160,42 @@ namespace DE {
 
 	void ParticleSystem::LoadSubEmitters(
 		ParticleEmitter* emitter,
-		ParticleInitializer& initialData, UINT blockSize)
+		ParticleInitializer& initialData, UINT blockSize, std::set<std::wstring>& processedPaths)
 	{
 		// 먼저 현재 emitter의 SubEmitter 경로들을 복사 (iterator 무효화 방지)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
-		
+
 		for (const auto& sub : subEmittersCopy) {
-			// 이미 로드된 SubEmitter는 스킵
-			if (m_subEmitterPool.contains(sub.emitterPath))
-				continue;
+			ParticleEmitter* targetEmitter = nullptr;
 
-			auto subEmitter = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
-			if (!subEmitter)
-				continue;
+			// [Pool 검색]
+			auto it = m_subEmitterPool.find(sub.emitterPath);
+			if (it != m_subEmitterPool.end()) {
+				// ★ HIT: 복사 생성자 덕분에 이미 메모리에 존재함! (파일 로딩 X)
+				targetEmitter = it->second.get();
+			}
+			else {
+				// MISS: Prototype을 처음 생성할 때만 여기로 들어옴 (파일 로딩 O)
+				auto loaded = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
+				if (!loaded) continue;
 
-			// 먼저 풀에 저장 (포인터 획득 전에)
-			ParticleEmitter* rawPtr = subEmitter.get();
-			m_subEmitterPool[sub.emitterPath] = std::move(subEmitter);
+				targetEmitter = loaded.get();
+				m_subEmitterPool[sub.emitterPath] = std::move(loaded);
+			}
 
-			// SubEmitter 초기화
-			ProcessEmitter(rawPtr, initialData, blockSize);
+			// [초기화 수행] Pool에 있었든 새로 로드했든, 이번 시스템을 위해 오프셋을 할당해야 함
+			if (targetEmitter) {
+				ProcessEmitter(targetEmitter, initialData, blockSize);
 
-			// SubEmitter의 SubEmitter도 재귀적으로 로드
-			LoadSubEmitters(rawPtr, initialData, blockSize);
+				// 처리 완료 표시
+				processedPaths.insert(sub.emitterPath);
+
+				// 재귀 호출 (자식의 자식 처리)
+				LoadSubEmitters(targetEmitter, initialData, blockSize, processedPaths);
+			}
 		}
 	}
+
 
 	void ParticleSystem::InitializeGPU(
 		IndirectArgsBuffer<DispatchArgs>& dispatchArgs,
