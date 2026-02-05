@@ -37,6 +37,10 @@ struct ParticleMeshConsts {
 	UINT systemSlot;      // ¡Ú Ãß°¡: Shader¿¡¼­ ÀÎµ¦½Ì¿ë
 	float padding[1];
 };
+struct SpawnRef {
+	UINT currentEmitterID;
+	UINT padding[3];
+};
 
 class ParticleMemoryPool
 {
@@ -112,6 +116,9 @@ public:
 	void SyncReadOffset(UINT slotIndex);
 	float GetFragmentationRatio() const;
 
+	void ExecuteParticleCS();
+	void BindSpawnInfo(UINT emitterID);
+
 private:
 	UINT AllocateSystemSlot();
 	void FreeSystemSlot(UINT slot);
@@ -147,6 +154,8 @@ private:
 	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
 	std::vector<bool> m_systemSlotTable;
+
+	ConstantBuffer<SpawnRef> m_spawnRef;
 };
 
 }

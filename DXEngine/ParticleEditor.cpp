@@ -65,7 +65,9 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\TestEffect.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
 
 		// m_test2는 시나리오 중간(15초)에 생성하기 위해 비워둠
 		m_test2 = nullptr;
@@ -77,26 +79,26 @@ namespace DE {
 
 		// [부하 테스트 시나리오]
 		// 시작하자마자 IceExplosion 1700개 생성 (메모리 풀 한계 테스트)
-		OutputDebugStringA(">>> [STRESS TEST START] Spawning 1700 IceExplosions... <<<\n");
+		//OutputDebugStringA(">>> [STRESS TEST START] Spawning 1700 IceExplosions... <<<\n");
 
-		for (int i = 0; i < 1650; ++i)
-		{
-			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
-			if (sys) {
-				m_stressSystems.push_back(sys);
+		//for (int i = 0; i < 1650; ++i)
+		//{
+		//	auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
+		//	if (sys) {
+		//		m_stressSystems.push_back(sys);
 
-				// (선택) 시각적으로 겹치지 않게 하려면 위치 랜덤 분산
-				// sys->SetSpawnOffset(Vector3(rand()%100, 0, rand()%100)); 
-			}
-			else {
-				// 풀이 가득 차면 중단
-				OutputDebugStringA(">>> [LIMIT REACHED] Pool Full at index: ");
-				OutputDebugStringA(std::to_string(i).c_str());
-				OutputDebugStringA("\n");
-				break;
-			}
-		}
-		OutputDebugStringA(">>> [STRESS TEST SETUP COMPLETE] <<<\n");
+		//		// (선택) 시각적으로 겹치지 않게 하려면 위치 랜덤 분산
+		//		// sys->SetSpawnOffset(Vector3(rand()%100, 0, rand()%100)); 
+		//	}
+		//	else {
+		//		// 풀이 가득 차면 중단
+		//		OutputDebugStringA(">>> [LIMIT REACHED] Pool Full at index: ");
+		//		OutputDebugStringA(std::to_string(i).c_str());
+		//		OutputDebugStringA("\n");
+		//		break;
+		//	}
+		//}
+		//OutputDebugStringA(">>> [STRESS TEST SETUP COMPLETE] <<<\n");
 	}
 
 	ParticleEditor::~ParticleEditor()

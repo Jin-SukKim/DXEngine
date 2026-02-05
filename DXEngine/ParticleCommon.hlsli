@@ -1,6 +1,9 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
+#define TOTAL_MAX_PARTICLES 10000000
+#define TOTAL_MAX_EMITTERS 10000
+
 struct Particle
 {
     float3 position;
@@ -11,6 +14,7 @@ struct Particle
     float size;
     float3 rotation;
     float3 rotSpeed;
+    uint ownerID; // ★ 추가
 };
 
 RWStructuredBuffer<Particle> writeParticles : register(u6);
@@ -20,7 +24,6 @@ StructuredBuffer<Particle> readParticles : register(t6);
 StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
 
-// ★ EmitterID 구조체로 변경
 struct EmitterID
 {
     uint readParticleOffset;
@@ -31,7 +34,6 @@ struct EmitterID
     uint padding[3];
 };
 
-// ★ MeshConsts 구조체
 struct ParticleMeshConsts
 {
     matrix pWorld;
@@ -116,7 +118,8 @@ struct VortexConsts
     float3 vortexAxis;
     float vortexFalloff;
     float2 vortexPull;
-    float2 padding10;
+    uint active; // ★ 추가
+    float padding10;
 };
 
 struct OrbitConsts
@@ -125,6 +128,8 @@ struct OrbitConsts
     float rotationRate;
     float3 axis;
     float initialOffset;
+    uint active; // ★ 추가
+    float3 paddingOrbit;
 };
 
 struct ParticleConsts
@@ -140,10 +145,10 @@ struct ParticleConsts
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
 StructuredBuffer<float3> spawnPositions : register(t10);
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // ★ 추가
-StructuredBuffer<ParticleMeshConsts> meshConsts : register(t12); // ★ 추가
+StructuredBuffer<EmitterID> emitterIDs : register(t11);
+StructuredBuffer<ParticleMeshConsts> meshConsts : register(t12);
 
-// ★ ConstantBuffer는 현재 처리 중인 emitterID만 전달
+// ★ 현재 처리 중인 Emitter ID (Spawn 시 사용)
 cbuffer CurrentEmitterID : register(b5)
 {
     uint currentEmitterID;

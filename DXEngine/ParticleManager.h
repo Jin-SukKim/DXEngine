@@ -40,7 +40,8 @@ public:
 	void DestroyInstance(ParticleSystem* system);
 
 	// EmitterID 바인딩 (Manager에서 처리)
-	
+	void BindEmitterID(UINT globalSlotIndex);
+
 	// MeshConsts 관리 추가
 	void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
 	

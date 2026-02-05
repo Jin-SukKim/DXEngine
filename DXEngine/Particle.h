@@ -11,6 +11,7 @@ namespace DE {
 		float size = 1.f;
 		Vector3 rotation = Vector3(0.f);
 		Vector3 rotSpeed = Vector3(0.f);
+		UINT ownerID = 0;  // ★ 추가
 	};
 
     struct EmitterID {
@@ -18,8 +19,8 @@ namespace DE {
         UINT writeParticleOffset;
         UINT emitterID;
         UINT spawnPosOffset;
-        UINT systemSlot;  // ★ 추가
-        UINT padding[3];  // 16바이트 정렬
+        UINT systemSlot;
+        UINT padding[3];  // 32바이트 정렬
     };
 
     struct ParticleFrameConsts {
@@ -82,7 +83,8 @@ namespace DE {
         float vortexFalloff;  
 
         Vector2 vortexPull;
-        Vector2 padding10;    
+        UINT active = 0;  // ★ 추가
+        float padding10;    
     };
 
     struct OrbitConsts {
@@ -90,6 +92,8 @@ namespace DE {
         float rotationRate;
         Vector3 axis;
         float initialOffset;
+        UINT active = 0;  // ★ 추가
+        Vector3 paddingOrbit;
     };
 
     struct RenderConsts {

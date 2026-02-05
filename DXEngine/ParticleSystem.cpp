@@ -498,8 +498,8 @@ namespace DE {
 
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
-		// Manager를 통해 바인딩
-		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
+	    // Manager를 통해 바인딩 (globalEmitterID 사용)
+	    ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
 	}
 
 	void ParticleSystem::Reset()

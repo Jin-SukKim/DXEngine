@@ -45,6 +45,9 @@ namespace DE {
 		// ★ EmitterID와 MeshConsts를 Dynamic StructuredBuffer로 초기화
 		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
 		m_meshConsts.InitializeDynamicSRV(device, maxSystems);
+
+		// ★ SpawnRef ConstantBuffer 초기화
+		m_spawnRef.Initialize();
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
@@ -155,7 +158,7 @@ namespace DE {
 				m_emitterSlotTable[IDs[i]] = true;
 			
 			// SpawnPos blocks 마킹
-			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
+			for ( UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
 			handle.particleOffset = foundBlock * m_blockSize;
@@ -445,5 +448,27 @@ namespace DE {
 
 		UINT gapBlocks = lastUsedBlock - totalUsedBlocks;
 		return static_cast<float>(gapBlocks) / lastUsedBlock;
+	}
+	void ParticleMemoryPool::BindSpawnInfo(UINT emitterID)
+	{
+		if (emitterID >= m_maxEmitters) return;
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		m_spawnRef.GetCpu().currentEmitterID = emitterID;
+		m_spawnRef.Upload();
+		context->CSSetConstantBuffers(5, 1, m_spawnRef.GetAddressOf());
+	}
+
+	void ParticleMemoryPool::ExecuteParticleCS()
+	{
+	    auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+	    auto& particleCS = RenderBase::computeCommon.particle.particleCS;
+
+	    context->CSSetShader(particleCS.computeShader.Get(), nullptr, 0);
+	    
+	    // 전체 파티클 풀에 대해 Dispatch
+	    // 256 스레드 그룹으로 나눔
+	    UINT threadGroups = (m_maxParticles + 255) / 256;
+	    context->Dispatch(threadGroups, 1, 1);
 	}
 }

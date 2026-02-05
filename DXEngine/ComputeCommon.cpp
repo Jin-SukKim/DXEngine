@@ -14,17 +14,13 @@ namespace DE {
 		// Particle System Compute Shaders
 		D3D11Utils::CreateCS(device.Get(), L"ParticleArgsUpdateCS.hlsl", particleArgsUpdateCS);
 		D3D11Utils::CreateCS(device.Get(), L"ParticleMeshArgsUpdateCS.hlsl", particleMeshArgsUpdateCS);
-		D3D11Utils::CreateCS(device.Get(), L"InitBitonicSortCS.hlsl", initBitonicSortCS);
 		D3D11Utils::CreateCS(device.Get(), L"SpawnCS.hlsl", spawnCS);
 		D3D11Utils::CreateCS(device.Get(), L"ParticleCS.hlsl", particleCS);
-		D3D11Utils::CreateCS(device.Get(), L"VortexCS.hlsl", vortexCS);
-		D3D11Utils::CreateCS(device.Get(), L"OrbitCS.hlsl", orbitCS);
 	}
 
 	void ComputeCommon::initBitonicSortShaders(ComPtr<ID3D11Device>& device)
 	{
 		// BitonicSort Compute Shader
-		D3D11Utils::CreateCS(device.Get(), L"BitonicSortCS.hlsl", bitonicSortCS);
 	}
 
 	void ComputeCommon::initComputePSOs(ComPtr<ID3D11Device>& device)

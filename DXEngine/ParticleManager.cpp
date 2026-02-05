@@ -12,40 +12,38 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
-		// 1. Update 전체 통합 시간 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.update, t); });
 
-		// Defragment는 별도 함수 내부에서 측정 중
+		// Defragment 체크
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
 			Defragment();
 		}
 
-		// 2. [세부 측정] 데이터 준비 및 업로드
+		// ========================================
+		// Phase 1: Prepare (CPU 작업)
+		// ========================================
 		{
 			ScopedTimer tPrepare([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare, t); });
 
-			// (A) Setup: Compute 쉐이더 바인딩 및 초기화
+			// 1-1. WriteCount 초기화 및 버퍼 바인딩
 			{
 				ScopedTimer tSetup([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_setup, t); });
 				m_memoryPool->ClearWriteCount();
 				m_memoryPool->BindCompute();
 			}
 
-			// (B) CPU: 데이터 갱신 루프 (PreUpdate)
+			// 1-2. CPU PreUpdate (FrameConsts 갱신)
 			{
 				ScopedTimer tCpu([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_cpu, t); });
-
 				for (auto* system : m_activeSystems) {
 					if (system) {
-						// 주의: 루프 내부 할당이 성능에 영향을 줄 수 있음
-						std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
 						system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
 					}
 				}
 			}
 
-			// ★ 모든 버퍼를 한번에 업로드
+			// 1-3. GPU 업로드
 			{
 				ScopedTimer tUpload([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_upload, t); });
 				m_memoryPool->UploadFrameConsts();
@@ -54,35 +52,44 @@ namespace DE {
 			}
 		}
 
-		// 3. Indirect Args Update
+		// ========================================
+		// Phase 2: Args Update (GPU)
+		// ========================================
 		{
 			ScopedTimer tArgs([&](float t) { UpdateMetric(m_runtimeProfile.update_args, t); });
 			m_memoryPool->UpdateArgs();
 		}
 
-		// 4. System Logic Dispatch - ★ 개별 BindMeshConsts 제거
+		// ========================================
+		// Phase 3: Compute Dispatch (GPU)
+		// ========================================
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 
+			// ★ 3-1. ParticleCS: 기존 파티클 업데이트 (물리, 생명 등)
+			m_memoryPool->ExecuteParticleCS();
+
+			// ★ 3-2. 각 System의 SpawnCS 실행 (새 파티클 생성)
 			for (auto* system : m_activeSystems) {
 				if (system) {
-					// ★ BindMeshConsts 호출 제거 - Shader에서 SRV로 직접 인덱싱
 					system->Update(dt);
 				}
 			}
+			
 			m_memoryPool->UnbindCompute();
 		}
 
-		// SyncReadOffsets는 내부에서 측정 중
-		if (m_needsSyncReadOffset) {
-			SyncReadOffsets();
-			m_needsSyncReadOffset = false;
-		}
-
-		// 5. Swap Buffer
+		// ========================================
+		// Phase 4: Buffer Swap
+		// ========================================
 		if (m_memoryPool)
 		{
 			ScopedTimer tSwap([&](float t) { UpdateMetric(m_runtimeProfile.update_swap, t); });
+			
+			// ★ 4-1. Read 오프셋을 Write 오프셋으로 동기화
+			SyncReadOffsets();
+			
+			// ★ 4-2. 버퍼 인덱스 스왑 (Read ↔ Write)
 			m_memoryPool->SwapBuffer();
 		}
 	}
@@ -465,6 +472,9 @@ namespace DE {
 				m_memoryPool->SyncReadOffset(emitterID);
 			}
 		}
+		
+		// ★ 동기화 후 즉시 업로드
+		m_memoryPool->UploadEmitterIDs();
 	}
 
 	void ParticleManager::ResetMetrics()
@@ -472,5 +482,10 @@ namespace DE {
 		m_rebuildCount = 0;
 		m_avgRebuildTime = 0.0f;
 		m_totalRebuildTime = 0.0f;
+	}
+
+	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
+	{
+	    m_memoryPool->BindSpawnInfo(globalSlotIndex);
 	}
 }
