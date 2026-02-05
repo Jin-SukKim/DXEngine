@@ -473,7 +473,12 @@
       <Filter>public\ParticleSystem\Actor\Combination</Filter>
     </ClInclude>
     <ClInclude Include="ObjectPool.h" />
-    <ClInclude Include="ParticleMemoryPool.h" />
+    <ClInclude Include="ParticleMemoryPool.h">
+      <Filter>public\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopedTimer.h">
+      <Filter>public\ParticleSystem\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">

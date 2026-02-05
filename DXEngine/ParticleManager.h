@@ -74,6 +74,23 @@ private:
 	UINT m_rebuildCount = 0;
 	float m_totalRebuildTime = 0.0f;
 	float m_avgRebuildTime = 0.0f;
+
+	UINT m_createCount = 0;
+	float m_totalCreateTime = 0.f;
+	float m_avgCreateTime = 0.f;
+
+	float m_totalPrototypeTime = 0.f;
+	float m_avgPrototypeTime = 0.f;
+
+	float m_totalCloneTime = 0.f;
+	float m_avgCloneTime = 0.f;
+
+	float m_totalInitalizeTime = 0.f;
+	float m_avgInitializeTime = 0.f;
+
+	// [기존 변수들 아래에 추가]
+	UINT m_failCount = 0;           // 생성 실패 횟수
+	float m_totalFailTime = 0.f;    // 실패하는 데 걸린 총 시간 (낭비된 시간)
 };
 
 }
