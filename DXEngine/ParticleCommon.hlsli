@@ -20,12 +20,26 @@ StructuredBuffer<Particle> readParticles : register(t6);
 StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
 
-cbuffer EmitterID : register(b5)
+// ★ EmitterID 구조체로 변경
+struct EmitterID
 {
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset 통합
+    uint spawnPosOffset;
+    uint systemSlot;
+    uint padding[3];
+};
+
+// ★ MeshConsts 구조체
+struct ParticleMeshConsts
+{
+    matrix pWorld;
+    matrix pWorldIT;
+    uint vertexCount;
+    uint indexCount;
+    uint systemSlot;
+    float padding;
 };
 
 struct ParticleFrameConsts
@@ -46,7 +60,7 @@ struct SpawnConsts
 
     float2 lifeRange;
     int spawnShape;
-    uint bakedCount; // Baked/Custom 공용 개수
+    uint bakedCount;
     uint simulationSpace;
 
     uint spawnStartIndex;
@@ -125,16 +139,27 @@ struct ParticleConsts
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // 통합된 SpawnPosition 버퍼
+StructuredBuffer<float3> spawnPositions : register(t10);
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // ★ 추가
+StructuredBuffer<ParticleMeshConsts> meshConsts : register(t12); // ★ 추가
 
-cbuffer ParticleMeshConsts : register(b6)
+// ★ ConstantBuffer는 현재 처리 중인 emitterID만 전달
+cbuffer CurrentEmitterID : register(b5)
 {
-    matrix pWorld;
-    matrix pWorldIT;
-    uint vertexCount;
-    uint indexCount;
-    float2 padding;
+    uint currentEmitterID;
+    uint3 padding_b5;
 };
+
+// ★ Helper 함수
+EmitterID GetEmitterID()
+{
+    return emitterIDs[currentEmitterID];
+}
+
+ParticleMeshConsts GetMeshConsts()
+{
+    return meshConsts[emitterIDs[currentEmitterID].systemSlot];
+}
 
 struct SortElement
 {

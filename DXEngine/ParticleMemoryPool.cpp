@@ -42,17 +42,9 @@ namespace DE {
 
 		m_spawnPositions.Initialize(device, maxParticles);
 
-		// EmitterID ConstantBuffer Pool
-		m_emitterIDBuffers.resize(maxEmitters);
-		for (UINT i = 0; i < maxEmitters; ++i) {
-			m_emitterIDBuffers[i].Initialize();
-		}
-
-		// MeshConsts Pool (System별)
-		m_meshConstsBuffers.resize(maxSystems);
-		for (UINT i = 0; i < maxSystems; ++i) {
-			m_meshConstsBuffers[i].Initialize();
-		}
+		// ★ EmitterID와 MeshConsts를 Dynamic StructuredBuffer로 초기화
+		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
+		m_meshConsts.InitializeDynamicSRV(device, maxSystems);
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
@@ -226,14 +218,17 @@ namespace DE {
 		};
 		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
 
+		// ★ EmitterIDs와 MeshConsts를 SRV로 바인딩
 		ID3D11ShaderResourceView* srvs[] = { 
 			GetReadBuffer().GetSRV(),
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV(),
-			m_spawnPositions.GetSRV()
+			m_spawnPositions.GetSRV(),
+			m_emitterIDs.GetSRV(),
+			m_meshConsts.GetSRV()
 		};
-		context->CSSetShaderResources(6, 5, srvs);
+		context->CSSetShaderResources(6, 7, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindCompute()
@@ -243,33 +238,36 @@ namespace DE {
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
 
-		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 5, srvs);
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 7, srvs);
 	}
 	
 	void ParticleMemoryPool::BindRender()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
+		// ★ EmitterIDs와 MeshConsts 포함
 		ID3D11ShaderResourceView* srvs[] = {
 			GetReadBuffer().GetSRV(),
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
-			m_consts.GetSRV()
+			m_consts.GetSRV(),
+			m_emitterIDs.GetSRV(),
+			m_meshConsts.GetSRV()
 		};
-		context->CSSetShaderResources(6, 4, srvs);
-		context->VSSetShaderResources(6, 4, srvs);
-		context->PSSetShaderResources(6, 4, srvs);
+		context->CSSetShaderResources(6, 6, srvs);
+		context->VSSetShaderResources(6, 6, srvs);
+		context->PSSetShaderResources(6, 6, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindRender()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 4, srvs);
-		context->VSSetShaderResources(6, 4, srvs);
-		context->PSSetShaderResources(6, 4, srvs);
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 6, srvs);
+		context->VSSetShaderResources(6, 6, srvs);
+		context->PSSetShaderResources(6, 6, srvs);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()
@@ -283,26 +281,22 @@ namespace DE {
 
 	void ParticleMemoryPool::UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data)
 	{
-		if (emitterIDs.size() != data.size()) return; // 안전 장치
+		if (emitterIDs.size() != data.size()) return;
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
 		{
 			D3D11_BOX box;
-			// GPU 버퍼 내의 위치 (비연속적인 슬롯 ID 사용)
 			box.left = emitterIDs[i] * sizeof(ParticleConsts);
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// 중요: CPU 데이터 소스 위치를 i만큼 이동시켜야 함
 			const void* pSrcData = data.data() + i;
-
 			context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
 	}
 
-	// FrameConsts도 동일하게 수정
 	void ParticleMemoryPool::UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
@@ -316,9 +310,7 @@ namespace DE {
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleFrameConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// 중요: 소스 데이터 포인터 오프셋 적용
 			const void* pSrcData = data.data() + i;
-
 			context->UpdateSubresource(m_frameConsts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
 	}
@@ -360,39 +352,42 @@ namespace DE {
 		context->UpdateSubresource(m_spawnPositions.GetBuffer(), 0, &box, positions.data(), 0, 0);
 	}
 
+	// ★ EmitterID 업데이트 (CPU 버퍼에 저장, dirty 플래그 설정)
 	void ParticleMemoryPool::UpdateEmitterID(UINT slotIndex, const EmitterID& data)
 	{
 		if (slotIndex >= m_maxEmitters) return;
 		
-		m_emitterIDBuffers[slotIndex].SetCpuData(data);
-		m_emitterIDBuffers[slotIndex].Upload();
+		m_emitterIDs.GetCpu()[slotIndex] = data;
+		m_emitterIDsDirty = true;
 	}
 
-	void ParticleMemoryPool::BindEmitterID(UINT slotIndex)
+	// ★ 모든 EmitterID를 한번에 GPU로 업로드
+	void ParticleMemoryPool::UploadEmitterIDs()
 	{
-		if (slotIndex >= m_maxEmitters) return;
+		if (!m_emitterIDsDirty) return;
 		
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
-		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
-		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
+		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+		m_emitterIDs.Upload(context);
+		m_emitterIDsDirty = false;
 	}
 
+	// ★ MeshConsts 업데이트 (CPU 버퍼에 저장, dirty 플래그 설정)
 	void ParticleMemoryPool::UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
 	{
 		if (systemIndex >= m_maxSystems) return;
 		
-		m_meshConstsBuffers[systemIndex].SetCpuData(data);
-		m_meshConstsBuffers[systemIndex].Upload();
+		m_meshConsts.GetCpu()[systemIndex] = data;
+		m_meshConstsDirty = true;
 	}
 
-	void ParticleMemoryPool::BindMeshConsts(UINT systemIndex)
+	// ★ 모든 MeshConsts를 한번에 GPU로 업로드
+	void ParticleMemoryPool::UploadAllMeshConsts()
 	{
-		if (systemIndex >= m_maxSystems) return;
+		if (!m_meshConstsDirty) return;
 		
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
-		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
+		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+		m_meshConsts.Upload(context);
+		m_meshConstsDirty = false;
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)
@@ -400,14 +395,12 @@ namespace DE {
 	    std::vector<UINT> newOffsets;
 	    newOffsets.reserve(activeHandles.size());
 	    
-	    // 블록 테이블 초기화
 	    std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
 	    
 	    UINT currentBlock = 0;
 	    for (const auto& handle : activeHandles) {
 	        newOffsets.push_back(currentBlock * m_blockSize);
 	        
-	        // 블록 테이블 업데이트
 	        for (UINT i = 0; i < handle.blockCount; ++i) {
 	            m_particleBlockTable[currentBlock + i] = true;
 	        }
@@ -421,37 +414,35 @@ namespace DE {
 	{
 	    if (slotIndex >= m_maxEmitters) return;
 	    
-	    EmitterID& eID = m_emitterIDBuffers[slotIndex].GetCpu();
-	    eID.writeParticleOffset = newWriteOffset;
-	    m_emitterIDBuffers[slotIndex].Upload();
+	    m_emitterIDs.GetCpu()[slotIndex].writeParticleOffset = newWriteOffset;
+	    m_emitterIDsDirty = true;
 	}
 
 	void ParticleMemoryPool::SyncReadOffset(UINT slotIndex)
 	{
 	    if (slotIndex >= m_maxEmitters) return;
 	    
-	    EmitterID& eID = m_emitterIDBuffers[slotIndex].GetCpu();
+	    auto& eID = m_emitterIDs.GetCpu()[slotIndex];
 	    eID.readParticleOffset = eID.writeParticleOffset;
-	    m_emitterIDBuffers[slotIndex].Upload();
+	    m_emitterIDsDirty = true;
 	}
+
 	float ParticleMemoryPool::GetFragmentationRatio() const
 	{
 		if (m_particleBlockTable.empty()) return 0.0f;
 
-		// 마지막으로 사용 중인 블록 찾기
 		UINT lastUsedBlock = 0;
 		UINT totalUsedBlocks = 0;
 
 		for (UINT i = 0; i < static_cast<UINT>(m_particleBlockTable.size()); ++i) {
 			if (m_particleBlockTable[i]) {
-				lastUsedBlock = i + 1;  // 사용 범위의 끝
+				lastUsedBlock = i + 1;
 				++totalUsedBlocks;
 			}
 		}
 
 		if (lastUsedBlock == 0 || totalUsedBlocks == 0) return 0.0f;
 
-		// 단편화율 = (사용 범위 내 빈 공간) / (사용 범위)
 		UINT gapBlocks = lastUsedBlock - totalUsedBlocks;
 		return static_cast<float>(gapBlocks) / lastUsedBlock;
 	}

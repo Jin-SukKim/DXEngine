@@ -17,7 +17,9 @@ namespace DE {
         UINT readParticleOffset;
         UINT writeParticleOffset;
         UINT emitterID;
-        UINT spawnPosOffset;  // bakedOffset + customOffset 통합
+        UINT spawnPosOffset;
+        UINT systemSlot;  // ★ 추가
+        UINT padding[3];  // 16바이트 정렬
     };
 
     struct ParticleFrameConsts {

@@ -21,7 +21,7 @@ namespace DE {
 			Defragment();
 		}
 
-		// 2. [세부 측정] 데이터 준비 및 업로드 (Frame Constants)
+		// 2. [세부 측정] 데이터 준비 및 업로드
 		{
 			ScopedTimer tPrepare([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare, t); });
 
@@ -45,26 +45,28 @@ namespace DE {
 				}
 			}
 
-			// (C) GPU: 데이터 업로드
+			// ★ 모든 버퍼를 한번에 업로드
 			{
 				ScopedTimer tUpload([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_upload, t); });
 				m_memoryPool->UploadFrameConsts();
+				m_memoryPool->UploadEmitterIDs();
+				m_memoryPool->UploadAllMeshConsts();
 			}
 		}
 
-		// 3. [세부 측정] Indirect Args Update
+		// 3. Indirect Args Update
 		{
 			ScopedTimer tArgs([&](float t) { UpdateMetric(m_runtimeProfile.update_args, t); });
 			m_memoryPool->UpdateArgs();
 		}
 
-		// 4. [세부 측정] System Logic Dispatch
+		// 4. System Logic Dispatch - ★ 개별 BindMeshConsts 제거
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 
 			for (auto* system : m_activeSystems) {
 				if (system) {
-					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					// ★ BindMeshConsts 호출 제거 - Shader에서 SRV로 직접 인덱싱
 					system->Update(dt);
 				}
 			}
@@ -77,7 +79,7 @@ namespace DE {
 			m_needsSyncReadOffset = false;
 		}
 
-		// 5. [세부 측정] Swap Buffer
+		// 5. Swap Buffer
 		if (m_memoryPool)
 		{
 			ScopedTimer tSwap([&](float t) { UpdateMetric(m_runtimeProfile.update_swap, t); });
@@ -94,7 +96,7 @@ namespace DE {
 			m_memoryPool->BindRender();
 			for (auto* system : m_activeSystems) {
 				if (system) {
-					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					// ★ BindMeshConsts 호출 제거 - Shader에서 SRV로 직접 인덱싱
 					system->Render();
 				}
 			}
@@ -162,7 +164,6 @@ namespace DE {
 
 		clonedPtr->SetPoolHandle(handle);
 
-		// 4. GPU Resource Upload
 		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX)
 		{
 			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
@@ -176,8 +177,10 @@ namespace DE {
 		UploadEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
+		
+		// ★ 생성 시점에 즉시 업로드
+		m_memoryPool->UploadEmitterIDs();
 
-		// 5. Finalize & Registration
 		clonedPtr->Initialize(initialData);
 		clonedPtr->OnSpawn();
 
@@ -201,11 +204,6 @@ namespace DE {
 			[system](const std::unique_ptr<ParticleSystem>& ptr) { return ptr.get() == system; });
 
 		if (it != m_instances.end()) { m_instances.erase(it); }
-	}
-
-	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
-	{
-		m_memoryPool->BindEmitterID(globalSlotIndex);
 	}
 
 	void ParticleManager::RenderMemoryPoolGUI()
@@ -387,6 +385,8 @@ namespace DE {
 			eID.emitterID = handle.emitterIDs[i];
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
+			// ★ systemSlot 추가
+			eID.systemSlot = handle.systemSlot;
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
@@ -401,13 +401,9 @@ namespace DE {
 		pmConsts.worldIT = data.worldIT;
 		pmConsts.vertexCount = 0;
 		pmConsts.indexCount = 0;
+		pmConsts.systemSlot = systemSlot;
 		
 		m_memoryPool->UploadMeshConsts(systemSlot, pmConsts);
-	}
-
-	void ParticleManager::BindMeshConsts(UINT systemSlot)
-	{
-		m_memoryPool->BindMeshConsts(systemSlot);
 	}
 
 	void ParticleManager::Defragment()
