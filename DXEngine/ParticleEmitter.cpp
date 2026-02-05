@@ -192,12 +192,13 @@ namespace DE {
 			nullptr
 		};
 
-		m_ownerSystem->BindConstantID(m_emitterID);
-
 		for (auto& mod : m_modules)
 			mod->OnUpdate(simCtx);
 
+
 		if (!m_isDurationEnded) {
+			m_ownerSystem->BindConstantID(m_emitterID);
+			
 			for (auto& mod : m_modules)
 				mod->LateUpdate(simCtx);
 		}
@@ -223,8 +224,6 @@ namespace DE {
 			&billboardArgs,
 			&meshArgs,
 		};
-
-		m_ownerSystem->BindConstantID(m_emitterID);
 
 		for (auto& mod : m_modules)
 		 mod->OnRender(renderCtx);

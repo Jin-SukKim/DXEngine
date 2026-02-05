@@ -54,10 +54,8 @@ public:
 	float GetAvgRebuildTime() const { return m_avgRebuildTime; }
 private:
 	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
-	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
+	void UpdateEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 	void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
-
-	void SyncReadOffsets();
 
 	void ResetMetrics();
 
@@ -67,7 +65,7 @@ private:
 		float destroy = 0.f;
 		float defrag = 0.f;
 
-		// ★ Update 세부 항목 추가
+		// Update 세부 항목 추가
 		float update_prepare = 0.f; // FrameConsts 업로드 등 준비 시간
 		// Prepare 상세 분할
 		float update_prepare_setup = 0.f;   // ClearWriteCount, BindCompute

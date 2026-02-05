@@ -18,15 +18,15 @@ namespace DE {
 	{
 		ParticleModule::OnUpdate(ctx);
 
-		// ComputeCommon의 공유 ComputePSO 사용
-		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
-		ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
-		
-		// Barrier
-		ID3D11UnorderedAccessView* nullUAVs[4] = { nullptr, nullptr, nullptr, nullptr };
-		ctx.context->CSSetUnorderedAccessViews(0, 4, nullUAVs, nullptr);
-		ctx.context->CSSetShader(nullptr, 0, 0);
+		//// ComputeCommon의 공유 ComputePSO 사용
+		//auto& particleCS = RenderBase::computeCommon.particle.particleCS;
+		//ctx.context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
+		//ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
+		//
+		//// Barrier
+		//ID3D11UnorderedAccessView* nullUAVs[4] = { nullptr, nullptr, nullptr, nullptr };
+		//ctx.context->CSSetUnorderedAccessViews(0, 4, nullUAVs, nullptr);
+		//ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void ForceModule::LoadFromJson(const json& data)

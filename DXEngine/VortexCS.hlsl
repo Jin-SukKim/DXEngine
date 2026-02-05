@@ -1,6 +1,6 @@
 #include "ParticleCommon.hlsli"
 
-float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
+float3 CalculateVortexForce(float3 pos, float3 axis, float pull, uint emitterID) {
 
     VortexConsts vortex = consts[emitterID].vortex;
     float3 fromCenter = pos - vortex.vortexCenter;
@@ -26,12 +26,16 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
-    // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= writeCount[emitterID])
-        return;
+    // 1. [Global Index] 절대 주소로 접근
+    uint globalIndex = dtID.x;
 
-    Particle p = writeParticles[writeParticleOffset + dtID.x];
-    VortexConsts vortex = consts[emitterID].vortex;
+    // (안전장치) 전체 버퍼 크기를 넘어가면 리턴
+    if (globalIndex >= TOTAL_MAX_PARTICLES) return;
+
+    // 2. 파티클 읽기 (이전 프레임의 결과, 구멍이 숭숭 뚫려 있을 수 있음)
+    Particle p = readParticles[globalIndex];
+    EmitterID info = emitterIDs[p.ownerID];
+    VortexConsts vortex = consts[info.emitterID].vortex;
 
     // Vortex(소용돌이)        
     // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
@@ -44,9 +48,9 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 
     if (abs(vortex.vortexStrength) > 0.001 || abs(currentPull) > 0.001) {
         float3 normalizedAxis = normalize(vortex.vortexAxis);
-        float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
-        p.velocity += vForce * frameConsts[emitterID].dt;
+        float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull, info.emitterID);
+        p.velocity += vForce * frameConsts[info.emitterID].dt;
 
-        writeParticles[writeParticleOffset + dtID.x].velocity = p.velocity;
+        writeParticles[globalIndex].velocity = p.velocity;
     }
 }

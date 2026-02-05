@@ -82,7 +82,7 @@ template<typename T_ELEMENT>
 void StructuredBuffer<T_ELEMENT>::Upload(ID3D11DeviceContext* context)
 {
 	if (m_isDynamic) {
-		// ★ Dynamic 버퍼: Map / Unmap (DISCARD) 사용 -> 가장 빠름!
+		// Dynamic 버퍼: Map / Unmap (DISCARD) 사용 -> 가장 빠름!
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 		context->Map(m_gpu.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 		memcpy(mappedResource.pData, m_cpu.data(), m_cpu.size() * sizeof(T_ELEMENT));

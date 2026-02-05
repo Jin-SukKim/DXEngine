@@ -60,7 +60,11 @@ public:
 
 	// EmitterID ConstantBuffer 관리
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
-	void BindEmitterID(UINT slotIndex);
+
+	void UploadEmitterIDs();
+	void BindSpawnInfo(UINT emitterID);
+
+	void ExecuteDispatch();
 	
 	// MeshConsts 관리
 	void UploadMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
@@ -76,7 +80,7 @@ public:
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
-	std::vector<ConstantBuffer<EmitterID>>& GetEmitterIDs() { return m_emitterIDBuffers; }
+	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 	std::vector<ConstantBuffer<ParticleMeshConsts>>& GetMeshConsts() { return m_meshConstsBuffers; }
 
 	UINT GetBlockSize() { return m_blockSize; }
@@ -114,8 +118,6 @@ public:
 	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
 	void UpdateWriteOffset(UINT slotIndex, UINT newWriteOffset);
 
-	void SyncReadOffset(UINT slotIndex);
-
 	// public 멤버 함수에 추가
 	float GetFragmentationRatio() const;
 
@@ -145,7 +147,8 @@ private:
 	StructuredBuffer<Vector3> m_spawnPositions;
 
 	// EmitterID ConstantBuffer Pool
-	std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
+	StructuredBuffer<EmitterID> m_emitterIDs; // EmitterID를 저장할 buffer
+	ConstantBuffer<SpawnRef> m_spawnRef; // Spawn할때 각 Particle에 EmitterID를 저장하기 위해 사용할 constant Buffer
 
 	// MeshConsts Pool (System별)
 	std::vector<ConstantBuffer<ParticleMeshConsts>> m_meshConstsBuffers;

@@ -62,6 +62,8 @@ namespace DE {
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 
+			m_memoryPool->UploadEmitterIDs();
+			m_memoryPool->ExecuteDispatch();
 			for (auto* system : m_activeSystems) {
 				if (system) {
 					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
@@ -69,12 +71,6 @@ namespace DE {
 				}
 			}
 			m_memoryPool->UnbindCompute();
-		}
-
-		// SyncReadOffsets는 내부에서 측정 중
-		if (m_needsSyncReadOffset) {
-			SyncReadOffsets();
-			m_needsSyncReadOffset = false;
 		}
 
 		// 5. [세부 측정] Swap Buffer
@@ -87,7 +83,7 @@ namespace DE {
 
 	void ParticleManager::Render()
 	{
-		// ★ Render 시간 측정
+		// Render 시간 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
 		if (!m_activeSystems.empty()) {
@@ -173,7 +169,7 @@ namespace DE {
 			m_memoryPool->GetBillboardArgs(),
 			m_memoryPool->GetMeshArgs());
 
-		UploadEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
+		UpdateEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
@@ -189,7 +185,7 @@ namespace DE {
 	
 	void ParticleManager::DestroyInstance(ParticleSystem* system)
 	{
-		// ★ Destroy 시간 측정
+		// Destroy 시간 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.destroy, t); });
 
 		if (!system) return;
@@ -205,7 +201,7 @@ namespace DE {
 
 	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
 	{
-		m_memoryPool->BindEmitterID(globalSlotIndex);
+		m_memoryPool->BindSpawnInfo(globalSlotIndex);
 	}
 
 	void ParticleManager::RenderMemoryPoolGUI()
@@ -236,14 +232,14 @@ namespace DE {
 				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
 				
-				// ★ 단편화 비율
+				// 단편화 비율
 				float fragRatio = m_memoryPool->GetFragmentationRatio();
 				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0,1,0,1) : 
 								(fragRatio < 0.5f) ? ImVec4(1,1,0,1) : ImVec4(1,0,0,1);
 				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
 			}
 			
-			// ★ 성능 메트릭 섹션 추가
+			// 성능 메트릭 섹션 추가
 			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
@@ -330,7 +326,7 @@ namespace DE {
 					ImVec4 subColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
 					AddRow("  - Prepare & Upload (Total)", m_runtimeProfile.update_prepare, subColor);
 
-					// ★ Prepare 세부 항목 (들여쓰기)
+					// Prepare 세부 항목 (들여쓰기)
 					ImVec4 detailColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
 					AddRow("      > Setup (Bind)", m_runtimeProfile.update_prepare_setup, detailColor);
 					AddRow("      > CPU PreUpdate", m_runtimeProfile.update_prepare_cpu, detailColor);
@@ -367,7 +363,7 @@ namespace DE {
 
 	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
 	{
-		// ★ 측정
+		// 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.requestAlloc, t); });
 
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
@@ -375,9 +371,9 @@ namespace DE {
 		return handle;
 	}
 
-	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
+	void ParticleManager::UpdateEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
 	{
-		// ★ 측정
+		// 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.uploadIDs, t); });
 
 		const PoolHandle& handle = system->GetPoolHandle();
@@ -385,8 +381,7 @@ namespace DE {
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
 			EmitterID eID = initialData.emitterIDs[i];
 			eID.emitterID = handle.emitterIDs[i];
-			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
-			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
+			eID.particleOffset = handle.particleOffset + initialData.emitterIDs[i].particleOffset;
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
@@ -412,7 +407,7 @@ namespace DE {
 
 	void ParticleManager::Defragment()
 	{
-		// ★ 측정
+		// 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.defrag, t); });
 
 		if (m_activeSystems.empty()) return;
@@ -443,32 +438,17 @@ namespace DE {
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
 	{
-		// ★ 측정
+		// 측정
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.recalculateOffsets, t); });
 
 		PoolHandle& handle = system->GetPoolHandle();
 		const ParticleInitializer& initialData = system->GetInitialData();
-
 		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
 			UINT globalEmitterID = handle.emitterIDs[i];
-			UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
+			UINT localOffset = initialData.emitterIDs[i].particleOffset;
 			m_memoryPool->UpdateWriteOffset(globalEmitterID, newParticleOffset + localOffset);
 		}
 		handle.particleOffset = newParticleOffset;
-	}
-
-	void ParticleManager::SyncReadOffsets()
-	{
-		// ★ 측정
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.syncReadOffsets, t); });
-
-		for (auto* system : m_activeSystems) {
-			if (!system || !system->GetPoolHandle().IsActive()) continue;
-			const PoolHandle& handle = system->GetPoolHandle();
-			for (UINT emitterID : handle.emitterIDs) {
-				m_memoryPool->SyncReadOffset(emitterID);
-			}
-		}
 	}
 
 	void ParticleManager::ResetMetrics()

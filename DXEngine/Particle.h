@@ -11,13 +11,19 @@ namespace DE {
 		float size = 1.f;
 		Vector3 rotation = Vector3(0.f);
 		Vector3 rotSpeed = Vector3(0.f);
+        UINT ownerID;
 	};
 
     struct EmitterID {
-        UINT readParticleOffset;
-        UINT writeParticleOffset;
+        UINT particleOffset;
         UINT emitterID;
         UINT spawnPosOffset;  // bakedOffset + customOffset ХыЧе
+        UINT paddingID;
+    };
+
+    struct SpawnRef {
+        UINT targetEmitterID;
+        Vector3 padding;
     };
 
     struct ParticleFrameConsts {
@@ -80,7 +86,8 @@ namespace DE {
         float vortexFalloff;  
 
         Vector2 vortexPull;
-        Vector2 padding10;    
+        UINT active = false;
+        float padding10;    
     };
 
     struct OrbitConsts {
@@ -88,6 +95,9 @@ namespace DE {
         float rotationRate;
         Vector3 axis;
         float initialOffset;
+
+        UINT active = false;
+        Vector3 paddingOrbit;
     };
 
     struct RenderConsts {

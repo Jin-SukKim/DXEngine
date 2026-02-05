@@ -114,8 +114,7 @@ namespace DE {
 		EmitterID eID = { 0, 0, 0, 0 };
 
 		eID.emitterID = m_currentEmitterIndex;
-		eID.readParticleOffset = m_currentParticleOffset;
-		eID.writeParticleOffset = m_currentParticleOffset;
+		eID.particleOffset = m_currentParticleOffset;
 
 		emitter->SetOwner(this);
 		emitter->SetMemoryInfo(m_currentEmitterIndex);
@@ -154,7 +153,7 @@ namespace DE {
 			// [Pool 검색]
 			auto it = m_subEmitterPool.find(sub.emitterPath);
 			if (it != m_subEmitterPool.end()) {
-				// ★ HIT: 복사 생성자 덕분에 이미 메모리에 존재함! (파일 로딩 X)
+				// HIT: 복사 생성자 덕분에 이미 메모리에 존재함! (파일 로딩 X)
 				targetEmitter = it->second.get();
 			}
 			else {

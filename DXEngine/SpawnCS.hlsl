@@ -129,28 +129,31 @@ float3 SpawnFromPositions(inout uint rngState, uint posCount, uint startIndex, u
         idx = rngState % posCount;
     }
     
-    return spawnPositions[spawnPosOffset + idx];
+    return spawnPositions[emitterIDs[targetEmitterID].spawnPosOffset + idx];
 }
 
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
-    if (dtID.x >= frameConsts[emitterID].spawnCount)
+    if (dtID.x >= frameConsts[targetEmitterID].spawnCount)
         return;
 
-    if (writeCount[emitterID] >= frameConsts[emitterID].maxParticles)
+    if (writeCount[targetEmitterID] >= frameConsts[targetEmitterID].maxParticles)
         return;
 
     // 시드 초기화
-    uint rngState = dtID.x * 1973 + uint(frameConsts[emitterID].time * 10000.0f);
+    uint rngState = dtID.x * 1973 + uint(frameConsts[targetEmitterID].time * 10000.0f);
     rngState = wang_hash(rngState);
 
     Particle p;
+
+    p.ownerID = targetEmitterID;
+
     float3 spawnPos = float3(0, 0, 0);
 
     rngState = wang_hash(rngState);
 
-    SpawnConsts spawn = consts[emitterID].spawn;
+    SpawnConsts spawn = consts[targetEmitterID].spawn;
     
     if (spawn.spawnShape == 0) // BOX
         spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
@@ -173,7 +176,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     noiseDir.y = rand_signed(rngState);
     noiseDir.z = rand_signed(rngState);
 
-    ForceConsts force = consts[emitterID].force;
+    ForceConsts force = consts[targetEmitterID].force;
     float3 finalDir = normalize(force.velocity + noiseDir * force.randomDir + 1e-5f);
     float speed = lerp(force.speedRange.x, force.speedRange.y, rand_float(rngState));
     float3 localVel = finalDir * speed;
@@ -193,7 +196,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     p.life = lerp(spawn.lifeRange.x, spawn.lifeRange.y, rand_float(rngState));
     p.lifeMax = p.life;
 
-    VisualConsts visual = consts[emitterID].visual;
+    VisualConsts visual = consts[targetEmitterID].visual;
     // Color & Size
     p.color = visual.startColor;
     p.size = visual.sizeRange.x;
@@ -210,7 +213,6 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     // 파티클 추가
     uint index;
-    InterlockedAdd(writeCount[emitterID], 1, index);
-
-    writeParticles[writeParticleOffset + index] = p;
+    InterlockedAdd(writeCount[targetEmitterID], 1, index);
+    writeParticles[emitterIDs[targetEmitterID].particleOffset + index] = p;
 }

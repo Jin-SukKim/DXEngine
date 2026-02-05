@@ -1,6 +1,8 @@
 #ifndef __PARTICLE_COMMON_HLSLI__
 #define __PARTICLE_COMMON_HLSLI__
 
+#define TOTAL_MAX_PARTICLES 10000000
+
 struct Particle
 {
     float3 position;
@@ -11,6 +13,7 @@ struct Particle
     float size;
     float3 rotation;
     float3 rotSpeed;
+    uint ownerID;
 };
 
 RWStructuredBuffer<Particle> writeParticles : register(u6);
@@ -20,12 +23,18 @@ StructuredBuffer<Particle> readParticles : register(t6);
 StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
 
-cbuffer EmitterID : register(b5)
+struct EmitterID 
 {
-    uint readParticleOffset;
-    uint writeParticleOffset;
+    uint particleOffset;
     uint emitterID;
     uint spawnPosOffset;  // bakedOffset + customOffset 통합
+    uint paddingID;
+};
+
+cbuffer SpawnRef : register(b5) 
+{
+    uint targetEmitterID; // 지금 spawn 요청한 emitter의 index
+    float3 spawnPadding;
 };
 
 struct ParticleFrameConsts
@@ -102,7 +111,8 @@ struct VortexConsts
     float3 vortexAxis;
     float vortexFalloff;
     float2 vortexPull;
-    float2 padding10;
+    uint active;
+    float padding10;
 };
 
 struct OrbitConsts
@@ -111,6 +121,8 @@ struct OrbitConsts
     float rotationRate;
     float3 axis;
     float initialOffset;
+    uint active;
+    float3 paddingOrbit;
 };
 
 struct ParticleConsts
@@ -126,6 +138,7 @@ struct ParticleConsts
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
 StructuredBuffer<float3> spawnPositions : register(t10); // 통합된 SpawnPosition 버퍼
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // EmitterIds
 
 cbuffer ParticleMeshConsts : register(b6)
 {

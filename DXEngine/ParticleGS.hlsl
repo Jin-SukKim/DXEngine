@@ -8,6 +8,7 @@ struct GSInput
     float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
+    uint emitterID : PSIZE3;
 };
 
 struct ParticlePSInput
@@ -19,6 +20,7 @@ struct ParticlePSInput
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
     uint primID : SV_PrimitiveID;
+    uint emitterID : PSIZE3;
 };
 
 float2x2 GetRotationMatrix(float angle) {
@@ -41,6 +43,7 @@ void main(
     output.primID = primID;
     output.color = input[0].color;
     output.lifeRatio = input[0].lifeRatio;
+    output.emitterID = input[0].emitterID;
 
     output.posWorld = input[0].pos;
     output.center = input[0].pos;

@@ -17,9 +17,10 @@ struct ParticlePSInput
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
     uint primID : SV_PrimitiveID;
+    uint emitterID : PSIZE3;
 };
 
-float4 SampleParticleTexture(float3 uvw)
+float4 SampleParticleTexture(float3 uvw, uint emitterID)
 {
     float4 color = float4(1, 1, 1, 1);
 
@@ -50,7 +51,7 @@ float4 SampleParticleTexture(float3 uvw)
     return color;
 }
 
-float4 SpriteTexture(float lifeRatio, float2 uv) {
+float4 SpriteTexture(float lifeRatio, float2 uv, uint emitterID) {
     RenderConsts render = consts[emitterID].render;
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
         // 현재 frame
@@ -67,21 +68,21 @@ float4 SpriteTexture(float lifeRatio, float2 uv) {
         uv = (uv + float2(col, row)) * uvSize;
     }
 
-    return SampleParticleTexture(float3(uv, render.textureIdx));
+    return SampleParticleTexture(float3(uv, render.textureIdx), emitterID);
 }
 
 float4 main(ParticlePSInput input) : SV_TARGET
 {
     float4 finalColor = input.color;
 
-    RenderConsts render = consts[emitterID].render;
+    RenderConsts render = consts[input.emitterID].render;
     bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
     // Case 1: 텍스처가 있는 경우 (Sprite / Animation)
     // --------------------------------------------------------
     if (hasTexture)
     {
-        float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
+        float4 texColor = SpriteTexture(input.lifeRatio, input.uv, input.emitterID);
         finalColor *= texColor;
 
         // 텍스처의 알파가 너무 낮으면 그리지 않음 (Alpha Test)

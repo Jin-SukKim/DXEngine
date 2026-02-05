@@ -11,6 +11,7 @@ struct GSInput
     float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
+    uint emitterID : PSIZE3;
 };
 
 // 3D Euler -> Rotation Matrix
@@ -29,14 +30,21 @@ float3x3 GetRotationMatrix(float3 rot) {
 
 GSInput main(uint vertexID : SV_VertexID)
 {
-    RenderConsts render = consts[emitterID].render;
-    uint particleIdx = render.useSorting ? sortedElements[vertexID].value : vertexID;
+    // 비정렬 가정 (vertexID가 곧 메모리 주소)
+    uint particleIdx = vertexID;
 
-    Particle p = readParticles[readParticleOffset + particleIdx];
+    // 만약 Global Sorting을 쓴다면:
+    // uint particleIdx = sortedElements[vertexID].value;
+
+    // 2. 파티클 읽기
+    Particle p = readParticles[particleIdx];
 
     GSInput output;
 
-    SpawnConsts spawn = consts[emitterID].spawn;
+    EmitterID id = emitterIDs[p.ownerID];
+    output.emitterID = id.emitterID;
+
+    SpawnConsts spawn = consts[id.emitterID].spawn;
     // 로컬/월드 모드에 따라 렌더링 위치 결정
     if (spawn.simulationSpace == 1)
     {
