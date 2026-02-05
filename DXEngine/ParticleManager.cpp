@@ -171,7 +171,7 @@ namespace DE {
 
 		UpdateEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
-		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
+		m_memoryPool->UpdateFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
 		// 5. Finalize & Registration
 		clonedPtr->Initialize(initialData);

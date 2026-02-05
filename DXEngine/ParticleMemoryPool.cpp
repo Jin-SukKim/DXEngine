@@ -321,7 +321,7 @@ namespace DE {
 	}
 
 	// FrameConsts도 동일하게 수정
-	void ParticleMemoryPool::UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
+	void ParticleMemoryPool::UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
 
@@ -329,15 +329,7 @@ namespace DE {
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
 		{
-			D3D11_BOX box;
-			box.left = emitterIDs[i] * sizeof(ParticleFrameConsts);
-			box.right = static_cast<UINT>(box.left + sizeof(ParticleFrameConsts));
-			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
-
-			// 중요: 소스 데이터 포인터 오프셋 적용
-			const void* pSrcData = data.data() + i;
-
-			context->UpdateSubresource(m_frameConsts.GetBuffer(), 0, &box, pSrcData, 0, 0);
+			m_frameConsts.GetCpu()[emitterIDs[i]] = data[i];
 		}
 	}
 
@@ -388,7 +380,7 @@ namespace DE {
 	void ParticleMemoryPool::UploadEmitterIDs()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
-		m_frameConsts.Upload(context);
+		m_emitterIDs.Upload(context);
 	}
 
 	void ParticleMemoryPool::BindSpawnInfo(UINT emitterID)

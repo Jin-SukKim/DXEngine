@@ -132,8 +132,15 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // ============================================================================
     // [6] 결과 저장 (Global Compaction)
     // ============================================================================
+    // [6] 결과 저장
     uint writeIndex;
     InterlockedAdd(writeCount[info.emitterID], 1, writeIndex);
 
-    writeParticles[info.particleOffset + writeIndex] = p;
+    // [안전장치 추가] 이 Emitter의 최대 개수를 넘으면 저장하지 않음 (버퍼 침범 방지)
+    uint maxParticles = frameConsts[info.emitterID].maxParticles;
+
+    if (writeIndex < maxParticles)
+    {
+        writeParticles[info.particleOffset + writeIndex] = p;
+    }
 }
