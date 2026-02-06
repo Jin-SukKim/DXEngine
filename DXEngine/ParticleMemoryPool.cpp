@@ -43,10 +43,8 @@ namespace DE {
 		m_spawnPositions.Initialize(device, maxParticles);
 
 		// EmitterID ConstantBuffer Pool
-		m_emitterIDBuffers.resize(maxEmitters);
-		for (UINT i = 0; i < maxEmitters; ++i) {
-			m_emitterIDBuffers[i].Initialize();
-		}
+		m_emitterIdCPU.resize(maxEmitters);
+		m_emitterIDBuffer.Initialize();
 
 		// MeshConsts Pool (Systemº°)
 		m_meshConstsBuffers.resize(maxSystems);
@@ -358,8 +356,7 @@ namespace DE {
 	{
 		if (slotIndex >= m_maxEmitters) return;
 		
-		m_emitterIDBuffers[slotIndex].SetCpuData(data);
-		m_emitterIDBuffers[slotIndex].Upload();
+		m_emitterIdCPU[slotIndex] = data;
 	}
 
 	void ParticleMemoryPool::BindEmitterID(UINT slotIndex)
@@ -367,9 +364,13 @@ namespace DE {
 		if (slotIndex >= m_maxEmitters) return;
 		
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
-		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
-		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffers[slotIndex].GetAddressOf());
+
+		m_emitterIDBuffer.SetCpuData(m_emitterIdCPU[slotIndex]);
+		m_emitterIDBuffer.Upload();
+
+		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
+		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
+		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
 	}
 
 	void ParticleMemoryPool::UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
@@ -415,19 +416,18 @@ namespace DE {
 	{
 	    if (slotIndex >= m_maxEmitters) return;
 	    
-	    EmitterID& eID = m_emitterIDBuffers[slotIndex].GetCpu();
+	    EmitterID& eID = m_emitterIdCPU[slotIndex];
 	    eID.writeParticleOffset = newWriteOffset;
-	    m_emitterIDBuffers[slotIndex].Upload();
 	}
 
 	void ParticleMemoryPool::SyncReadOffset(UINT slotIndex)
 	{
 	    if (slotIndex >= m_maxEmitters) return;
 	    
-	    EmitterID& eID = m_emitterIDBuffers[slotIndex].GetCpu();
+	    EmitterID& eID = m_emitterIdCPU[slotIndex];
 	    eID.readParticleOffset = eID.writeParticleOffset;
-	    m_emitterIDBuffers[slotIndex].Upload();
 	}
+
 	float ParticleMemoryPool::GetFragmentationRatio() const
 	{
 		if (m_particleBlockTable.empty()) return 0.0f;

@@ -75,7 +75,7 @@ public:
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
-	std::vector<ConstantBuffer<EmitterID>>& GetEmitterIDs() { return m_emitterIDBuffers; }
+	std::vector<EmitterID>& GetEmitterIDs() { return m_emitterIdCPU; }
 	std::vector<ConstantBuffer<ParticleMeshConsts>>& GetMeshConsts() { return m_meshConstsBuffers; }
 
 	UINT GetBlockSize() { return m_blockSize; }
@@ -144,7 +144,9 @@ private:
 	StructuredBuffer<Vector3> m_spawnPositions;
 
 	// EmitterID ConstantBuffer Pool
-	std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
+	//std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
+	std::vector<EmitterID> m_emitterIdCPU;
+	ConstantBuffer<EmitterID> m_emitterIDBuffer;
 
 	// MeshConsts Pool (Systemº°)
 	std::vector<ConstantBuffer<ParticleMeshConsts>> m_meshConstsBuffers;
