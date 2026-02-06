@@ -11,23 +11,7 @@ namespace DE {
 		consts.axis = m_axis;
 		consts.rotationRate = m_rotationRate; // 셰이더에서 dt와 곱해 사용
 		consts.initialOffset = m_initialOffset;
-	}
-
-	void OrbitModule::OnUpdate(const SimulationContext& ctx)
-	{
-		ParticleModule::OnUpdate(ctx);
-
-		// ComputeCommon에 등록된 orbitCS 사용
-		auto& orbitCS = RenderBase::computeCommon.particle.orbitCS;
-		ctx.context->CSSetShader(orbitCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
-
-		// Unbind
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
-		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
-		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
-		ctx.context->CSSetShader(nullptr, 0, 0);
+		consts.active = 1;
 	}
 
 	void OrbitModule::LoadFromJson(const json& data)

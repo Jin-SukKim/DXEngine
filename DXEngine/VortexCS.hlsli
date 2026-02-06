@@ -1,5 +1,3 @@
-#include "ParticleCommon.hlsli"
-
 float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
 
     VortexConsts vortex = consts[emitterID].vortex;
@@ -23,19 +21,10 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull) {
     return ((tangent * vortex.vortexStrength) - (dir * pull)) * falloff;
 }
 
-[numthreads(1024, 1, 1)]
-void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
-{
-    // 유효 범위를 벗어나면 리턴
-    if (dtID.x >= writeCount[emitterID])
-        return;
-
-    Particle p = writeParticles[writeParticleOffset + dtID.x];
-    VortexConsts vortex = consts[emitterID].vortex;
-
+void CalculateVortex(inout Particle p, VortexConsts vortex, float dt) {
     // Vortex(소용돌이)        
-    // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
-    // 주의: p.life는 줄어드므로 (Max -> 0), 1 - (life/lifeMax) 해야 0 -> 1 로 흐름
+// 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
+// 주의: p.life는 줄어드므로 (Max -> 0), 1 - (life/lifeMax) 해야 0 -> 1 로 흐름
     float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
 
     // 시간 흐름에 따라 Pull 힘을 보간 (Start -> End)
@@ -45,8 +34,6 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     if (abs(vortex.vortexStrength) > 0.001 || abs(currentPull) > 0.001) {
         float3 normalizedAxis = normalize(vortex.vortexAxis);
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull);
-        p.velocity += vForce * frameConsts[emitterID].dt;
-
-        writeParticles[writeParticleOffset + dtID.x].velocity = p.velocity;
+        p.velocity += vForce * dt;
     }
 }

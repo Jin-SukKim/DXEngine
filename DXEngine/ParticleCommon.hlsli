@@ -102,7 +102,8 @@ struct VortexConsts
     float3 vortexAxis;
     float vortexFalloff;
     float2 vortexPull;
-    float2 padding10;
+    float padding10;
+    uint active;
 };
 
 struct OrbitConsts
@@ -111,6 +112,8 @@ struct OrbitConsts
     float rotationRate;
     float3 axis;
     float initialOffset;
+    uint active;
+    float3 orbitPadding;
 };
 
 struct ParticleConsts

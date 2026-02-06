@@ -12,23 +12,7 @@ namespace DE {
 		consts.vortexAxis = m_vortexAxis;
 		consts.vortexFalloff = m_vortexFalloff;
 		consts.vortexPull = m_vortexPull;
-	}
-
-	void VortexModule::OnUpdate(const SimulationContext& ctx)
-	{
-		ParticleModule::OnUpdate(ctx);
-
-		// ComputeCommon의 공유 ComputePSO 사용
-		auto& vortexCS = RenderBase::computeCommon.particle.vortexCS;
-		ctx.context->CSSetShader(vortexCS.computeShader.Get(), 0, 0);
-		ctx.context->DispatchIndirect(ctx.dispatchArgs->buffer, ctx.dispatchArgs->offset);
-		
-		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[1] = { nullptr };
-		ctx.context->CSSetShaderResources(0, 1, nullSRVs);
-		ctx.context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
-		ctx.context->CSSetShader(nullptr, 0, 0);
+		consts.active = 1;
 	}
 
 	void VortexModule::LoadFromJson(const json& data)

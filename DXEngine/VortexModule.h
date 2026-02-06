@@ -7,7 +7,6 @@ class VortexModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnUpdate(const SimulationContext& context) override;
 
 	ModulePriority GetPriority() override { return ModulePriority::UpdateForce; }
 

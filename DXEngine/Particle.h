@@ -80,7 +80,8 @@ namespace DE {
         float vortexFalloff;  
 
         Vector2 vortexPull;
-        Vector2 padding10;    
+        float padding10;    
+        UINT active = 0;
     };
 
     struct OrbitConsts {
@@ -88,6 +89,8 @@ namespace DE {
         float rotationRate;
         Vector3 axis;
         float initialOffset;
+        UINT active = 0;
+        Vector3 orbitPadding;
     };
 
     struct RenderConsts {
