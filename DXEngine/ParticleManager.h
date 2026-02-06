@@ -41,7 +41,7 @@ public:
 	void BindEmitterID(UINT globalSlotIndex);
 	
 	// MeshConsts 관리 추가
-	void UploadMeshConsts(UINT systemIndex, const MeshConstants& data);
+	void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
 	void BindMeshConsts(UINT systemIndex);
 	
 	// Debug

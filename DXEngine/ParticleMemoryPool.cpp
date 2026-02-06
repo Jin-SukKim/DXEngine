@@ -47,10 +47,8 @@ namespace DE {
 		m_emitterIDBuffer.Initialize();
 
 		// MeshConsts Pool (Systemº°)
-		m_meshConstsBuffers.resize(maxSystems);
-		for (UINT i = 0; i < maxSystems; ++i) {
-			m_meshConstsBuffers[i].Initialize();
-		}
+		m_meshConstsCPU.resize(maxSystems);
+		m_meshConstsBuffer.Initialize();
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
@@ -373,21 +371,22 @@ namespace DE {
 		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
 	}
 
-	void ParticleMemoryPool::UploadMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
+	void ParticleMemoryPool::UpdateMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
 	{
 		if (systemIndex >= m_maxSystems) return;
 		
-		m_meshConstsBuffers[systemIndex].SetCpuData(data);
-		m_meshConstsBuffers[systemIndex].Upload();
+		m_meshConstsCPU[systemIndex] = data;
 	}
 
 	void ParticleMemoryPool::BindMeshConsts(UINT systemIndex)
 	{
 		if (systemIndex >= m_maxSystems) return;
 		
+		m_meshConstsBuffer.SetCpuData(m_meshConstsCPU[systemIndex]);
+
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
-		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffers[systemIndex].GetAddressOf());
+		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
+		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)

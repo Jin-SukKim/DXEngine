@@ -62,7 +62,7 @@ public:
 	void BindEmitterID(UINT slotIndex);
 	
 	// MeshConsts °ü¸®
-	void UploadMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
+	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
 	 void BindMeshConsts(UINT systemSlot);
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
@@ -76,7 +76,7 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	std::vector<EmitterID>& GetEmitterIDs() { return m_emitterIdCPU; }
-	std::vector<ConstantBuffer<ParticleMeshConsts>>& GetMeshConsts() { return m_meshConstsBuffers; }
+	std::vector<ParticleMeshConsts>& GetMeshConsts() { return m_meshConstsCPU; }
 
 	UINT GetBlockSize() { return m_blockSize; }
 	UINT GetBlockCount() const { return m_blockCount; }
@@ -144,12 +144,12 @@ private:
 	StructuredBuffer<Vector3> m_spawnPositions;
 
 	// EmitterID ConstantBuffer Pool
-	//std::vector<ConstantBuffer<EmitterID>> m_emitterIDBuffers;
 	std::vector<EmitterID> m_emitterIdCPU;
 	ConstantBuffer<EmitterID> m_emitterIDBuffer;
 
 	// MeshConsts Pool (Systemº°)
-	std::vector<ConstantBuffer<ParticleMeshConsts>> m_meshConstsBuffers;
+	std::vector<ParticleMeshConsts> m_meshConstsCPU;
+	ConstantBuffer<ParticleMeshConsts> m_meshConstsBuffer;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable;

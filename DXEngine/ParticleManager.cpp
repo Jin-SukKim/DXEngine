@@ -318,7 +318,7 @@ namespace DE {
 		}
 	}
 
-	void ParticleManager::UploadMeshConsts(UINT systemSlot, const MeshConstants& data)
+	void ParticleManager::UpdateMeshConsts(UINT systemSlot, const MeshConstants& data)
 	{
 		ParticleMeshConsts pmConsts;
 		pmConsts.world = data.world;
@@ -326,7 +326,7 @@ namespace DE {
 		pmConsts.vertexCount = 0;
 		pmConsts.indexCount = 0;
 		
-		m_memoryPool->UploadMeshConsts(systemSlot, pmConsts);
+		m_memoryPool->UpdateMeshConsts(systemSlot, pmConsts);
 	}
 
 	void ParticleManager::BindMeshConsts(UINT systemSlot)

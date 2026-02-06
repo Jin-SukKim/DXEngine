@@ -540,7 +540,7 @@ namespace DE {
 		this->SetTransform(meshConsts);
 
 		// Pool에 업로드 (System 인덱스 사용)
-		ParticleManager::Get().UploadMeshConsts(m_poolHandle.systemSlot, meshConsts);
+		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, meshConsts);
 	}
 
 	void ParticleSystem::RegisterSpawnPositions(
