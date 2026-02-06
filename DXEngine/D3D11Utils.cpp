@@ -768,6 +768,37 @@ namespace DE {
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
 	}
 
+	void D3D11Utils::CreateStructuredBufferSRV(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv)
+	{
+		// Structured Buffer 持失
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = numElements * elementSize;
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		bufferDesc.StructureByteStride = elementSize;
+
+		if (initData) {
+			D3D11_SUBRESOURCE_DATA data = {};
+			data.pSysMem = initData;
+			data.SysMemPitch = 0;
+			data.SysMemSlicePitch = 0;
+
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
+		}
+		else
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+
+		// SRV 持失
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.FirstElement = 0;
+		srvDesc.Buffer.NumElements = numElements;
+		ThrowIfFailed(device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf()));
+	}
+
 	void D3D11Utils::CreateStagingBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer)
 	{
 		// StagingBuffer 持失

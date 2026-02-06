@@ -31,12 +31,11 @@ namespace DE {
 
 		for (auto* system : m_activeSystems) {
 			if (system) {
-				std::vector<ParticleFrameConsts> fsConsts(system->GetMaxEmitterCount());
-				system->PreUpdate(dt, fsConsts);
-				m_memoryPool->UploadFrameConsts(system->GetPoolHandle().emitterIDs, fsConsts);
+				system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
 			}
 		}
 
+		m_memoryPool->UploadFrameConsts();
 		m_memoryPool->UpdateArgs();
 
 		for (auto* system : m_activeSystems) {
@@ -146,7 +145,7 @@ namespace DE {
 
 		UploadEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
-		m_memoryPool->UploadFrameConsts(handle.emitterIDs, initialData.frameConsts);
+		m_memoryPool->UpdateFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
 		// 5. Finalize & Registration
 		clonedPtr->Initialize(initialData);

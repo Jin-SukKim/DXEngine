@@ -29,7 +29,7 @@ namespace DE {
 		}
 
 		m_consts.Initialize(device, maxEmitters);
-		m_frameConsts.Initialize(device, maxEmitters);
+		m_frameConsts.InitializeDynamicSRV(device, maxEmitters);
 
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
 		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
@@ -299,24 +299,20 @@ namespace DE {
 	}
 
 	// FrameConsts도 동일하게 수정
-	void ParticleMemoryPool::UploadFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
+	void ParticleMemoryPool::UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
-		{
-			D3D11_BOX box;
-			box.left = emitterIDs[i] * sizeof(ParticleFrameConsts);
-			box.right = static_cast<UINT>(box.left + sizeof(ParticleFrameConsts));
-			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
+			m_frameConsts.Get(emitterIDs[i]) = data[i];
+	}
 
-			// 중요: 소스 데이터 포인터 오프셋 적용
-			const void* pSrcData = data.data() + i;
-
-			context->UpdateSubresource(m_frameConsts.GetBuffer(), 0, &box, pSrcData, 0, 0);
-		}
+	void ParticleMemoryPool::UploadFrameConsts()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+		m_frameConsts.Upload(context);
 	}
 
 	void ParticleMemoryPool::UpdateArgs()
