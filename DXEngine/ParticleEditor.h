@@ -21,6 +21,7 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;
+		void StressTest(const float& dt);
 		void UpdateGUI() override;
 		void Render() override;
 
