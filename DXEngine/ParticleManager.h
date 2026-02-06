@@ -5,76 +5,121 @@
 
 namespace DE {
 
-struct ParticlePreset {
-	std::unique_ptr<ParticleSystem> prototype;
-	std::wstring filePath;
-	FileWatcher::CallbackID watcherID = 0;
-};
+	struct ParticlePreset {
+		std::unique_ptr<ParticleSystem> prototype;
+		std::wstring filePath;
+		FileWatcher::CallbackID watcherID = 0;
+	};
 
-struct PendingSystem {
-	ParticleSystem* system = nullptr;
-	UINT particleCount = 0;
-	UINT emitterCount = 0;
-	UINT spawnPosCount = 0;
-	int retryCount = 0;
-};
+	struct PendingSystem {
+		ParticleSystem* system = nullptr;
+		UINT particleCount = 0;
+		UINT emitterCount = 0;
+		UINT spawnPosCount = 0;
+		int retryCount = 0;
+	};
 
-class ParticleManager
-{
-public:
-	static ParticleManager& Get() {
-		static ParticleManager instance;
-		return instance;
-	}
+	// [Added] Runtime Profiling Data Structure
+	struct RuntimeProfile {
+		float update = 0.0f;
+		float update_prepare = 0.0f;
+		float update_prepare_setup = 0.0f;
+		float update_prepare_cpu = 0.0f;
+		float update_prepare_upload = 0.0f;
+		float update_args = 0.0f;
+		float update_dispatch = 0.0f;
+		float update_swap = 0.0f;
+		float render = 0.0f;
+		float destroy = 0.0f;
+		float defrag = 0.0f;
+		float requestAlloc = 0.0f;
+		float uploadIDs = 0.0f;
+		float recalculateOffsets = 0.0f;
+		float syncReadOffsets = 0.0f;
 
-	void Initialize();
-	void Update(const float& dt);
-	void Render();
-	
-	void RegisterActiveSystem(ParticleSystem* system);
-	void UnregisterActiveSystem(ParticleSystem* system);
+		void Reset() {
+			update = 0.0f;
+			update_prepare = 0.0f;
+			update_prepare_setup = 0.0f;
+			update_prepare_cpu = 0.0f;
+			update_prepare_upload = 0.0f;
+			update_args = 0.0f;
+			update_dispatch = 0.0f;
+			update_swap = 0.0f;
+			render = 0.0f;
+			destroy = 0.0f;
+			defrag = 0.0f;
+			requestAlloc = 0.0f;
+			uploadIDs = 0.0f;
+			recalculateOffsets = 0.0f;
+			syncReadOffsets = 0.0f;
+		}
+	};
 
-	ParticleSystem* CreateSystem(const std::wstring& path);
-	void DestroyInstance(ParticleSystem* system);
+	class ParticleManager
+	{
+	public:
+		static ParticleManager& Get() {
+			static ParticleManager instance;
+			return instance;
+		}
 
-	// EmitterID 바인딩 (Manager에서 처리)
-	void BindEmitterID(UINT globalSlotIndex);
-	
-	// MeshConsts 관리 추가
-	void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
-	void BindMeshConsts(UINT systemIndex);
-	
-	// Debug
-	void RenderMemoryPoolGUI();
-	void Defragment();
+		void Initialize();
+		void Update(const float& dt);
+		void Render();
 
-	UINT GetRebuildCount() const { return m_rebuildCount; }
-	float GetAvgRebuildTime() const { return m_avgRebuildTime; }
-private:
-	PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
-	void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
-	void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
+		void RegisterActiveSystem(ParticleSystem* system);
+		void UnregisterActiveSystem(ParticleSystem* system);
 
-	void SyncReadOffsets();
+		ParticleSystem* CreateSystem(const std::wstring& path);
+		void DestroyInstance(ParticleSystem* system);
 
-	void ResetMetrics();
+		// EmitterID 바인딩 (Manager에서 처리)
+		void BindEmitterID(UINT globalSlotIndex);
 
-private:
-	std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
-	std::vector<std::unique_ptr<ParticleSystem>> m_instances;
-	std::vector<ParticleSystem*> m_activeSystems;
+		// MeshConsts 관리 추가
+		void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
+		void BindMeshConsts(UINT systemIndex);
 
-	std::unique_ptr<ParticleMemoryPool> m_memoryPool;
+		// Debug
+		void RenderMemoryPoolGUI();
+		void Defragment();
 
-	// 멤버 변수 추가
-	bool m_needsDefragment = false;
-	bool m_needsSyncReadOffset = false;
+		UINT GetRebuildCount() const { return m_rebuildCount; }
+		float GetAvgRebuildTime() const { return m_avgRebuildTime; }
+	private:
+		PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
+		void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
+		void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
 
-	// private 멤버 추가
-	UINT m_rebuildCount = 0;
-	float m_totalRebuildTime = 0.0f;
-	float m_avgRebuildTime = 0.0f;
-};
+		void SyncReadOffsets();
+
+		void ResetMetrics();
+
+		// [Added] EMA Helper for smooth metric updates
+		void UpdateMetric(float& metric, float newValue) {
+			if (metric == 0.f) metric = newValue;
+			else metric = metric * 0.9f + newValue * 0.1f;
+		}
+
+	private:
+		std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
+		std::vector<std::unique_ptr<ParticleSystem>> m_instances;
+		std::vector<ParticleSystem*> m_activeSystems;
+
+		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
+
+		// 멤버 변수 추가
+		bool m_needsDefragment = false;
+		bool m_needsSyncReadOffset = false;
+
+		// private 멤버 추가
+		UINT m_rebuildCount = 0;
+		float m_totalRebuildTime = 0.0f;
+		float m_avgRebuildTime = 0.0f;
+
+		// [Added] Profiling Data
+		RuntimeProfile m_runtimeProfile;
+	};
 
 }
-
