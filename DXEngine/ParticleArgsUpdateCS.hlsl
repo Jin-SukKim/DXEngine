@@ -1,25 +1,33 @@
 #include "ParticleCommon.hlsli"
 
-// ¹ÙÀÎµù ½½·Ô (C++ ÄÚµå¿Í ¸ÂÃç¾ß ÇÔ)
-RWBuffer<uint> dispatchArgs : register(u0); // Update¿ë (DispatchIndirect)
+// ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ (C++ ï¿½Úµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
+RWBuffer<uint> dispatchArgs : register(u0); // per-emitter (DispatchIndirect)
+RWBuffer<uint> batchDispatchArgs : register(u1); // ë°°ì¹˜ dispatchìš©
 
-[numthreads(256, 1, 1)] // 1,1,1Àº ºñÈ¿À²ÀûÀÌ¹Ç·Î 256 ±ÇÀå
+[numthreads(256, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    // [¼öÁ¤ 1] emitterID(»ó¼ö) ´ë½Å ½º·¹µå ID »ç¿ë
     uint myEmitterID = DTid.x;
-
-    // ÇöÀç EmitterÀÇ ÆÄÆ¼Å¬ °³¼ö °¡Á®¿À±â
     uint count = readCount[myEmitterID];
 
-    // --------------------------------------------------------
-    // 1. Dispatch Args °»½Å (Update ´Ü°è¿ë)
-    // --------------------------------------------------------
-    // uint3 ±¸Á¶Ã¼ÀÌ¹Ç·Î stride = 3
+    // Per-emitter dispatch args (SpawnCS ë“±ì—ì„œ ì‚¬ìš©)
     uint dispatchIdx = myEmitterID * 3;
-    
-    // ParticleCSÀÇ [numthreads]°¡ (256, 1, 1)ÀÌ¶ó¸é 256À¸·Î ³ª´® (1024¶ó¸é 1024)
-    dispatchArgs[dispatchIdx + 0] = (count + 255) / 256;
+    dispatchArgs[dispatchIdx + 0] = (count + 1023) / 1024;
     dispatchArgs[dispatchIdx + 1] = 1;
     dispatchArgs[dispatchIdx + 2] = 1;
+
+    // ë°°ì¹˜ dispatch args: ì „ì²´ ì¤‘ ìµœëŒ€ endIndex ê¸°ë°˜ìœ¼ë¡œ ê·¸ë£¹ ìˆ˜ ê³„ì‚°
+    if (count > 0)
+    {
+        uint endIndex = emitterIDs[myEmitterID].readParticleOffset + count;
+        uint batchGroups = (endIndex + 1023) / 1024;
+        InterlockedMax(batchDispatchArgs[0], batchGroups);
+    }
+
+    // Y, ZëŠ” 1ë¡œ ì„¤ì •
+    if (DTid.x == 0)
+    {
+        batchDispatchArgs[1] = 1;
+        batchDispatchArgs[2] = 1;
+    }
 }

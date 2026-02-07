@@ -66,7 +66,7 @@ namespace DE {
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
 
 		// m_test2는 시나리오 중간(15초)에 생성하기 위해 비워둠
 		m_test2 = nullptr;

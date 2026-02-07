@@ -60,12 +60,12 @@ public:
 	void UpdateRenderArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 
-	// EmitterID ConstantBuffer °ü¸®
+	// EmitterID ConstantBuffer ï¿½ï¿½ï¿½ï¿½
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
 	void BindEmitterID(UINT slotIndex);
 	void UploadEmitterIDs();
 	
-	// MeshConsts °ü¸®
+	// MeshConsts ï¿½ï¿½ï¿½ï¿½
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
 	 void BindMeshConsts(UINT systemSlot);
 
@@ -86,32 +86,32 @@ public:
 	UINT GetBlockCount() const { return m_blockCount; }
 
 	// Debug
-	// µð¹ö±ë¿ë Getter Ãß°¡
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Getter ï¿½ß°ï¿½
 	UINT GetTotalBlockCount() const { return m_blockCount; }
 	UINT GetBlockSize() const { return m_blockSize; }
 
-	// »ç¿ë ÁßÀÎ ºí·Ï °³¼ö Ä«¿îÆ®
+	// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½ï¿½Æ®
 	UINT GetUsedBlockCount() const {
 		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
 	}
 
-	// ÀüÃ¼/»ç¿ëÁß Emitter ½½·Ô
+	// ï¿½ï¿½Ã¼/ï¿½ï¿½ï¿½ï¿½ï¿½ Emitter ï¿½ï¿½ï¿½ï¿½
 	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
 	UINT GetUsedEmitterSlots() const {
 		return (UINT)std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true);
 	}
 
-	// ÀüÃ¼/»ç¿ëÁß System ½½·Ô
+	// ï¿½ï¿½Ã¼/ï¿½ï¿½ï¿½ï¿½ï¿½ System ï¿½ï¿½ï¿½ï¿½
 	UINT GetTotalSystemSlots() const { return m_maxSystems; }
 	UINT GetUsedSystemSlots() const {
 		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
 	}
 
-	// ½Ã°¢È­¸¦ À§ÇØ Å×ÀÌºí ÀÚÃ¼¿¡ ´ëÇÑ ÂüÁ¶ ¹ÝÈ¯ (const)
+	// ï¿½Ã°ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ (const)
 	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
 	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
 
-	// ParticleMemoryPool.h¿¡ Ãß°¡
+	// ParticleMemoryPool.hï¿½ï¿½ ï¿½ß°ï¿½
 	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
 	void UpdateBlockTable(const std::vector<PoolHandle>& activeHandles);
 	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
@@ -119,11 +119,11 @@ public:
 
 	void SyncReadOffset(UINT slotIndex);
 
-	// public ¸â¹ö ÇÔ¼ö¿¡ Ãß°¡
+	// public ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 	float GetFragmentationRatio() const;
 
 private:
-	// System Slot °ü¸®
+	// System Slot ï¿½ï¿½ï¿½ï¿½
 	UINT AllocateSystemSlot();
 	void FreeSystemSlot(UINT slot);
 
@@ -142,6 +142,7 @@ private:
 	StructuredBuffer<ParticleFrameConsts> m_frameConsts;
 
 	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
+	IndirectArgsBuffer<DispatchArgs> m_batchDispatchArgs;  // ë°°ì¹˜ dispatchìš©
 	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
@@ -151,7 +152,7 @@ private:
 	StructuredBuffer<EmitterID> m_emitterIDs;
 	ConstantBuffer<EmitterID> m_emitterIDBuffer;
 
-	// MeshConsts Pool (Systemº°)
+	// MeshConsts Pool (Systemï¿½ï¿½)
 	std::vector<ParticleMeshConsts> m_meshConstsCPU;
 	ConstantBuffer<ParticleMeshConsts> m_meshConstsBuffer;
 

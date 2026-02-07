@@ -7,10 +7,10 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 {
     Particle p = readParticles[dtID.x];
     
-    if (dtID.x >= readCount[p.ownerID] || dtID.x < emitterIDs[p.ownerID].readParticleOffset)
+    EmitterID eID = emitterIDs[p.ownerID];
+    if (dtID.x < eID.readParticleOffset || dtID.x >= eID.readParticleOffset + readCount[p.ownerID])
         return;
     
-    EmitterID eID = emitterIDs[p.ownerID];
     float dt = frameConsts[p.ownerID].dt;
     p.life -= dt;
 

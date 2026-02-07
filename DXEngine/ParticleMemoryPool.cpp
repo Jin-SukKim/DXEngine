@@ -34,6 +34,9 @@ namespace DE {
 		std::vector<DispatchArgs> initialDispatch(m_maxEmitters, { 0, 1, 1 });
 		m_dispatchArgs.Initialize(device, initialDispatch, m_maxEmitters, sizeof(DispatchArgs), 3);
 
+		std::vector<DispatchArgs> initialBatchVec(1, { 0, 1, 1 });
+		m_batchDispatchArgs.Initialize(device, initialBatchVec, 1, sizeof(DispatchArgs), 3);
+
 		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
 		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
 
@@ -46,7 +49,7 @@ namespace DE {
 		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
 		m_emitterIDBuffer.Initialize();
 
-		// MeshConsts Pool (Systemº°)
+		// MeshConsts Pool (Systemï¿½ï¿½)
 		m_meshConstsCPU.resize(maxSystems);
 		m_meshConstsBuffer.Initialize();
 	}
@@ -76,13 +79,13 @@ namespace DE {
 		if (reqEmitterCount >= m_emitterSlotTable.size())
 			return handle;
 
-		// 1. System Slot ÇÒ´ç
+		// 1. System Slot ï¿½Ò´ï¿½
 		handle.systemSlot = AllocateSystemSlot();
 		if (handle.systemSlot == UINT_MAX) {
 			return handle;
 		}
 
-		// 2. Particle Block ÇÒ´ç
+		// 2. Particle Block ï¿½Ò´ï¿½
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
 		UINT foundBlock = UINT_MAX;
 		UINT consecutive = 0;
@@ -106,7 +109,7 @@ namespace DE {
 			foundBlock = UINT_MAX;
 		}
 
-		// 3. Emitter Slot ÇÒ´ç
+		// 3. Emitter Slot ï¿½Ò´ï¿½
 		std::vector<UINT> IDs;
 
 		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
@@ -118,7 +121,7 @@ namespace DE {
 			}
 		}
 
-		// 4. SpawnPosition Block ÇÒ´ç (reqSpawnPosCount > 0ÀÎ °æ¿ì)
+		// 4. SpawnPosition Block ï¿½Ò´ï¿½ (reqSpawnPosCount > 0ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
 		
@@ -144,21 +147,21 @@ namespace DE {
 			}
 		}
 
-		// ÇÒ´ç ¼º°ø ¿©ºÎ È®ÀÎ
+		// ï¿½Ò´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 		bool particleOk = (foundBlock != UINT_MAX);
 		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
 		if (particleOk && emitterOk && spawnPosOk) {
-			// Particle blocks ¸¶Å·
+			// Particle blocks ï¿½ï¿½Å·
 			for (UINT i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
 			
-			// Emitter slots ¸¶Å·
+			// Emitter slots ï¿½ï¿½Å·
 			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[IDs[i]] = true;
 			
-			// SpawnPos blocks ¸¶Å·
+			// SpawnPos blocks ï¿½ï¿½Å·
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
@@ -173,7 +176,7 @@ namespace DE {
 			}
 		}
 		else {
-			// ÇÒ´ç ½ÇÆÐ ½Ã System Slot ÇØÁ¦
+			// ï¿½Ò´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ System Slot ï¿½ï¿½ï¿½ï¿½
 			FreeSystemSlot(handle.systemSlot);
 			handle.systemSlot = UINT_MAX;
 		}
@@ -185,10 +188,10 @@ namespace DE {
 	{
 		if (!handle.IsActive()) return;
 
-		// System slot ÇØÁ¦
+		// System slot ï¿½ï¿½ï¿½ï¿½
 		FreeSystemSlot(handle.systemSlot);
 
-		// Particle blocks ÇØÁ¦
+		// Particle blocks ï¿½ï¿½ï¿½ï¿½
 		size_t startBlock = handle.particleOffset / m_blockSize;
 		for (size_t i = 0; i < handle.blockCount; ++i) {
 			if (startBlock + i < m_particleBlockTable.size()) {
@@ -196,13 +199,13 @@ namespace DE {
 			}
 		}
 
-		// Emitter slots ÇØÁ¦
+		// Emitter slots ï¿½ï¿½ï¿½ï¿½
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
 			if (handle.emitterIDs[i] < m_emitterSlotTable.size())
 				m_emitterSlotTable[handle.emitterIDs[i]] = false;
 		}
 
-		// SpawnPos blocks ÇØÁ¦
+		// SpawnPos blocks ï¿½ï¿½ï¿½ï¿½
 		if (handle.spawnPosOffset != UINT_MAX) {
 			startBlock = handle.spawnPosOffset / m_blockSize;
 			for (size_t i = 0; i < handle.spawnPosBlockCount; ++i) {
@@ -281,35 +284,34 @@ namespace DE {
 	void ParticleMemoryPool::ExcuteParticleLogic()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		// ComputeCommonÀÇ °øÀ¯ ComputePSO »ç¿ë
 		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
 		context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
-		context->DispatchIndirect(m_dispatchArgs.GetBuffer(), 0);
+		context->DispatchIndirect(m_batchDispatchArgs.GetBuffer(), 0);
 		context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void ParticleMemoryPool::UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data)
 	{
-		if (emitterIDs.size() != data.size()) return; // ¾ÈÀü ÀåÄ¡
+		if (emitterIDs.size() != data.size()) return; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
 		{
 			D3D11_BOX box;
-			// GPU ¹öÆÛ ³»ÀÇ À§Ä¡ (ºñ¿¬¼ÓÀûÀÎ ½½·Ô ID »ç¿ë)
+			// GPU ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ (ï¿½ñ¿¬¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ID ï¿½ï¿½ï¿½)
 			box.left = emitterIDs[i] * sizeof(ParticleConsts);
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// Áß¿ä: CPU µ¥ÀÌÅÍ ¼Ò½º À§Ä¡¸¦ i¸¸Å­ ÀÌµ¿½ÃÄÑ¾ß ÇÔ
+			// ï¿½ß¿ï¿½: CPU ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ iï¿½ï¿½Å­ ï¿½Ìµï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ ï¿½ï¿½
 			const void* pSrcData = data.data() + i;
 
 			context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
 	}
 
-	// FrameConstsµµ µ¿ÀÏÇÏ°Ô ¼öÁ¤
+	// FrameConstsï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½
 	void ParticleMemoryPool::UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
@@ -332,15 +334,20 @@ namespace DE {
 		auto& argsUpdateCS = RenderBase::computeCommon.particle.argsUpdateCS;
 		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
 
-		ID3D11UnorderedAccessView* uavs[] = { 
-			m_dispatchArgs.GetUAV()
+		// ë°°ì¹˜ args ì´ˆê¸°í™” (InterlockedMax ì „ì— 0ìœ¼ë¡œ)
+		const UINT clearVal[4] = { 0, 0, 0, 0 };
+		context->ClearUnorderedAccessViewUint(m_batchDispatchArgs.GetUAV(), clearVal);
+
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_dispatchArgs.GetUAV(),        // u0
+			m_batchDispatchArgs.GetUAV()    // u1
 		};
-		context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 
 		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
 
-		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr };
-		context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
 	}
 
 	void ParticleMemoryPool::UpdateRenderArgs()
@@ -423,14 +430,14 @@ namespace DE {
 	    std::vector<UINT> newOffsets;
 	    newOffsets.reserve(activeHandles.size());
 	    
-	    // ºí·Ï Å×ÀÌºí ÃÊ±âÈ­
+	    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½Ê±ï¿½È­
 	    std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
 	    
 	    UINT currentBlock = 0;
 	    for (const auto& handle : activeHandles) {
 	        newOffsets.push_back(currentBlock * m_blockSize);
 	        
-	        // ºí·Ï Å×ÀÌºí ¾÷µ¥ÀÌÆ®
+	        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 	        for (UINT i = 0; i < handle.blockCount; ++i) {
 	            m_particleBlockTable[currentBlock + i] = true;
 	        }
@@ -459,20 +466,20 @@ namespace DE {
 	{
 		if (m_particleBlockTable.empty()) return 0.0f;
 
-		// ¸¶Áö¸·À¸·Î »ç¿ë ÁßÀÎ ºí·Ï Ã£±â
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
 		UINT lastUsedBlock = 0;
 		UINT totalUsedBlocks = 0;
 
 		for (UINT i = 0; i < static_cast<UINT>(m_particleBlockTable.size()); ++i) {
 			if (m_particleBlockTable[i]) {
-				lastUsedBlock = i + 1;  // »ç¿ë ¹üÀ§ÀÇ ³¡
+				lastUsedBlock = i + 1;  // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 				++totalUsedBlocks;
 			}
 		}
 
 		if (lastUsedBlock == 0 || totalUsedBlocks == 0) return 0.0f;
 
-		// ´ÜÆíÈ­À² = (»ç¿ë ¹üÀ§ ³» ºó °ø°£) / (»ç¿ë ¹üÀ§)
+		// ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ = (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) / (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		UINT gapBlocks = lastUsedBlock - totalUsedBlocks;
 		return static_cast<float>(gapBlocks) / lastUsedBlock;
 	}
