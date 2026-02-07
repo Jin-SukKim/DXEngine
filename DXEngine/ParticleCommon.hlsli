@@ -11,6 +11,7 @@ struct Particle
     float size;
     float3 rotation;
     float3 rotSpeed;
+    uint ownerID;
 };
 
 RWStructuredBuffer<Particle> writeParticles : register(u6);
@@ -21,6 +22,14 @@ StructuredBuffer<uint> readCount : register(t7);
 Texture2DArray particleTex : register(t14);
 
 cbuffer EmitterID : register(b5)
+{
+    uint readParticleOffset;
+    uint writeParticleOffset;
+    uint emitterID;
+    uint spawnPosOffset;  // bakedOffset + customOffset 통합
+};
+
+struct EmitterID
 {
     uint readParticleOffset;
     uint writeParticleOffset;
@@ -129,6 +138,7 @@ struct ParticleConsts
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
 StructuredBuffer<float3> spawnPositions : register(t10); // 통합된 SpawnPosition 버퍼
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // 통합된 SpawnPosition 버퍼
 
 cbuffer ParticleMeshConsts : register(b6)
 {

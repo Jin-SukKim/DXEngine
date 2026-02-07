@@ -11,6 +11,7 @@ namespace DE {
 		float size = 1.f;
 		Vector3 rotation = Vector3(0.f);
 		Vector3 rotSpeed = Vector3(0.f);
+        UINT ownerID = UINT_MAX;
 	};
 
     struct EmitterID {

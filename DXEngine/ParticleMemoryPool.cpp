@@ -43,7 +43,7 @@ namespace DE {
 		m_spawnPositions.Initialize(device, maxParticles);
 
 		// EmitterID ConstantBuffer Pool
-		m_emitterIdCPU.resize(maxEmitters);
+		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
 		m_emitterIDBuffer.Initialize();
 
 		// MeshConsts Pool (System별)
@@ -227,9 +227,10 @@ namespace DE {
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV(),
-			m_spawnPositions.GetSRV()
+			m_spawnPositions.GetSRV(),
+			m_emitterIDs.GetSRV()
 		};
-		context->CSSetShaderResources(6, 5, srvs);
+		context->CSSetShaderResources(6, 6, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindCompute()
@@ -239,8 +240,8 @@ namespace DE {
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
 
-		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 5, srvs);
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 6, srvs);
 	}
 	
 	void ParticleMemoryPool::BindRender()
@@ -275,6 +276,16 @@ namespace DE {
 		const UINT clearVal[1] = { 0 };
 		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
 		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+	}
+
+	void ParticleMemoryPool::ExcuteParticleLogic()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		// ComputeCommon의 공유 ComputePSO 사용
+		auto& particleCS = RenderBase::computeCommon.particle.particleCS;
+		context->CSSetShader(particleCS.computeShader.Get(), 0, 0);
+		context->DispatchIndirect(m_dispatchArgs.GetBuffer(), 0);
+		context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void ParticleMemoryPool::UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data)
@@ -322,16 +333,32 @@ namespace DE {
 		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
 
 		ID3D11UnorderedAccessView* uavs[] = { 
-			m_dispatchArgs.GetUAV(), 
-			m_billboardArgsBuffer.GetUAV(),
-			m_meshArgsBuffer.GetUAV() 
+			m_dispatchArgs.GetUAV()
 		};
-		context->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
 
 		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
 
-		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(0, 3, nullUAVs, nullptr);
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr };
+		context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+	}
+
+	void ParticleMemoryPool::UpdateRenderArgs()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		auto& argsUpdateCS = RenderBase::computeCommon.particle.renderArgsUpdateCS;
+		context->CSSetShader(argsUpdateCS.computeShader.Get(), nullptr, 0);
+
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_billboardArgsBuffer.GetUAV(),
+			m_meshArgsBuffer.GetUAV()
+		};
+		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+
+		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
+
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
 	}
 
 	void ParticleMemoryPool::UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions)
@@ -350,7 +377,7 @@ namespace DE {
 	{
 		if (slotIndex >= m_maxEmitters) return;
 		
-		m_emitterIdCPU[slotIndex] = data;
+		m_emitterIDs.Get(slotIndex) = data;
 	}
 
 	void ParticleMemoryPool::BindEmitterID(UINT slotIndex)
@@ -359,12 +386,18 @@ namespace DE {
 		
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		m_emitterIDBuffer.SetCpuData(m_emitterIdCPU[slotIndex]);
+		m_emitterIDBuffer.SetCpuData(m_emitterIDs.Get(slotIndex));
 		m_emitterIDBuffer.Upload();
 
 		context->CSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
 		context->VSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
 		context->PSSetConstantBuffers(5, 1, m_emitterIDBuffer.GetAddressOf());
+	}
+
+	void ParticleMemoryPool::UploadEmitterIDs()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		m_emitterIDs.Upload(context.Get());
 	}
 
 	void ParticleMemoryPool::UpdateMeshConsts(UINT systemIndex, const ParticleMeshConsts& data)
@@ -411,16 +444,15 @@ namespace DE {
 	{
 	    if (slotIndex >= m_maxEmitters) return;
 	    
-	    EmitterID& eID = m_emitterIdCPU[slotIndex];
-	    eID.writeParticleOffset = newWriteOffset;
+		m_emitterIDs.Get(slotIndex).writeParticleOffset = newWriteOffset;
 	}
 
 	void ParticleMemoryPool::SyncReadOffset(UINT slotIndex)
 	{
 	    if (slotIndex >= m_maxEmitters) return;
 	    
-	    EmitterID& eID = m_emitterIdCPU[slotIndex];
-	    eID.readParticleOffset = eID.writeParticleOffset;
+	    EmitterID& eID = m_emitterIDs.Get(slotIndex);
+		eID.readParticleOffset = eID.writeParticleOffset;
 	}
 
 	float ParticleMemoryPool::GetFragmentationRatio() const

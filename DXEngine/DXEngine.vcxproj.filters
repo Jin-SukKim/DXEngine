@@ -878,6 +878,9 @@
     <FxCompile Include="TextureSpawnBakeCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
+    <FxCompile Include="RenderArgsUpdateCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BlinnPhong.hlsli">

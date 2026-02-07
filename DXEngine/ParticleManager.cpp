@@ -55,6 +55,7 @@ namespace DE {
 			{
 				ScopedTimer tUpload([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_upload, t); });
 				m_memoryPool->UploadFrameConsts();
+				m_memoryPool->UploadEmitterIDs();
 			}
 		}
 
@@ -67,7 +68,7 @@ namespace DE {
 		// [Added] Measure Dispatch Logic
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
-
+			m_memoryPool->ExcuteParticleLogic();
 			for (auto* system : m_activeSystems) {
 				if (system) {
 					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
@@ -98,6 +99,7 @@ namespace DE {
 		if (m_activeSystems.empty()) return;
 
 		m_memoryPool->BindRender();
+		m_memoryPool->UpdateRenderArgs();
 		for (auto* system : m_activeSystems) {
 			if (system) {
 				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);

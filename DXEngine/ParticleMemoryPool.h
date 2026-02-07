@@ -51,16 +51,19 @@ public:
 	void BindRender();
 	void UnbindRender();
 	void ClearWriteCount();
+	void ExcuteParticleLogic();
 
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
 	void UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data);
 	void UploadFrameConsts();
 	void UpdateArgs();
+	void UpdateRenderArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 
 	// EmitterID ConstantBuffer 包府
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
 	void BindEmitterID(UINT slotIndex);
+	void UploadEmitterIDs();
 	
 	// MeshConsts 包府
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
@@ -76,7 +79,7 @@ public:
 	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
-	std::vector<EmitterID>& GetEmitterIDs() { return m_emitterIdCPU; }
+	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 	std::vector<ParticleMeshConsts>& GetMeshConsts() { return m_meshConstsCPU; }
 
 	UINT GetBlockSize() { return m_blockSize; }
@@ -145,7 +148,7 @@ private:
 	StructuredBuffer<Vector3> m_spawnPositions;
 
 	// EmitterID ConstantBuffer Pool
-	std::vector<EmitterID> m_emitterIdCPU;
+	StructuredBuffer<EmitterID> m_emitterIDs;
 	ConstantBuffer<EmitterID> m_emitterIDBuffer;
 
 	// MeshConsts Pool (System喊)

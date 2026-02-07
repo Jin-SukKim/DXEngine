@@ -220,6 +220,7 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID, uint3 dtID : SV
         // 예약은 했지만(Atomic은 되돌릴 수 없으므로), 범위를 넘어가면 쓰지 않고 버림
         if (finalIndex < frameConsts[emitterID].maxParticles)
         {
+            p.ownerID = emitterID;
             writeParticles[writeParticleOffset + finalIndex] = p;
         }
     }
