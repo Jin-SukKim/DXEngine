@@ -2,6 +2,54 @@
 #include "ParticleProperties.h"
 
 namespace DE {
+    // Forward declarations for batching
+    enum class BlendMode : int;
+
+    // ========== Batch Rendering Structures ==========
+
+    // GPU-side: 배치 내 각 Emitter의 파티클 범위 정보
+    struct BatchEmitterInfo {
+        UINT globalEmitterID;    // -> consts[], emitterIDs[] 인덱싱
+        UINT readParticleOffset; // 파티클 버퍼 내 시작 위치
+        UINT particleCount;      // 해당 emitter의 파티클 수
+        UINT batchVertexStart;   // 배치 내 누적 vertex/instance ID 시작점
+    };
+
+    // GPU-side: 배치별 상수
+    struct BatchConsts {
+        UINT batchEmitterCount;  // 이 배치에 포함된 emitter 수
+        UINT batchInfoOffset;    // batchInfo 버퍼 내 시작 인덱스
+        UINT batchPadding[2];
+    };
+
+    // CPU-side: 배치 그룹 키 (같은 키를 가진 emitter들은 하나의 draw call로 병합)
+    struct BatchKey {
+        bool isMesh;
+        int blendMode;        // BlendMode enum 값
+        int textureMode;      // 0=Material, 1=SingleTexture, 2=TextureArray
+        int singleTextureIdx; // SingleTexture 모드일 때만 사용
+        int modelIdx;         // Mesh일 때만 사용 (-1이면 Billboard)
+
+        bool operator<(const BatchKey& o) const {
+            if (isMesh != o.isMesh) return isMesh < o.isMesh;
+            if (blendMode != o.blendMode) return blendMode < o.blendMode;
+            if (textureMode != o.textureMode) return textureMode < o.textureMode;
+            if (singleTextureIdx != o.singleTextureIdx) return singleTextureIdx < o.singleTextureIdx;
+            return modelIdx < o.modelIdx;
+        }
+
+        bool operator==(const BatchKey& o) const {
+            return isMesh == o.isMesh && blendMode == o.blendMode
+                && textureMode == o.textureMode && singleTextureIdx == o.singleTextureIdx
+                && modelIdx == o.modelIdx;
+        }
+    };
+
+    // CPU-side: 배치 그룹 (같은 BatchKey를 공유하는 emitter 목록)
+    struct BatchGroup {
+        BatchKey key;
+        std::vector<UINT> globalEmitterIDs;
+    };
 	struct Particle {
 		Vector3 position = Vector3(0.f, 0.f, 0.f);
 		Vector3 velocity = Vector3(0.f, 0.f, 0.f);
@@ -18,7 +66,7 @@ namespace DE {
         UINT readParticleOffset;
         UINT writeParticleOffset;
         UINT emitterID;
-        UINT spawnPosOffset;  // bakedOffset + customOffset ����
+        UINT spawnPosOffset;  // bakedOffset + customOffset ����
     };
 
     struct ParticleFrameConsts {
@@ -101,7 +149,7 @@ namespace DE {
         UINT indexCount;
         UINT textureMode;
         int singleTextureIdx;
-        UINT useSorting; // �߰�
+        UINT useSorting; // �߰�
     };
 
     struct ParticleConsts {

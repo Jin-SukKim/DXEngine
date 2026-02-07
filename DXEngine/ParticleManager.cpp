@@ -2,7 +2,12 @@
 #include "ParticleManager.h"
 #include "ParticleLoader.h"
 #include "RenderBase.h"
-#include "ScopedTimer.h" // [Added] Include ScopedTimer
+#include "RenderModule.h"
+#include "ModelManager.h"
+#include "MaterialModule.h"
+#include "MaterialSystem.h"
+#include "TextureManager.h"
+#include "ScopedTimer.h"
 
 namespace DE {
 	void ParticleManager::Initialize()
@@ -18,7 +23,7 @@ namespace DE {
 
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			// ¡Ú Àç±¸¼º ½Ã°£ ÃøÁ¤ (Legacy Metric - Cumulative Average)
+			// ï¿½ï¿½ ï¿½ç±¸ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ (Legacy Metric - Cumulative Average)
 			auto start = std::chrono::high_resolution_clock::now();
 			Defragment(); // Defragment internally also measures for RuntimeProfile
 
@@ -78,7 +83,7 @@ namespace DE {
 			m_memoryPool->UnbindCompute();
 		}
 
-		// Compute ÈÄ, SwapBuffer Àü¿¡ Read ¿ÀÇÁ¼Â µ¿±âÈ­
+		// Compute ï¿½ï¿½, SwapBuffer ï¿½ï¿½ï¿½ï¿½ Read ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 		if (m_needsSyncReadOffset) {
 			SyncReadOffsets();
 			m_needsSyncReadOffset = false;
@@ -93,22 +98,324 @@ namespace DE {
 
 	void ParticleManager::Render()
 	{
-		// [Added] Measure Render Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
 		if (m_activeSystems.empty()) return;
 
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-				system->Render();
-			}
-		}
+
+		// 1. ëª¨ë“  í™œì„± emitter ìˆ˜ì§‘
+		std::vector<EmitterRenderInfo> allInfos;
+		CollectEmitterRenderInfos(allInfos);
+
+		// 2. ë°°ì¹˜ ê·¸ë£¹ êµ¬ì„±
+		std::vector<BatchGroup> batches;
+		std::vector<EmitterRenderInfo> unbatched;
+		BuildBatchGroups(allInfos, batches, unbatched);
+
+		// 3. ë°°ì¹˜ ë Œë”ë§ (ë°°ì¹­ ê°€ëŠ¥í•œ ê·¸ë£¹)
+		RenderBatched(batches);
+
+		// 4. ë¹„ë°°ì¹˜ ë Œë”ë§ (ê¸°ì¡´ ë°©ì‹)
+		RenderUnbatched(unbatched);
+
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
+		// í†µê³„ ê°±ì‹ 
+		m_lastBatchCount = static_cast<UINT>(batches.size());
+		m_lastDrawCallCount = static_cast<UINT>(batches.size() + unbatched.size());
+	}
+
+	void ParticleManager::CollectEmitterRenderInfos(std::vector<EmitterRenderInfo>& outInfos)
+	{
+		for (auto* system : m_activeSystems)
+		{
+			if (!system || system->IsStopped()) continue;
+
+			const PoolHandle& handle = system->GetPoolHandle();
+			if (!handle.IsActive()) continue;
+
+			// ì‹œìŠ¤í…œì˜ ëª¨ë“  emitterë¥¼ ìˆœíšŒ
+			auto collectFromEmitters = [&](auto& emitters, bool isUniquePtr) {
+				for (auto& emitterRef : emitters)
+				{
+					ParticleEmitter* emitter = nullptr;
+					if constexpr (std::is_same_v<std::decay_t<decltype(emitterRef)>, std::unique_ptr<ParticleEmitter>>)
+						emitter = emitterRef.get();
+					else
+						emitter = emitterRef;
+
+					if (!emitter || emitter->IsCompleted()) continue;
+
+					RenderModule* renderMod = emitter->GetRenderModule();
+					if (!renderMod) continue;
+
+					UINT localID = emitter->GetEmitterID();
+					UINT globalID = handle.emitterIDs[localID];
+
+					EmitterRenderInfo info;
+					info.emitter = emitter;
+					info.system = system;
+					info.globalEmitterID = globalID;
+
+					info.batchKey.isMesh = renderMod->IsMesh();
+					info.batchKey.blendMode = static_cast<int>(renderMod->blendMode);
+					info.batchKey.textureMode = renderMod->GetTextureMode();
+					info.batchKey.singleTextureIdx = renderMod->GetSingleTextureIdx();
+					info.batchKey.modelIdx = renderMod->GetModelIndex();
+
+					// useSortingì´ë‚˜ Material ëª¨ë“œëŠ” ë°°ì¹­ ë¶ˆê°€
+					bool useSorting = (m_memoryPool->GetConsts().GetCpu()[globalID].render.useSorting != 0);
+					info.canBatch = renderMod->IsBatchable() && !useSorting;
+
+					outInfos.push_back(info);
+				}
+			};
+
+			// main emitters (unique_ptr)
+			auto& mainEmitters = system->GetMainEmitters();
+			for (size_t i = 0; i < mainEmitters.size(); ++i)
+			{
+				ParticleEmitter* emitter = mainEmitters[i].get();
+				if (!emitter || emitter->IsCompleted()) continue;
+
+				RenderModule* renderMod = emitter->GetRenderModule();
+				if (!renderMod) continue;
+
+				// GetEmitterID()ëŠ” ì´ë¯¸ globalIDë¥¼ ë°˜í™˜í•¨
+				UINT globalID = emitter->GetEmitterID();
+
+				EmitterRenderInfo info;
+				info.emitter = emitter;
+				info.system = system;
+				info.globalEmitterID = globalID;
+
+				info.batchKey.isMesh = renderMod->IsMesh();
+				info.batchKey.blendMode = static_cast<int>(renderMod->blendMode);
+				info.batchKey.textureMode = renderMod->GetTextureMode();
+				info.batchKey.singleTextureIdx = renderMod->GetSingleTextureIdx();
+				info.batchKey.modelIdx = renderMod->GetModelIndex();
+
+				bool useSorting = (m_memoryPool->GetConsts().GetCpu()[globalID].render.useSorting != 0);
+				info.canBatch = renderMod->IsBatchable() && !useSorting;
+
+				outInfos.push_back(info);
+			}
+
+			// active sub emitters (raw pointers)
+			auto& subEmitters = system->GetActiveSubEmitters();
+			for (auto* emitter : subEmitters)
+			{
+				if (!emitter || emitter->IsCompleted()) continue;
+
+				RenderModule* renderMod = emitter->GetRenderModule();
+				if (!renderMod) continue;
+
+				// GetEmitterID()ëŠ” ì´ë¯¸ globalIDë¥¼ ë°˜í™˜í•¨
+				UINT globalID = emitter->GetEmitterID();
+
+				EmitterRenderInfo info;
+				info.emitter = emitter;
+				info.system = system;
+				info.globalEmitterID = globalID;
+
+				info.batchKey.isMesh = renderMod->IsMesh();
+				info.batchKey.blendMode = static_cast<int>(renderMod->blendMode);
+				info.batchKey.textureMode = renderMod->GetTextureMode();
+				info.batchKey.singleTextureIdx = renderMod->GetSingleTextureIdx();
+				info.batchKey.modelIdx = renderMod->GetModelIndex();
+
+				bool useSorting = (m_memoryPool->GetConsts().GetCpu()[globalID].render.useSorting != 0);
+				info.canBatch = renderMod->IsBatchable() && !useSorting;
+
+				outInfos.push_back(info);
+			}
+		}
+	}
+
+	void ParticleManager::BuildBatchGroups(
+		const std::vector<EmitterRenderInfo>& infos,
+		std::vector<BatchGroup>& outBatches,
+		std::vector<EmitterRenderInfo>& outUnbatched)
+	{
+		// BatchKeyë³„ë¡œ ê·¸ë£¹í•‘
+		std::map<BatchKey, std::vector<UINT>> keyToEmitters;
+
+		for (const auto& info : infos)
+		{
+			if (!info.canBatch) {
+				outUnbatched.push_back(info);
+				continue;
+			}
+			keyToEmitters[info.batchKey].push_back(info.globalEmitterID);
+		}
+
+		// 2ê°œ ì´ìƒ emitterê°€ ê°™ì€ í‚¤ë¥¼ ê³µìœ í•˜ë©´ ë°°ì¹˜, 1ê°œë©´ ë¹„ë°°ì¹˜
+		UINT totalBatchedEmitters = 0;
+		for (auto& [key, emitterIDs] : keyToEmitters)
+		{
+			// ë°°ì¹˜ ê°€ëŠ¥ ì¡°ê±´: 2ê°œ ì´ìƒ && ë°°ì¹˜ ìˆ˜ ì œí•œ && ì´ ì´ë¯¸í„° ìˆ˜ ì œí•œ
+			bool canBatch = emitterIDs.size() >= 2
+				&& outBatches.size() < MAX_BATCH_GROUPS
+				&& (totalBatchedEmitters + emitterIDs.size()) <= MAX_BATCH_EMITTERS;
+
+			if (canBatch)
+			{
+				BatchGroup group;
+				group.key = key;
+				group.globalEmitterIDs = std::move(emitterIDs);
+				totalBatchedEmitters += static_cast<UINT>(group.globalEmitterIDs.size());
+				outBatches.push_back(std::move(group));
+			}
+			else
+			{
+				// ë°°ì¹˜ ë¶ˆê°€ëŠ¥í•˜ë©´ ë¹„ë°°ì¹˜ë¡œ ë„˜ê¹€
+				for (UINT eid : emitterIDs)
+				{
+					for (const auto& info : infos)
+					{
+						if (info.globalEmitterID == eid)
+						{
+							outUnbatched.push_back(info);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void ParticleManager::RenderBatched(const std::vector<BatchGroup>& batches)
+	{
+		if (batches.empty()) return;
+
+		UINT batchCount = static_cast<UINT>(batches.size());
+
+		// 1. ë°°ì¹˜ ë°ì´í„° GPU ì—…ë¡œë“œ
+		m_memoryPool->UploadBatchData(batches);
+
+		// 2. BatchArgsUpdateCS ë””ìŠ¤íŒ¨ì¹˜ (íŒŒí‹°í´ ìˆ˜ & prefix sum ê³„ì‚°)
+		m_memoryPool->UpdateBatchArgs(batchCount);
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// 3. ë°°ì¹˜ë³„ ë Œë”ë§
+		BlendMode lastBlend = BlendMode::Additive;
+		bool lastIsMesh = false;
+		bool psoSet = false;
+
+		for (UINT b = 0; b < batchCount; ++b)
+		{
+			const BatchGroup& batch = batches[b];
+			bool isMesh = batch.key.isMesh;
+			BlendMode blend = static_cast<BlendMode>(batch.key.blendMode);
+
+			// PSO ì„¤ì • (ìƒíƒœ ë³€ê²½ ìµœì†Œí™”)
+			if (!psoSet || isMesh != lastIsMesh)
+			{
+				if (isMesh)
+					GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.batchedMeshPSO);
+				else
+					GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.batchedAnimPSO);
+				lastIsMesh = isMesh;
+				psoSet = true;
+			}
+
+			// BlendState ì„¤ì •
+			if (!psoSet || blend != lastBlend)
+			{
+				ID3D11BlendState* bs = nullptr;
+				switch (blend)
+				{
+				case BlendMode::Additive:
+					bs = RenderBase::graphicsCommon.accumulateBS.Get();
+					break;
+				case BlendMode::AlphaBlend:
+					bs = RenderBase::graphicsCommon.alphaBS.Get();
+					break;
+				case BlendMode::Opaque:
+					bs = nullptr;
+					break;
+				}
+				context->OMSetBlendState(bs, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
+				lastBlend = blend;
+			}
+
+			// ë°°ì¹˜ ìƒìˆ˜ ë°”ì¸ë”©
+			m_memoryPool->BindBatchRender(b);
+
+			// SingleTexture ëª¨ë“œë¼ë©´ í…ìŠ¤ì²˜ ë°”ì¸ë”©
+			if (batch.key.textureMode == 1 && batch.key.singleTextureIdx >= 0)
+			{
+				ID3D11ShaderResourceView* texSRV = TextureManager::Get().GetTextureSRV(batch.key.singleTextureIdx);
+				context->PSSetShaderResources(0, 1, &texSRV);
+			}
+
+			// Draw call
+			if (isMesh)
+			{
+				// Mesh ë°°ì¹˜: ê°™ì€ ëª¨ë¸ ê³µìœ 
+				Model* model = ModelManager::Get().GetModel(batch.key.modelIdx);
+				if (model && !model->meshes.empty())
+				{
+					auto& mesh = model->meshes[0];
+					MaterialSystem::Get().BindMaterial(0);
+					context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
+					context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+					context->DrawIndexedInstancedIndirect(
+						m_memoryPool->GetBatchMeshArgs().GetBuffer(),
+						m_memoryPool->GetBatchMeshArgsOffset(b));
+				}
+			}
+			else
+			{
+				// Billboard ë°°ì¹˜
+				context->DrawInstancedIndirect(
+					m_memoryPool->GetBatchBillboardArgs().GetBuffer(),
+					m_memoryPool->GetBatchBillboardArgsOffset(b));
+			}
+		}
+
+		m_memoryPool->UnbindBatchRender();
+	}
+
+	void ParticleManager::RenderUnbatched(const std::vector<EmitterRenderInfo>& unbatched)
+	{
+		if (unbatched.empty()) return;
+
+		// ìƒíƒœ ì •ë ¬: (isMesh, blendMode, textureMode) ê¸°ì¤€ìœ¼ë¡œ ì •ë ¬í•˜ì—¬ ìƒíƒœ ì „í™˜ ìµœì†Œí™”
+		std::vector<const EmitterRenderInfo*> sorted;
+		sorted.reserve(unbatched.size());
+		for (const auto& info : unbatched)
+			sorted.push_back(&info);
+
+		std::sort(sorted.begin(), sorted.end(), [](const EmitterRenderInfo* a, const EmitterRenderInfo* b) {
+			return a->batchKey < b->batchKey;
+		});
+
+		// ê¸°ì¡´ ë°©ì‹ìœ¼ë¡œ ë Œë”ë§
+		for (const auto* info : sorted)
+		{
+			m_memoryPool->BindMeshConsts(info->system->GetPoolHandle().systemSlot);
+
+			auto context = GET_SINGLE(RenderBase)->GetContext();
+			context->VSSetConstantBuffers(6, 1, info->system->GetMeshConstsAddress());
+
+			const PoolHandle& handle = info->system->GetPoolHandle();
+			UINT localID = info->emitter->GetEmitterID();
+			UINT globalID = handle.emitterIDs[localID];
+
+			m_memoryPool->BindEmitterID(globalID);
+
+			info->emitter->Render(
+				{ m_memoryPool->GetBillboardArgs().GetBuffer(),
+				  info->system->GetBillboardArgsOffset(globalID) },
+				{ m_memoryPool->GetMeshArgs().GetBuffer(),
+				  info->system->GetMeshArgsOffset(globalID) }
+			);
+		}
 	}
 
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
@@ -252,14 +559,14 @@ namespace DE {
 				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
 
-				// ¡Ú ´ÜÆíÈ­ ºñÀ²
+				// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 				float fragRatio = m_memoryPool->GetFragmentationRatio();
 				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0, 1, 0, 1) :
 					(fragRatio < 0.5f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
 				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
 			}
 
-			// ¡Ú ¼º´É ¸ŞÆ®¸¯ ¼½¼Ç Ãß°¡
+			// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
@@ -273,15 +580,15 @@ namespace DE {
 				}
 			}
 
-			// 2. ºí·Ï ½Ã°¢È­ (Grid Visualizer)
-			// ³ì»ö: »ç¿ë Áß, È¸»ö: ºó °ø°£
+			// 2. ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½È­ (Grid Visualizer)
+			// ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½ï¿½, È¸ï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
 				std::vector<std::string> blockOwners(totalBlocks, "Free");
 
 				const auto& table = m_memoryPool->GetParticleBlockTable();
-				int columns = 32; // ÇÑ ÁÙ¿¡ º¸¿©ÁÙ ºí·Ï °³¼ö
+				int columns = 32; // ï¿½ï¿½ ï¿½Ù¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 				float cellSize = 10.0f;
 				float spacing = 2.0f;
 
@@ -302,11 +609,11 @@ namespace DE {
 						color
 					);
 
-					// ¸¶¿ì½º ¿À¹ö ½Ã ºí·Ï ¹øÈ£ ÅøÆÁ
+					// ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ï¿½
 					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
 					{
 						ImGui::BeginTooltip();
-						// [º¯°æ] ¼ÒÀ¯ÀÚ ÀÌ¸§±îÁö Ãâ·Â
+						// [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 						ImGui::Text("Block ID: %llu", i);
 						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
 							"Status: %s", table[i] ? "Used" : "Free");
@@ -318,7 +625,7 @@ namespace DE {
 					}
 				}
 
-				// ±×¸®µå ³ôÀÌ¸¸Å­ Ä¿¼­ ÀÌµ¿
+				// ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½Å­ Ä¿ï¿½ï¿½ ï¿½Ìµï¿½
 				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
 				ImGui::Dummy(ImVec2(0, totalHeight));
 			}
@@ -359,6 +666,8 @@ namespace DE {
 					ImGui::TableNextRow();
 
 					AddRow("Render (Total)", m_runtimeProfile.render, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+					AddRow("  - Batched Draw Calls", static_cast<float>(m_lastBatchCount), subColor);
+					AddRow("  - Total Draw Calls", static_cast<float>(m_lastDrawCallCount), subColor);
 					AddRow("DestroyInstance", m_runtimeProfile.destroy);
 					AddRow("Defragment (Check+Run)", m_runtimeProfile.defrag, (m_runtimeProfile.defrag > 0.1f) ? ImVec4(1, 0, 0, 1) : ImVec4(1, 1, 1, 1));
 
@@ -388,7 +697,7 @@ namespace DE {
 
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
-		// ÇÒ´ç ½ÇÆĞ ½Ã ´ÙÀ½ ÇÁ·¹ÀÓ Defragment ¿¹¾à (Áï½Ã ½ÇÇà X)
+		// ï¿½Ò´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Defragment ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ X)
 		if (!handle.IsActive()) {
 			m_needsDefragment = true;
 		}
@@ -410,7 +719,7 @@ namespace DE {
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
 
-			// spawnPos¸¦ »ç¿ëÇÏ´Â emitter¸¸ ¿ÀÇÁ¼Â Àû¿ë
+			// spawnPosï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ emitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
@@ -463,7 +772,7 @@ namespace DE {
 			}
 		}
 
-		m_needsSyncReadOffset = true;  // ÀÌ¹ø ÇÁ·¹ÀÓ Compute ÈÄ µ¿±âÈ­
+		m_needsSyncReadOffset = true;  // ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Compute ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 	}
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
@@ -475,7 +784,7 @@ namespace DE {
 		const ParticleInitializer& initialData = system->GetInitialData();
 
 		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
-			// writeParticleOffset¸¸ »õ À§Ä¡·Î °»½Å
+			// writeParticleOffsetï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			UINT globalEmitterID = handle.emitterIDs[i];
 			UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
 

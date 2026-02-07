@@ -203,6 +203,11 @@ namespace DE {
 		}
 	}
 
+	RenderModule* ParticleEmitter::GetRenderModule()
+	{
+		return GetModule<RenderModule>();
+	}
+
 	void ParticleEmitter::ExecuteEvent(EmitterEvent event)
 	{
 		if (m_eventCallback)

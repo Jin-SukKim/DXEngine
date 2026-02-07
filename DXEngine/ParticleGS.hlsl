@@ -8,6 +8,7 @@ struct GSInput
     float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
+    nointerpolation uint emitterID : BLENDINDICES;
 };
 
 struct ParticlePSInput
@@ -19,6 +20,7 @@ struct ParticlePSInput
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
     uint primID : SV_PrimitiveID;
+    nointerpolation uint emitterID : BLENDINDICES;
 };
 
 float2x2 GetRotationMatrix(float angle) {
@@ -41,13 +43,14 @@ void main(
     output.primID = primID;
     output.color = input[0].color;
     output.lifeRatio = input[0].lifeRatio;
+    output.emitterID = input[0].emitterID;
 
     output.posWorld = input[0].pos;
     output.center = input[0].pos;
     float4 viewPos = mul(float4(input[0].pos.xyz, 1.f), view);
     float hw = input[0].size * 0.5f;
 
-    // View space¿¡¼­ÀÇ offset Á¤ÀÇ
+    // View spaceï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ offset ï¿½ï¿½ï¿½ï¿½
     float2 offsets[4] = {
         float2(-1.f, -1.f),
         float2(-1.f, 1.f),
@@ -67,12 +70,12 @@ void main(
     [unroll]
     for (int i = 0; i < 4; ++i)
     {
-        // View space¿¡¼­ billboard À§Ä¡ °áÁ¤
+        // View spaceï¿½ï¿½ï¿½ï¿½ billboard ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
         float4 newPos = viewPos;
         float2 offset = mul(rotMatrix, offsets[i]);
         newPos.xy += offset * hw;
 
-        // TODO: ¸¸¾à 2D È¸ÀüÀ» ³Ö°í ½Í´Ù¸é ¿©±â¼­ offsets[i]¸¦ È¸Àü Çà·Ä·Î µ¹¸®±â
+        // TODO: ï¿½ï¿½ï¿½ï¿½ 2D È¸ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½Í´Ù¸ï¿½ ï¿½ï¿½ï¿½â¼­ offsets[i]ï¿½ï¿½ È¸ï¿½ï¿½ ï¿½ï¿½Ä·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
         output.pos = mul(newPos, proj);
         output.texcoord = uvs[i];
@@ -80,5 +83,5 @@ void main(
         outputStream.Append(output);
     }
 
-    outputStream.RestartStrip(); // StripÀ» ´Ù½Ã ½ÃÀÛ
+    outputStream.RestartStrip(); // Stripï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }

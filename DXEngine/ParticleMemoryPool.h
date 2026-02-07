@@ -6,6 +6,10 @@
 namespace DE {
 	class ParticleSystem;
 
+	// 배치 렌더링에 필요한 최대 수
+	static constexpr UINT MAX_BATCH_GROUPS = 32;
+	static constexpr UINT MAX_BATCH_EMITTERS = 256;
+
 struct PoolHandle {
 	UINT particleOffset = UINT_MAX;
 	UINT blockCount = 0;
@@ -81,6 +85,18 @@ public:
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 	std::vector<ParticleMeshConsts>& GetMeshConsts() { return m_meshConstsCPU; }
+
+	// ========== 배치 렌더링 ==========
+	void UploadBatchData(const std::vector<BatchGroup>& batches);
+	void UpdateBatchArgs(UINT batchCount);
+	void BindBatchRender(UINT batchIndex);
+	void UnbindBatchRender();
+
+	IndirectArgsBuffer<DrawInstancedArgs>& GetBatchBillboardArgs() { return m_batchBillboardArgs; }
+	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBatchMeshArgs() { return m_batchMeshArgs; }
+
+	UINT GetBatchBillboardArgsOffset(UINT batchIdx) { return batchIdx * sizeof(DrawInstancedArgs); }
+	UINT GetBatchMeshArgsOffset(UINT batchIdx) { return batchIdx * sizeof(DrawIndexedInstancedArgs); }
 
 	UINT GetBlockSize() { return m_blockSize; }
 	UINT GetBlockCount() const { return m_blockCount; }
@@ -161,6 +177,14 @@ private:
 	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
 	std::vector<bool> m_systemSlotTable;
+
+	// ========== 배치 렌더링 버퍼 ==========
+	StructuredBuffer<BatchEmitterInfo> m_batchEmitterInfo;       // GPU 배치 매핑 (입력+출력)
+	StructuredBuffer<UINT> m_batchOffsets;                       // 각 배치의 시작 인덱스
+	StructuredBuffer<UINT> m_batchCounts;                        // 각 배치의 emitter 수
+	IndirectArgsBuffer<DrawInstancedArgs> m_batchBillboardArgs;  // 배치별 billboard draw args
+	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_batchMeshArgs; // 배치별 mesh draw args
+	ConstantBuffer<BatchConsts> m_batchConstsBuffer;             // 배치별 상수
 };
 
 }

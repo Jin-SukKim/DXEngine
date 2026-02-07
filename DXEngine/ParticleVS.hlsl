@@ -11,6 +11,7 @@ struct GSInput
     float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
+    nointerpolation uint emitterID : BLENDINDICES;
 };
 
 // 3D Euler -> Rotation Matrix
@@ -19,7 +20,7 @@ float3x3 GetRotationMatrix(float3 rot) {
     float cY = cos(rot.y), sY = sin(rot.y);
     float cZ = cos(rot.z), sZ = sin(rot.z);
 
-    // Z * Y * X ¼ø¼­ (Roll -> Yaw -> Pitch)
+    // Z * Y * X ï¿½ï¿½ï¿½ï¿½ (Roll -> Yaw -> Pitch)
     float3x3 mX = { 1, 0, 0,  0, cX, -sX,  0, sX, cX };
     float3x3 mY = { cY, 0, sY,  0, 1, 0,  -sY, 0, cY };
     float3x3 mZ = { cZ, -sZ, 0,  sZ, cZ, 0,  0, 0, 1 };
@@ -37,18 +38,18 @@ GSInput main(uint vertexID : SV_VertexID)
     GSInput output;
 
     SpawnConsts spawn = consts[emitterID].spawn;
-    // ·ÎÄÃ/¿ùµå ¸ðµå¿¡ µû¶ó ·»´õ¸µ À§Ä¡ °áÁ¤
+    // ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
     if (spawn.simulationSpace == 1)
     {
-        // ÀÌ¹Ì World ÁÂÇ¥ÀÌ¹Ç·Î View-Projection º¯È¯¸¸ Àû¿ëÇÏ¸é µÊ
-        // ÇÏÁö¸¸ VS¿¡¼­´Â World Çà·Ä °öÀ» »ý·«ÇÏ°í, float4(p.position, 1.0)À» ³Ñ±è
-        // (Pixel Shader³ª Geometry Shader ´Ü°è¿¡¼­ View/Proj°¡ Àû¿ëµÉ °ÍÀÓ)
-        // ÀÌ ÄÚµå´Â VSInput -> GSInput ´Ü°èÀÌ¹Ç·Î World º¯È¯ ¿©ºÎ¸¸ Á¦¾î
+        // ï¿½Ì¹ï¿½ World ï¿½ï¿½Ç¥ï¿½Ì¹Ç·ï¿½ View-Projection ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ VSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ World ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½, float4(p.position, 1.0)ï¿½ï¿½ ï¿½Ñ±ï¿½
+        // (Pixel Shaderï¿½ï¿½ Geometry Shader ï¿½Ü°è¿¡ï¿½ï¿½ View/Projï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+        // ï¿½ï¿½ ï¿½Úµï¿½ï¿½ VSInput -> GSInput ï¿½Ü°ï¿½ï¿½Ì¹Ç·ï¿½ World ï¿½ï¿½È¯ ï¿½ï¿½ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½ï¿½
         output.position = float4(p.position.xyz, 1.0);
     }
     else
     {
-        // ±âÁ¸: Local ÁÂÇ¥ÀÌ¹Ç·Î World Çà·Ä °ö¼À ÇÊ¿ä
+        // ï¿½ï¿½ï¿½ï¿½: Local ï¿½ï¿½Ç¥ï¿½Ì¹Ç·ï¿½ World ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
         output.position = mul(float4(p.position.xyz, 1.0), pWorld);
     }
 
@@ -60,6 +61,7 @@ GSInput main(uint vertexID : SV_VertexID)
     output.life = p.life;
     output.lifeRatio = 1.0 - saturate(p.life / p.lifeMax);
     output.size = p.size;
+    output.emitterID = emitterID;
 
     return output;
 }

@@ -18,13 +18,17 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
 	virtual int GetModelIndex() const { return -1; };
-	virtual std::unique_ptr<ParticleModule> Clone() const override = 0;
+	virtual int GetTextureMode() const { return -1; }
+	virtual int GetSingleTextureIdx() const { return -1; }
+	virtual bool IsMesh() const { return false; }
+	virtual bool IsBatchable() const { return false; }
+	std::unique_ptr<ParticleModule> Clone() const override = 0;
 	void CopyBasicSettings(RenderModule* cloned) const;
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
 	ID3D11BlendState* m_blendState = NULL;
-	// BitonicSort Á¦°Å - ParticleEmitter°¡ ¼ÒÀ¯
+	// BitonicSort ï¿½ï¿½ï¿½ï¿½ - ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 
 class BillboardRenderModule : public RenderModule
@@ -37,21 +41,30 @@ public:
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
+
+	int GetTextureMode() const override { return static_cast<int>(m_textureMode); }
+	int GetSingleTextureIdx() const override { return m_singleTextureIdx; }
+	bool IsMesh() const override { return false; }
+	bool IsBatchable() const override {
+		// TextureArray ëª¨ë“œì´ê±°ë‚˜, ê°™ì€ SingleTextureë¥¼ ê³µìœ í•˜ëŠ” ê²½ìš° ë°°ì¹­ ê°€ëŠ¥
+		// Material ëª¨ë“œëŠ” per-emitter ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”©ì´ í•„ìš”í•˜ë¯€ë¡œ ë°°ì¹­ ë¶ˆê°€
+		return m_textureMode != BillboardTextureMode::Material;
+	}
 private:
-	// 0 : TextureArray (Size°¡ °íÁ¤µÇ¾î ÀÖÀ½)
-	// 1 : Single Texture (°³º° Texture 1°³, ´Ù¾çÇÑ ÇØ»óµµ °¡´É)
-	// 2 : MaterialModuleÀ» »ç¿ë (PBR)
+	// 0 : TextureArray (Sizeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	// 1 : Single Texture (ï¿½ï¿½ï¿½ï¿½ Texture 1ï¿½ï¿½, ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	// 2 : MaterialModuleï¿½ï¿½ ï¿½ï¿½ï¿½ (PBR)
 	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
-	// Texture °ü¸®
+	// Texture ï¿½ï¿½ï¿½ï¿½
 	std::string m_texturePath;
 	int m_textureIdx = -1;
 
-	// ´Ù¾çÇÑ ÇØ»óµµÀÇ Texture 1°³¸¸ »ç¿ëÇÒ¶§
+	// ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ï¿½ï¿½ Texture 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½
 	int m_singleTextureIdx = -1;
 
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
-	// IndirectArgsBuffer Á¦°Å - ParticleEmitter°¡ ¼ÒÀ¯
+	// IndirectArgsBuffer ï¿½ï¿½ï¿½ï¿½ - ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 
 class MeshRenderModule : public RenderModule
@@ -61,11 +74,15 @@ public:
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	int GetModelIndex() const override { return m_modelIdx; }
+	int GetTextureMode() const override { return -1; } // MeshëŠ” í•­ìƒ Material
+	int GetSingleTextureIdx() const override { return -1; }
+	bool IsMesh() const override { return true; }
+	bool IsBatchable() const override { return true; } // ê°™ì€ ëª¨ë¸+BlendModeë©´ ë°°ì¹­ ê°€ëŠ¥
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	int m_modelIdx = -1;
 	UINT m_meshCount = 0;
-	// IndirectArgsBuffer Á¦°Å - ParticleEmitter°¡ ¼ÒÀ¯
+	// IndirectArgsBuffer ï¿½ï¿½ï¿½ï¿½ - ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 }
 

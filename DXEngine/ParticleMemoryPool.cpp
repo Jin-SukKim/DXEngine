@@ -49,9 +49,22 @@ namespace DE {
 		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
 		m_emitterIDBuffer.Initialize();
 
-		// MeshConsts Pool (System��)
+		// MeshConsts Pool (System별)
 		m_meshConstsCPU.resize(maxSystems);
 		m_meshConstsBuffer.Initialize();
+
+		// 배치 렌더링 버퍼 초기화
+		m_batchEmitterInfo.InitializeDynamicSRV(device, MAX_BATCH_EMITTERS);
+		m_batchOffsets.InitializeDynamicSRV(device, MAX_BATCH_GROUPS);
+		m_batchCounts.InitializeDynamicSRV(device, MAX_BATCH_GROUPS);
+
+		std::vector<DrawInstancedArgs> initBatchBillboard(MAX_BATCH_GROUPS, { 0, 1, 0, 0 });
+		m_batchBillboardArgs.Initialize(device, initBatchBillboard, MAX_BATCH_GROUPS, sizeof(DrawInstancedArgs), 4);
+
+		std::vector<DrawIndexedInstancedArgs> initBatchMesh(MAX_BATCH_GROUPS, { 0, 0, 0, 0, 0 });
+		m_batchMeshArgs.Initialize(device, initBatchMesh, MAX_BATCH_GROUPS, sizeof(DrawIndexedInstancedArgs), 5);
+
+		m_batchConstsBuffer.Initialize();
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
@@ -460,6 +473,135 @@ namespace DE {
 	    
 	    EmitterID& eID = m_emitterIDs.Get(slotIndex);
 		eID.readParticleOffset = eID.writeParticleOffset;
+	}
+
+	void ParticleMemoryPool::UploadBatchData(const std::vector<BatchGroup>& batches)
+	{
+		if (batches.empty()) return;
+
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+
+		// 배치 수 검증
+		UINT batchCount = static_cast<UINT>(batches.size());
+		if (batchCount > MAX_BATCH_GROUPS) {
+			OutputDebugStringA("[ParticleMemoryPool] Warning: Batch count exceeds MAX_BATCH_GROUPS, clamping.\n");
+			batchCount = MAX_BATCH_GROUPS;
+		}
+
+		// 총 이미터 수 계산 및 검증
+		UINT totalEmitters = 0;
+		for (UINT b = 0; b < batchCount; ++b)
+			totalEmitters += static_cast<UINT>(batches[b].globalEmitterIDs.size());
+
+		if (totalEmitters > MAX_BATCH_EMITTERS) {
+			OutputDebugStringA("[ParticleMemoryPool] Warning: Total emitters exceed MAX_BATCH_EMITTERS, clamping.\n");
+			totalEmitters = MAX_BATCH_EMITTERS;
+		}
+
+		// BatchEmitterInfo 채우기
+		UINT offset = 0;
+		for (UINT b = 0; b < batchCount; ++b)
+		{
+			const auto& batch = batches[b];
+			UINT count = static_cast<UINT>(batch.globalEmitterIDs.size());
+
+			// offset + count가 MAX_BATCH_EMITTERS를 초과하지 않도록 제한
+			if (offset + count > MAX_BATCH_EMITTERS) {
+				count = (offset < MAX_BATCH_EMITTERS) ? (MAX_BATCH_EMITTERS - offset) : 0;
+				if (count == 0) break;
+			}
+
+			m_batchOffsets.Get(b) = offset;
+			m_batchCounts.Get(b) = count;
+
+			for (UINT i = 0; i < count; ++i)
+			{
+				UINT eid = batch.globalEmitterIDs[i];
+
+				// emitterID 범위 검증
+				if (eid >= m_maxEmitters) {
+					OutputDebugStringA("[ParticleMemoryPool] Error: Invalid emitter ID in batch data.\n");
+					continue;
+				}
+
+				BatchEmitterInfo info;
+				info.globalEmitterID = eid;
+				info.readParticleOffset = m_emitterIDs.Get(eid).readParticleOffset;
+				info.particleCount = 0;     // CS에서 계산
+				info.batchVertexStart = 0;  // CS에서 계산
+				m_batchEmitterInfo.Get(offset + i) = info;
+			}
+			offset += count;
+		}
+
+		// GPU에 업로드
+		m_batchEmitterInfo.Upload(context);
+		m_batchOffsets.Upload(context);
+		m_batchCounts.Upload(context);
+	}
+
+	void ParticleMemoryPool::UpdateBatchArgs(UINT batchCount)
+	{
+		if (batchCount == 0) return;
+
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		auto& batchArgsCS = RenderBase::computeCommon.particle.batchArgsUpdateCS;
+		context->CSSetShader(batchArgsCS.computeShader.Get(), nullptr, 0);
+
+		// SRV 바인딩 (입력)
+		ID3D11ShaderResourceView* srvs[] = {
+			m_batchEmitterInfo.GetSRV(),  // t0
+			m_batchOffsets.GetSRV(),       // t1
+			m_batchCounts.GetSRV()         // t2
+		};
+		context->CSSetShaderResources(0, 3, srvs);
+
+		// readCount는 이미 t7에 바인딩되어 있음 (BindRender에서)
+
+		// UAV 바인딩 (출력)
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_batchEmitterInfo.GetUAV(),    // u0 (출력: particleCount, batchVertexStart)
+			m_batchBillboardArgs.GetUAV(),  // u1
+			m_batchMeshArgs.GetUAV()        // u2
+		};
+		context->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
+
+		context->Dispatch(batchCount, 1, 1);
+
+		// 언바인딩
+		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(0, 3, nullSRVs);
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(0, 3, nullUAVs, nullptr);
+		context->CSSetShader(nullptr, 0, 0);
+	}
+
+	void ParticleMemoryPool::BindBatchRender(UINT batchIndex)
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// BatchEmitterInfo SRV를 t12에 바인딩
+		ID3D11ShaderResourceView* batchSRV = m_batchEmitterInfo.GetSRV();
+		context->VSSetShaderResources(12, 1, &batchSRV);
+
+		// BatchConsts를 b7에 바인딩
+		// UploadBatchData에서 이미 offsets/counts를 업로드했으므로 여기서는 상수만 설정
+		BatchConsts bc;
+		bc.batchEmitterCount = m_batchCounts.Get(batchIndex);
+		bc.batchInfoOffset = m_batchOffsets.Get(batchIndex);
+		bc.batchPadding[0] = 0;
+		bc.batchPadding[1] = 0;
+		m_batchConstsBuffer.SetCpuData(bc);
+		m_batchConstsBuffer.Upload();
+
+		context->VSSetConstantBuffers(7, 1, m_batchConstsBuffer.GetAddressOf());
+	}
+
+	void ParticleMemoryPool::UnbindBatchRender()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+		context->VSSetShaderResources(12, 1, &nullSRV);
 	}
 
 	float ParticleMemoryPool::GetFragmentationRatio() const

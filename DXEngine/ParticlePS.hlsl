@@ -17,88 +17,77 @@ struct ParticlePSInput
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
     uint primID : SV_PrimitiveID;
+    nointerpolation uint emitterID : BLENDINDICES;
 };
 
-float4 SampleParticleTexture(float3 uvw)
+float4 SampleParticleTexture(float3 uvw, uint eid)
 {
     float4 color = float4(1, 1, 1, 1);
 
-    RenderConsts render = consts[emitterID].render;
+    RenderConsts render = consts[eid].render;
     // [Mode 0: Material]
     if (render.textureMode == 0)
     {
-        // Albedo 샘플링
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
-
-        // Emissive 추가 (선택 사항 - 파티클은 주로 Emissive 속성이 강하므로 더해주는 경우가 많음)
-        // float4 emissive = materialEmissiveMap.SampleLevel(samp, uvw.xy, lod);
-        // color.rgb += emissive.rgb; 
     }
     // [Mode 1: Single Texture]
     else if (render.textureMode == 1)
     {
-        // 개별 텍스처 샘플링 (uvw.z 인덱스 무시)
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
     }
     // [Mode 2: Texture Array (Default)]
     else
     {
-        // 텍스처 배열 샘플링 (uvw.z = Array Index)
         color = particleTex.Sample(linearClampSampler, uvw);
     }
 
     return color;
 }
 
-float4 SpriteTexture(float lifeRatio, float2 uv) {
-    RenderConsts render = consts[emitterID].render;
+float4 SpriteTexture(float lifeRatio, float2 uv, uint eid) {
+    RenderConsts render = consts[eid].render;
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
-        // 현재 frame
         uint currentFrame = floor(lifeRatio * render.frameCount);
         currentFrame = min(currentFrame, render.frameCount - 1);
 
-        // Sprite Sheet의 col, row
         uint width = render.frameTiles.x;
         uint col = currentFrame % width;
         uint row = currentFrame / width;
 
-        float2 uvSize = 1.f / render.frameTiles; // Tile 1칸의 크기
+        float2 uvSize = 1.f / render.frameTiles;
 
         uv = (uv + float2(col, row)) * uvSize;
     }
 
-    return SampleParticleTexture(float3(uv, render.textureIdx));
+    return SampleParticleTexture(float3(uv, render.textureIdx), eid);
 }
 
 float4 main(ParticlePSInput input) : SV_TARGET
 {
     float4 finalColor = input.color;
 
-    RenderConsts render = consts[emitterID].render;
+    uint eid = input.emitterID;
+    RenderConsts render = consts[eid].render;
     bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
-    // Case 1: 텍스처가 있는 경우 (Sprite / Animation)
+    // Case 1: Texture (Sprite / Animation)
     // --------------------------------------------------------
     if (hasTexture)
     {
-        float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
+        float4 texColor = SpriteTexture(input.lifeRatio, input.uv, eid);
         finalColor *= texColor;
 
-        // 텍스처의 알파가 너무 낮으면 그리지 않음 (Alpha Test)
-        // 불투명/반투명 섞어 쓸 때 유용
         if (finalColor.a <= 0.01f)
             discard;
     }
     // --------------------------------------------------------
-    // Case 2: 텍스처가 없는 경우 (기본 원형 Glow)
+    // Case 2: No Texture (Basic Circle Glow)
     // --------------------------------------------------------
     else
     {
-        // 텍스처가 없을 때만 절차적으로 원을 그립니다.
         float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
 
-        // 원 밖은 잘라냄
         if (circleAlpha <= 0.0f)
             discard;
 

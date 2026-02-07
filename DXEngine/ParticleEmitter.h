@@ -10,6 +10,8 @@
 
 namespace DE {
 	class ParticleSystem;
+	class RenderModule; // Forward declaration
+	
 	enum class EmitterEvent : uint8_t {
 		OnStart,
 		OnDurationEnd,
@@ -52,12 +54,12 @@ namespace DE {
 
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
-		// Texture Bake µ¥ÀÌÅÍ °ü·Ã (Spawn ¸ğµâ)
+		// Texture Bake ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Spawn ï¿½ï¿½ï¿½)
 		void SetBakedSpawnPath(const std::string& path);
 		UINT LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos);
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
-		// ÅëÇÕµÈ SpawnPos °ü¸®
+		// ï¿½ï¿½ï¿½Õµï¿½ SpawnPos ï¿½ï¿½ï¿½ï¿½
 		void SetSpawnPosInfo(UINT offset) { m_spawnPosPoolOffset = offset; }
 		UINT GetSpawnPosOffset() const { return m_spawnPosPoolOffset; }
 		
@@ -87,6 +89,9 @@ namespace DE {
 		void SetOwner(ParticleSystem* system);
 		UINT GetEmitterID() { return m_emitterID; };
 		void SetName(std::wstring name) { m_name = name; }
+
+		// ë°°ì¹˜ ë Œë”ë§ ì§€ì›
+		RenderModule* GetRenderModule();
 	private:
 		void ExecuteEvent(EmitterEvent event);
 	private:
@@ -100,7 +105,7 @@ namespace DE {
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
 		
-		// SpawnPosition ÅëÇÕ (Baked/Custom)
+		// SpawnPosition ï¿½ï¿½ï¿½ï¿½ (Baked/Custom)
 		UINT m_spawnPosPoolOffset = 0;
 		std::string m_bakedPath = "";
 		UINT m_bakedCount = 0;

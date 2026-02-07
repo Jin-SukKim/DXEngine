@@ -1,6 +1,7 @@
 #pragma once
 #include "ParticleSystem.h"
 #include "ParticleMemoryPool.h"
+#include "RenderModule.h"
 #include <queue>
 
 namespace DE {
@@ -74,10 +75,10 @@ namespace DE {
 		ParticleSystem* CreateSystem(const std::wstring& path);
 		void DestroyInstance(ParticleSystem* system);
 
-		// EmitterID ¹ÙÀÎµù (Manager¿¡¼­ Ã³¸®)
+		// EmitterID ï¿½ï¿½ï¿½Îµï¿½ (Managerï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½)
 		void BindEmitterID(UINT globalSlotIndex);
 
-		// MeshConsts °ü¸® Ãß°¡
+		// MeshConsts ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
 		void BindMeshConsts(UINT systemIndex);
 
@@ -87,7 +88,24 @@ namespace DE {
 
 		UINT GetRebuildCount() const { return m_rebuildCount; }
 		float GetAvgRebuildTime() const { return m_avgRebuildTime; }
+		UINT GetLastDrawCallCount() const { return m_lastDrawCallCount; }
+		UINT GetLastBatchCount() const { return m_lastBatchCount; }
 	private:
+		// ë°°ì¹˜ ë Œë”ë§ ë‚´ë¶€ êµ¬ì¡°
+		struct EmitterRenderInfo {
+			ParticleEmitter* emitter;
+			ParticleSystem* system;
+			UINT globalEmitterID;
+			BatchKey batchKey;
+			bool canBatch;
+		};
+
+		void CollectEmitterRenderInfos(std::vector<EmitterRenderInfo>& outInfos);
+		void BuildBatchGroups(const std::vector<EmitterRenderInfo>& infos,
+			std::vector<BatchGroup>& outBatches,
+			std::vector<EmitterRenderInfo>& outUnbatched);
+		void RenderBatched(const std::vector<BatchGroup>& batches);
+		void RenderUnbatched(const std::vector<EmitterRenderInfo>& unbatched);
 		PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 		void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 		void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
@@ -109,17 +127,21 @@ namespace DE {
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 
-		// ¸â¹ö º¯¼ö Ãß°¡
+		// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
 
-		// private ¸â¹ö Ãß°¡
+		// private ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		UINT m_rebuildCount = 0;
 		float m_totalRebuildTime = 0.0f;
 		float m_avgRebuildTime = 0.0f;
 
 		// [Added] Profiling Data
 		RuntimeProfile m_runtimeProfile;
+
+		// ë°°ì¹˜ ë Œë”ë§ í†µê³„
+		UINT m_lastDrawCallCount = 0;
+		UINT m_lastBatchCount = 0;
 	};
 
 }

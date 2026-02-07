@@ -26,7 +26,7 @@ cbuffer EmitterID : register(b5)
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset ÅëÇÕ
+    uint spawnPosOffset;  // bakedOffset + customOffset ï¿½ï¿½ï¿½ï¿½
 };
 
 struct EmitterID
@@ -34,7 +34,7 @@ struct EmitterID
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset ÅëÇÕ
+    uint spawnPosOffset;  // bakedOffset + customOffset ï¿½ï¿½ï¿½ï¿½
 };
 
 struct ParticleFrameConsts
@@ -55,7 +55,7 @@ struct SpawnConsts
 
     float2 lifeRange;
     int spawnShape;
-    uint bakedCount; // Baked/Custom °ø¿ë °³¼ö
+    uint bakedCount; // Baked/Custom ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     uint simulationSpace;
 
     uint spawnStartIndex;
@@ -137,8 +137,8 @@ struct ParticleConsts
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // ÅëÇÕµÈ SpawnPosition ¹öÆÛ
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // ÅëÇÕµÈ SpawnPosition ¹öÆÛ
+StructuredBuffer<float3> spawnPositions : register(t10); // ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition ï¿½ï¿½ï¿½ï¿½
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition ï¿½ï¿½ï¿½ï¿½
 
 cbuffer ParticleMeshConsts : register(b6)
 {
@@ -153,6 +153,23 @@ struct SortElement
 {
     float key;
     uint value;
+};
+
+// ========== Batch Rendering ==========
+
+struct BatchEmitterInfo
+{
+    uint globalEmitterID;    // -> consts[], emitterIDs[] ì¸ë±ì‹±
+    uint readParticleOffset; // íŒŒí‹°í´ ë²„í¼ ë‚´ ì‹œì‘ ìœ„ì¹˜
+    uint particleCount;      // í•´ë‹¹ emitterì˜ íŒŒí‹°í´ ìˆ˜
+    uint batchVertexStart;   // ë°°ì¹˜ ë‚´ ëˆ„ì  vertex/instance ID ì‹œì‘ì 
+};
+
+cbuffer BatchConsts : register(b7)
+{
+    uint batchEmitterCount;
+    uint batchInfoOffset;
+    uint2 batchPadding;  // HLSLì—ì„œëŠ” uint2 ì‚¬ìš©
 };
 
 #endif // __PARTICLE_COMMON_HLSLI__
