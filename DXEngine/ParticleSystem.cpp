@@ -15,6 +15,8 @@ namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
 	{
 		m_meshConsts.Initialize();
+		m_creationTime = 0.0f;
+		m_basePriority = 0.5f;
 	}
 
 	ParticleSystem::~ParticleSystem()

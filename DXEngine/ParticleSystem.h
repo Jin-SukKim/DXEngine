@@ -110,6 +110,12 @@ namespace DE {
 
 		// Overdraw Control - Spawn Ratio Update
 		void UpdateSpawnRatios(const Vector3& cameraPos);
+
+		// Priority-based eviction getters/setters
+		float GetCreationTime() const { return m_creationTime; }
+		float GetBasePriority() const { return m_basePriority; }
+		void SetBasePriority(float priority) { m_basePriority = std::clamp(priority, 0.0f, 1.0f); }
+		void SetCreationTime(float time) { m_creationTime = time; }
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
@@ -131,6 +137,10 @@ namespace DE {
 		float m_playRate = 1.0f;
 		float m_preWarmTime = 0.0f;
 		ParticleState m_state = ParticleState::Playing;
+
+		// Priority-based eviction data
+		float m_creationTime = 0.0f;    // Timestamp when created
+		float m_basePriority = 0.5f;    // User-defined importance (0.0-1.0)
 
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;

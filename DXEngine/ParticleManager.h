@@ -36,11 +36,16 @@ namespace DE {
 		float uploadIDs = 0.0f;
 		float recalculateOffsets = 0.0f;
 		float syncReadOffsets = 0.0f;
+		float eviction = 0.0f;
 
 		// [Added] Frustum Culling Stats
 		UINT totalSystems = 0;
 		UINT visibleSystems = 0;
 		UINT culledSystems = 0;
+
+		// [Added] Eviction Stats
+		UINT evictionCount = 0;
+		UINT evictionFailures = 0;
 
 		void Reset() {
 			update = 0.0f;
@@ -58,9 +63,12 @@ namespace DE {
 			uploadIDs = 0.0f;
 			recalculateOffsets = 0.0f;
 			syncReadOffsets = 0.0f;
+			eviction = 0.0f;
 			totalSystems = 0;
 			visibleSystems = 0;
 			culledSystems = 0;
+			evictionCount = 0;
+			evictionFailures = 0;
 		}
 	};
 
@@ -120,6 +128,13 @@ namespace DE {
 			else metric = metric * 0.9f + newValue * 0.1f;
 		}
 
+		// Priority-based eviction helpers
+		float CalculatePriority(ParticleSystem* system, const Vector3& cameraPos,
+			const DirectX::BoundingFrustum& frustum) const;
+		ParticleSystem* FindLowestPrioritySystem();
+		bool TryEvictAndRetry(UINT particleCount, UINT emitterCount, UINT spawnPosCount,
+			PoolHandle& outHandle);
+
 	private:
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
 		std::vector<std::unique_ptr<ParticleSystem>> m_instances;
@@ -143,6 +158,9 @@ namespace DE {
 		// [Added] Frustum Culling
 		Matrix m_view;
 		Matrix m_proj;
+
+		// [Added] Priority-based eviction time tracking
+		float m_currentTime = 0.0f;
 	};
 
 }

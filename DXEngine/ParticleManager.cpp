@@ -14,6 +14,9 @@ namespace DE {
 
 	void ParticleManager::Update(const float& dt)
 	{
+		// Track time for priority age calculation
+		m_currentTime += dt;
+
 		// [Added] Measure Total Update Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.update, t); });
 
@@ -245,10 +248,18 @@ namespace DE {
 
 		PoolHandle handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
 
+		// Try eviction if allocation failed
 		if (!handle.IsActive())
 		{
-			return nullptr;
+			if (!TryEvictAndRetry(particleCount, emitterCount, spawnPosCount, handle))
+			{
+				// Still failed after eviction attempts
+				return nullptr;
+			}
 		}
+
+		// Set creation timestamp
+		clonedPtr->SetCreationTime(m_currentTime);
 
 		clonedPtr->SetPoolHandle(handle);
 
@@ -451,6 +462,8 @@ namespace DE {
 					AddRow("  UploadEmitterIDs", m_runtimeProfile.uploadIDs);
 					AddRow("  RecalculateOffsets", m_runtimeProfile.recalculateOffsets);
 					AddRow("  SyncReadOffsets", m_runtimeProfile.syncReadOffsets);
+					AddRow("Eviction Logic", m_runtimeProfile.eviction,
+						(m_runtimeProfile.eviction > 0.1f) ? ImVec4(1, 0, 0, 1) : ImVec4(1, 1, 1, 1));
 
 					ImGui::EndTable();
 				}
@@ -504,6 +517,39 @@ namespace DE {
 					ImGui::Text("Row 2: %.2f, %.2f, %.2f, %.2f", m_proj._31, m_proj._32, m_proj._33, m_proj._34);
 					ImGui::Text("Row 3: %.2f, %.2f, %.2f, %.2f", m_proj._41, m_proj._42, m_proj._43, m_proj._44);
 					ImGui::TreePop();
+				}
+			}
+
+			// [Added] Priority-Based Eviction Stats
+			if (ImGui::CollapsingHeader("Priority-Based Eviction", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Text("Total Evictions: %u", m_runtimeProfile.evictionCount);
+				ImGui::Text("Eviction Failures: %u", m_runtimeProfile.evictionFailures);
+				ImGui::Text("Avg Eviction Time: %.4f ms", m_runtimeProfile.eviction);
+
+				ImGui::Separator();
+				ImGui::Text("Current System Priorities:");
+
+				if (!m_instances.empty()) {
+					Matrix invView = m_view.Invert();
+					Vector3 cameraPos(invView._41, invView._42, invView._43);
+					DirectX::BoundingFrustum frustum(m_proj);
+
+					for (const auto& instance : m_instances)
+					{
+						ParticleSystem* sys = instance.get();
+						if (!sys) continue;
+
+						float priority = CalculatePriority(sys, cameraPos, frustum);
+						float age = m_currentTime - sys->GetCreationTime();
+
+						std::string name = std::string(sys->GetName().begin(), sys->GetName().end());
+						ImGui::Text("  [%s] Priority: %.3f | Age: %.1fs | Base: %.2f",
+							name.c_str(), priority, age, sys->GetBasePriority());
+					}
+				}
+				else {
+					ImGui::TextDisabled("  No active systems");
 				}
 			}
 		}
@@ -643,5 +689,116 @@ namespace DE {
 		m_rebuildCount = 0;
 		m_avgRebuildTime = 0.0f;
 		m_totalRebuildTime = 0.0f;
+	}
+
+	float ParticleManager::CalculatePriority(
+		ParticleSystem* system,
+		const Vector3& cameraPos,
+		const DirectX::BoundingFrustum& frustum) const
+	{
+		// 1. Distance Factor (closer = higher priority)
+		Vector3 systemPos = system->GetWorldPosition();
+		float distance = Vector3::Distance(systemPos, cameraPos);
+
+		// Normalize to [0, 1] with inverse square falloff
+		constexpr float MAX_DISTANCE = 100.0f;
+		float distanceFactor = 1.0f - std::min(distance / MAX_DISTANCE, 1.0f);
+		distanceFactor = distanceFactor * distanceFactor;  // Square for sharper falloff
+
+		// 2. Visibility Factor (inside frustum = 1.0, outside = 0.0)
+		Vector3 posView = Vector3::Transform(systemPos, m_view);
+		float radius = system->GetBoundingRadius();
+		DirectX::BoundingSphere sphere(posView, radius);
+		float visibilityFactor = frustum.Intersects(sphere) ? 1.0f : 0.0f;
+
+		// 3. Age Factor (newer = slightly higher priority)
+		float age = m_currentTime - system->GetCreationTime();
+		constexpr float AGE_THRESHOLD = 5.0f;  // Systems < 5s old get bonus
+		float ageFactor = std::max(0.0f, 1.0f - (age / AGE_THRESHOLD));
+
+		// 4. Base Priority Factor (user-defined)
+		float basePriorityFactor = system->GetBasePriority();
+
+		// Weighted sum: distance(40%) + visibility(30%) + age(20%) + base(10%)
+		float priority = (distanceFactor * 0.4f) +
+			(visibilityFactor * 0.3f) +
+			(ageFactor * 0.2f) +
+			(basePriorityFactor * 0.1f);
+
+		return priority;
+	}
+
+	ParticleSystem* ParticleManager::FindLowestPrioritySystem()
+	{
+		if (m_instances.empty())
+			return nullptr;
+
+		// Extract camera position from view matrix
+		Matrix invView = m_view.Invert();
+		Vector3 cameraPos(invView._41, invView._42, invView._43);
+
+		// Create frustum for visibility check
+		DirectX::BoundingFrustum frustum(m_proj);
+
+		// Linear search for lowest priority
+		ParticleSystem* lowestPrioritySystem = nullptr;
+		float lowestPriority = FLT_MAX;
+
+		for (const auto& instance : m_instances)
+		{
+			ParticleSystem* system = instance.get();
+			if (!system) continue;
+
+			float priority = CalculatePriority(system, cameraPos, frustum);
+
+			if (priority < lowestPriority)
+			{
+				lowestPriority = priority;
+				lowestPrioritySystem = system;
+			}
+		}
+
+		return lowestPrioritySystem;
+	}
+
+	bool ParticleManager::TryEvictAndRetry(
+		UINT particleCount,
+		UINT emitterCount,
+		UINT spawnPosCount,
+		PoolHandle& outHandle)
+	{
+		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.eviction, t); });
+
+		constexpr int MAX_EVICTION_ATTEMPTS = 3;
+
+		for (int attempt = 0; attempt < MAX_EVICTION_ATTEMPTS; ++attempt)
+		{
+			// Find lowest priority system
+			ParticleSystem* victim = FindLowestPrioritySystem();
+
+			if (!victim)
+			{
+				// No systems available to evict
+				m_runtimeProfile.evictionFailures++;
+				return false;
+			}
+
+			// Evict the victim
+			DestroyInstance(victim);
+			m_runtimeProfile.evictionCount++;
+
+			// Retry allocation
+			outHandle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
+
+			if (outHandle.IsActive())
+			{
+				// Success!
+				return true;
+			}
+		}
+
+		// Failed after max attempts
+		m_runtimeProfile.evictionFailures++;
+		return false;
 	}
 }
