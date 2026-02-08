@@ -20,6 +20,7 @@ namespace DE {
 		//D3D11Utils::CreateCS(device.Get(), L"VortexCS.hlsl", vortexCS);
 		//D3D11Utils::CreateCS(device.Get(), L"OrbitCS.hlsl", orbitCS);
 		D3D11Utils::CreateCS(device.Get(), L"RenderArgsUpdateCS.hlsl", renderArgsUpdateCS);
+	D3D11Utils::CreateCS(device.Get(), L"ParticleFrustumCullingCS.hlsl", frustumCullingCS);
 	}
 
 	void ComputeCommon::initBitonicSortShaders(ComPtr<ID3D11Device>& device)
@@ -39,6 +40,7 @@ namespace DE {
 		particle.vortexCS.computeShader = vortexCS;
 		particle.orbitCS.computeShader = orbitCS;
 		particle.renderArgsUpdateCS.computeShader = renderArgsUpdateCS;
+	particle.frustumCullingCS.computeShader = frustumCullingCS;
 
 		// BitonicSort PSO
 		sort.bitonicSortCS.computeShader = bitonicSortCS;

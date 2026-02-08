@@ -2,6 +2,7 @@
 #include "ParticleCommon.hlsli"
 
 StructuredBuffer<SortElement> sortedElements : register(t1);
+StructuredBuffer<uint> visibleIndices : register(t13);
 
 // Vertex Input (Quad Mesh)
 struct VSParticleInput
@@ -36,8 +37,12 @@ ParticlePSInput main(VSParticleInput input)
 {
     RenderConsts render = consts[emitterID].render;
 
+    // GPU Frustum Culling: Indirection through visibleIndices
+    // visibleIndices contains indices of particles that passed frustum test
+    uint visibleIdx = visibleIndices[readParticleOffset + input.instanceID];
+
     // 파티클 인덱스 (정렬 여부에 따라)
-    uint particleIdx = render.useSorting ? sortedElements[input.instanceID].value : input.instanceID;
+    uint particleIdx = render.useSorting ? sortedElements[visibleIdx].value : visibleIdx;
 
     // 파티클 데이터 로드
     Particle p = readParticles[readParticleOffset + particleIdx];

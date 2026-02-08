@@ -10,8 +10,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // [���� 1] emitterID(���) ��� ������ ID ���
     uint myEmitterID = DTid.x;
 
-    // ���� Emitter�� ��ƼŬ ���� ��������
-    uint count = readCount[myEmitterID];
+    // ���� Emitter�� visible ��ƼŬ ���� ��������
+    // After frustum culling, t7 now contains visibleCount instead of readCount
+    uint count = readCount[myEmitterID]; // This is now visibleCount (bound to t7)
 
     // --------------------------------------------------------
     // 2. Billboard Args ���� (Render �ܰ��) -> [�̰� ��� 1���� ����]

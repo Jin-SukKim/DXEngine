@@ -65,6 +65,24 @@ namespace DE {
 		device->QueryInterface(devicePtr.GetAddressOf());
 		D3D11Utils::CreateVertexBuffer(devicePtr, quadMesh.vertices, m_quadVertexBuffer);
 		D3D11Utils::CreateIndexBuffer(devicePtr, quadMesh.indices, m_quadIndexBuffer);
+
+		// GPU Frustum Culling Buffers
+		m_visibleIndices.Initialize(device, maxParticles);
+		m_visibleCounts.Initialize(device, maxEmitters);
+		m_frustumCullingConsts.Initialize();
+
+		// Initialize visibleIndices to [0, 1, 2, ..., maxParticles-1] for pass-through
+		std::vector<uint32_t> initialIndices(maxParticles);
+		for (uint32_t i = 0; i < maxParticles; ++i) {
+			initialIndices[i] = i;
+		}
+		m_visibleIndices.SetData(initialIndices);
+		m_visibleIndices.Upload(context);
+
+		// Initialize visibleCounts to readCounts initially
+		std::vector<uint32_t> initialCounts(maxEmitters, 0);
+		m_visibleCounts.SetData(initialCounts);
+		m_visibleCounts.Upload(context);
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
@@ -264,15 +282,23 @@ namespace DE {
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
+		// Bind particle data for rendering
+		// t6 = readParticles (unchanged - simulation continues)
+		// t7 = visibleCounts (was readCount - now shows visible particles)
+		// t8 = frameConsts
+		// t9 = consts
 		ID3D11ShaderResourceView* srvs[] = {
-			GetReadBuffer().GetSRV(),
-			GetReadCount().GetSRV(),
-			m_frameConsts.GetSRV(),
-			m_consts.GetSRV()
+			GetReadBuffer().GetSRV(),      // t6: readParticles
+			m_visibleCounts.GetSRV(),      // t7: visibleCounts (changed from readCount)
+			m_frameConsts.GetSRV(),        // t8: frameConsts
+			m_consts.GetSRV()              // t9: consts
 		};
 		context->CSSetShaderResources(6, 4, srvs);
 		context->VSSetShaderResources(6, 4, srvs);
 		context->PSSetShaderResources(6, 4, srvs);
+
+		// Bind visible indices for vertex shader indirection (t13)
+		context->VSSetShaderResources(13, 1, m_visibleIndices.GetAddressOfSRV());
 	}
 
 	void ParticleMemoryPool::UnbindRender()
@@ -283,6 +309,10 @@ namespace DE {
 		context->CSSetShaderResources(6, 4, srvs);
 		context->VSSetShaderResources(6, 4, srvs);
 		context->PSSetShaderResources(6, 4, srvs);
+
+		// Unbind visible indices
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+		context->VSSetShaderResources(13, 1, &nullSRV);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()
@@ -430,12 +460,138 @@ namespace DE {
 	void ParticleMemoryPool::BindMeshConsts(UINT systemIndex)
 	{
 		if (systemIndex >= m_maxSystems) return;
-		
+
 		m_meshConstsBuffer.SetCpuData(m_meshConstsCPU[systemIndex]);
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
 		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
+	}
+
+	void ParticleMemoryPool::UpdateFrustumData(const Matrix& view, const Matrix& proj)
+	{
+		FrustumCullingConsts consts;
+		consts.viewMatrix = view;
+		consts.enableCulling = m_enableParticleFrustumCulling ? 1 : 0;
+
+		// Extract frustum planes from projection matrix
+		// Projection matrix has frustum planes embedded in its rows
+		// Left: row4 + row1, Right: row4 - row1
+		// Bottom: row4 + row2, Top: row4 - row2
+		// Near: row3, Far: row4 - row3
+		Matrix projT = proj.Transpose();
+
+		// Left plane
+		consts.frustum.planes[0] = Vector4(
+			projT._14 + projT._11,
+			projT._24 + projT._21,
+			projT._34 + projT._31,
+			projT._44 + projT._41
+		);
+
+		// Right plane
+		consts.frustum.planes[1] = Vector4(
+			projT._14 - projT._11,
+			projT._24 - projT._21,
+			projT._34 - projT._31,
+			projT._44 - projT._41
+		);
+
+		// Bottom plane
+		consts.frustum.planes[2] = Vector4(
+			projT._14 + projT._12,
+			projT._24 + projT._22,
+			projT._34 + projT._32,
+			projT._44 + projT._42
+		);
+
+		// Top plane
+		consts.frustum.planes[3] = Vector4(
+			projT._14 - projT._12,
+			projT._24 - projT._22,
+			projT._34 - projT._32,
+			projT._44 - projT._42
+		);
+
+		// Near plane
+		consts.frustum.planes[4] = Vector4(
+			projT._13,
+			projT._23,
+			projT._33,
+			projT._43
+		);
+
+		// Far plane
+		consts.frustum.planes[5] = Vector4(
+			projT._14 - projT._13,
+			projT._24 - projT._23,
+			projT._34 - projT._33,
+			projT._44 - projT._43
+		);
+
+		// Normalize planes
+		for (int i = 0; i < 6; ++i)
+		{
+			float length = sqrtf(
+				consts.frustum.planes[i].x * consts.frustum.planes[i].x +
+				consts.frustum.planes[i].y * consts.frustum.planes[i].y +
+				consts.frustum.planes[i].z * consts.frustum.planes[i].z
+			);
+			if (length > 0.0001f)
+			{
+				consts.frustum.planes[i].x /= length;
+				consts.frustum.planes[i].y /= length;
+				consts.frustum.planes[i].z /= length;
+				consts.frustum.planes[i].w /= length;
+			}
+		}
+
+		m_frustumCullingConsts.SetCpuData(consts);
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		m_frustumCullingConsts.Upload();
+	}
+
+	void ParticleMemoryPool::PerformParticleFrustumCulling()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		auto& frustumCullingCS = RenderBase::computeCommon.particle.frustumCullingCS;
+
+		// 1. Clear visible counts
+		const UINT clearVal[1] = { 0 };
+		context->ClearUnorderedAccessViewUint(m_visibleCounts.GetUAV(), clearVal);
+
+		// 2. Bind frustum constants (b7)
+		context->CSSetConstantBuffers(7, 1, m_frustumCullingConsts.GetAddressOf());
+
+		// 3. Bind input resources (t6=readParticles, t7=readCount, t11=emitterIDs)
+		ID3D11ShaderResourceView* srvs[] = {
+			GetReadBuffer().GetSRV(),     // t6: readParticles
+			GetReadCount().GetSRV(),      // t7: readCount
+			m_frameConsts.GetSRV(),       // t8: frameConsts
+			m_consts.GetSRV(),            // t9: consts
+			m_spawnPositions.GetSRV(),    // t10: spawnPositions
+			m_emitterIDs.GetSRV()         // t11: emitterIDs
+		};
+		context->CSSetShaderResources(6, 6, srvs);
+
+		// 4. Bind output UAVs (u4=visibleIndices, u5=visibleCount)
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_visibleIndices.GetUAV(),  // u4
+			m_visibleCounts.GetUAV()    // u5
+		};
+		context->CSSetUnorderedAccessViews(4, 2, uavs, nullptr);
+
+		// 5. Dispatch culling CS (use batch dispatch indirect)
+		context->CSSetShader(frustumCullingCS.computeShader.Get(), nullptr, 0);
+		context->DispatchIndirect(m_batchDispatchArgs.GetBuffer(), 0);
+
+		// 6. Unbind
+		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(4, 2, nullUAVs, nullptr);
+		ID3D11Buffer* nullCBs[] = { nullptr };
+		context->CSSetConstantBuffers(7, 1, nullCBs);
+		context->CSSetShader(nullptr, 0, 0);
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)

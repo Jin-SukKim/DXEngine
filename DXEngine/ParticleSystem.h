@@ -106,7 +106,7 @@ namespace DE {
 
 		// Frustum Culling용
 		Vector3 GetWorldPosition() const;
-		float GetBoundingRadius() const { return 1.0f; } // 기본 반경 - 적절한 크기
+		float GetBoundingRadius() const { return 2.0f; } // 기본 반경 - 적절한 크기
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);

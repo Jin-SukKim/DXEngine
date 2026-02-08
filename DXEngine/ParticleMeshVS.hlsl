@@ -3,15 +3,16 @@
 
 Texture2D g_heightTexture : register(t0); // Height Map
 StructuredBuffer<SortElement> sortedElements : register(t2);
+StructuredBuffer<uint> visibleIndices : register(t13);
 
-// [Ãß°¡] 3D Euler °¢µµ -> È¸Àü Çà·Ä º¯È¯ ÇÔ¼ö
+// [ï¿½ß°ï¿½] 3D Euler ï¿½ï¿½ï¿½ï¿½ -> È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ô¼ï¿½
 float3x3 GetRotationMatrix(float3 rot)
 {
     float cX = cos(rot.x), sX = sin(rot.x);
     float cY = cos(rot.y), sY = sin(rot.y);
     float cZ = cos(rot.z), sZ = sin(rot.z);
 
-    // Z * Y * X ¼ø¼­ Á÷Á¢ °è»ê (Çà·Ä °ö¼À Á¦°Å)
+    // Z * Y * X ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     return float3x3(
         cY * cZ, -cY * sZ, sY,
         sX * sY * cZ + cX * sZ, -sX * sY * sZ + cX * cZ, -sX * cY,
@@ -19,80 +20,84 @@ float3x3 GetRotationMatrix(float3 rot)
     );
 }
 
-// [Áß¿ä] SV_InstanceID¸¦ ÀÎÀÚ·Î ¹Þ¾Æ¾ß ÇÕ´Ï´Ù.
+// [ï¿½ß¿ï¿½] SV_InstanceIDï¿½ï¿½ ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½Þ¾Æ¾ï¿½ ï¿½Õ´Ï´ï¿½.
 PSInput main(VSInput input, uint instanceID : SV_InstanceID)
 {
-    // 1. ÇöÀç ±×¸± ÆÄÆ¼Å¬ÀÇ ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
-    uint particleIdx = consts[emitterID].render.useSorting ? sortedElements[instanceID].value : instanceID;
+    // GPU Frustum Culling: Indirection through visibleIndices
+    // visibleIndices contains indices of particles that passed frustum test
+    uint visibleIdx = visibleIndices[readParticleOffset + instanceID];
+
+    // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ ï¿½ï¿½Æ¼Å¬ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½É´Ï´ï¿½.
+    uint particleIdx = consts[emitterID].render.useSorting ? sortedElements[visibleIdx].value : visibleIdx;
 
     Particle p = readParticles[readParticleOffset + particleIdx];
 
     PSInput output;
 
     // -------------------------------------------------------------------------
-    // 1. Scale: Å©±â º¯È¯
+    // 1. Scale: Å©ï¿½ï¿½ ï¿½ï¿½È¯
     // -------------------------------------------------------------------------
     float3 scaledPos = input.posModel * p.size;
 
-    // HeightMap Àû¿ë (¿É¼Ç)
+    // HeightMap ï¿½ï¿½ï¿½ï¿½ (ï¿½É¼ï¿½)
     if (useHeightMap) {
         float height = g_heightTexture.SampleLevel(linearClampSampler, input.texcoord, 0).r;
         height = height * 2.0 - 1.0;
 
-        // ·ÎÄÃ Normal ¹æÇâÀ¸·Î È®Àå
+        // ï¿½ï¿½ï¿½ï¿½ Normal ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
         scaledPos += input.normalModel * height * heightScale;
     }
 
     // -------------------------------------------------------------------------
-    // 2. Rotate: È¸Àü º¯È¯
+    // 2. Rotate: È¸ï¿½ï¿½ ï¿½ï¿½È¯
     // -------------------------------------------------------------------------
-    // È¸Àü Çà·Ä »ý¼º (p.rotationÀº ¶óµð¾È ´ÜÀ§¶ó°í °¡Á¤)
+    // È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (p.rotationï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     float3x3 rotMatrix = GetRotationMatrix(p.rotation);
 
-    // À§Ä¡ È¸Àü Àû¿ë
+    // ï¿½ï¿½Ä¡ È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 rotatedPos = mul(rotMatrix, scaledPos);
 
-    // Normal & Tangent È¸Àü (·ÎÄÃ °ø°£¿¡¼­ÀÇ È¸Àü)
+    // Normal & Tangent È¸ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½)
     float3 rotatedNormal = mul(rotMatrix, input.normalModel);
     float3 rotatedTangent = mul(rotMatrix, input.tangentModel);
 
     // -------------------------------------------------------------------------
-    // 3. Translate: À§Ä¡ ÀÌµ¿ (ÆÄÆ¼Å¬ Áß½ÉÁ¡)
+    // 3. Translate: ï¿½ï¿½Ä¡ ï¿½Ìµï¿½ (ï¿½ï¿½Æ¼Å¬ ï¿½ß½ï¿½ï¿½ï¿½)
     // -------------------------------------------------------------------------
     float4 localPosResult = float4(rotatedPos + p.position, 1.0f);
 
     SpawnConsts spawn = consts[emitterID].spawn;
     // -------------------------------------------------------------------------
-    // 4. World Transformation: ½Ã¹Ä·¹ÀÌ¼Ç °ø°£¿¡ µû¸¥ Ã³¸®
+    // 4. World Transformation: ï¿½Ã¹Ä·ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
     // -------------------------------------------------------------------------
     if (spawn.simulationSpace == 1) // World Space Simulation
     {
         // 1. Position
-        // ÆÄÆ¼Å¬ À§Ä¡(p.position)°¡ ÀÌ¹Ì World ÁÂÇ¥ÀÌ¹Ç·Î ActorÀÇ World Çà·Ä °öÀ» »ý·«
+        // ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½Ä¡(p.position)ï¿½ï¿½ ï¿½Ì¹ï¿½ World ï¿½ï¿½Ç¥ï¿½Ì¹Ç·ï¿½ Actorï¿½ï¿½ World ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         output.posWorld = localPosResult.xyz;
 
         // 2. Normal & Tangent
-        // ÆÄÆ¼Å¬ÀÌ Actor¿Í ºÐ¸®µÇ¾úÀ¸¹Ç·Î, ActorÀÇ È¸Àü(worldIT)À» Àû¿ëÇÏÁö ¾ÊÀ½
-        // ´Ü, ÆÄÆ¼Å¬ ÀÚÃ¼ÀÇ È¸Àü(rotatedNormal)Àº Àû¿ëµÊ
+        // ï¿½ï¿½Æ¼Å¬ï¿½ï¿½ Actorï¿½ï¿½ ï¿½Ð¸ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½Ç·ï¿½, Actorï¿½ï¿½ È¸ï¿½ï¿½(worldIT)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½, ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½Ã¼ï¿½ï¿½ È¸ï¿½ï¿½(rotatedNormal)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
         output.normalWorld = normalize(rotatedNormal);
         output.tangentWorld = normalize(rotatedTangent);
     }
-    else // Local Space Simulation (±âÁ¸ ¹æ½Ä)
+    else // Local Space Simulation (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
     {
         // 1. Position
-        // ÆÄÆ¼Å¬ÀÌ Actor¿¡ Á¾¼ÓÀûÀÌ¹Ç·Î ActorÀÇ World Çà·ÄÀ» °öÇÔ
+        // ï¿½ï¿½Æ¼Å¬ï¿½ï¿½ Actorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ Actorï¿½ï¿½ World ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         float4 worldPos = mul(localPosResult, pWorld);
         output.posWorld = worldPos.xyz;
 
         // 2. Normal & Tangent
-        // (ÆÄÆ¼Å¬ È¸Àü) -> (Actor È¸Àü) ¼ø¼­·Î Àû¿ë
-        // NormalÀº Inverse Transpose¸¦ »ç¿ëÇØ¾ß Á¤È®ÇÔ
+        // (ï¿½ï¿½Æ¼Å¬ È¸ï¿½ï¿½) -> (Actor È¸ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        // Normalï¿½ï¿½ Inverse Transposeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½È®ï¿½ï¿½
         output.normalWorld = normalize(mul(float4(rotatedNormal, 0.f), pWorldIT).xyz);
         output.tangentWorld = normalize(mul(float4(rotatedTangent, 0.f), pWorld).xyz);
     }
 
     // -------------------------------------------------------------------------
-    // °øÅë: View / Projection º¯È¯
+    // ï¿½ï¿½ï¿½ï¿½: View / Projection ï¿½ï¿½È¯
     // -------------------------------------------------------------------------
     output.posProj = mul(float4(output.posWorld, 1.0f), viewProj);
     output.texcoord = input.texcoord;

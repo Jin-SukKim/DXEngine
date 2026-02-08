@@ -113,6 +113,10 @@ namespace DE {
 		UINT totalCount = 0;
 		UINT visibleCount = 0;
 
+		// [Added] GPU Frustum Culling - Update frustum with latest camera
+		m_memoryPool->UpdateFrustumData(m_view, m_proj);
+		m_memoryPool->PerformParticleFrustumCulling();
+
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
 

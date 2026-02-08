@@ -52,6 +52,8 @@ public:
 	void UnbindRender();
 	void ClearWriteCount();
 	void ExcuteParticleLogic();
+	void UpdateFrustumData(const Matrix& view, const Matrix& proj);
+	void PerformParticleFrustumCulling();
 
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
 	void UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data);
@@ -81,6 +83,8 @@ public:
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 	std::vector<ParticleMeshConsts>& GetMeshConsts() { return m_meshConstsCPU; }
+	StructuredBuffer<uint32_t>& GetVisibleIndices() { return m_visibleIndices; }
+	StructuredBuffer<uint32_t>& GetVisibleCounts() { return m_visibleCounts; }
 
 	// Quad Mesh Getters
 	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
@@ -128,6 +132,8 @@ public:
 	// public ��� �Լ��� �߰�
 	float GetFragmentationRatio() const;
 
+	void SetParticleFrustumCullingEnabled(bool enabled) { m_enableParticleFrustumCulling = enabled; }
+
 private:
 	// System Slot ����
 	UINT AllocateSystemSlot();
@@ -173,6 +179,12 @@ private:
 	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
 	std::vector<bool> m_systemSlotTable;
+
+	// GPU Frustum Culling
+	StructuredBuffer<uint32_t> m_visibleIndices;
+	StructuredBuffer<uint32_t> m_visibleCounts;
+	ConstantBuffer<FrustumCullingConsts> m_frustumCullingConsts;
+	bool m_enableParticleFrustumCulling = false; // Start disabled for safety
 };
 
 }

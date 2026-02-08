@@ -18,7 +18,7 @@ namespace DE {
         UINT readParticleOffset;
         UINT writeParticleOffset;
         UINT emitterID;
-        UINT spawnPosOffset;  // bakedOffset + customOffset ÅëÇÕ
+        UINT spawnPosOffset;  // bakedOffset + customOffset ï¿½ï¿½ï¿½ï¿½
     };
 
     struct ParticleFrameConsts {
@@ -101,7 +101,7 @@ namespace DE {
         UINT indexCount;
         UINT textureMode;
         int singleTextureIdx;
-        UINT useSorting; // Ãß°¡
+        UINT useSorting; // ï¿½ß°ï¿½
     };
 
     struct ParticleConsts {
@@ -111,5 +111,16 @@ namespace DE {
         RenderConsts render;
         VortexConsts vortex;
         OrbitConsts orbit;
+    };
+
+    struct FrustumPlanes {
+        Vector4 planes[6]; // Left, Right, Bottom, Top, Near, Far (Ax+By+Cz+D=0)
+    };
+
+    struct FrustumCullingConsts {
+        FrustumPlanes frustum;
+        Matrix viewMatrix;
+        UINT enableCulling;
+        Vector3 padding;
     };
 }
