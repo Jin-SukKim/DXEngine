@@ -3,6 +3,7 @@
 #include "ParticleLoader.h"
 #include "RenderBase.h"
 #include "ScopedTimer.h" // [Added] Include ScopedTimer
+#include <DirectXCollision.h> // [Added] For Frustum Culling
 
 namespace DE {
 	void ParticleManager::Initialize()
@@ -104,28 +105,60 @@ namespace DE {
 
 		if (m_activeSystems[0].empty() && m_activeSystems[1].empty()) return;
 
+		// [Added] CPU Frustum Culling
+		// Projection 행렬로 view space frustum 생성
+		DirectX::BoundingFrustum frustum(m_proj);
+
+		// [Added] Reset Culling Stats
+		UINT totalCount = 0;
+		UINT visibleCount = 0;
+
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
 
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
 		for (auto* system : m_activeSystems[0]) {
 			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-				system->Render();
+				totalCount++;
+				// Frustum Culling Test (view space)
+				Vector3 posWorld = system->GetWorldPosition();
+				Vector3 posView = Vector3::Transform(posWorld, m_view);  // World -> View space
+				float radius = system->GetBoundingRadius();
+				DirectX::BoundingSphere sphere(posView, radius);
+
+				if (frustum.Intersects(sphere)) {
+					visibleCount++;
+					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					system->Render();
+				}
 			}
 		}
 
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		for (auto* system : m_activeSystems[1]) {
 			if (system) {
-				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-				system->Render();
+				totalCount++;
+				// Frustum Culling Test (view space)
+				Vector3 posWorld = system->GetWorldPosition();
+				Vector3 posView = Vector3::Transform(posWorld, m_view);  // World -> View space
+				float radius = system->GetBoundingRadius();
+				DirectX::BoundingSphere sphere(posView, radius);
+
+				if (frustum.Intersects(sphere)) {
+					visibleCount++;
+					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					system->Render();
+				}
 			}
 		}
 
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
+		// [Added] Update Culling Stats
+		m_runtimeProfile.totalSystems = totalCount;
+		m_runtimeProfile.visibleSystems = visibleCount;
+		m_runtimeProfile.culledSystems = totalCount - visibleCount;
 	}
 
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
@@ -408,6 +441,53 @@ namespace DE {
 
 				if (ImGui::Button("Reset All Runtime Metrics", ImVec2(-1, 0))) {
 					m_runtimeProfile.Reset();
+				}
+			}
+
+			// [Added] Frustum Culling Statistics
+			if (ImGui::CollapsingHeader("Frustum Culling Stats", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Text("Total Particle Systems: %u", m_runtimeProfile.totalSystems);
+				ImGui::Text("Visible Systems: %u", m_runtimeProfile.visibleSystems);
+				ImGui::Text("Culled Systems: %u", m_runtimeProfile.culledSystems);
+
+				if (m_runtimeProfile.totalSystems > 0) {
+					float cullRatio = (float)m_runtimeProfile.culledSystems / m_runtimeProfile.totalSystems * 100.0f;
+					ImVec4 cullColor = (cullRatio < 30.0f) ? ImVec4(1, 0, 0, 1) :
+						(cullRatio < 60.0f) ? ImVec4(1, 1, 0, 1) : ImVec4(0, 1, 0, 1);
+					ImGui::TextColored(cullColor, "Cull Ratio: %.1f%%", cullRatio);
+				}
+
+				// Debug: Show first few systems' positions
+				ImGui::Separator();
+				ImGui::Text("Debug - Active Systems:");
+				int debugCount = 0;
+				for (int i = 0; i < 2 && debugCount < 5; ++i) {
+					for (auto* sys : m_activeSystems[i]) {
+						if (sys && debugCount < 5) {
+							Vector3 pos = sys->GetWorldPosition();
+							ImGui::Text("  Sys[%d]: Pos(%.1f, %.1f, %.1f) R:%.1f",
+								debugCount, pos.x, pos.y, pos.z, sys->GetBoundingRadius());
+							debugCount++;
+						}
+					}
+				}
+
+				// Debug: View/Proj matrices
+				ImGui::Separator();
+				if (ImGui::TreeNode("View Matrix (Debug)")) {
+					ImGui::Text("Row 0: %.2f, %.2f, %.2f, %.2f", m_view._11, m_view._12, m_view._13, m_view._14);
+					ImGui::Text("Row 1: %.2f, %.2f, %.2f, %.2f", m_view._21, m_view._22, m_view._23, m_view._24);
+					ImGui::Text("Row 2: %.2f, %.2f, %.2f, %.2f", m_view._31, m_view._32, m_view._33, m_view._34);
+					ImGui::Text("Row 3: %.2f, %.2f, %.2f, %.2f", m_view._41, m_view._42, m_view._43, m_view._44);
+					ImGui::TreePop();
+				}
+				if (ImGui::TreeNode("Proj Matrix (Debug)")) {
+					ImGui::Text("Row 0: %.2f, %.2f, %.2f, %.2f", m_proj._11, m_proj._12, m_proj._13, m_proj._14);
+					ImGui::Text("Row 1: %.2f, %.2f, %.2f, %.2f", m_proj._21, m_proj._22, m_proj._23, m_proj._24);
+					ImGui::Text("Row 2: %.2f, %.2f, %.2f, %.2f", m_proj._31, m_proj._32, m_proj._33, m_proj._34);
+					ImGui::Text("Row 3: %.2f, %.2f, %.2f, %.2f", m_proj._41, m_proj._42, m_proj._43, m_proj._44);
+					ImGui::TreePop();
 				}
 			}
 		}

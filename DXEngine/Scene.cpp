@@ -152,7 +152,7 @@ namespace DE {
 
 	void Scene::InitializeInput()
 	{
-		// F Å°¸¦ ´©¸£¸é Ä«¸Ş¶ó FPV ¸ğµå Åä±Û
+		// F Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Ş¶ï¿½ FPV ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		AppBase::GetInputManager().BindInputAction(m_fpv, InputState::Pressed, this, &Scene::EnableCameraFPV);
 	}
 
@@ -160,16 +160,16 @@ namespace DE {
 	{
 		UpdateGUI();
 		UpdateCamera(deltaTime);
-		
-		const Vector3 eyeWorld = m_mainCamera->GetPos();
-		const Matrix view = m_mainCamera->GetViewMatrix();
-		const Matrix proj = m_mainCamera->GetProjMatrix();
 
-		UpdateGlobalConstants(deltaTime, eyeWorld, view, proj);
+		const Vector3 eyeWorld = m_mainCamera->GetPos();
+		m_view = m_mainCamera->GetViewMatrix();
+		m_proj = m_mainCamera->GetProjMatrix();
+
+		UpdateGlobalConstants(deltaTime, eyeWorld, m_view, m_proj);
 		UpdateLights(deltaTime);
 		UpdateActors(deltaTime);
 
-		// µ¿ÀûÀ¸·Î Ãß°¡µÈ EffectActorÁß ¿Ï·áµÈ °Íµé Á¤¸®
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ EffectActorï¿½ï¿½ ï¿½Ï·ï¿½ï¿½ ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½
 		CleanupFinishedEffects();
 
 		// ParticleManager handles all particle updates
@@ -326,6 +326,8 @@ namespace DE {
 		//m_skybox->Render();
 
 		// Render particles (ParticleManager handles PSO restoration)
+		// CPU Frustum Cullingìš©ìœ¼ë¡œ Update()ì—ì„œ ì €ì¥í•œ View, Proj ì „ë‹¬
+		ParticleManager::Get().SetViewAndProj(m_view, m_proj);
 		ParticleManager::Get().Render();
 
 		// Render debug geometry
@@ -370,7 +372,7 @@ namespace DE {
 	{
 		auto& effectList = m_actorList[static_cast<size_t>(ActorCategory::Effect)];
 
-		// ¿Ï·áµÈ °Íµé Á¤¸®
+		// ï¿½Ï·ï¿½ï¿½ ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½
 		std::erase_if(effectList,
 			[](const std::unique_ptr<Actor>& actor) {
 				if (auto* effect = dynamic_cast<EffectActor*>(actor.get())) {

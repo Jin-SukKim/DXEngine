@@ -544,6 +544,24 @@ namespace DE {
 		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, meshConsts);
 	}
 
+	Vector3 ParticleSystem::GetWorldPosition() const
+	{
+		// owner가 있으면 TransformMatrix에서 위치 추출
+		if (m_owner) {
+			TransformComponent* tr = m_owner->GetComponent<TransformComponent>();
+			if (tr) {
+				// GetTransformMatrix()의 translation 부분 추출
+				Matrix worldMat = tr->GetTransformMatrix();
+				return Vector3(worldMat._41, worldMat._42, worldMat._43);
+			}
+		}
+
+		// owner가 없으면 meshConsts에서 추출
+		const auto& cpuData = m_meshConsts.GetCpu();
+		// world 행렬의 4번째 열 (translation) - 이미 Transpose된 상태일 수 있음
+		return Vector3(cpuData.world._41, cpuData.world._42, cpuData.world._43);
+	}
+
 	void ParticleSystem::RegisterSpawnPositions(
 		ParticleEmitter* emitter, 
 		std::vector<Vector3>& outPositions, 

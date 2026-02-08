@@ -37,6 +37,11 @@ namespace DE {
 		float recalculateOffsets = 0.0f;
 		float syncReadOffsets = 0.0f;
 
+		// [Added] Frustum Culling Stats
+		UINT totalSystems = 0;
+		UINT visibleSystems = 0;
+		UINT culledSystems = 0;
+
 		void Reset() {
 			update = 0.0f;
 			update_prepare = 0.0f;
@@ -53,6 +58,9 @@ namespace DE {
 			uploadIDs = 0.0f;
 			recalculateOffsets = 0.0f;
 			syncReadOffsets = 0.0f;
+			totalSystems = 0;
+			visibleSystems = 0;
+			culledSystems = 0;
 		}
 	};
 
@@ -67,6 +75,12 @@ namespace DE {
 		void Initialize();
 		void Update(const float& dt);
 		void Render();
+
+		// Frustum Culling용
+		void SetViewAndProj(const Matrix& view, const Matrix& proj) {
+			m_view = view;
+			m_proj = proj;
+		}
 
 		void RegisterActiveSystem(ParticleSystem* system);
 		void UnregisterActiveSystem(ParticleSystem* system);
@@ -125,6 +139,10 @@ namespace DE {
 
 		// [Added] Profiling Data
 		RuntimeProfile m_runtimeProfile;
+
+		// [Added] Frustum Culling
+		Matrix m_view;
+		Matrix m_proj;
 	};
 
 }

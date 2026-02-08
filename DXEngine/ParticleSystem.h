@@ -103,6 +103,10 @@ namespace DE {
 		PoolHandle& GetPoolHandle() { return m_poolHandle; }
 
 		const ParticleInitializer& GetInitialData() const { return m_initialData; }
+
+		// Frustum Culling용
+		Vector3 GetWorldPosition() const;
+		float GetBoundingRadius() const { return 1.0f; } // 기본 반경 - 적절한 크기
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);

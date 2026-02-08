@@ -38,10 +38,10 @@ namespace DE {
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); }
 
-		// µ¿Àû EffectActor Ãß°¡
+		// ï¿½ï¿½ï¿½ï¿½ EffectActor ï¿½ß°ï¿½
 		template<class T = EffectActor>
 		T* SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos);
-		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); // Á÷Á¢ Ãß°¡
+		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); // ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category);
 		bool ContainsEffect(EffectActor* effect) const;
 	protected:
@@ -90,6 +90,10 @@ namespace DE {
 		GlobalConstants m_globalConstsCPU;
 		ComPtr<ID3D11Buffer> m_globalConstsGPU;
 
+		// [Added] CPU-side View/Proj for Frustum Culling
+		Matrix m_view;
+		Matrix m_proj;
+
 		// Core Scene Elements
 		std::unique_ptr<CameraActor> m_mainCamera;
 		std::unique_ptr<SkyboxActor> m_skybox;
@@ -100,13 +104,13 @@ namespace DE {
 		std::vector<std::unique_ptr<Actor>> m_lights;
 		std::vector<std::unique_ptr<Gui>> m_guis;
 
-		// Input - ¹öÆ°Àº ¸ÕÀú ¼±¾ð
+		// Input - ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		InputButton m_fButton = InputButton::F;
 		InputButton m_lButton = InputButton::LButton;
 		InputButton m_rButton = InputButton::RButton;
 		InputAxis m_xAxis = InputAxis::XAxis;
 		
-		// InputActionÀº ³ªÁß¿¡ ¼±¾ð (¹öÆ°¿¡ ÀÇÁ¸)
+		// InputActionï¿½ï¿½ ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		InputAction m_fpv;
 		InputAxisAction m_mouseClick;
 	};
