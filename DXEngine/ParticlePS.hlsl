@@ -26,23 +26,23 @@ float4 SampleParticleTexture(float3 uvw)
     // [Mode 0: Material]
     if (render.textureMode == 0)
     {
-        // Albedo »ùÇÃ¸µ
+        // Albedo ï¿½ï¿½ï¿½Ã¸ï¿½
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
 
-        // Emissive Ãß°¡ (¼±ÅÃ »çÇ× - ÆÄÆ¼Å¬Àº ÁÖ·Î Emissive ¼Ó¼ºÀÌ °­ÇÏ¹Ç·Î ´õÇØÁÖ´Â °æ¿ì°¡ ¸¹À½)
+        // Emissive ï¿½ß°ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½Æ¼Å¬ï¿½ï¿½ ï¿½Ö·ï¿½ Emissive ï¿½Ó¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ì°¡ ï¿½ï¿½ï¿½ï¿½)
         // float4 emissive = materialEmissiveMap.SampleLevel(samp, uvw.xy, lod);
         // color.rgb += emissive.rgb; 
     }
     // [Mode 1: Single Texture]
     else if (render.textureMode == 1)
     {
-        // °³º° ÅØ½ºÃ³ »ùÇÃ¸µ (uvw.z ÀÎµ¦½º ¹«½Ã)
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½Ã¸ï¿½ (uvw.z ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
     }
     // [Mode 2: Texture Array (Default)]
     else
     {
-        // ÅØ½ºÃ³ ¹è¿­ »ùÇÃ¸µ (uvw.z = Array Index)
+        // ï¿½Ø½ï¿½Ã³ ï¿½è¿­ ï¿½ï¿½ï¿½Ã¸ï¿½ (uvw.z = Array Index)
         color = particleTex.Sample(linearClampSampler, uvw);
     }
 
@@ -52,16 +52,16 @@ float4 SampleParticleTexture(float3 uvw)
 float4 SpriteTexture(float lifeRatio, float2 uv) {
     RenderConsts render = consts[emitterID].render;
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
-        // ÇöÀç frame
+        // ï¿½ï¿½ï¿½ï¿½ frame
         uint currentFrame = floor(lifeRatio * render.frameCount);
         currentFrame = min(currentFrame, render.frameCount - 1);
 
-        // Sprite SheetÀÇ col, row
+        // Sprite Sheetï¿½ï¿½ col, row
         uint width = render.frameTiles.x;
         uint col = currentFrame % width;
         uint row = currentFrame / width;
 
-        float2 uvSize = 1.f / render.frameTiles; // Tile 1Ä­ÀÇ Å©±â
+        float2 uvSize = 1.f / render.frameTiles; // Tile 1Ä­ï¿½ï¿½ Å©ï¿½ï¿½
 
         uv = (uv + float2(col, row)) * uvSize;
     }
@@ -76,31 +76,26 @@ float4 main(ParticlePSInput input) : SV_TARGET
     RenderConsts render = consts[emitterID].render;
     bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
-    // Case 1: ÅØ½ºÃ³°¡ ÀÖ´Â °æ¿ì (Sprite / Animation)
+    // Case 1: ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ (Sprite / Animation)
     // --------------------------------------------------------
     if (hasTexture)
     {
         float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
         finalColor *= texColor;
 
-        // ÅØ½ºÃ³ÀÇ ¾ËÆÄ°¡ ³Ê¹« ³·À¸¸é ±×¸®Áö ¾ÊÀ½ (Alpha Test)
-        // ºÒÅõ¸í/¹ÝÅõ¸í ¼¯¾î ¾µ ¶§ À¯¿ë
-        if (finalColor.a <= 0.01f)
-            discard;
+        // Additive Blendì—ì„œëŠ” discard ì œê±° (ì„±ëŠ¥ í–¥ìƒ)
+        // Alpha Blendê°€ ìžë™ìœ¼ë¡œ íˆ¬ëª…ë„ ì²˜ë¦¬
     }
     // --------------------------------------------------------
-    // Case 2: ÅØ½ºÃ³°¡ ¾ø´Â °æ¿ì (±âº» ¿øÇü Glow)
+    // Case 2: ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½âº» ï¿½ï¿½ï¿½ï¿½ Glow)
     // --------------------------------------------------------
     else
     {
-        // ÅØ½ºÃ³°¡ ¾øÀ» ¶§¸¸ ÀýÂ÷ÀûÀ¸·Î ¿øÀ» ±×¸³´Ï´Ù.
+        // ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½Ï´ï¿½.
         float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
 
-        // ¿ø ¹ÛÀº Àß¶ó³¿
-        if (circleAlpha <= 0.0f)
-            discard;
-
+        // Additive Blendì—ì„œëŠ” discard ì œê±° (ì„±ëŠ¥ í–¥ìƒ)
         finalColor.a *= circleAlpha;
     }
 
