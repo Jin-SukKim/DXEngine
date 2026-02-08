@@ -109,7 +109,8 @@ namespace DE {
 	private:
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
 		std::vector<std::unique_ptr<ParticleSystem>> m_instances;
-		std::vector<ParticleSystem*> m_activeSystems;
+		// [0] = Mesh RenderModule, [1] = Billboard RenderModule
+		std::vector<ParticleSystem*> m_activeSystems[2];
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 

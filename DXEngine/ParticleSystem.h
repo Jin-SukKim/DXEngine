@@ -86,6 +86,10 @@ namespace DE {
 		void SetSpawnOffset(const Vector3& offset);
 
 		bool IsAllEmittersCompleted() const;
+		// RenderModule 타입 확인 (렌더링 순서 최적화용)
+		bool HasMeshRenderModule() const;
+		bool HasBillboardRenderModule() const;
+
 
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
 		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 20; } // DrawIndexedInstancedArgs (5 * 4 bytes)

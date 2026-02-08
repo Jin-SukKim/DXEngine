@@ -18,7 +18,7 @@ namespace DE {
 
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			// ¡Ú Àç±¸¼º ½Ã°£ ÃøÁ¤ (Legacy Metric - Cumulative Average)
+			// ï¿½ï¿½ ï¿½ç±¸ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ (Legacy Metric - Cumulative Average)
 			auto start = std::chrono::high_resolution_clock::now();
 			Defragment(); // Defragment internally also measures for RuntimeProfile
 
@@ -44,9 +44,12 @@ namespace DE {
 			// (B) CPU PreUpdate
 			{
 				ScopedTimer tCpu([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_cpu, t); });
-				for (auto* system : m_activeSystems) {
-					if (system) {
-						system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
+				// Meshì™€ Billboard ëª¨ë‘ PreUpdate
+				for (int i = 0; i < 2; ++i) {
+					for (auto* system : m_activeSystems[i]) {
+						if (system) {
+							system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
+						}
 					}
 				}
 			}
@@ -69,16 +72,19 @@ namespace DE {
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 			m_memoryPool->ExcuteParticleLogic();
-			for (auto* system : m_activeSystems) {
-				if (system) {
-					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-					system->Update(dt);
+			// Meshì™€ Billboard ëª¨ë‘ Update
+			for (int i = 0; i < 2; ++i) {
+				for (auto* system : m_activeSystems[i]) {
+					if (system) {
+						m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+						system->Update(dt);
+					}
 				}
 			}
 			m_memoryPool->UnbindCompute();
 		}
 
-		// Compute ÈÄ, SwapBuffer Àü¿¡ Read ¿ÀÇÁ¼Â µ¿±âÈ­
+		// Compute ï¿½ï¿½, SwapBuffer ï¿½ï¿½ï¿½ï¿½ Read ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 		if (m_needsSyncReadOffset) {
 			SyncReadOffsets();
 			m_needsSyncReadOffset = false;
@@ -96,16 +102,27 @@ namespace DE {
 		// [Added] Measure Render Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
-		if (m_activeSystems.empty()) return;
+		if (m_activeSystems[0].empty() && m_activeSystems[1].empty()) return;
 
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
-		for (auto* system : m_activeSystems) {
+
+		// 1. Mesh RenderModule ë¨¼ì € ë Œë”ë§ (depth buffer ì±„ìš°ê¸°)
+		for (auto* system : m_activeSystems[0]) {
 			if (system) {
 				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
 				system->Render();
 			}
 		}
+
+		// 2. Billboard RenderModule ë‚˜ì¤‘ì— ë Œë”ë§ (overdraw ê°ì†Œ)
+		for (auto* system : m_activeSystems[1]) {
+			if (system) {
+				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+				system->Render();
+			}
+		}
+
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
@@ -114,18 +131,34 @@ namespace DE {
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
 	{
 		if (!system) return;
-		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
-		if (it == m_activeSystems.end()) {
-			m_activeSystems.push_back(system);
+
+		// Mesh RenderModuleì´ ìˆìœ¼ë©´ [0]ì— ì¶”ê°€
+		if (system->HasMeshRenderModule()) {
+			auto it = std::find(m_activeSystems[0].begin(), m_activeSystems[0].end(), system);
+			if (it == m_activeSystems[0].end()) {
+				m_activeSystems[0].push_back(system);
+			}
+		}
+
+		// Billboard RenderModuleì´ ìˆìœ¼ë©´ [1]ì— ì¶”ê°€
+		if (system->HasBillboardRenderModule()) {
+			auto it = std::find(m_activeSystems[1].begin(), m_activeSystems[1].end(), system);
+			if (it == m_activeSystems[1].end()) {
+				m_activeSystems[1].push_back(system);
+			}
 		}
 	}
 
 	void ParticleManager::UnregisterActiveSystem(ParticleSystem* system)
 	{
 		if (!system) return;
-		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
-		if (it != m_activeSystems.end()) {
-			m_activeSystems.erase(it);
+
+		// ë‘ ë°°ì—´ ëª¨ë‘ì—ì„œ ì œê±°
+		for (int i = 0; i < 2; ++i) {
+			auto it = std::find(m_activeSystems[i].begin(), m_activeSystems[i].end(), system);
+			if (it != m_activeSystems[i].end()) {
+				m_activeSystems[i].erase(it);
+			}
 		}
 	}
 
@@ -252,14 +285,14 @@ namespace DE {
 				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
 
-				// ¡Ú ´ÜÆíÈ­ ºñÀ²
+				// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 				float fragRatio = m_memoryPool->GetFragmentationRatio();
 				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0, 1, 0, 1) :
 					(fragRatio < 0.5f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
 				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
 			}
 
-			// ¡Ú ¼º´É ¸ŞÆ®¸¯ ¼½¼Ç Ãß°¡
+			// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
@@ -273,15 +306,15 @@ namespace DE {
 				}
 			}
 
-			// 2. ºí·Ï ½Ã°¢È­ (Grid Visualizer)
-			// ³ì»ö: »ç¿ë Áß, È¸»ö: ºó °ø°£
+			// 2. ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½È­ (Grid Visualizer)
+			// ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½ï¿½, È¸ï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
 				std::vector<std::string> blockOwners(totalBlocks, "Free");
 
 				const auto& table = m_memoryPool->GetParticleBlockTable();
-				int columns = 32; // ÇÑ ÁÙ¿¡ º¸¿©ÁÙ ºí·Ï °³¼ö
+				int columns = 32; // ï¿½ï¿½ ï¿½Ù¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 				float cellSize = 10.0f;
 				float spacing = 2.0f;
 
@@ -302,11 +335,11 @@ namespace DE {
 						color
 					);
 
-					// ¸¶¿ì½º ¿À¹ö ½Ã ºí·Ï ¹øÈ£ ÅøÆÁ
+					// ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ï¿½
 					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
 					{
 						ImGui::BeginTooltip();
-						// [º¯°æ] ¼ÒÀ¯ÀÚ ÀÌ¸§±îÁö Ãâ·Â
+						// [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 						ImGui::Text("Block ID: %llu", i);
 						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
 							"Status: %s", table[i] ? "Used" : "Free");
@@ -318,7 +351,7 @@ namespace DE {
 					}
 				}
 
-				// ±×¸®µå ³ôÀÌ¸¸Å­ Ä¿¼­ ÀÌµ¿
+				// ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½Å­ Ä¿ï¿½ï¿½ ï¿½Ìµï¿½
 				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
 				ImGui::Dummy(ImVec2(0, totalHeight));
 			}
@@ -388,7 +421,7 @@ namespace DE {
 
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
-		// ÇÒ´ç ½ÇÆĞ ½Ã ´ÙÀ½ ÇÁ·¹ÀÓ Defragment ¿¹¾à (Áï½Ã ½ÇÇà X)
+		// ï¿½Ò´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Defragment ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ X)
 		if (!handle.IsActive()) {
 			m_needsDefragment = true;
 		}
@@ -410,7 +443,7 @@ namespace DE {
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
 
-			// spawnPos¸¦ »ç¿ëÇÏ´Â emitter¸¸ ¿ÀÇÁ¼Â Àû¿ë
+			// spawnPosï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ emitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
@@ -440,30 +473,36 @@ namespace DE {
 		// [Added] Measure Defragment Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.defrag, t); });
 
-		if (m_activeSystems.empty()) return;
+		if (m_activeSystems[0].empty() && m_activeSystems[1].empty()) return;
 
 		std::vector<PoolHandle> activeHandles;
-		for (auto* system : m_activeSystems) {
-			if (system && system->GetPoolHandle().IsActive()) {
-				activeHandles.push_back(system->GetPoolHandle());
+		// ë‘ ë°°ì—´ ëª¨ë‘ ìˆœíšŒ
+		for (int i = 0; i < 2; ++i) {
+			for (auto* system : m_activeSystems[i]) {
+				if (system && system->GetPoolHandle().IsActive()) {
+					activeHandles.push_back(system->GetPoolHandle());
+				}
 			}
 		}
 
 		std::vector<UINT> newOffsets = m_memoryPool->Defragment(activeHandles);
 
 		size_t idx = 0;
-		for (auto* system : m_activeSystems) {
-			if (!system || !system->GetPoolHandle().IsActive()) continue;
+		// ë‘ ë°°ì—´ ëª¨ë‘ ìˆœíšŒ
+		for (int i = 0; i < 2; ++i) {
+			for (auto* system : m_activeSystems[i]) {
+				if (!system || !system->GetPoolHandle().IsActive()) continue;
 
-			PoolHandle& handle = system->GetPoolHandle();
-			UINT newOffset = newOffsets[idx++];
+				PoolHandle& handle = system->GetPoolHandle();
+				UINT newOffset = newOffsets[idx++];
 
-			if (handle.particleOffset != newOffset) {
-				RecalculateEmitterOffsets(system, newOffset);
+				if (handle.particleOffset != newOffset) {
+					RecalculateEmitterOffsets(system, newOffset);
+				}
 			}
 		}
 
-		m_needsSyncReadOffset = true;  // ÀÌ¹ø ÇÁ·¹ÀÓ Compute ÈÄ µ¿±âÈ­
+		m_needsSyncReadOffset = true;  // ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Compute ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 	}
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
@@ -475,7 +514,7 @@ namespace DE {
 		const ParticleInitializer& initialData = system->GetInitialData();
 
 		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
-			// writeParticleOffset¸¸ »õ À§Ä¡·Î °»½Å
+			// writeParticleOffsetï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			UINT globalEmitterID = handle.emitterIDs[i];
 			UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
 
@@ -490,12 +529,15 @@ namespace DE {
 		// [Added] Measure Sync Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.syncReadOffsets, t); });
 
-		for (auto* system : m_activeSystems) {
-			if (!system || !system->GetPoolHandle().IsActive()) continue;
+		// ë‘ ë°°ì—´ ëª¨ë‘ ìˆœíšŒ
+		for (int i = 0; i < 2; ++i) {
+			for (auto* system : m_activeSystems[i]) {
+				if (!system || !system->GetPoolHandle().IsActive()) continue;
 
-			const PoolHandle& handle = system->GetPoolHandle();
-			for (UINT emitterID : handle.emitterIDs) {
-				m_memoryPool->SyncReadOffset(emitterID);
+				const PoolHandle& handle = system->GetPoolHandle();
+				for (UINT emitterID : handle.emitterIDs) {
+					m_memoryPool->SyncReadOffset(emitterID);
+				}
 			}
 		}
 	}

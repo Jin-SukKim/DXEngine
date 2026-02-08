@@ -4,6 +4,7 @@
 #include "TransformComponent.h"
 #include "TextureManager.h"
 #include "SpawnModule.h"
+#include "RenderModule.h"
 #include "Mesh.h"
 #include "ModelManager.h"
 #include "ParticleManager.h"
@@ -589,5 +590,25 @@ namespace DE {
 	{
 		for (auto& emitter : m_emitters)
 			emitter->SetSpawnOffset(offset);
+	}
+
+	bool ParticleSystem::HasMeshRenderModule() const
+	{
+		for (const auto& emitter : m_emitters) {
+			if (emitter->GetModule<MeshRenderModule>() != nullptr) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool ParticleSystem::HasBillboardRenderModule() const
+	{
+		for (const auto& emitter : m_emitters) {
+			if (emitter->GetModule<BillboardRenderModule>() != nullptr) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
