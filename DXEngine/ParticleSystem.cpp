@@ -46,6 +46,7 @@ namespace DE {
 		, m_maxTotalParticles(0)
 		, m_maxEmitters(0)
 		, m_currentParticleOffset(0)
+		, m_basePriority(other.m_basePriority)
 	{
 		// Main Emitter ����
 		for (const auto& emitter : other.m_emitters) {
