@@ -107,6 +107,9 @@ namespace DE {
 		// Frustum Culling용
 		Vector3 GetWorldPosition() const;
 		float GetBoundingRadius() const { return 1.0f; } // 기본 반경 - 적절한 크기
+
+		// Overdraw Control - Spawn Ratio Update
+		void UpdateSpawnRatios(const Vector3& cameraPos);
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);

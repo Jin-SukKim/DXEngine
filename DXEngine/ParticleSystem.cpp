@@ -629,4 +629,58 @@ namespace DE {
 		}
 		return false;
 	}
+
+	void ParticleSystem::UpdateSpawnRatios(const Vector3& cameraPos)
+	{
+		Vector3 systemPos = GetWorldPosition();
+		float distance = Vector3::Distance(systemPos, cameraPos);
+
+		auto& memoryPool = ParticleManager::Get().GetMemoryPool();
+
+		// Update spawn ratio for all emitters in this system
+		for (auto& emitter : m_emitters) {
+			auto& settings = emitter->GetOverdrawSettings();
+			float spawnRatio = 1.0f;
+
+			if (settings.enableSpawnLimiting) {
+				// Calculate spawn ratio based on distance
+				float t = (distance - settings.nearDistance) / (settings.farDistance - settings.nearDistance);
+				t = std::max(0.0f, std::min(1.0f, t)); // clamp to [0, 1]
+				spawnRatio = settings.nearSpawnRatio + t * (1.0f - settings.nearSpawnRatio);
+			}
+
+			// Set spawn ratio in render module
+			auto* renderModule = emitter->GetModule<RenderModule>();
+			if (renderModule) {
+				renderModule->SetSpawnRatio(spawnRatio);
+			}
+
+			// Upload to GPU
+			UINT globalEmitterID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			memoryPool.UpdateRenderConst(globalEmitterID, spawnRatio);
+		}
+
+		// Also update active sub-emitters
+		for (auto* emitter : m_activeSubEmitters) {
+			if (!emitter) continue;
+
+			auto& settings = emitter->GetOverdrawSettings();
+			float spawnRatio = 1.0f;
+
+			if (settings.enableSpawnLimiting) {
+				float t = (distance - settings.nearDistance) / (settings.farDistance - settings.nearDistance);
+				t = std::max(0.0f, std::min(1.0f, t));
+				spawnRatio = settings.nearSpawnRatio + t * (1.0f - settings.nearSpawnRatio);
+			}
+
+			auto* renderModule = emitter->GetModule<RenderModule>();
+			if (renderModule) {
+				renderModule->SetSpawnRatio(spawnRatio);
+			}
+
+			// Upload to GPU
+			UINT globalEmitterID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			memoryPool.UpdateRenderConst(globalEmitterID, spawnRatio);
+		}
+	}
 }

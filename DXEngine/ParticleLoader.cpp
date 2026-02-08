@@ -14,15 +14,15 @@ void ParticleLoader::ApplyJsonTo<ParticleEmitter>(ParticleEmitter* target, const
 	target->ClearModules();
 	target->ClearSubEmitters();
 
-	// Spawn ¸ðµâÀÇ bakedPath È®ÀÎ (ParticleEmitter¿¡ ·ÎµåÇÏ±â À§ÇØ)
+	// Spawn ï¿½ï¿½ï¿½ï¿½ï¿½ bakedPath È®ï¿½ï¿½ (ParticleEmitterï¿½ï¿½ ï¿½Îµï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	if (jsonData.contains("Spawn") && jsonData["Spawn"].contains("bakedPath")) {
 		std::string bakedPath = jsonData["Spawn"]["bakedPath"];
 		target->SetBakedSpawnPath(bakedPath);
 	}
 
 	for (auto& [key, value] : jsonData.items()) {
-		// Module¿¡¼­ ¼³Á¤ÀÌ ¾Æ´Ï¶ó EmitterÀÇ ¼³Á¤°ªÀ¸·Î ¹Ø¿¡¼­ µû·Î ¼³Á¤
-		if (key == "Name" || key == "Duration" || key == "CompletionDelay" || key == "SubEmitters")
+		// Moduleï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¶ï¿½ Emitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		if (key == "Name" || key == "Duration" || key == "CompletionDelay" || key == "SubEmitters" || key == "overdrawControl")
 			continue;
 
 		auto module = ParticleModuleFactory::Create(key);
@@ -32,13 +32,18 @@ void ParticleLoader::ApplyJsonTo<ParticleEmitter>(ParticleEmitter* target, const
 		}
 	}
 
-	// Emitter ¼³Á¤
+	// Overdraw Control ï¿½ï¿½ï¿½ï¿½
+	if (jsonData.contains("overdrawControl")) {
+		target->LoadOverdrawSettings(jsonData["overdrawControl"]);
+	}
+
+	// Emitter ï¿½ï¿½ï¿½ï¿½
 	if (jsonData.contains("Duration")) 
 		target->SetDuration(jsonData["Duration"]);
 	if (jsonData.contains("CompletionDelay")) 
 		target->SetCompletionDelay(jsonData["CompletionDelay"]);
 
-	// SubEmitter ¼³Á¤
+	// SubEmitter ï¿½ï¿½ï¿½ï¿½
 	if (jsonData.contains("SubEmitters") && jsonData["SubEmitters"].is_array()) {
 		for (const auto& subJson : jsonData["SubEmitters"]) {
 			SubEmitter sub;

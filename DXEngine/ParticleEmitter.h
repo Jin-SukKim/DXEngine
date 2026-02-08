@@ -22,6 +22,20 @@ namespace DE {
 		bool inheritPosition = true;
 	};
 
+	struct OverdrawControlSettings {
+		// Size scaling
+		bool enableSizeScaling = false;
+		float sizeDistanceMin = 2.0f;
+		float sizeDistanceMax = 10.0f;
+		float closeRangeScale = 0.7f;
+
+		// Spawn limiting (to be implemented in step 2)
+		bool enableSpawnLimiting = false;
+		float nearDistance = 5.0f;
+		float farDistance = 15.0f;
+		float nearSpawnRatio = 0.5f;
+	};
+
 	struct ArgsParam {
 		ID3D11Buffer* buffer;
 		UINT offset;
@@ -52,12 +66,12 @@ namespace DE {
 
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
-		// Texture Bake µ¥ÀÌÅÍ °ü·Ã (Spawn ¸ðµâ)
+		// Texture Bake ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Spawn ï¿½ï¿½ï¿½)
 		void SetBakedSpawnPath(const std::string& path);
 		UINT LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos);
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
-		// ÅëÇÕµÈ SpawnPos °ü¸®
+		// ï¿½ï¿½ï¿½Õµï¿½ SpawnPos ï¿½ï¿½ï¿½ï¿½
 		void SetSpawnPosInfo(UINT offset) { m_spawnPosPoolOffset = offset; }
 		UINT GetSpawnPosOffset() const { return m_spawnPosPoolOffset; }
 		
@@ -87,6 +101,11 @@ namespace DE {
 		void SetOwner(ParticleSystem* system);
 		UINT GetEmitterID() { return m_emitterID; };
 		void SetName(std::wstring name) { m_name = name; }
+
+		// Overdraw Control
+		void LoadOverdrawSettings(const json& j);
+		OverdrawControlSettings& GetOverdrawSettings() { return m_overdrawSettings; }
+		const OverdrawControlSettings& GetOverdrawSettings() const { return m_overdrawSettings; }
 	private:
 		void ExecuteEvent(EmitterEvent event);
 	private:
@@ -100,7 +119,7 @@ namespace DE {
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
 		
-		// SpawnPosition ÅëÇÕ (Baked/Custom)
+		// SpawnPosition ï¿½ï¿½ï¿½ï¿½ (Baked/Custom)
 		UINT m_spawnPosPoolOffset = 0;
 		std::string m_bakedPath = "";
 		UINT m_bakedCount = 0;
@@ -120,6 +139,9 @@ namespace DE {
 		Vector3 m_spawnOffset = Vector3(0.f);
 
 		Vector3 m_initialSpawnPos = Vector3(0.f);
+
+		// Overdraw Control Settings
+		OverdrawControlSettings m_overdrawSettings;
 	};
 
 	template<typename T>

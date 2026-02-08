@@ -74,6 +74,7 @@ namespace DE {
 		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
+		consts.spawnRatio = 1.0f;
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -179,6 +180,7 @@ namespace DE {
 		// ParticleEmitter�� �޽� Args ���� �ʱ�ȭ
 		auto& mesh = model->meshes[0];
 		ctx.consts.render.indexCount = mesh.indexCount;
+		ctx.consts.render.spawnRatio = 1.0f;
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)

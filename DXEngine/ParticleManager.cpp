@@ -9,7 +9,7 @@ namespace DE {
 	void ParticleManager::Initialize()
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
-		m_memoryPool->Initialize(10000000, 10000, 10000);
+		m_memoryPool->Initialize(10000000, 20000, 20000);
 	}
 
 	void ParticleManager::Update(const float& dt)
@@ -112,6 +112,22 @@ namespace DE {
 		// [Added] Reset Culling Stats
 		UINT totalCount = 0;
 		UINT visibleCount = 0;
+
+		// Extract camera position from view matrix (inverse translation)
+		Matrix invView = m_view.Invert();
+		Vector3 cameraPos(invView._41, invView._42, invView._43);
+
+		// Update spawn ratios for overdraw control before rendering
+		for (auto* system : m_activeSystems[0]) {
+			if (system) {
+				system->UpdateSpawnRatios(cameraPos);
+			}
+		}
+		for (auto* system : m_activeSystems[1]) {
+			if (system) {
+				system->UpdateSpawnRatios(cameraPos);
+			}
+		}
 
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();

@@ -20,11 +20,16 @@ public:
 	virtual int GetModelIndex() const { return -1; };
 	virtual std::unique_ptr<ParticleModule> Clone() const override = 0;
 	void CopyBasicSettings(RenderModule* cloned) const;
+
+	// Overdraw Control - Spawn Ratio
+	void SetSpawnRatio(float ratio) { m_currentSpawnRatio = ratio; }
+	float GetSpawnRatio() const { return m_currentSpawnRatio; }
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
 	ID3D11BlendState* m_blendState = NULL;
-	// BitonicSort Á¦°Å - ParticleEmitter°¡ ¼ÒÀ¯
+	float m_currentSpawnRatio = 1.0f;
+	// BitonicSort ï¿½ï¿½ï¿½ï¿½ - ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 
 class BillboardRenderModule : public RenderModule
@@ -38,20 +43,20 @@ public:
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
-	// 0 : TextureArray (Size°¡ °íÁ¤µÇ¾î ÀÖÀ½)
-	// 1 : Single Texture (°³º° Texture 1°³, ´Ù¾çÇÑ ÇØ»óµµ °¡´É)
-	// 2 : MaterialModuleÀ» »ç¿ë (PBR)
+	// 0 : TextureArray (Sizeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	// 1 : Single Texture (ï¿½ï¿½ï¿½ï¿½ Texture 1ï¿½ï¿½, ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	// 2 : MaterialModuleï¿½ï¿½ ï¿½ï¿½ï¿½ (PBR)
 	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
-	// Texture °ü¸®
+	// Texture ï¿½ï¿½ï¿½ï¿½
 	std::string m_texturePath;
 	int m_textureIdx = -1;
 
-	// ´Ù¾çÇÑ ÇØ»óµµÀÇ Texture 1°³¸¸ »ç¿ëÇÒ¶§
+	// ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ï¿½ï¿½ Texture 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½
 	int m_singleTextureIdx = -1;
 
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
-	// IndirectArgsBuffer Á¦°Å - ParticleEmitter°¡ ¼ÒÀ¯
+	// IndirectArgsBuffer ï¿½ï¿½ï¿½ï¿½ - ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 
 class MeshRenderModule : public RenderModule
@@ -65,7 +70,7 @@ public:
 private:
 	int m_modelIdx = -1;
 	UINT m_meshCount = 0;
-	// IndirectArgsBuffer Á¦°Å - ParticleEmitter°¡ ¼ÒÀ¯
+	// IndirectArgsBuffer ï¿½ï¿½ï¿½ï¿½ - ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 }
 

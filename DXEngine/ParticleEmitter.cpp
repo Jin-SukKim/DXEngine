@@ -80,6 +80,12 @@ namespace DE {
 		for (auto& mod : m_modules)
 			mod->Initialize(initCtx);
 
+		// Apply overdraw control settings to visual consts
+		pConsts.visual.enableSizeScaling = m_overdrawSettings.enableSizeScaling ? 1 : 0;
+		pConsts.visual.sizeDistanceScale = m_overdrawSettings.closeRangeScale;
+		pConsts.visual.sizeDistanceMin = m_overdrawSettings.sizeDistanceMin;
+		pConsts.visual.sizeDistanceMax = m_overdrawSettings.sizeDistanceMax;
+
 		m_initialSpawnPos = pConsts.spawn.localPos;
 
 		if (m_spawnOffset != Vector3(0.f))
@@ -282,5 +288,24 @@ namespace DE {
 	void ParticleEmitter::SetOwner(ParticleSystem* system)
 	{
 		m_ownerSystem = system;
+	}
+
+	void ParticleEmitter::LoadOverdrawSettings(const json& j)
+	{
+		if (j.contains("sizeScaling")) {
+			auto& ss = j["sizeScaling"];
+			m_overdrawSettings.enableSizeScaling = ss.value("enabled", false);
+			m_overdrawSettings.sizeDistanceMin = ss.value("minDistance", 2.0f);
+			m_overdrawSettings.sizeDistanceMax = ss.value("maxDistance", 10.0f);
+			m_overdrawSettings.closeRangeScale = ss.value("closeRangeScale", 0.7f);
+		}
+
+		if (j.contains("spawnLimiting")) {
+			auto& sl = j["spawnLimiting"];
+			m_overdrawSettings.enableSpawnLimiting = sl.value("enabled", false);
+			m_overdrawSettings.nearDistance = sl.value("nearDistance", 5.0f);
+			m_overdrawSettings.farDistance = sl.value("farDistance", 15.0f);
+			m_overdrawSettings.nearSpawnRatio = sl.value("nearSpawnRatio", 0.5f);
+		}
 	}
 }

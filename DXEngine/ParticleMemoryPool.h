@@ -56,6 +56,7 @@ public:
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
 	void UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data);
 	void UploadFrameConsts();
+	void UpdateRenderConst(UINT emitterID, float spawnRatio);
 	void UpdateArgs();
 	void UpdateRenderArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);

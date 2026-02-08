@@ -341,6 +341,24 @@ namespace DE {
 		m_frameConsts.Upload(context);
 	}
 
+	void ParticleMemoryPool::UpdateRenderConst(UINT emitterID, float spawnRatio)
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// Update only the spawnRatio field in RenderConsts
+		// RenderConsts is inside ParticleConsts, so we need to calculate the offset
+		D3D11_BOX box;
+		UINT constsOffset = emitterID * sizeof(ParticleConsts);
+		UINT renderConstsOffset = offsetof(ParticleConsts, render);
+		UINT spawnRatioOffset = offsetof(RenderConsts, spawnRatio);
+
+		box.left = constsOffset + renderConstsOffset + spawnRatioOffset;
+		box.right = box.left + sizeof(float);
+		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
+
+		context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, &spawnRatio, 0, 0);
+	}
+
 	void ParticleMemoryPool::UpdateArgs()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();

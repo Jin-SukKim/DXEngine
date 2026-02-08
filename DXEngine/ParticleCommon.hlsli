@@ -26,7 +26,7 @@ cbuffer EmitterID : register(b5)
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset ÅëÇÕ
+    uint spawnPosOffset;  // bakedOffset + customOffset ï¿½ï¿½ï¿½ï¿½
 };
 
 struct EmitterID
@@ -34,7 +34,7 @@ struct EmitterID
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset ÅëÇÕ
+    uint spawnPosOffset;  // bakedOffset + customOffset ï¿½ï¿½ï¿½ï¿½
 };
 
 struct ParticleFrameConsts
@@ -55,7 +55,7 @@ struct SpawnConsts
 
     float2 lifeRange;
     int spawnShape;
-    uint bakedCount; // Baked/Custom °ø¿ë °³¼ö
+    uint bakedCount; // Baked/Custom ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     uint simulationSpace;
 
     uint spawnStartIndex;
@@ -78,6 +78,12 @@ struct VisualConsts
     float padding5;
     float3 maxRotSpeed;
     float padding6;
+
+    // Overdraw Control - Size Scaling
+    float sizeDistanceScale;      // Size multiplier at close range (e.g., 0.7 = 70%)
+    float sizeDistanceMin;        // Distance where scaling starts (meters)
+    float sizeDistanceMax;        // Distance where scaling ends (meters)
+    uint enableSizeScaling;       // On/Off toggle (per-emitter)
 };
 
 struct ForceConsts
@@ -102,6 +108,8 @@ struct RenderConsts
     uint textureMode;
     int singleTextureIdx;
     uint useSorting;
+    float spawnRatio;       // Current frame spawn ratio (0.0 ~ 1.0)
+    float3 padding2;
 };
 
 struct VortexConsts
@@ -137,8 +145,8 @@ struct ParticleConsts
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // ÅëÇÕµÈ SpawnPosition ¹öÆÛ
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // ÅëÇÕµÈ SpawnPosition ¹öÆÛ
+StructuredBuffer<float3> spawnPositions : register(t10); // ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition ï¿½ï¿½ï¿½ï¿½
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition ï¿½ï¿½ï¿½ï¿½
 
 cbuffer ParticleMeshConsts : register(b6)
 {

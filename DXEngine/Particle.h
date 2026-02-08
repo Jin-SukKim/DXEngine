@@ -18,7 +18,7 @@ namespace DE {
         UINT readParticleOffset;
         UINT writeParticleOffset;
         UINT emitterID;
-        UINT spawnPosOffset;  // bakedOffset + customOffset ÅëÇÕ
+        UINT spawnPosOffset;  // bakedOffset + customOffset ï¿½ï¿½ï¿½ï¿½
     };
 
     struct ParticleFrameConsts {
@@ -59,6 +59,12 @@ namespace DE {
         float padding5;
         Vector3 maxRotSpeed;
         float padding6;
+
+        // Overdraw Control - Size Scaling
+        float sizeDistanceScale = 0.7f;      // Size multiplier at close range (e.g., 0.7 = 70%)
+        float sizeDistanceMin = 2.0f;        // Distance where scaling starts (meters)
+        float sizeDistanceMax = 10.0f;       // Distance where scaling ends (meters)
+        UINT enableSizeScaling = 0;          // On/Off toggle (per-emitter)
     };
 
     struct ForceConsts {
@@ -101,7 +107,9 @@ namespace DE {
         UINT indexCount;
         UINT textureMode;
         int singleTextureIdx;
-        UINT useSorting; // Ãß°¡
+        UINT useSorting; // ï¿½ß°ï¿½
+        float spawnRatio = 1.0f;       // Current frame spawn ratio (0.0 ~ 1.0)
+        Vector3 padding2;
     };
 
     struct ParticleConsts {

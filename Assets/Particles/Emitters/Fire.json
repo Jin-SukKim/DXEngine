@@ -24,5 +24,19 @@
   },
   "BillboardRender": {
     "blendMode": "Additive"
+  },
+  "overdrawControl": {
+    "sizeScaling": {
+      "enabled": true,
+      "minDistance": 2.0,
+      "maxDistance": 10.0,
+      "closeRangeScale": 0.7
+    },
+    "spawnLimiting": {
+      "enabled": true,
+      "nearDistance": 5.0,
+      "farDistance": 15.0,
+      "nearSpawnRatio": 0.5
+    }
   }
 }

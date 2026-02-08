@@ -75,6 +75,17 @@ ParticlePSInput main(VSParticleInput input)
 
     // 크기 적용 (파티클 크기의 절반)
     float halfSize = p.size * 0.5;
+
+    // Per-emitter size scaling based on distance
+    VisualConsts visual = consts[emitterID].visual;
+    if (visual.enableSizeScaling) {
+        float camDist = distance(particleCenter.xyz, eyeWorld);
+        float t = saturate((camDist - visual.sizeDistanceMin) /
+                          (visual.sizeDistanceMax - visual.sizeDistanceMin));
+        float sizeFactor = lerp(visual.sizeDistanceScale, 1.0f, t);
+        halfSize *= sizeFactor;
+    }
+
     viewPos.xy += rotatedOffset * halfSize;
 
     // Projection

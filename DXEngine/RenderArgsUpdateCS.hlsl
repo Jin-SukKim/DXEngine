@@ -13,6 +13,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ���� Emitter�� ��ƼŬ ���� ��������
     uint count = readCount[myEmitterID];
 
+    // Apply spawn ratio for distance-based overdraw control
+    float ratio = consts[myEmitterID].render.spawnRatio;
+    uint adjustedCount = uint(float(count) * ratio);
+
     // --------------------------------------------------------
     // 2. Billboard Args ���� (Render �ܰ��) -> [�̰� ��� 1���� ����]
     // --------------------------------------------------------
@@ -22,7 +26,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     // DrawIndexedInstancedArgs: { IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation }
     billboardArgs[drawIdx + 0] = 6; // 쿼드 메쉬는 6개 인덱스
-    billboardArgs[drawIdx + 1] = count; // 파티클 개수
+    billboardArgs[drawIdx + 1] = adjustedCount; // 파티클 개수 (spawn ratio 적용)
     billboardArgs[drawIdx + 2] = 0; // StartIndexLocation
     billboardArgs[drawIdx + 3] = 0; // BaseVertexLocation
     billboardArgs[drawIdx + 4] = 0; // StartInstanceLocation
@@ -30,5 +34,5 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint meshIdx = myEmitterID * 5;
 
     meshArgs[meshIdx] = consts[myEmitterID].render.indexCount;
-    meshArgs[meshIdx + 1] = count;
+    meshArgs[meshIdx + 1] = adjustedCount; // 파티클 개수 (spawn ratio 적용)
 }
