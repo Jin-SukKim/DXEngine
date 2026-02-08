@@ -8,19 +8,19 @@ namespace DE {
 		void InitCommonStates(ComPtr<ID3D11Device>& device);
 
 	private:
-		// ³»ºÎÀûÀ¸·Î InitCommonStates()¿¡¼­ »ç¿ë
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ InitCommonStates()ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
-		// RasterizerStates ¼³Á¤
+		// RasterizerStates ï¿½ï¿½ï¿½ï¿½
 		void initRasterizerStates(ComPtr<ID3D11Device>& device);
-		// Depth-Stencil State ¼³Á¤
+		// Depth-Stencil State ï¿½ï¿½ï¿½ï¿½
 		void initDepthStencilStates(ComPtr<ID3D11Device>& device);
-		// InputLayout°ú Shader ¼³Á¤
+		// InputLayoutï¿½ï¿½ Shader ï¿½ï¿½ï¿½ï¿½
 		void initShaders(ComPtr<ID3D11Device>& device);
-		// SamplerState ¼³Á¤
+		// SamplerState ï¿½ï¿½ï¿½ï¿½
 		void initSamplers(ComPtr<ID3D11Device>& device);
-		// BlendState ¼³Á¤
+		// BlendState ï¿½ï¿½ï¿½ï¿½
 		void initBlendStates(ComPtr<ID3D11Device>& device);
-		// GraphcisPSO ¼³Á¤
+		// GraphcisPSO ï¿½ï¿½ï¿½ï¿½
 		void initPipelineStates(ComPtr<ID3D11Device>& device);
 
 	public:
@@ -66,15 +66,16 @@ namespace DE {
 		} mirror;
 
 		struct {
-			GraphicsPSO depthOnlyPSO; // Depth°ªÀ» ÃøÁ¤ÇÏ±â À§ÇÑ PSO
+			GraphicsPSO depthOnlyPSO; // Depthï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ PSO
 		} depth;
 
 		struct {
 			GraphicsPSO animPSO;
 			GraphicsPSO meshPSO;
+			GraphicsPSO billboardInstancedPSO; // GS ì—†ëŠ” ì¸ìŠ¤í„´ì‹± ë¹Œë³´ë“œ
 		} particle;
 
-		// Shader¿¡¼­ °øÅëÀ¸·Î »ç¿ëÇÒ Sampler
+		// Shaderï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
 		// Rasterizer State (CCW : Counter-Clockwise)
@@ -83,17 +84,17 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> postProcessRS;
 		// front and back (cull-none)
 		ComPtr<ID3D11RasterizerState> solidBothRS; 
-		// Counter-Clockwise°¡ FrontFace ¼ø¼­·Î µÇ¾î ÀÖÀ»¶§ ·»´õ¸µ
-		ComPtr<ID3D11RasterizerState> solidCcwRS; // index°¡ ¹İ½Ã°è ¹æÇâ ¼ø¼­¸¦ ·»´õ¸µ
+		// Counter-Clockwiseï¿½ï¿½ FrontFace ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		ComPtr<ID3D11RasterizerState> solidCcwRS; // indexï¿½ï¿½ ï¿½İ½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3D11RasterizerState> wireCcwRS; 
 
 		// Depth Stencil State
 
-		// ÀÏ¹İÀû(Default)
+		// ï¿½Ï¹ï¿½ï¿½ï¿½(Default)
 		ComPtr<ID3D11DepthStencilState> drawDSS; 
-		// ¾îµğ¿¡ ±×¸±Áö MaskingÇÏ´Â State
+		// ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ Maskingï¿½Ï´ï¿½ State
 		ComPtr<ID3D11DepthStencilState> maskDSS;
-		// Stencil Buffer¿¡ MaskingµÈ °÷¿¡ ·»´õ¸µÇÒ ¼ö ÀÖ´Â DSS
+		// Stencil Bufferï¿½ï¿½ Maskingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ DSS
 		ComPtr<ID3D11DepthStencilState> drawMaskedDSS; 
 
 		// InputLayouts
@@ -114,7 +115,7 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> skyboxVS;
 		ComPtr<ID3D11PixelShader> skyboxPS;
 
-		// DepthStencilBuffer¸¸ »ç¿ëÇÏ°í ½ÍÀ»¶§ »ç¿ë
+		// DepthStencilBufferï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		ComPtr<ID3D11VertexShader> depthOnlyVS; 
 		ComPtr<ID3D11PixelShader> depthOnlyPS;
 
@@ -147,8 +148,8 @@ namespace DE {
 		ComPtr<ID3D11SamplerState> shadowPointSS;
 		ComPtr<ID3D11SamplerState> shadowCompareSS;
 
-		// Blend States (¿ø·¡ ·»´õ¸µÀÌ µÈ »ö À§¿¡ »õ·Î¿î »öÀ» ¼¯¾î¼­ ·»´õ¸µÇÒ ¶§ »ç¿ëÇÏ´Â ¹æ¹ı)
-		 // 2°¡Áö »öÀ» Alpha(ºñÀ²)·Î ¼¯¾îÁÖ´Â Alpha Blending
+		// Blend States (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î¼­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½)
+		 // 2ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Alpha(ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ Alpha Blending
 		ComPtr<ID3D11BlendState> mirrorBS;
 
 		// Particle System
@@ -157,11 +158,15 @@ namespace DE {
 		ComPtr<ID3D11GeometryShader> particleGS;
 		ComPtr<ID3D11PixelShader> particlePS;
 		ComPtr<ID3D11PixelShader> particlePbrPS;
-		ComPtr<ID3D11BlendState> accumulateBS; // »öÀ» ÀüºÎ ´õÇÏ¸é¼­ ·»´õ¸µ
+		ComPtr<ID3D11BlendState> accumulateBS; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¸é¼­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3D11BlendState> alphaBS; 
 		ComPtr<ID3D11DepthStencilState> particleDDS;
 
 		ComPtr<ID3D11VertexShader> particleMeshVS;
+
+		// Billboard Instancing (GS ì—†ìŒ)
+		ComPtr<ID3D11InputLayout> particleBillboardIL;
+		ComPtr<ID3D11VertexShader> particleBillboardVS;
 
 	};
 

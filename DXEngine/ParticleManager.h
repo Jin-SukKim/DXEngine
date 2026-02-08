@@ -74,10 +74,10 @@ namespace DE {
 		ParticleSystem* CreateSystem(const std::wstring& path);
 		void DestroyInstance(ParticleSystem* system);
 
-		// EmitterID ¹ÙÀÎµù (Manager¿¡¼­ Ã³¸®)
+		// EmitterID ï¿½ï¿½ï¿½Îµï¿½ (Managerï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½)
 		void BindEmitterID(UINT globalSlotIndex);
 
-		// MeshConsts °ü¸® Ãß°¡
+		// MeshConsts ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
 		void BindMeshConsts(UINT systemIndex);
 
@@ -87,6 +87,10 @@ namespace DE {
 
 		UINT GetRebuildCount() const { return m_rebuildCount; }
 		float GetAvgRebuildTime() const { return m_avgRebuildTime; }
+
+		// Memory Pool ì ‘ê·¼
+		ParticleMemoryPool& GetMemoryPool() { return *m_memoryPool; }
+
 	private:
 		PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 		void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
@@ -109,11 +113,11 @@ namespace DE {
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 
-		// ¸â¹ö º¯¼ö Ãß°¡
+		// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
 
-		// private ¸â¹ö Ãß°¡
+		// private ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		UINT m_rebuildCount = 0;
 		float m_totalRebuildTime = 0.0f;
 		float m_avgRebuildTime = 0.0f;

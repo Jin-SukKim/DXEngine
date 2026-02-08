@@ -1,4 +1,4 @@
-// RenderModule.cpp (¼öÁ¤)
+// RenderModule.cpp (ï¿½ï¿½ï¿½ï¿½)
 #include "pch.h"
 #include "RenderModule.h"
 #include "ParticleEmitter.h"
@@ -8,6 +8,8 @@
 #include "IndirectArgsBuffer.h"
 #include "MaterialSystem.h"
 #include "MaterialModule.h"
+#include "Vertex.h"
+#include "ParticleManager.h"
 
 namespace DE {
 
@@ -78,7 +80,8 @@ namespace DE {
 	{
 		RenderModule::OnRender(ctx);
 
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.animPSO);
+		// GS ì—†ëŠ” ì¸ìŠ¤í„´ì‹± ë¹Œë³´ë“œ PSO ì‚¬ìš©
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
 
 		ID3D11ShaderResourceView* texSRV = nullptr;
 		switch (m_textureMode)
@@ -101,7 +104,17 @@ namespace DE {
 			break;
 		}
 
-		ctx.context->DrawInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);
+		// ì¿¼ë“œ ë©”ì‰¬ ë°”ì¸ë”©
+		auto& memoryPool = ParticleManager::Get().GetMemoryPool();
+		ID3D11Buffer* quadVB = memoryPool.GetQuadVertexBuffer();
+		ID3D11Buffer* quadIB = memoryPool.GetQuadIndexBuffer();
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ctx.context->IASetVertexBuffers(0, 1, &quadVB, &stride, &offset);
+		ctx.context->IASetIndexBuffer(quadIB, DXGI_FORMAT_R32_UINT, 0);
+
+		// DrawIndexedInstancedIndirect (ì¿¼ë“œ ë©”ì‰¬ ì¸ìŠ¤í„´ì‹±)
+		ctx.context->DrawIndexedInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
@@ -135,10 +148,10 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
 
-		// ±âº» ¼³Á¤ º¹»ç
+		// ï¿½âº» ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		CopyBasicSettings(cloned.get());
 
-		// Billboard Àü¿ë º¹»ç
+		// Billboard ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		cloned->m_textureMode = this->m_textureMode;
 		cloned->m_texturePath = this->m_texturePath;
 		cloned->m_textureIdx = this->m_textureIdx;
@@ -146,7 +159,7 @@ namespace DE {
 		cloned->m_frameTiles = this->m_frameTiles;
 		cloned->m_frameCount = this->m_frameCount;
 
-		// GPU ¹öÆÛ´Â ParticleEmitter°¡ °ü¸®
+		// GPU ï¿½ï¿½ï¿½Û´ï¿½ ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 		return cloned;
 	}
@@ -163,7 +176,7 @@ namespace DE {
 		if (!model)
 			return;
 
-		// ParticleEmitterÀÇ ¸Þ½Ã Args ¹öÆÛ ÃÊ±âÈ­
+		// ParticleEmitterï¿½ï¿½ ï¿½Þ½ï¿½ Args ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 		auto& mesh = model->meshes[0];
 		ctx.consts.render.indexCount = mesh.indexCount;
 	}
@@ -213,14 +226,14 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<MeshRenderModule>();
 
-		// ±âº» ¼³Á¤ º¹»ç
+		// ï¿½âº» ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		CopyBasicSettings(cloned.get());
 
-		// Mesh Àü¿ë º¹»ç
+		// Mesh ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		cloned->m_modelIdx = this->m_modelIdx;
 		cloned->m_meshCount = this->m_meshCount;
 
-		// GPU ¹öÆÛ´Â ParticleEmitter°¡ °ü¸®
+		// GPU ï¿½ï¿½ï¿½Û´ï¿½ ParticleEmitterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 		return cloned;
 	}

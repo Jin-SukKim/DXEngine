@@ -19,9 +19,9 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
 		std::vector<EmitterID> emitterIDs;
 
-		// Baked/Custom ÅëÇÕ
-		std::vector<Vector3> spawnPositions;  // ÅëÇÕµÈ SpawnPosition
-		UINT totalSpawnPosCount = 0;          // ÃÑ SpawnPosition °³¼ö
+		// Baked/Custom ï¿½ï¿½ï¿½ï¿½
+		std::vector<Vector3> spawnPositions;  // ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition
+		UINT totalSpawnPosCount = 0;          // ï¿½ï¿½ SpawnPosition ï¿½ï¿½ï¿½ï¿½
 	};
 
 	class ParticleSystem : public Object
@@ -38,7 +38,7 @@ namespace DE {
 		void InitializeCPU(ParticleInitializer& initialData);
 		void InitializeGPU(ParticleInitializer& initialData,
 			IndirectArgsBuffer<DispatchArgs>& m_dispatchArgs,
-			IndirectArgsBuffer<DrawInstancedArgs>& m_billboardArgsBuffer,
+			IndirectArgsBuffer<DrawIndexedInstancedArgs>& m_billboardArgsBuffer,
 			IndirectArgsBuffer<DrawIndexedInstancedArgs>& m_meshArgsBuffer);
 
 		void OnSpawn();
@@ -56,20 +56,20 @@ namespace DE {
 			ParticleEmitter* emitter,
 			ParticleInitializer& initialData);
 
-		// [Á¦¾î ÇÔ¼ö]
+		// [ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½]
 		void Play();
 		void Pause();
 		void Stop();
 		void Restart();
 
-		// [¼Ó¼º ¼³Á¤]
+		// [ï¿½Ó¼ï¿½ ï¿½ï¿½ï¿½ï¿½]
 		void SetLooping(bool loop) { m_looping = loop; }
 		void SetDuration(float duration) { m_duration = duration; }
 		void SetPlayRate(float rate) { m_playRate = rate; }
 		void SetPreWarmTime(float time) { m_preWarmTime = time; }
 		void SetTargetMesh(const int& modelIdx);
 
-		// Mesh µ¥ÀÌÅÍ Á¢±ÙÀÚ
+		// Mesh ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
 		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
 		UINT GetVertexCount() const { return m_vertexCount; }
@@ -88,7 +88,7 @@ namespace DE {
 		bool IsAllEmittersCompleted() const;
 
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
-		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 16; }
+		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 20; } // DrawIndexedInstancedArgs (5 * 4 bytes)
 		UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
 
 		void BindConstantID(UINT emitterID);
@@ -106,7 +106,7 @@ namespace DE {
 
 		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
 
-		// SubEmitter Ã³¸® (´Ü¼øÈ­)
+		// SubEmitter Ã³ï¿½ï¿½ (ï¿½Ü¼ï¿½È­)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
 			ParticleInitializer& initialData, std::set<std::wstring>& processedPaths);
@@ -124,9 +124,9 @@ namespace DE {
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 
-		// SubEmitters (¹Ì¸® ·ÎµåµÊ, °æ·Î -> Emitter ¸ÅÇÎ)
+		// SubEmitters (ï¿½Ì¸ï¿½ ï¿½Îµï¿½ï¿½, ï¿½ï¿½ï¿½ -> Emitter ï¿½ï¿½ï¿½ï¿½)
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		// ÇöÀç È°¼ºÈ­µÈ SubEmitter Æ÷ÀÎÅÍµé
+		// ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½ï¿½ SubEmitter ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½
 		std::vector<ParticleEmitter*> m_activeSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
 
@@ -134,7 +134,7 @@ namespace DE {
 		FileWatcher::CallbackID m_watcherID = 0;
 		ConstantBuffer<ParticleMeshConsts> m_meshConsts;
 
-		// Mesh µ¥ÀÌÅÍ
+		// Mesh ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		StructuredBuffer<Vector3> m_meshVertex;
 		StructuredBuffer<uint32_t> m_meshIndices;
 		UINT m_vertexCount = 0;
@@ -142,18 +142,18 @@ namespace DE {
 
 		PoolHandle m_poolHandle;
 
-		// ÆÄÆ¼Å¬ ¹öÆÛ (ÀÌÁß ¹öÆÛ¸µ)
+		// ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½)
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		// ÅëÇÕµÈ SpawnPosition °ü¸®
+		// ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition ï¿½ï¿½ï¿½ï¿½
 		UINT m_currentSpawnPosOffset = 0;
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 
 		IndirectArgsBuffer<DispatchArgs>* m_dispatchArgs = nullptr;
-		IndirectArgsBuffer<DrawInstancedArgs>* m_billboardArgsBuffer = nullptr;
+		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_billboardArgsBuffer = nullptr;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_meshArgsBuffer = nullptr;
 	};
 }

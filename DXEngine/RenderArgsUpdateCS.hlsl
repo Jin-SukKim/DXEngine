@@ -1,35 +1,31 @@
 #include "ParticleCommon.hlsli"
 
-// ¹ÙÀÎµù ½½·Ô (C++ ÄÚµå¿Í ¸ÂÃç¾ß ÇÔ)
-RWBuffer<uint> billboardArgs : register(u0); // Render¿ë (DrawInstancedIndirect) <--- Ãß°¡!
+// ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ (C++ ï¿½Úµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
+RWBuffer<uint> billboardArgs : register(u0); // Renderï¿½ï¿½ (DrawInstancedIndirect) <--- ï¿½ß°ï¿½!
 RWBuffer<uint> meshArgs : register(u1);
 
-[numthreads(256, 1, 1)] // 1,1,1Àº ºñÈ¿À²ÀûÀÌ¹Ç·Î 256 ±ÇÀå
+[numthreads(256, 1, 1)] // 1,1,1ï¿½ï¿½ ï¿½ï¿½È¿ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ 256 ï¿½ï¿½ï¿½ï¿½
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    // [¼öÁ¤ 1] emitterID(»ó¼ö) ´ë½Å ½º·¹µå ID »ç¿ë
+    // [ï¿½ï¿½ï¿½ï¿½ 1] emitterID(ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ID ï¿½ï¿½ï¿½
     uint myEmitterID = DTid.x;
 
-    // ÇöÀç EmitterÀÇ ÆÄÆ¼Å¬ °³¼ö °¡Á®¿À±â
+    // ï¿½ï¿½ï¿½ï¿½ Emitterï¿½ï¿½ ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     uint count = readCount[myEmitterID];
 
     // --------------------------------------------------------
-    // 2. Billboard Args °»½Å (Render ´Ü°è¿ë) -> [ÀÌ°Ô ¾ø¾î¼­ 1°³¸¸ ³ª¿È]
+    // 2. Billboard Args ï¿½ï¿½ï¿½ï¿½ (Render ï¿½Ü°ï¿½ï¿½) -> [ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½î¼­ 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]
     // --------------------------------------------------------
-    // DrawInstancedArgs ±¸Á¶Ã¼: { VertexCount, InstanceCount, StartVertex, StartInstance }
-    // uint4 ±¸Á¶Ã¼ÀÌ¹Ç·Î stride = 4
-    uint drawIdx = myEmitterID * 4;
+    // DrawInstancedArgs ï¿½ï¿½ï¿½ï¿½Ã¼: { VertexCount, InstanceCount, StartVertex, StartInstance }
+    // uint4 ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½Ì¹Ç·ï¿½ stride = 4
+    uint drawIdx = myEmitterID * 5; // DrawIndexedInstancedArgsëŠ” 5ê°œ í•„ë“œ
 
-    // Index 0: VertexCountPerInstance (ÃÊ±â°ª À¯ÁöÇÏ°Å³ª ¿©±â¼­ ¼³Á¤ °¡´É)
-    // billboardArgs[drawIdx + 0] = 4; // Quad¶ó¸é 4, 6ÀÌ¸é 6
-
-    // Index 1: InstanceCount (¿©±â¿¡ ÆÄÆ¼Å¬ °³¼ö¸¦ ³Ö¾î¾ß ´Ù ±×·ÁÁü!)
-    billboardArgs[drawIdx + 0] = count;
-    billboardArgs[drawIdx + 1] = 1;
-
-    // Index 2, 3: StartVertex, StartInstance (º¸Åë 0)
-    billboardArgs[drawIdx + 2] = 0;
-    billboardArgs[drawIdx + 3] = 0;
+    // DrawIndexedInstancedArgs: { IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation }
+    billboardArgs[drawIdx + 0] = 6; // ì¿¼ë“œ ë©”ì‰¬ëŠ” 6ê°œ ì¸ë±ìŠ¤
+    billboardArgs[drawIdx + 1] = count; // íŒŒí‹°í´ ê°œìˆ˜
+    billboardArgs[drawIdx + 2] = 0; // StartIndexLocation
+    billboardArgs[drawIdx + 3] = 0; // BaseVertexLocation
+    billboardArgs[drawIdx + 4] = 0; // StartInstanceLocation
 
     uint meshIdx = myEmitterID * 5;
 

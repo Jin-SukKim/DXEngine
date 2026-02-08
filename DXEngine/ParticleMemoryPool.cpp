@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ParticleMemoryPool.h"
 #include "ParticleSystem.h"
+#include "GeometryGenerator.h"
+#include "D3D11Utils.h"
 
 namespace DE {
 	void ParticleMemoryPool::Initialize(UINT maxParticles, UINT maxEmitters, UINT maxSystems)
@@ -37,8 +39,9 @@ namespace DE {
 		std::vector<DispatchArgs> initialBatchVec(1, { 0, 1, 1 });
 		m_batchDispatchArgs.Initialize(device, initialBatchVec, 1, sizeof(DispatchArgs), 3);
 
-		std::vector<DrawInstancedArgs> initialBillboardArgs(m_maxEmitters, { 0, 1, 0, 0 });
-		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawInstancedArgs), 4);
+		// Billboard도 DrawIndexedInstancedArgs로 변경 (쿼드 메쉬 인스턴싱)
+		std::vector<DrawIndexedInstancedArgs> initialBillboardArgs(m_maxEmitters, { 6, 0, 0, 0, 0 });
+		m_billboardArgsBuffer.Initialize(device, initialBillboardArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 
 		std::vector<DrawIndexedInstancedArgs> initialMeshArgs(m_maxEmitters, { 0, 0, 0, 0, 0 });
 		m_meshArgsBuffer.Initialize(device, initialMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
@@ -52,6 +55,16 @@ namespace DE {
 		// MeshConsts Pool (System��)
 		m_meshConstsCPU.resize(maxSystems);
 		m_meshConstsBuffer.Initialize();
+
+		// Quad Mesh for Billboard Instancing (GS 제거용)
+		MeshData quadMesh = GeometryGenerator::MakeSquare(1.0f);
+		m_quadVertexCount = static_cast<UINT>(quadMesh.vertices.size());
+		m_quadIndexCount = static_cast<UINT>(quadMesh.indices.size());
+
+		ComPtr<ID3D11Device> devicePtr;
+		device->QueryInterface(devicePtr.GetAddressOf());
+		D3D11Utils::CreateVertexBuffer(devicePtr, quadMesh.vertices, m_quadVertexBuffer);
+		D3D11Utils::CreateIndexBuffer(devicePtr, quadMesh.indices, m_quadIndexBuffer);
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()

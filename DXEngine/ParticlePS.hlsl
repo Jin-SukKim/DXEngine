@@ -16,7 +16,6 @@ struct ParticlePSInput
     float2 uv : TEXCOORD0;
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
-    uint primID : SV_PrimitiveID;
 };
 
 float4 SampleParticleTexture(float3 uvw)

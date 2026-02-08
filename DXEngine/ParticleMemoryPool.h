@@ -76,11 +76,17 @@ public:
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConsts() { return m_frameConsts; }
 	StructuredBuffer<ParticleConsts>& GetConsts() { return m_consts; }
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
-	IndirectArgsBuffer<DrawInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
+	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 	std::vector<ParticleMeshConsts>& GetMeshConsts() { return m_meshConstsCPU; }
+
+	// Quad Mesh Getters
+	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
+	ID3D11Buffer* GetQuadIndexBuffer() { return m_quadIndexBuffer.Get(); }
+	UINT GetQuadVertexCount() const { return m_quadVertexCount; }
+	UINT GetQuadIndexCount() const { return m_quadIndexCount; }
 
 	UINT GetBlockSize() { return m_blockSize; }
 	UINT GetBlockCount() const { return m_blockCount; }
@@ -143,10 +149,16 @@ private:
 
 	IndirectArgsBuffer<DispatchArgs> m_dispatchArgs;
 	IndirectArgsBuffer<DispatchArgs> m_batchDispatchArgs;  // 배치 dispatch용
-	IndirectArgsBuffer<DrawInstancedArgs> m_billboardArgsBuffer;
+	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_billboardArgsBuffer; // 쿼드 메쉬 인스턴싱
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
 	StructuredBuffer<Vector3> m_spawnPositions;
+
+	// Quad Mesh for Billboard Instancing (GS 제거용)
+	ComPtr<ID3D11Buffer> m_quadVertexBuffer;
+	ComPtr<ID3D11Buffer> m_quadIndexBuffer;
+	UINT m_quadVertexCount = 4;
+	UINT m_quadIndexCount = 6;
 
 	// EmitterID ConstantBuffer Pool
 	StructuredBuffer<EmitterID> m_emitterIDs;

@@ -44,7 +44,7 @@ namespace DE {
 		, m_maxEmitters(0)
 		, m_currentParticleOffset(0)
 	{
-		// Main Emitter º¹»ç
+		// Main Emitter ï¿½ï¿½ï¿½ï¿½
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
 				m_emitters.push_back(std::make_unique<ParticleEmitter>(*emitter));
@@ -53,7 +53,7 @@ namespace DE {
 		m_meshConsts.Initialize();
 		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 
-		// SubEmitter º¹»ç
+		// SubEmitter ï¿½ï¿½ï¿½ï¿½
 		for (const auto& [path, emitterPtr] : other.m_subEmitterPool) {
 			if (emitterPtr) {
 				m_subEmitterPool[path] = std::make_unique<ParticleEmitter>(*emitterPtr);
@@ -67,8 +67,8 @@ namespace DE {
 		m_currentParticleOffset = 0;
 		m_maxEmitters = 0;
 		m_currentEmitterIndex = 0;
-		m_currentSpawnPosOffset = 0;  // ÅëÇÕµÈ offset
-		m_spawnPosCache.clear();      // ÅëÇÕµÈ Ä³½Ã
+		m_currentSpawnPosOffset = 0;  // ï¿½ï¿½ï¿½Õµï¿½ offset
+		m_spawnPosCache.clear();      // ï¿½ï¿½ï¿½Õµï¿½ Ä³ï¿½ï¿½
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
 
@@ -90,13 +90,13 @@ namespace DE {
 	{
 		std::set<std::wstring> processedPaths;
 
-		// 1. Main Emitter Ã³¸® ±¸°£ ÃøÁ¤
+		// 1. Main Emitter Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		for (auto& emitter : m_emitters) {
 			ProcessEmitter(emitter.get(), initialData);
 		}
 
 
-		// 2. SubEmitter Ã³¸® ±¸°£ ÃøÁ¤ (¿©±â°¡ º´¸ñ ¿¹»ó ÁöÁ¡)
+		// 2. SubEmitter Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½â°¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		for (auto& emitter : m_emitters) {
 			LoadSubEmitters(emitter.get(), initialData, processedPaths);
 		}
@@ -125,7 +125,7 @@ namespace DE {
 			this->OnEmitterEvent(event, em);
 		});
 
-		// ÅëÇÕµÈ SpawnPosition Ã³¸®
+		// ï¿½ï¿½ï¿½Õµï¿½ SpawnPosition Ã³ï¿½ï¿½
 		RegisterSpawnPositions(emitter, initialData.spawnPositions, pConsts, eID);
 
 		UINT capacity = pfConsts.maxParticles;
@@ -145,20 +145,20 @@ namespace DE {
 		ParticleEmitter* emitter,
 		ParticleInitializer& initialData, std::set<std::wstring>& processedPaths)
 	{
-		// ¸ÕÀú ÇöÀç emitterÀÇ SubEmitter °æ·ÎµéÀ» º¹»ç (iterator ¹«È¿È­ ¹æÁö)
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ emitterï¿½ï¿½ SubEmitter ï¿½ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (iterator ï¿½ï¿½È¿È­ ï¿½ï¿½ï¿½ï¿½)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
 		
 		for (const auto& sub : subEmittersCopy) {
 			ParticleEmitter* targetEmitter = nullptr;
 
-			// [Pool °Ë»ö]
+			// [Pool ï¿½Ë»ï¿½]
 			auto it = m_subEmitterPool.find(sub.emitterPath);
 			if (it != m_subEmitterPool.end()) {
-				// ¡Ú HIT: º¹»ç »ý¼ºÀÚ ´öºÐ¿¡ ÀÌ¹Ì ¸Þ¸ð¸®¿¡ Á¸ÀçÇÔ! (ÆÄÀÏ ·Îµù X)
+				// ï¿½ï¿½ HIT: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ð¿ï¿½ ï¿½Ì¹ï¿½ ï¿½Þ¸ð¸®¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½! (ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ X)
 				targetEmitter = it->second.get();
 			}
 			else {
-				// MISS: PrototypeÀ» Ã³À½ »ý¼ºÇÒ ¶§¸¸ ¿©±â·Î µé¾î¿È (ÆÄÀÏ ·Îµù O)
+				// MISS: Prototypeï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ O)
 				auto loaded = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
 				if (!loaded) continue;
 
@@ -166,14 +166,14 @@ namespace DE {
 				m_subEmitterPool[sub.emitterPath] = std::move(loaded);
 			}
 
-			// [ÃÊ±âÈ­ ¼öÇà] Pool¿¡ ÀÖ¾úµç »õ·Î ·ÎµåÇßµç, ÀÌ¹ø ½Ã½ºÅÛÀ» À§ÇØ ¿ÀÇÁ¼ÂÀ» ÇÒ´çÇØ¾ß ÇÔ
+			// [ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½] Poolï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ßµï¿½, ï¿½Ì¹ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò´ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½
 			if (targetEmitter) {
 				ProcessEmitter(targetEmitter, initialData);
 
-				// Ã³¸® ¿Ï·á Ç¥½Ã
+				// Ã³ï¿½ï¿½ ï¿½Ï·ï¿½ Ç¥ï¿½ï¿½
 				processedPaths.insert(sub.emitterPath);
 
-				// Àç±Í È£Ãâ (ÀÚ½ÄÀÇ ÀÚ½Ä Ã³¸®)
+				// ï¿½ï¿½ï¿½ È£ï¿½ï¿½ (ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½Ú½ï¿½ Ã³ï¿½ï¿½)
 				LoadSubEmitters(targetEmitter, initialData, processedPaths);
 			}
 		}
@@ -181,7 +181,7 @@ namespace DE {
 
 	void ParticleSystem::InitializeGPU(ParticleInitializer& initialData,
 		IndirectArgsBuffer<DispatchArgs>& dispatchArgs,
-		IndirectArgsBuffer<DrawInstancedArgs>& billboardArgsBuffer,
+		IndirectArgsBuffer<DrawIndexedInstancedArgs>& billboardArgsBuffer,
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer)
 	{
 		m_dispatchArgs = &dispatchArgs;
@@ -191,7 +191,7 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
-		// Main Emitter¸¸ OnSpawn (SubEmitter´Â ÀÌº¥Æ® ¹ß»ý ½Ã È°¼ºÈ­)
+		// Main Emitterï¿½ï¿½ OnSpawn (SubEmitterï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ß»ï¿½ ï¿½ï¿½ È°ï¿½ï¿½È­)
 		for (auto& emitter : m_emitters) {
 			emitter->OnSpawn();
 		}
@@ -245,7 +245,7 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		// ¿Ï·áµÈ SubEmitter Á¦°Å
+		// ï¿½Ï·ï¿½ï¿½ SubEmitter ï¿½ï¿½ï¿½ï¿½
 		std::erase_if(m_activeSubEmitters, [](auto* em) { return em->IsCompleted(); });
 
 		ActivateSubEmitters();
@@ -257,7 +257,7 @@ namespace DE {
 
 	void ParticleSystem::ActivateSubEmitters()
 	{
-		// ´ë±â ÁßÀÎ SubEmitter È°¼ºÈ­
+		// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ SubEmitter È°ï¿½ï¿½È­
 		for (auto& [emitter, pos] : m_pendingSubEmitters) {
 			emitter->Reset();
 			emitter->SetSpawnOffset(pos);
@@ -276,7 +276,7 @@ namespace DE {
 
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
-		// Main Emitter ·»´õ¸µ
+		// Main Emitter ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		for (auto& emitter : m_emitters)
 			emitter->Render({
 				m_billboardArgsBuffer->GetBuffer(),
@@ -289,7 +289,7 @@ namespace DE {
 					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 				});
 
-		// Active SubEmitter ·»´õ¸µ (null Ã¼Å©)
+		// Active SubEmitter ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (null Ã¼Å©)
 		for (auto* emitter : m_activeSubEmitters) {
 			if (emitter)
 				emitter->Render({
@@ -318,7 +318,7 @@ namespace DE {
 			ParticleEmitter* subEmitter = it->second.get();
 			Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
 
-			// Áßº¹ Ã¼Å© ÈÄ Ãß°¡
+			// ï¿½ßºï¿½ Ã¼Å© ï¿½ï¿½ ï¿½ß°ï¿½
 			auto isMatch = [subEmitter](const auto& p) { return p.first == subEmitter; };
 			bool alreadyPending = std::ranges::any_of(m_pendingSubEmitters, isMatch);
 			bool alreadyActive = std::ranges::find(m_activeSubEmitters, subEmitter) != m_activeSubEmitters.end();
@@ -333,7 +333,7 @@ namespace DE {
 		if (!subEmitter)
 			return;
 
-		// ÀÌ¹Ì È°¼ºÈ­µÈ °æ¿ì ½ºÅµ
+		// ï¿½Ì¹ï¿½ È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Åµ
 		for (auto* em : m_activeSubEmitters) {
 			if (em == subEmitter)
 				return;
@@ -498,7 +498,7 @@ namespace DE {
 
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
-		// Manager¸¦ ÅëÇØ ¹ÙÀÎµù
+		// Managerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½
 		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
 	}
 
@@ -539,7 +539,7 @@ namespace DE {
 		meshConsts.worldIT = meshConsts.world.Invert();
 		this->SetTransform(meshConsts);
 
-		// Pool¿¡ ¾÷·Îµå (System ÀÎµ¦½º »ç¿ë)
+		// Poolï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ (System ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, meshConsts);
 	}
 
@@ -549,19 +549,19 @@ namespace DE {
 		ParticleConsts& pConsts, 
 		EmitterID& eID)
 	{
-		eID.spawnPosOffset = UINT_MAX;  // ±âº»°ª: ¹Ì»ç¿ë
+		eID.spawnPosOffset = UINT_MAX;  // ï¿½âº»ï¿½ï¿½: ï¿½Ì»ï¿½ï¿½
 		
 		if (!emitter->GetBakedPath().empty()) {
 			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
 			if (it != m_spawnPosCache.end()) {
-				// Ä³½Ã È÷Æ®
+				// Ä³ï¿½ï¿½ ï¿½ï¿½Æ®
 				emitter->SetSpawnPosInfo(it->second.first);
 				eID.spawnPosOffset = it->second.first;
 				pConsts.spawn.bakedCount = it->second.second;
 				return;
 			}
 
-			// Ä³½Ã ¹Ì½º
+			// Ä³ï¿½ï¿½ ï¿½Ì½ï¿½
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
 			
@@ -571,7 +571,7 @@ namespace DE {
 			m_spawnPosCache[emitter->GetBakedPath()] = { m_currentSpawnPosOffset, bakedCount };
 			m_currentSpawnPosOffset += bakedCount;
 		}
-		// Custom Position Ã³¸®
+		// Custom Position Ã³ï¿½ï¿½
 		else if (emitter->IsUsingCustomPositions()) {
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
