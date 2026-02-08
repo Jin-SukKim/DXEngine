@@ -98,8 +98,8 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -107,7 +107,7 @@ namespace DE {
 		Scene::Update(dt);
 		FileWatcher::Get().Update();
 
-		//StressTest(dt);
+		StressTest(dt);
 	}
 
 	void ParticleEditor::StressTest(const float& dt)
@@ -151,7 +151,7 @@ namespace DE {
 				randomDeleteTimer = 0.0f;
 
 				// 한 번에 삭제할 개수 결정 (예: 3개 ~ 8개 사이 랜덤)
-				int deleteCount = (rand() % 100) + 50;
+				int deleteCount = (rand() % 400) + 100;
 
 				for (int i = 0; i < deleteCount; ++i)
 				{

@@ -174,6 +174,11 @@ private:
 	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
 	std::vector<bool> m_systemSlotTable;
+
+	// Cached fragmentation metrics (dirty flag pattern)
+	mutable UINT m_cachedLastUsedBlock = 0;
+	mutable UINT m_cachedTotalUsedBlocks = 0;
+	mutable bool m_fragmentationDirty = true;
 };
 
 }

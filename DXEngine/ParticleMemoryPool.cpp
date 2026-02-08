@@ -65,6 +65,11 @@ namespace DE {
 		device->QueryInterface(devicePtr.GetAddressOf());
 		D3D11Utils::CreateVertexBuffer(devicePtr, quadMesh.vertices, m_quadVertexBuffer);
 		D3D11Utils::CreateIndexBuffer(devicePtr, quadMesh.indices, m_quadIndexBuffer);
+
+		// Initialize fragmentation cache
+		m_cachedLastUsedBlock = 0;
+		m_cachedTotalUsedBlocks = 0;
+		m_fragmentationDirty = true;
 	}
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
@@ -169,11 +174,13 @@ namespace DE {
 			// Particle blocks ��ŷ
 			for (UINT i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
-			
+
+			m_fragmentationDirty = true;  // Invalidate cache
+
 			// Emitter slots ��ŷ
 			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[IDs[i]] = true;
-			
+
 			// SpawnPos blocks ��ŷ
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
@@ -211,6 +218,8 @@ namespace DE {
 				m_particleBlockTable[startBlock + i] = false;
 			}
 		}
+
+		m_fragmentationDirty = true;  // Invalidate cache
 
 		// Emitter slots ����
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
@@ -467,14 +476,16 @@ namespace DE {
 	    UINT currentBlock = 0;
 	    for (const auto& handle : activeHandles) {
 	        newOffsets.push_back(currentBlock * m_blockSize);
-	        
+
 	        // ���� ���̺� ������Ʈ
 	        for (UINT i = 0; i < handle.blockCount; ++i) {
 	            m_particleBlockTable[currentBlock + i] = true;
 	        }
 	        currentBlock += handle.blockCount;
 	    }
-	    
+
+	    m_fragmentationDirty = true;  // Invalidate cache
+
 	    return newOffsets;
 	}
 
@@ -497,21 +508,25 @@ namespace DE {
 	{
 		if (m_particleBlockTable.empty()) return 0.0f;
 
-		// ���������� ��� ���� ���� ã��
-		UINT lastUsedBlock = 0;
-		UINT totalUsedBlocks = 0;
+		// Rebuild cache only when dirty flag is set
+		if (m_fragmentationDirty) {
+			m_cachedLastUsedBlock = 0;
+			m_cachedTotalUsedBlocks = 0;
 
-		for (UINT i = 0; i < static_cast<UINT>(m_particleBlockTable.size()); ++i) {
-			if (m_particleBlockTable[i]) {
-				lastUsedBlock = i + 1;  // ��� ������ ��
-				++totalUsedBlocks;
+			// Same calculation logic, now cached
+			for (UINT i = 0; i < static_cast<UINT>(m_particleBlockTable.size()); ++i) {
+				if (m_particleBlockTable[i]) {
+					m_cachedLastUsedBlock = i + 1;
+					++m_cachedTotalUsedBlocks;
+				}
 			}
+			m_fragmentationDirty = false;
 		}
 
-		if (lastUsedBlock == 0 || totalUsedBlocks == 0) return 0.0f;
+		if (m_cachedLastUsedBlock == 0 || m_cachedTotalUsedBlocks == 0) return 0.0f;
 
-		// ����ȭ�� = (��� ���� �� �� ����) / (��� ����)
-		UINT gapBlocks = lastUsedBlock - totalUsedBlocks;
-		return static_cast<float>(gapBlocks) / lastUsedBlock;
+		// Use cached values
+		UINT gapBlocks = m_cachedLastUsedBlock - m_cachedTotalUsedBlocks;
+		return static_cast<float>(gapBlocks) / m_cachedLastUsedBlock;
 	}
 }
