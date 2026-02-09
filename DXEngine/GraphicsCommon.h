@@ -44,6 +44,7 @@ namespace DE {
 		struct {
 			GraphicsPSO basicPSO;
 			GraphicsPSO copyPSO;
+			GraphicsPSO particleCompositePSO;
 		} postProcess;
 
 		struct {
@@ -129,6 +130,7 @@ namespace DE {
 		ComPtr<ID3D11PixelShader> depthPS;
 		ComPtr<ID3D11PixelShader> fogPS;
 		ComPtr<ID3D11PixelShader> haloPS;
+		ComPtr<ID3D11PixelShader> particleCompositePS;
 
 		// Billboard
 		ComPtr<ID3D11VertexShader> billboardVS;

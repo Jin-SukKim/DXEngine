@@ -3,6 +3,7 @@
 #include "GraphicsCommon.h"
 #include "LightActor.h"
 #include "ComputeCommon.h"
+#include "Mesh.h"
 
 namespace DE {
 	class GraphicsCommon;
@@ -24,11 +25,11 @@ namespace DE {
 		void Present();
 
 		void SetRender();
-		// HDR Pipeline¿¡ ÇÊ¿äÇÑ Bufferµé »ý¼º
+		// HDR Pipelineï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ Bufferï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		void CreateBuffers();
-		// ·»´õ¸µÇÏ°í ½ÍÀº È­¸é Å©±â¿¡ ¸Â´Â Viewport ¼³Á¤
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ Å©ï¿½â¿¡ ï¿½Â´ï¿½ Viewport ï¿½ï¿½ï¿½ï¿½
 		void SetViewport();
-		// DepthStencilView Buffer »ý¼º
+		// DepthStencilView Buffer ï¿½ï¿½ï¿½ï¿½
 		void CreateDepthStencilBuffer();
 		void SetDepthOnlyRender();
 
@@ -46,20 +47,21 @@ namespace DE {
 
 		void CopyIndexForPicking(int mouseX, int mouseY, uint8_t* dest);
 
-		// Stencil Buffer¸¸ 0À¸·Î ÃÊ±âÈ­
+		// Stencil Bufferï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 		void ClearStencilBuffer();
-		// Depth Buffer¸¸ 1.0À¸·Î ÃÊ±âÈ­
+		// Depth Bufferï¿½ï¿½ 1.0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 		void ClearDepthBuffer();
 		Texture2D& GetDepthOnlyBuffer() { return m_depthOnlyBuffer; };
-		// Shadow Map¿ë viewport ¼³Á¤
+		// Shadow Mapï¿½ï¿½ viewport ï¿½ï¿½ï¿½ï¿½
 		void SetShadowViewport(float width, float height);
-		// ±×¸²ÀÚ¸Êµéµµ °ø¿ä Textureµé ÀÌÈÄ¿¡ Ãß°¡ÇÏ°í ÀÖ´Â ÁßÀ¸·Î PSÀÇ t15ºÎÅÍ Ãß°¡
+		// ï¿½×¸ï¿½ï¿½Ú¸Êµéµµ ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½Ä¿ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PSï¿½ï¿½ t15ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 		void SetShadowSRVs();
 		void SetShadowMap(int idx);
 
 		void SetLowResRender();
+		void CompositeLowResParticles();
 
-		// ¹Ì¸® ¼³Á¤ÇØµÐ Settingµé
+		// ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ Settingï¿½ï¿½
 		static GraphicsCommon graphicsCommon;
 		static ComputeCommon computeCommon;
 	protected:
@@ -71,26 +73,26 @@ namespace DE {
 		ComPtr<IDXGISwapChain> m_swapChain;
 		ComPtr<ID3D11RenderTargetView> m_backBufferRTV;
 
-		// »ï°¢Çü ·¹½ºÅÍÈ­ -> float(MSAA) -> Resolved(No MSAA) -> Post-Process -> BackBuffer(ÃÖÁ¾ Swap-Chain Present)
+		// ï¿½ï°¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È­ -> float(MSAA) -> Resolved(No MSAA) -> Post-Process -> BackBuffer(ï¿½ï¿½ï¿½ï¿½ Swap-Chain Present)
 		Texture2D m_floatBuffer;
 		Texture2D m_resolvedBuffer;
 		//Texture2D m_postEffectsBuffer;
 		
 		// Picking
 		ComPtr<ID3D11Texture2D> m_indexTempTexture;
-		ComPtr<ID3D11Texture2D> m_indexTexture; // PickingÀ» À§ÇÑ Index¸¦ ÀúÀåÇÒ Texture
+		ComPtr<ID3D11Texture2D> m_indexTexture; // Pickingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Indexï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Texture
 		ComPtr<ID3D11RenderTargetView> m_indexRTV; 
-		ComPtr<ID3D11Texture2D> m_indexStagingTexture; // PickingÀ» ÇÏ¸é °¡Á®¿Ã 1x1 pixel data
+		ComPtr<ID3D11Texture2D> m_indexStagingTexture; // Pickingï¿½ï¿½ ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1x1 pixel data
 
 		// TODO
 		//ComPtr<ID3D11Texture2D> m_tempTexture;
-		//ComPtr<ID3D11ShaderResourceView> m_backBufferSRV; // ÀÓ½Ã·Î PostProcessingÀ» À§ÇØ SRV »ý¼º
+		//ComPtr<ID3D11ShaderResourceView> m_backBufferSRV; // ï¿½Ó½Ã·ï¿½ PostProcessingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ SRV ï¿½ï¿½ï¿½ï¿½
 		Texture2D m_prevFrame;
 
-		// Swap-BufferÀÇ Back Buffer Æ÷¸ËÀº º¯°æÇØ¼­ »ç¿ëÇÒ ¼ö ÀÖÀ½
+		// Swap-Bufferï¿½ï¿½ Back Buffer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 32-bit color (Low Dynamic Range Image)
-		// [0.0, 1.0]À¸·Î Á¤ÇØÁø ¹üÀ§°¡ ¾Æ´Ñ floatÀ¸·Î ´õ ³ÐÀº ¹üÀ§¿¡ ´ëÇØ¼­ ·»´õ¸µÀ» ÇÒ ¼ö ÀÖÀ½
-		//DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT; // 64-bit color (HDR Pipeline »ç¿ë)
+		// [0.0, 1.0]ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ floatï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		//DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT; // 64-bit color (HDR Pipeline ï¿½ï¿½ï¿½)
 
 		D3D11_VIEWPORT m_screenViewport = D3D11_VIEWPORT();
 		bool m_drawAsWire = false;
@@ -101,23 +103,23 @@ namespace DE {
 		Texture2D m_depthOnlyBuffer;
 		ComPtr<ID3D11DepthStencilView> m_depthOnlyDSV;
 
-		// TODO: ¿©·¯ °³ÀÇ PostProcess¸¦ »ç¿ëÇÏ·Á¸é Vector¸¦ »ç¿ëÇÏ´Â°Ô ÁÁÁö ¾ÊÀ»±î?
+		// TODO: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ PostProcessï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ Vectorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´Â°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?
 		PostProcess* m_postProcess = nullptr;
 		GraphicsPSO m_postProcessPSO;
-		// TODO: ÀÓ½Ã·Î ¿©±â¼­ Tone Mapping »ç¿ë, SceneÀÌ³ª AppBase¿¡¼­ ÇÏ´Â°Ô ÁÁ¾Æº¸ÀÓ
+		// TODO: ï¿½Ó½Ã·ï¿½ ï¿½ï¿½ï¿½â¼­ Tone Mapping ï¿½ï¿½ï¿½, Sceneï¿½Ì³ï¿½ AppBaseï¿½ï¿½ï¿½ï¿½ ï¿½Ï´Â°ï¿½ ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½
 		std::shared_ptr<ToneMappingFilter> m_toneMapping;
 		Texture2D m_toneMapTexture;
 
 		// Shadow
-		// Shadow MapÀº ÇØ»óµµ°¡ ´Ù¸¥µ¥ È­¸é ÇØ»óµµ¿Í °°À» ÇÊ¿ä°¡ ¾øÀ½
-		// º¸Åë Texture°¡ Á¤»ç°¢ÇüÀÌ±â ¶§¹®¿¡ ratio°¡ 1:1ÀÎ ÇØ»óµµ·Î ¼³Á¤
+		// Shadow Mapï¿½ï¿½ ï¿½Ø»óµµ°ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½ È­ï¿½ï¿½ ï¿½Ø»óµµ¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½ç°¢ï¿½ï¿½ï¿½Ì±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ratioï¿½ï¿½ 1:1ï¿½ï¿½ ï¿½Ø»óµµ·ï¿½ ï¿½ï¿½ï¿½ï¿½
 		int m_shadowWidth = 1280;
 		int m_shadowHeight = 1280; 
-		// ¼³Á¤ÇÑ ±×¸²ÀÚ ¸Ê ÇØ»óµµ¿¡ ¸ÂÃç¼­ ±×¸²ÀÚ¸Ê¿ë viewport ¼³Á¤
-		Texture2D m_shadowArrayBuffer; // light °³¼ö¸¸Å­ shadow ¸Ê »ý¼º
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ø»óµµ¿ï¿½ ï¿½ï¿½ï¿½ç¼­ ï¿½×¸ï¿½ï¿½Ú¸Ê¿ï¿½ viewport ï¿½ï¿½ï¿½ï¿½
+		Texture2D m_shadowArrayBuffer; // light ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å­ shadow ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		std::vector<ComPtr<ID3D11DepthStencilView>> m_shadowDSVs;
 
-		// Particle ¿ë
+		// Particle ï¿½ï¿½
 		ComPtr<ID3D11DepthStencilView> m_lowResDSV;
 		Texture2D m_lowResDepth;
 
@@ -126,5 +128,8 @@ namespace DE {
 		Texture2D m_lowResParticleTexture;
 
 		D3D11_VIEWPORT m_lowResViewport = D3D11_VIEWPORT();
+
+		// Low-res particle composite quad
+		std::shared_ptr<Mesh> m_compositeQuad;
 	};
 }

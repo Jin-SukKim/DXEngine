@@ -175,6 +175,7 @@ namespace DE {
 
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->SetViewport();
+		GET_SINGLE(RenderBase)->CompositeLowResParticles();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
 		// [Added] Update Culling Stats

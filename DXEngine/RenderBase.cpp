@@ -9,7 +9,7 @@
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
-	ComputeCommon RenderBase::computeCommon;  // Ãß°¡
+	ComputeCommon RenderBase::computeCommon;  // ï¿½ß°ï¿½
 
 	RenderBase::~RenderBase()
 	{
@@ -17,15 +17,15 @@ namespace DE {
 
 	bool RenderBase::Initialize(WindowInfo& window)
 	{
-		// ±×·¡ÇÈÄ«µå ÇÏµå¤Ì¿¡¾î È£È¯¼º ¼³Á¤
+		// ï¿½×·ï¿½ï¿½ï¿½Ä«ï¿½ï¿½ ï¿½Ïµï¿½Ì¿ï¿½ï¿½ï¿½ È£È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		const D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_HARDWARE;
 
 		UINT createDeviceFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
-		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG; // ±×·¡ÇÈ½º µð¹ö±ë È°¼ºÈ­
+		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG; // ï¿½×·ï¿½ï¿½È½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­
 #endif
 
-		// DirectX ¹öÀü (³ªÁß¿¡ Ãß°¡ °¡´É) - ´õ ³ôÀº ¹öÀüÀÌ ¸ÕÀú ¿Àµµ·Ï ¼³Á¤
+		// DirectX ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ß°ï¿½ ï¿½ï¿½ï¿½ï¿½) - ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		const D3D_FEATURE_LEVEL featureLevels[1] = {
 			D3D_FEATURE_LEVEL_11_0
 		};
@@ -34,28 +34,28 @@ namespace DE {
 		m_screenWidth = window.width;
 		m_screenHeight = window.height;
 
-		// Swap-Chain ¼³Á¤
+		// Swap-Chain ï¿½ï¿½ï¿½ï¿½
 		DXGI_SWAP_CHAIN_DESC sd;
-		ZeroMemory(&sd, sizeof(sd)); // ¸Þ¸ð¸® ÃÊ±âÈ­
+		ZeroMemory(&sd, sizeof(sd)); // ï¿½Þ¸ï¿½ ï¿½Ê±ï¿½È­
 		sd.BufferDesc.Width = m_screenWidth;
 		sd.BufferDesc.Height = m_screenHeight;
 		sd.BufferDesc.Format = m_backBufferFormat;
 		sd.BufferCount = 2; // double-buffering
 		sd.BufferDesc.RefreshRate.Numerator = 0;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
-		sd.BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering¿ë
-			// Compute Shader ¿ë(CS¿¡¼­ Back-Buffer¸¦ »ç¿ëÇÒ°Ô ¾Æ´Ï¶ó¸é ÇÊ¿ä¾øÁö¸¸ ÈÄÃ³¸®¶§ »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¼³Á¤)
+		sd.BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT | // Renderingï¿½ï¿½
+			// Compute Shader ï¿½ï¿½(CSï¿½ï¿½ï¿½ï¿½ Back-Bufferï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò°ï¿½ ï¿½Æ´Ï¶ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½)
 			DXGI_USAGE_UNORDERED_ACCESS; 
-		sd.OutputWindow = window.hwnd; // ·»´õ¸µÇÒ À©µµ¿ì
+		sd.OutputWindow = window.hwnd; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		sd.Windowed = TRUE; // windowed/full-screen
-		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // full-screen ¸ðµå º¯°æ °¡´É
+		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // full-screen ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		//sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		// No MSAA
 		sd.SampleDesc.Count = 1; 
 		sd.SampleDesc.Quality = 0;
 
-		// Device, Device Context, SwapChain »ý¼º
+		// Device, Device Context, SwapChain ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(::D3D11CreateDeviceAndSwapChain(
 			0, driverType, 0, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels),
 			D3D11_SDK_VERSION, &sd, m_swapChain.GetAddressOf(),
@@ -64,23 +64,34 @@ namespace DE {
 		//window.device = m_device;
 		//window.context = m_context;
 
-		// ¿øÇÏ´Â D3D ¹öÀüÀÎÁö È®ÀÎ
+		// ï¿½ï¿½ï¿½Ï´ï¿½ D3D ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
 			std::cout << "D3D Feature Level 11 unsupported." << std::endl;
 			return false;
 		}
 
-		// Back BufferÀÇ RTV »ý¼º
+		// Back Bufferï¿½ï¿½ RTV ï¿½ï¿½ï¿½ï¿½
 		CreateBuffers();
-		// Viewport ¼³Á¤
+		// Viewport ï¿½ï¿½ï¿½ï¿½
 		SetViewport();
-		// DepthStencilView »ý¼º
+		// DepthStencilView ï¿½ï¿½ï¿½ï¿½
 		CreateDepthStencilBuffer();
 
 		graphicsCommon.InitCommonStates(m_device);
-		computeCommon.InitCommonStates(m_device);  // Ãß°¡
+		computeCommon.InitCommonStates(m_device);  // ï¿½ß°ï¿½
 
-		// TODO: ÀÓ½Ã
+		// Composite quad for low-res particle upscale
+		{
+			MeshData quadData = GeometryGenerator::MakeSquare();
+			m_compositeQuad = std::make_shared<Mesh>();
+			D3D11Utils::CreateVertexBuffer(m_device, quadData.vertices, m_compositeQuad->vertexBuffer);
+			m_compositeQuad->indexCount = UINT(quadData.indices.size());
+			D3D11Utils::CreateIndexBuffer(m_device, quadData.indices, m_compositeQuad->indexBuffer);
+			m_compositeQuad->stride = UINT(sizeof(Vertex));
+			m_compositeQuad->offset = 0;
+		}
+
+		// TODO: ï¿½Ó½ï¿½
 		D3D11Utils::CreateImageFilterTexture(m_device, int(m_screenViewport.Width), int(m_screenViewport.Height), m_toneMapTexture);
 		m_toneMapping = std::make_shared<ToneMappingFilter>();
 		m_toneMapping->Initialize({ m_toneMapTexture.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
@@ -93,7 +104,7 @@ namespace DE {
 		if (m_postProcess)
 			m_postProcess->Update();
 
-		// TODO: ÀÓ½Ã
+		// TODO: ï¿½Ó½ï¿½
 		m_toneMapping->Update();
 	}
 
@@ -104,7 +115,7 @@ namespace DE {
 
 	void RenderBase::PostRender()
 	{
-		// ÈÄÃ³¸® ÇÊÅÍ ½ÃÀÛÇÏ±â Àü¿¡ Texture2DMS¿¡ ·»´õ¸µ µÈ °á°ú¸¦ Texture2D·Î º¹»ç
+		// ï¿½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ Texture2DMSï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Texture2Dï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		//ComPtr<ID3D11Texture2D> backBuffer;
 		//ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
 		//m_context->CopyResource(m_tempTexture.Get(), m_floatBuffer.GetTexture());
@@ -114,14 +125,14 @@ namespace DE {
 		if (m_postProcess)
 			m_postProcess->Render();
 
-		// TODO: ÀÓ½Ã
+		// TODO: ï¿½Ó½ï¿½
 		m_toneMapping->Render();
 
-		// ÇöÀç ÇÁ·¹ÀÓ °á°ú º¹»ç
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
-		m_context->CopyResource(m_prevFrame.GetTexture(), backBuffer.Get()); // ¸ð¼Ç ºí·¯ È¿°ú¸¦ À§ÇØ ·»´õ¸µ °á°ú º¸°ü
-		//m_context->CopyResource(m_prevFrame.GetTexture(), m_floatBuffer.GetTexture()); // ¸ð¼Ç ºí·¯ È¿°ú¸¦ À§ÇØ ·»´õ¸µ °á°ú º¸°ü
+		m_context->CopyResource(m_prevFrame.GetTexture(), backBuffer.Get()); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		//m_context->CopyResource(m_prevFrame.GetTexture(), m_floatBuffer.GetTexture()); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	}
 
 	void RenderBase::Present()
@@ -144,9 +155,9 @@ namespace DE {
 	void RenderBase::CreateBuffers()
 	{
 		// Raterization -> float/depthBuffer(MSAA) -> resolved -> backBuffer
-		// Áö±ÝÀº MSAA¸¦ »ç¿ë ¾ÈÇÏ´Ï Raterization -> float -> backBuffer Èå¸§ (HDR Pipeline)
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ MSAAï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ Raterization -> float -> backBuffer ï¿½å¸§ (HDR Pipeline)
 		
-		// BackBuffer´Â È­¸éÀ¸·Î ÃÖÁ¾ Ãâ·Â (SRV´Â ºÒÇÊ¿ä)
+		// BackBufferï¿½ï¿½ È­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (SRVï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½)
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), NULL, m_backBufferRTV.GetAddressOf()));
@@ -159,7 +170,7 @@ namespace DE {
 		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		desc.MipLevels = desc.ArraySize = 1;
 		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture·ÎºÎÅÍ º¹»ç °¡´É
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Textureï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		desc.MiscFlags = 0;
 		desc.CPUAccessFlags = 0;
 		desc.SampleDesc.Count = 1;
@@ -167,25 +178,25 @@ namespace DE {
 
 		D3D11Utils::CreateTexture(m_device, desc, m_floatBuffer);
 
-		// TODO: postEffect Buffer´Â float buffer¶û ¶È°°Àº ¼³Á¤À¸·Î »ý¼º
+		// TODO: postEffect Bufferï¿½ï¿½ float bufferï¿½ï¿½ ï¿½È°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		//D3D11Utils::CreateTexture(m_device, desc, m_postEffectsBuffer);
 
 		// Mouse Picking
-		// 1x1 ÀÛÀº Staging Texture »ý¼º (PixelÀÇ °ªÀ» GPU¿¡¼­ CPU·Î º¹»çÇÒ ¼ö ÀÖµµ·Ï ¼³Á¤ÇÑ Texture)
+		// 1x1 ï¿½ï¿½ï¿½ï¿½ Staging Texture ï¿½ï¿½ï¿½ï¿½ (Pixelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GPUï¿½ï¿½ï¿½ï¿½ CPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Texture)
 		D3D11Utils::CreateStagingTexture(m_device, 1, 1, m_indexStagingTexture, m_backBufferFormat);
 
-		// Mouse Picking¿¡ »ç¿ëÇÒ Index »öÀ» ·»´õ¸µÇÒ Texture¿Í RenderTargetVeiw »ý¼º
+		// Mouse Pickingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Index ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ RenderTargetVeiw ï¿½ï¿½ï¿½ï¿½
 		backBuffer->GetDesc(&desc);
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTexture.GetAddressOf())); 
 		ThrowIfFailed(m_device->CreateRenderTargetView(m_indexTexture.Get(), NULL, m_indexRTV.GetAddressOf()));
 		
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Index-Buffer °á°ú¸¦ º¹»çÇØ¼­ ÀÓ½Ã ÀúÀå
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Index-Buffer ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-		// ÀÌÀü ÇÁ·¹ÀÓ ÀúÀå¿ë
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
 
-		// Particle Low Res ¿ë
+		// Particle Low Res ï¿½ï¿½
 		m_lowResWidth = static_cast<int>(desc.Width * 0.5f);
 		m_lowResHeight = static_cast<int>(desc.Height * 0.5f);
 		desc.Width = m_lowResWidth;
@@ -196,7 +207,7 @@ namespace DE {
 
 	void RenderBase::SetViewport()
 	{
-		// Viewport ¼³Á¤
+		// Viewport ï¿½ï¿½ï¿½ï¿½
 		ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
 		m_screenViewport.TopLeftX = 0;
 		m_screenViewport.TopLeftY = 0;
@@ -213,7 +224,7 @@ namespace DE {
 		D3D11_TEXTURE2D_DESC dsDesc;
 		dsDesc.Width = m_screenWidth;
 		dsDesc.Height = m_screenHeight;
-		dsDesc.MipLevels = 1; // Depth Stencil Buffer´Â Mipmap ºÒÇÊ¿ä
+		dsDesc.MipLevels = 1; // Depth Stencil Bufferï¿½ï¿½ Mipmap ï¿½ï¿½ï¿½Ê¿ï¿½
 		dsDesc.ArraySize = 1;
 		dsDesc.Usage = D3D11_USAGE_DEFAULT;
 		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -227,27 +238,27 @@ namespace DE {
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, 0, depthStencilBuffer.GetAddressOf()));
 		ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilBuffer.Get(), NULL, m_defaultDSV.GetAddressOf()));
 	
-		// Depth Only (StencilÀÌ ÇÊ¿ä°¡ ¾ø±â¿¡ Depth¸¸ 32bit ÀüºÎ »ç¿ë)
-		// Typeless·Î ¼±¾ðÇØ DepthStencilView¿¡¼­´Â D32 FormatÀ» »ç¿ë, ShaderResourceView¿¡¼­´Â R32 FormatÀ» »ç¿ë
-		// µÎ FormatÀÌ ¼­·Î ´Ù¸£±â ¶§¹®¿¡ Typeless¸¦ »ç¿ë
+		// Depth Only (Stencilï¿½ï¿½ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½â¿¡ Depthï¿½ï¿½ 32bit ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
+		// Typelessï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DepthStencilViewï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ D32 Formatï¿½ï¿½ ï¿½ï¿½ï¿½, ShaderResourceViewï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ R32 Formatï¿½ï¿½ ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ Formatï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Typelessï¿½ï¿½ ï¿½ï¿½ï¿½
 		dsDesc.Format = DXGI_FORMAT_R32_TYPELESS; 
 		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_depthOnlyBuffer.GetAddressOfTexture()));
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format »ç¿ë
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format ï¿½ï¿½ï¿½
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		ThrowIfFailed(m_device->CreateDepthStencilView(m_depthOnlyBuffer.GetTexture(), &dsvDesc, m_depthOnlyDSV.GetAddressOf()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV·Î »ç¿ëÇÏ±â À§ÇØ R32 format »ç¿ë
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRVï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ R32 format ï¿½ï¿½ï¿½
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_depthOnlyBuffer.GetTexture(), &srvDesc, m_depthOnlyBuffer.GetAddressOfSRV()));
 
-		// Particle Overdraw ¿ë
+		// Particle Overdraw ï¿½ï¿½
 		dsDesc.Width = m_lowResWidth;
 		dsDesc.Height = m_lowResHeight;
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_lowResDepth.GetAddressOfTexture()));
@@ -259,7 +270,7 @@ namespace DE {
 	void RenderBase::SetDepthOnlyRender()
 	{
 		m_context->ClearDepthStencilView(m_depthOnlyDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-		// DepthOnly¶ó¼­ RTV ºÒÇÊ¿ä
+		// DepthOnlyï¿½ï¿½ RTV ï¿½ï¿½ï¿½Ê¿ï¿½
 		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
 	}
 
@@ -285,32 +296,32 @@ namespace DE {
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = light->GetShadowWidth();
 		desc.Height = light->GetShadowHeight();
-		desc.MipLevels = 1; // Mipmap Level ÃÖ´ë
-		desc.ArraySize = arraySize; // Texture ArrayÀÌ¹Ç·Î »ç¿ëÇÒ Texture °³¼ö
+		desc.MipLevels = 1; // Mipmap Level ï¿½Ö´ï¿½
+		desc.ArraySize = arraySize; // Texture Arrayï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
 		desc.Format = DXGI_FORMAT_R32_TYPELESS;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture·ÎºÎÅÍ º¹»ç °¡´É
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Textureï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 
-		// ÃÊ±â µ¥ÀÌÅÍ ¾øÀÌ Texture »ý¼º
+		// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_shadowArrayBuffer.GetAddressOfTexture()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV·Î »ç¿ëÇÏ±â À§ÇØ R32 format »ç¿ë
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRVï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ R32 format ï¿½ï¿½ï¿½
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		srvDesc.Texture2DArray.MipLevels = 1;
 		srvDesc.Texture2DArray.ArraySize = arraySize;
-		// Shadow Map¿ë SRV »ý¼º (À§¿¡¼­ ¸¸µç srvDesc ±×´ë·Î »ç¿ë)
+		// Shadow Mapï¿½ï¿½ SRV ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ srvDesc ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowArrayBuffer.GetTexture(), &srvDesc, m_shadowArrayBuffer.GetAddressOfSRV()));
 	
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format »ç¿ë
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format ï¿½ï¿½ï¿½
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		dsvDesc.Texture2DArray.MipSlice = 0;
-		dsvDesc.Texture2DArray.ArraySize = 1; // °¢ DSV´Â ÇÏ³ª¸¸ »ç¿ë
+		dsvDesc.Texture2DArray.ArraySize = 1; // ï¿½ï¿½ DSVï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
 		m_shadowDSVs.resize(arraySize);
 		for (int i = 0; i < arraySize; ++i) {
@@ -325,19 +336,19 @@ namespace DE {
 		m_screenHeight = window.height;
 
 		m_backBufferRTV.Reset();
-		// Swap ChainÀÇ ÇØ»óµµ¸¦ º¯°æÇÏ°í ¹öÆÛ °³¼ö¸¦ À¯Áö/º¯°æ, Pixel Format À¯Áö/º¯°æ, Flag ¼³Á¤µéÀ» ÇØÁÙ ¼ö ÀÖÀ½
+		// Swap Chainï¿½ï¿½ ï¿½Ø»óµµ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½, Pixel Format ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½, Flag ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		m_swapChain->ResizeBuffers(
-			0, // ÇöÀç °³¼ö À¯Áö
-			// ÇØ»óµµ º¯°æ
+			0, // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+			// ï¿½Ø»ï¿½ ï¿½ï¿½ï¿½ï¿½
 			UINT(m_screenWidth),
 			UINT(m_screenHeight),
-			DXGI_FORMAT_UNKNOWN, // ÇöÀç Æ÷¸Ë À¯Áö
+			DXGI_FORMAT_UNKNOWN, // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			0);
-		// ÇØ»óµµ°¡ ¹Ù²î¸ç SwapChainÀ» ´Ù½Ã ¸¸µé¾ú±â ¶§¹®¿¡ ´Ù½Ã RTV¿Í DepthStencilBuffer »ý¼º
-		// ·»´õ¸µµÉ È­¸éÀÇ ÇØ»óµµ°¡ ¹Ù²î¸é  PixelÀÇ °³¼ö ÀÚÃ¼°¡ ¹Ù²î´Â °ÍÀÌ±â ¶§¹®
+		// ï¿½Ø»óµµ°ï¿½ ï¿½Ù²ï¿½ï¿½ SwapChainï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ RTVï¿½ï¿½ DepthStencilBuffer ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ°ï¿½ ï¿½Ù²ï¿½ï¿½  Pixelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ ï¿½ï¿½ï¿½Ì±ï¿½ ï¿½ï¿½ï¿½ï¿½
 		CreateBuffers();
 		CreateDepthStencilBuffer();
-		// ÇØ»óµµ¿¡ ¸Â´Â Viewport ¼³Á¤
+		// ï¿½Ø»óµµ¿ï¿½ ï¿½Â´ï¿½ Viewport ï¿½ï¿½ï¿½ï¿½
 		SetViewport();
 	}
 
@@ -351,7 +362,7 @@ namespace DE {
 		m_context->CSSetShader(NULL, 0, 0);
 		m_context->IASetInputLayout(pso.inputLayout.Get());
 		m_context->RSSetState(pso.rasterizerState.Get());
-		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // ¸¶Áö¸· parameter´Â multi-sampleÀ» »ç¿ëÇÒ¶§ »ç¿ë
+		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ parameterï¿½ï¿½ multi-sampleï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½ ï¿½ï¿½ï¿½
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
 	}
@@ -379,7 +390,7 @@ namespace DE {
 		{
 			m_context->CopyResource(m_indexTempTexture.Get(), m_indexTexture.Get());
 
-			// ¸¶¿ì½º Ä¿¼­ÀÇ ÇÈ¼¿ ÇÑ°³¸¸ º¹»ç Staging Texture·Î º¹»ç
+			// ï¿½ï¿½ï¿½ì½º Ä¿ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½Ñ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Staging Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			D3D11_BOX box;
 			box.left = mouseX;
 			box.right = mouseX + 1;
@@ -391,11 +402,11 @@ namespace DE {
 				m_indexTempTexture.Get(), 0, &box);
 
 
-			// GPU¿¡¼­ CPU·Î µ¥ÀÌÅÍ º¹»ç
+			// GPUï¿½ï¿½ï¿½ï¿½ CPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			D3D11_MAPPED_SUBRESOURCE ms;
 			m_context->Map(m_indexStagingTexture.Get(), NULL, D3D11_MAP_READ, NULL,
 				&ms);
-			// ÇÈ¼¿ ÇÏ³ªÀÇ °ª¸¸ º¹»ç
+			// ï¿½È¼ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			memcpy(dest, ms.pData, sizeof(uint8_t) * 4);
 			m_context->Unmap(m_indexStagingTexture.Get(), NULL);
 
@@ -410,12 +421,12 @@ namespace DE {
 
 	void RenderBase::SetShadowViewport(float width, float height)
 	{
-		// Shadow Mapping¿¡ ¸Â´Â Viewport¸¦ ¼³Á¤
+		// Shadow Mappingï¿½ï¿½ ï¿½Â´ï¿½ Viewportï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		D3D11_VIEWPORT shadowViewport;
 		ZeroMemory(&shadowViewport, sizeof(shadowViewport));
 		shadowViewport.TopLeftX = 0;
 		shadowViewport.TopLeftY = 0;
-		// Shadow MapÀ¸·Î »ç¿ëÇÒ Depth BufferÀÇ ÇØ»óµµ¸¦ µû·Î ¼³Á¤ÇØÁáÀ½
+		// Shadow Mapï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Depth Bufferï¿½ï¿½ ï¿½Ø»óµµ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		shadowViewport.Width = width;
 		shadowViewport.Height = height;
 		shadowViewport.MinDepth = 0.f;
@@ -439,7 +450,7 @@ namespace DE {
 	{
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		// RTS »ý·« °¡´É
+		// RTS ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		context->OMSetRenderTargets(0, NULL, m_shadowDSVs[idx].Get());
 		context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
 			D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -465,9 +476,37 @@ namespace DE {
 		m_context->OMSetRenderTargets(1, m_lowResParticleTexture.GetAddressOfRTV(), m_lowResDSV.Get());
 	}
 
+	void RenderBase::CompositeLowResParticles()
+	{
+		// Set additive blend PSO for compositing
+		SetPipelineState(graphicsCommon.postProcess.particleCompositePSO);
+
+		// Full-res viewport
+		m_context->RSSetViewports(1, &m_screenViewport);
+
+		// Render to floatBuffer only (no depth test needed)
+		m_context->OMSetRenderTargets(1, m_floatBuffer.GetAddressOfRTV(), nullptr);
+
+		// Set linearClamp sampler at s0 for bilinear upscale
+		m_context->PSSetSamplers(0, 1, graphicsCommon.linearClampSS.GetAddressOf());
+
+		// Bind low-res particle texture as input
+		m_context->PSSetShaderResources(0, 1, m_lowResParticleTexture.GetAddressOfSRV());
+
+		// Draw full-screen quad
+		m_context->IASetVertexBuffers(0, 1, m_compositeQuad->vertexBuffer.GetAddressOf(),
+			&m_compositeQuad->stride, &m_compositeQuad->offset);
+		m_context->IASetIndexBuffer(m_compositeQuad->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		m_context->DrawIndexed(m_compositeQuad->indexCount, 0, 0);
+
+		// Unbind SRV to prevent resource hazard
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+		m_context->PSSetShaderResources(0, 1, &nullSRV);
+	}
+
 	void RenderBase::ClearStencilBuffer()
 	{
-		// Stencil¸¸ 0À¸·Î Clear(ÃÊ±âÈ­)
+		// Stencilï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ Clear(ï¿½Ê±ï¿½È­)
 		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 }

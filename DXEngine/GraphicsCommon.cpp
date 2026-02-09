@@ -199,6 +199,8 @@ namespace DE {
 		D3D11Utils::CreatePS(device, L"FogEffectPS.hlsl", fogPS);
 		// Halo
 		D3D11Utils::CreatePS(device, L"HaloPS.hlsl", haloPS);
+		// Particle Composite (low-res upscale)
+		D3D11Utils::CreatePS(device, L"ParticleCompositePS.hlsl", particleCompositePS);
 
 		// Billboard
 		std::vector<D3D11_INPUT_ELEMENT_DESC> billboardIEs = {
@@ -426,6 +428,11 @@ namespace DE {
 		postProcess.basicPSO.inputLayout = samplingIL;
 		postProcess.basicPSO.vertexShader = samplingVS;
 		postProcess.basicPSO.rasterizerState = postProcessRS;
+
+		// Particle Composite (low-res -> floatBuffer additive blend)
+		postProcess.particleCompositePSO = postProcess.basicPSO;
+		postProcess.particleCompositePSO.pixelShader = particleCompositePS;
+		postProcess.particleCompositePSO.blendState = accumulateBS;
 
 		// Billboard
 		billboard.solidPSO = basic.solidPSO;

@@ -827,6 +827,9 @@
     <FxCompile Include="CopyFilterPS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
+    <FxCompile Include="ParticleCompositePS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
     <FxCompile Include="DepthOnlyPS.hlsl">
       <Filter>Shaders\Depth</Filter>
     </FxCompile>
