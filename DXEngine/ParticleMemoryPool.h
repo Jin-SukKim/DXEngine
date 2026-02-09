@@ -93,7 +93,7 @@ public:
 	UINT GetBlockCount() const { return m_blockCount; }
 
 	// Debug
-	//  Getter ߰
+	//  Getter 
 	UINT GetTotalBlockCount() const { return m_blockCount; }
 	UINT GetBlockSize() const { return m_blockSize; }
 
@@ -102,23 +102,23 @@ public:
 		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
 	}
 
-	// ü/ Emitter 
+	// / Emitter 
 	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
 	UINT GetUsedEmitterSlots() const {
 		return (UINT)std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true);
 	}
 
-	// ü/ System 
+	// / System 
 	UINT GetTotalSystemSlots() const { return m_maxSystems; }
 	UINT GetUsedSystemSlots() const {
 		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
 	}
 
-	// ðȭ  ̺ ü   ȯ (const)
+	//   ̺     (const)
 	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
 	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
 
-	// ParticleMemoryPool.h ߰
+	// ParticleMemoryPool.h 
 	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
 	void UpdateBlockTable(const std::vector<PoolHandle>& activeHandles);
 	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
@@ -126,7 +126,7 @@ public:
 
 	void SyncReadOffset(UINT slotIndex);
 
-	// public  Լ ߰
+	// public   
 	float GetFragmentationRatio() const;
 
 private:

@@ -71,7 +71,7 @@ namespace DE {
 		UINT LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos);
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
-		// յ SpawnPos 
+		//  SpawnPos 
 		void SetSpawnPosInfo(UINT offset) { m_spawnPosPoolOffset = offset; }
 		UINT GetSpawnPosOffset() const { return m_spawnPosPoolOffset; }
 		

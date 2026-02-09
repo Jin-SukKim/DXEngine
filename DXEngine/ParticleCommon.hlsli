@@ -145,8 +145,8 @@ struct ParticleConsts
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // յ SpawnPosition 
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // յ SpawnPosition 
+StructuredBuffer<float3> spawnPositions : register(t10); //  SpawnPosition 
+StructuredBuffer<EmitterID> emitterIDs : register(t11); //  SpawnPosition 
 
 cbuffer ParticleMeshConsts : register(b6)
 {

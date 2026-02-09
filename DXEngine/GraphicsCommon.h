@@ -85,14 +85,14 @@ namespace DE {
 		// front and back (cull-none)
 		ComPtr<ID3D11RasterizerState> solidBothRS; 
 		// Counter-Clockwise FrontFace  Ǿ  
-		ComPtr<ID3D11RasterizerState> solidCcwRS; // index ݽð   
+		ComPtr<ID3D11RasterizerState> solidCcwRS; // index ݽ   
 		ComPtr<ID3D11RasterizerState> wireCcwRS; 
 
 		// Depth Stencil State
 
 		// Ϲ(Default)
 		ComPtr<ID3D11DepthStencilState> drawDSS; 
-		//  ׸ Maskingϴ State
+		//   Maskingϴ State
 		ComPtr<ID3D11DepthStencilState> maskDSS;
 		// Stencil Buffer Masking    ִ DSS
 		ComPtr<ID3D11DepthStencilState> drawMaskedDSS; 
@@ -158,7 +158,7 @@ namespace DE {
 		ComPtr<ID3D11GeometryShader> particleGS;
 		ComPtr<ID3D11PixelShader> particlePS;
 		ComPtr<ID3D11PixelShader> particlePbrPS;
-		ComPtr<ID3D11BlendState> accumulateBS; //   ϸ鼭 
+		ComPtr<ID3D11BlendState> accumulateBS; //   鼭 
 		ComPtr<ID3D11BlendState> alphaBS; 
 		ComPtr<ID3D11DepthStencilState> particleDDS;
 

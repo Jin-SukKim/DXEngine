@@ -38,10 +38,10 @@ namespace DE {
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); }
 
-		//  EffectActor ߰
+		//  EffectActor 
 		template<class T = EffectActor>
 		T* SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos);
-		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); //  ߰
+		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); //  
 		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category);
 		bool ContainsEffect(EffectActor* effect) const;
 	protected:

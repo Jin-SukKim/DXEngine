@@ -14,7 +14,7 @@ void ParticleLoader::ApplyJsonTo<ParticleEmitter>(ParticleEmitter* target, const
 	target->ClearModules();
 	target->ClearSubEmitters();
 
-	// Spawn  bakedPath Ȯ (ParticleEmitter εϱ )
+	// Spawn  bakedPath  (ParticleEmitter ϱ )
 	if (jsonData.contains("Spawn") && jsonData["Spawn"].contains("bakedPath")) {
 		std::string bakedPath = jsonData["Spawn"]["bakedPath"];
 		target->SetBakedSpawnPath(bakedPath);

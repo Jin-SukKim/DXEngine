@@ -61,7 +61,7 @@ namespace DE {
 	{
 		// D3D11_DEPTH_STENCIL_DESC ɼ 
 		// https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_depth_stencil_desc
-		// StencilRead/WriteMask: ) uint8   Ʈ 
+		// StencilRead/WriteMask: ) uint8   
 
 		// D3D11_DEPTH_STENCILOP_DESC ɼ 
 		// https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ns-d3d11-d3d11_depth_stencilop_desc
@@ -79,7 +79,7 @@ namespace DE {
 		dsDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
 		// ⺻ DS Stencil ʿ
 		dsDesc.StencilEnable = false;
-		// Stencil Buffer 8bitε    bit 
+		// Stencil Buffer 8bit    bit 
 		dsDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
 		dsDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
 		// ո鿡 ؼ  ۵ 
@@ -87,10 +87,10 @@ namespace DE {
 		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 		// StencilDepthFailOp Stencil Pass, Depth Fail 
 		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-		// PassOP Stencil/Depth Test   passϸ  Operation  
+		// PassOP Stencil/Depth Test   pass  Operation  
 		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		// ޸鿡   ۵  (޸鵵 ׸ )
+		// ޸鿡   ۵  (޸鵵  )
 		dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
@@ -98,9 +98,9 @@ namespace DE {
 
 		ThrowIfFailed(device->CreateDepthStencilState(&dsDesc, drawDSS.GetAddressOf()));
 	
-		// Stencil 1 ǥִ DSS (1 ƴ ٸ ڷε ǥ  )
-		dsDesc.DepthEnable = true; // ̹ ׷ ü 
-		// ̹ ׷ ü Depth ϱ  Depth Buffer write ʰ 
+		// Stencil 1 ǥִ DSS (1 ƴ ٸ ڷ ǥ  )
+		dsDesc.DepthEnable = true; // ̹ ׷  
+		// ̹ ׷  Depth ϱ  Depth Buffer write ʰ 
 		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
 		// Stencil ʼ
@@ -111,19 +111,19 @@ namespace DE {
 		// ո鿡 ؼ  ۵ 
 		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-		// ü  ʴ ſ κи Stencil Buffer  ȯ
+		//   ʴ ſ κи Stencil Buffer  
 		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE; 
-		// ſ ü ؼ Stencil test 
+		// ſ  ؼ Stencil test 
 		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 		ThrowIfFailed(device->CreateDepthStencilState(&dsDesc, maskDSS.GetAddressOf()));
 
-		// Stencil 1 ǥ 쿡"" ׸ DSS 
-		// ( ٸ ڷ Maskingߴٸ ϴ Masking ´ ڸ  ϸ )
-		dsDesc.DepthEnable = true; // ſ  ٽ ׸ ʿ
+		// Stencil 1 ǥ 쿡""  DSS 
+		// ( ٸ ڷ Maskingߴٸ ϴ Masking ´ ڸ   )
+		dsDesc.DepthEnable = true; // ſ  ٽ  ʿ
 		dsDesc.StencilEnable = true; // Stencil Buffer 
 		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // Masking κ ׷ ϴ Depth Buffer 
-		// ſ￡ ݻ  ׸  ̹Ƿ ſﺸ  κи 
+		// ſ￡ ݻ    ̹Ƿ ſﺸ  κи 
 		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // <- 
 		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
@@ -259,7 +259,7 @@ namespace DE {
 		device->CreateSamplerState(&sampDesc, linearClampSS.GetAddressOf());
 		
 		// shadowPointSS
-		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER; // ڸ Ѿ ׳ ū z ȯ
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER; // ڸ Ѿ ׳ ū z 
 		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		// ڸ    ̸ 
@@ -287,26 +287,26 @@ namespace DE {
 	
 	void GraphicsCommon::initBlendStates(ComPtr<ID3D11Device>& device)
 	{
-		// ̹ ׷ִ ȭ   
+		// ̹ ׷ִ    
 		// Dest: ̹ ׷ ִ  ǹ
 		// Src: ȼ ̴   ǹ
 		// mirror blend Alpha Blending  (  ϴ , Alpha, ֱ)
 		D3D11_BLEND_DESC mirrorBlendDesc;
 		ZeroMemory(&mirrorBlendDesc, sizeof(mirrorBlendDesc));
 		mirrorBlendDesc.AlphaToCoverageEnable = true; // MSAA
-		mirrorBlendDesc.IndependentBlendEnable = false; //  RenderTarget  Ϸ True 
+		mirrorBlendDesc.IndependentBlendEnable = false; //  RenderTarget   True 
 		//  RenderTarget ؼ  (ִ 8)
 		// 0 RenderTarget   ( 1 picking  Index Render Target )
 		mirrorBlendDesc.RenderTarget[0].BlendEnable = true; 
 		//  Src, Dest     ġ 1 Ǵ  
 		// INV 1 ⸦   ǹ (1 - blendFactor)
-		mirrorBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_INV_BLEND_FACTOR; // ſ ü 
+		mirrorBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_INV_BLEND_FACTOR; // ſ  
 		// ̰ blendFactor 
 		mirrorBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_BLEND_FACTOR; // ſ￡ ݻ 
-		// D3D11_BLEND_OP_ADD Linear Interpolation  ϸ  
+		// D3D11_BLEND_OP_ADD Linear Interpolation    
 		mirrorBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD; 
 
-		// Alpha    ( ü Ǿ ִ  ߿ϰ )
+		// Alpha    (  Ǿ ִ  ߿ϰ )
 		mirrorBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 		mirrorBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 		mirrorBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -388,7 +388,7 @@ namespace DE {
 		// ݻǸ Index Winding ݴ밡 
 		mirror.reflectSolidPSO = basic.solidPSO;
 		mirror.reflectSolidPSO.depthStencilState = drawMaskedDSS; // Masking Stencil Buffer ġ 
-		mirror.reflectSolidPSO.rasterizerState = solidCcwRS; // ݻǷ FrontFace ݽð 
+		mirror.reflectSolidPSO.rasterizerState = solidCcwRS; // ݻǷ FrontFace ݽ 
 		mirror.reflectSolidPSO.stencilRef = 1; // Stencil Buffer 1 Masking κи 
 
 		mirror.reflectWirePSO = mirror.reflectSolidPSO;
@@ -404,7 +404,7 @@ namespace DE {
 		mirror.reflectSkyboxWirePSO.rasterizerState = wireCcwRS;
 		mirror.reflectSkyboxWirePSO.stencilRef = 1;
 
-		// 1 Masking Mirror κи BlendState Ȱؼ ׷ֱ
+		// 1 Masking Mirror κи BlendState ؼ ׷ֱ
 		mirror.mirrorBlendSolidPSO = basic.solidPSO;
 		mirror.mirrorBlendSolidPSO.blendState = mirrorBS;
 		mirror.mirrorBlendSolidPSO.depthStencilState = drawMaskedDSS;

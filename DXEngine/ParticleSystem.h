@@ -20,7 +20,7 @@ namespace DE {
 		std::vector<EmitterID> emitterIDs;
 
 		// Baked/Custom 
-		std::vector<Vector3> spawnPositions;  // յ SpawnPosition
+		std::vector<Vector3> spawnPositions;  //  SpawnPosition
 		UINT totalSpawnPosCount = 0;          //  SpawnPosition 
 	};
 
@@ -56,13 +56,11 @@ namespace DE {
 			ParticleEmitter* emitter,
 			ParticleInitializer& initialData);
 
-		// [ Լ]
 		void Play();
 		void Pause();
 		void Stop();
 		void Restart();
 
-		// [Ӽ ]
 		void SetLooping(bool loop) { m_looping = loop; }
 		void SetDuration(float duration) { m_duration = duration; }
 		void SetPlayRate(float rate) { m_playRate = rate; }
@@ -123,7 +121,7 @@ namespace DE {
 
 		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
 
-		// SubEmitter ó (ܼȭ)
+		// SubEmitter  ()
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
 			ParticleInitializer& initialData, std::set<std::wstring>& processedPaths);
@@ -145,15 +143,15 @@ namespace DE {
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 
-		// SubEmitters (̸ ε,  -> Emitter )
+		// SubEmitters Emitter )
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		//  Ȱȭ SubEmitter ͵
+		//   SubEmitter 
 		std::vector<ParticleEmitter*> m_activeSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
 
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
-		ConstantBuffer<ParticleMeshConsts> m_meshConsts;
+		ParticleMeshConsts m_meshConsts;
 
 		// Mesh 
 		StructuredBuffer<Vector3> m_meshVertex;
@@ -163,13 +161,13 @@ namespace DE {
 
 		PoolHandle m_poolHandle;
 
-		// ƼŬ  ( ۸)
+		// 
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		// յ SpawnPosition 
+		//  SpawnPosition 
 		UINT m_currentSpawnPosOffset = 0;
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 

@@ -97,13 +97,13 @@ namespace DE {
 		if (reqEmitterCount >= m_emitterSlotTable.size())
 			return handle;
 
-		// 1. System Slot Ҵ
+		// 1. System Slot 
 		handle.systemSlot = AllocateSystemSlot();
 		if (handle.systemSlot == UINT_MAX) {
 			return handle;
 		}
 
-		// 2. Particle Block Ҵ
+		// 2. Particle Block 
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
 		UINT foundBlock = UINT_MAX;
 		UINT consecutive = 0;
@@ -127,7 +127,7 @@ namespace DE {
 			foundBlock = UINT_MAX;
 		}
 
-		// 3. Emitter Slot Ҵ
+		// 3. Emitter Slot 
 		std::vector<UINT> IDs;
 
 		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
@@ -139,7 +139,7 @@ namespace DE {
 			}
 		}
 
-		// 4. SpawnPosition Block Ҵ (reqSpawnPosCount > 0 )
+		// 4. SpawnPosition Block  (reqSpawnPosCount > 0 )
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
 		
@@ -165,23 +165,23 @@ namespace DE {
 			}
 		}
 
-		// Ҵ   Ȯ
+		//    
 		bool particleOk = (foundBlock != UINT_MAX);
 		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
 		if (particleOk && emitterOk && spawnPosOk) {
-			// Particle blocks ŷ
+			// Particle blocks 
 			for (UINT i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
 
 			m_fragmentationDirty = true;  // Invalidate cache
 
-			// Emitter slots ŷ
+			// Emitter slots 
 			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[IDs[i]] = true;
 
-			// SpawnPos blocks ŷ
+			// SpawnPos blocks 
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
@@ -196,7 +196,7 @@ namespace DE {
 			}
 		}
 		else {
-			// Ҵ   System Slot 
+			//    System Slot 
 			FreeSystemSlot(handle.systemSlot);
 			handle.systemSlot = UINT_MAX;
 		}
@@ -326,7 +326,7 @@ namespace DE {
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// ߿: CPU  ҽ ġ iŭ ̵Ѿ 
+			// ߿: CPU  ҽ ġ i ̵Ѿ 
 			const void* pSrcData = data.data() + i;
 
 			context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, pSrcData, 0, 0);
@@ -448,6 +448,7 @@ namespace DE {
 		if (systemIndex >= m_maxSystems) return;
 		
 		m_meshConstsBuffer.SetCpuData(m_meshConstsCPU[systemIndex]);
+		m_meshConstsBuffer.Upload();
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
@@ -459,14 +460,14 @@ namespace DE {
 	    std::vector<UINT> newOffsets;
 	    newOffsets.reserve(activeHandles.size());
 	    
-	    //  ̺ ʱȭ
-	    std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
+	    //  ̺ 
+		std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
 	    
 	    UINT currentBlock = 0;
 	    for (const auto& handle : activeHandles) {
 	        newOffsets.push_back(currentBlock * m_blockSize);
 
-	        //  ̺ Ʈ
+	        //  ̺
 	        for (UINT i = 0; i < handle.blockCount; ++i) {
 	            m_particleBlockTable[currentBlock + i] = true;
 	        }

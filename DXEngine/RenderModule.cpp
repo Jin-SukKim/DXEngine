@@ -176,7 +176,7 @@ namespace DE {
 		if (!model)
 			return;
 
-		// ParticleEmitter ޽ Args  ʱȭ
+		// ParticleEmitter ޽ Args  
 		auto& mesh = model->meshes[0];
 		ctx.consts.render.indexCount = mesh.indexCount;
 	}

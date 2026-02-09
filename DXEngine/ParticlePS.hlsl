@@ -29,20 +29,20 @@ float4 SampleParticleTexture(float3 uvw)
         // Albedo ø
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
 
-        // Emissive ߰ (  - ƼŬ ַ Emissive Ӽ ϹǷ ִ 찡 )
+        // Emissive  (  -  ַ Emissive  ϹǷ ִ 찡 )
         // float4 emissive = materialEmissiveMap.SampleLevel(samp, uvw.xy, lod);
         // color.rgb += emissive.rgb; 
     }
     // [Mode 1: Single Texture]
     else if (render.textureMode == 1)
     {
-        //  ؽó ø (uvw.z ε )
+        //  ؽ ø (uvw.z  )
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
     }
     // [Mode 2: Texture Array (Default)]
     else
     {
-        // ؽó 迭 ø (uvw.z = Array Index)
+        // ؽ 迭 ø (uvw.z = Array Index)
         color = particleTex.Sample(linearClampSampler, uvw);
     }
 
@@ -61,7 +61,7 @@ float4 SpriteTexture(float lifeRatio, float2 uv) {
         uint col = currentFrame % width;
         uint row = currentFrame / width;
 
-        float2 uvSize = 1.f / render.frameTiles; // Tile 1ĭ ũ
+        float2 uvSize = 1.f / render.frameTiles; // Tile 1ĭ 
 
         uv = (uv + float2(col, row)) * uvSize;
     }
@@ -76,7 +76,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
     RenderConsts render = consts[emitterID].render;
     bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
-    // Case 1: ؽó ִ  (Sprite / Animation)
+    // Case 1: ؽ ִ  (Sprite / Animation)
     // --------------------------------------------------------
     if (hasTexture)
     {
@@ -87,11 +87,11 @@ float4 main(ParticlePSInput input) : SV_TARGET
         // Alpha Blend가 자동으로 투명도 처리
     }
     // --------------------------------------------------------
-    // Case 2: ؽó   (⺻  Glow)
+    // Case 2: ؽ   (⺻  Glow)
     // --------------------------------------------------------
     else
     {
-        // ؽó     ׸ϴ.
+        // ؽ     ϴ.
         float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
 

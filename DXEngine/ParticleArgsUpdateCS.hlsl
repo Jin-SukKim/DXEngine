@@ -1,6 +1,6 @@
 #include "ParticleCommon.hlsli"
 
-// ε  (C++ ڵ  )
+//   (C++ ڵ  )
 RWBuffer<uint> dispatchArgs : register(u0); // per-emitter (DispatchIndirect)
 RWBuffer<uint> batchDispatchArgs : register(u1); // 배치 dispatch용
 
