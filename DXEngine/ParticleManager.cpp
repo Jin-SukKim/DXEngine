@@ -752,8 +752,7 @@ namespace DE {
 
 			float priority = CalculatePriority(system, cameraPos, frustum);
 
-			if (particleCount >= system->GetTotalParticleCount() 
-				&& priority < lowestPriority)
+			if (priority < lowestPriority)
 			{
 				lowestPriority = priority;
 				lowestPrioritySystem = system;
