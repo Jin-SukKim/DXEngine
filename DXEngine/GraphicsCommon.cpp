@@ -263,7 +263,7 @@ namespace DE {
 		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 		// ڸ    ̸ 
-		// (Shaow Map ī޶    ֱ )
+		// (Shaow Map ޶    ֱ )
 		sampDesc.BorderColor[0] = 1.0f; // ū Z
 		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 		device->CreateSamplerState(&sampDesc, shadowPointSS.GetAddressOf());

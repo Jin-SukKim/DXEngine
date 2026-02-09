@@ -68,8 +68,6 @@ namespace DE {
 		void SetTargetMesh(const int& modelIdx);
 
 		// Mesh  
-		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
-		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
 		UINT GetVertexCount() const { return m_vertexCount; }
 		UINT GetIndexCount() const { return m_indexCount; }
 
@@ -87,7 +85,6 @@ namespace DE {
 		// RenderModule 타입 확인 (렌더링 순서 최적화용)
 		bool HasMeshRenderModule() const;
 		bool HasBillboardRenderModule() const;
-
 
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
 		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 20; } // DrawIndexedInstancedArgs (5 * 4 bytes)
@@ -121,7 +118,7 @@ namespace DE {
 
 		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
 
-		// SubEmitter  ()
+		// SubEmitter
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
 			ParticleInitializer& initialData, std::set<std::wstring>& processedPaths);
@@ -143,7 +140,7 @@ namespace DE {
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 
-		// SubEmitters Emitter )
+		// SubEmitters Emitter 
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
 		//   SubEmitter 
 		std::vector<ParticleEmitter*> m_activeSubEmitters;
@@ -154,14 +151,12 @@ namespace DE {
 		ParticleMeshConsts m_meshConsts;
 
 		// Mesh 
-		StructuredBuffer<Vector3> m_meshVertex;
-		StructuredBuffer<uint32_t> m_meshIndices;
+		UINT m_modelIdx = UINT_MAX;
 		UINT m_vertexCount = 0;
 		UINT m_indexCount = 0;
 
 		PoolHandle m_poolHandle;
 
-		// 
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;

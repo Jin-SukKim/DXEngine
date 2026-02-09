@@ -97,7 +97,7 @@ public:
 	UINT GetTotalBlockCount() const { return m_blockCount; }
 	UINT GetBlockSize() const { return m_blockSize; }
 
-	//     īƮ
+	//     
 	UINT GetUsedBlockCount() const {
 		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
 	}
@@ -114,7 +114,6 @@ public:
 		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
 	}
 
-	//   ̺     (const)
 	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
 	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh2.h"
 #include "MeshData.h"
-
+#include "StructuredBuffer.h"
 namespace DE {
 
 struct Model {
@@ -19,8 +19,11 @@ public:
 		return instance;
 	}
 
+	void Initialize();
 	int LoadModel(const std::string& name, const std::string& basePath = "", bool isGLTF = false);
 	int LoadModel(const std::string& name, const MeshData& meshData);
+
+	void BindModelMesh(int index);
 
 	Model* GetModel(int index);
 
@@ -32,6 +35,9 @@ private:
 	std::unordered_map<std::string, int> m_pathToIdx;
 	std::vector<std::unique_ptr<Model>> m_allModels;
 	std::string presetPath = "..\\Assets\\Models\\";
+
+	StructuredBuffer<Vector3> m_meshVertex;
+	StructuredBuffer<uint32_t> m_meshIndices;
 };
 
 }

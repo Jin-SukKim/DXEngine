@@ -142,8 +142,7 @@ namespace DE {
 		std::vector<ParticleSystem*> m_activeSystems[2];
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
-
-		//   
+ 
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
 

@@ -48,6 +48,7 @@ namespace DE {
 		, m_basePriority(other.m_basePriority)
 		, m_poolHandle(other.m_poolHandle)
 		, m_meshConsts(other.m_meshConsts)
+		, m_modelIdx(other.m_modelIdx)
 	{
 		// Main Emitter 
 		for (const auto& emitter : other.m_emitters) {
@@ -194,7 +195,7 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
-		// Main Emitter OnSpawn (SubEmitter ̺Ʈ ߻  )
+		// Main Emitter OnSpawn (SubEmitter ̺ ߻  )
 		for (auto& emitter : m_emitters) {
 			emitter->OnSpawn();
 		}
@@ -216,8 +217,7 @@ namespace DE {
 		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		if (m_vertexCount && m_indexCount) {
-			ID3D11ShaderResourceView* srvs[] = { m_meshVertex.GetSRV(), m_meshIndices.GetSRV() };
-			context->CSSetShaderResources(2, 2, srvs);
+			ModelManager::Get().BindModelMesh(m_modelIdx);
 		}
 
 		// PreUpdate (Main + Sub)
@@ -322,7 +322,6 @@ namespace DE {
 			ParticleEmitter* subEmitter = it->second.get();
 			Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
 
-			//
 			auto isMatch = [subEmitter](const auto& p) { return p.first == subEmitter; };
 			bool alreadyPending = std::ranges::any_of(m_pendingSubEmitters, isMatch);
 			bool alreadyActive = std::ranges::find(m_activeSubEmitters, subEmitter) != m_activeSubEmitters.end();
@@ -453,21 +452,8 @@ namespace DE {
 		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
 		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
 
-		m_meshVertex.Initialize(device.Get(), m_vertexCount);
-		m_meshIndices.Initialize(device.Get(), m_indexCount);
-
-		std::vector<Vector3> vertices;
-		for (const auto& vertex : meshes.vertexCPU)
-			vertices.push_back(vertex.position);
-
-		m_meshVertex.SetData(vertices);
-		m_meshIndices.SetData(meshes.indexCPU);
-
 		m_meshConsts.vertexCount = m_vertexCount;
 		m_meshConsts.indexCount = m_indexCount;
-
-		m_meshVertex.Upload(context.Get());
-		m_meshIndices.Upload(context.Get());
 
 		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, m_meshConsts);
 	}
@@ -482,8 +468,10 @@ namespace DE {
 	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
 	{
 		m_owner = owner;
-		if (modelIdx >= 0)
+		if (modelIdx >= 0) {
 			SetTargetMesh(modelIdx);
+			m_modelIdx = modelIdx;
+		}
 		UpdateTransform();
 	}
 

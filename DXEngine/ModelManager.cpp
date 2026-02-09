@@ -4,6 +4,13 @@
 #include "MaterialSystem.h"
 
 namespace DE {
+	void ModelManager::Initialize()
+	{
+		ID3D11Device* device = GET_SINGLE(RenderBase)->GetDevice().Get();
+		m_meshVertex.InitializeDynamicSRV(device, 1000000);
+		m_meshIndices.InitializeDynamicSRV(device, 1000000);
+	}
+
 	int ModelManager::LoadModel(const std::string& name, const std::string& basePath, bool isGLTF)
 	{
 		// 상대 경로 조합 (예: "Models/Chair.obj")
@@ -47,6 +54,21 @@ namespace DE {
 		return index;
 	}
 
+	void ModelManager::BindModelMesh(int index)
+	{
+		Model* model = GetModel(index);
+		if (model) {
+			ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+			m_meshVertex.SetData(model->meshes[0].vertexPosCPU);
+			m_meshIndices.SetData(model->meshes[0].indexCPU);
+			m_meshVertex.Upload(context);
+			m_meshIndices.Upload(context);
+
+			ID3D11ShaderResourceView* srvs[] = { m_meshVertex.GetSRV(), m_meshIndices.GetSRV() };
+			context->CSSetShaderResources(2, 2, srvs);
+		}
+	}
+
 	Model* ModelManager::GetModel(int index)
 	{
 		if (index < 0 || index >= m_allModels.size())
@@ -80,6 +102,11 @@ namespace DE {
 
 			newMesh.vertexCPU = meshData.vertices;
 			newMesh.indexCPU = meshData.indices;
+
+			std::vector<Vector3> vertices;
+			for (const auto& vertex : meshData.vertices)
+				vertices.push_back(vertex.position);
+			newMesh.vertexPosCPU = vertices;
 
 			newMesh.indexCount = UINT(meshData.indices.size());
 			newMesh.vertexCount = UINT(meshData.vertices.size());

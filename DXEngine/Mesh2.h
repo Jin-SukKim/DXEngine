@@ -7,6 +7,7 @@ namespace DE {
 		ComPtr<ID3D11Buffer> vertexBuffer;
 		ComPtr<ID3D11Buffer> indexBuffer;
 		std::vector<Vertex> vertexCPU;
+		std::vector<Vector3> vertexPosCPU;
 		std::vector<uint32_t> indexCPU;
 
 		UINT indexCount = 0;

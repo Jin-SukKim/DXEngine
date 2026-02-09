@@ -17,6 +17,7 @@
 #include "TextureManager.h"
 #include "MaterialSystem.h"
 #include "ParticleManager.h"
+#include "ModelManager.h"
 
 namespace DE {
 
@@ -75,6 +76,7 @@ namespace DE {
 		TextureManager::Get().Initialize();
 		MaterialSystem::Get().Initialize();
 		ParticleManager::Get().Initialize();
+		ModelManager::Get().Initialize();
 
 		// Create core actors
 		m_mainCamera = std::make_unique<CameraActor>(L"MainCamera");
@@ -152,7 +154,7 @@ namespace DE {
 
 	void Scene::InitializeInput()
 	{
-		// F Ű  ī޶ FPV  
+		// F Ű  ޶ FPV  
 		AppBase::GetInputManager().BindInputAction(m_fpv, InputState::Pressed, this, &Scene::EnableCameraFPV);
 	}
 
