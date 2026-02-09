@@ -557,7 +557,7 @@ namespace DE {
 		ParticleConsts& pConsts, 
 		EmitterID& eID)
 	{
-		eID.spawnPosOffset = UINT_MAX;  // ⺻: ̻
+		eID.spawnPosOffset = UINT_MAX;  // : ̻
 		
 		if (!emitter->GetBakedPath().empty()) {
 			auto it = m_spawnPosCache.find(emitter->GetBakedPath());

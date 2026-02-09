@@ -184,6 +184,14 @@ namespace DE {
 
 		// 이전 프레임 저장용
 		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
+
+		// Particle Low Res 용
+		m_lowResWidth = static_cast<int>(desc.Width * 0.5f);
+		m_lowResHeight = static_cast<int>(desc.Height * 0.5f);
+		desc.Width = m_lowResWidth;
+		desc.Height = m_lowResHeight;
+		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		D3D11Utils::CreateTexture(m_device, desc, m_lowResParticleTexture);
 	}
 
 	void RenderBase::SetViewport()
@@ -238,6 +246,13 @@ namespace DE {
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_depthOnlyBuffer.GetTexture(), &srvDesc, m_depthOnlyBuffer.GetAddressOfSRV()));
+
+		// Particle Overdraw 용
+		dsDesc.Width = m_lowResWidth;
+		dsDesc.Height = m_lowResHeight;
+		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_lowResDepth.GetAddressOfTexture()));
+		ThrowIfFailed(m_device->CreateDepthStencilView(m_lowResDepth.GetTexture(), &dsvDesc, m_lowResDSV.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateShaderResourceView(m_lowResDepth.GetTexture(), &srvDesc, m_lowResDepth.GetAddressOfSRV()));
 	}
 
 
@@ -428,6 +443,26 @@ namespace DE {
 		context->OMSetRenderTargets(0, NULL, m_shadowDSVs[idx].Get());
 		context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
 			D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+
+	void RenderBase::SetLowResRender()
+	{
+		ZeroMemory(&m_lowResViewport, sizeof(D3D11_VIEWPORT));
+		m_lowResViewport.TopLeftX = 0;
+		m_lowResViewport.TopLeftY = 0;
+		m_lowResViewport.Width = float(m_lowResWidth);
+		m_lowResViewport.Height = float(m_lowResHeight);
+		m_lowResViewport.MinDepth = 0.f;
+		m_lowResViewport.MaxDepth = 1.f;
+
+		m_context->RSSetViewports(1, &m_lowResViewport);
+
+		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+		m_context->ClearRenderTargetView(m_lowResParticleTexture.GetRTV(), clearColor);
+		m_context->ClearDepthStencilView(m_lowResDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+
+		// Multiple Render Targets
+		m_context->OMSetRenderTargets(1, m_lowResParticleTexture.GetAddressOfRTV(), m_lowResDSV.Get());
 	}
 
 	void RenderBase::ClearStencilBuffer()

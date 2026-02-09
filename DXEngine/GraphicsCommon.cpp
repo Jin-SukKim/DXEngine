@@ -69,7 +69,7 @@ namespace DE {
 		// StencilDepthFailOp : Stencil pass, Depth fail    
 		// StencilFailOp :   fail    
 
-		// ⺻ DSS
+		//  DSS
 		D3D11_DEPTH_STENCIL_DESC dsDesc;
 		ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
 		dsDesc.DepthEnable = true;
@@ -77,7 +77,7 @@ namespace DE {
 		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL;
 		// Depth   
 		dsDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
-		// ⺻ DS Stencil ʿ
+		//  DS Stencil ʿ
 		dsDesc.StencilEnable = false;
 		// Stencil Buffer 8bit    bit 
 		dsDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
@@ -144,7 +144,7 @@ namespace DE {
 	{
 		// InputLayouts
 
-		// Default ⺻ 
+		// Default  
 		std::vector<D3D11_INPUT_ELEMENT_DESC> basicIEs = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -238,7 +238,7 @@ namespace DE {
 	void GraphicsCommon::initSamplers(ComPtr<ID3D11Device>& device)
 	{
 		// Texture sampler 
-		// ⺻ Default
+		//  Default
 		D3D11_SAMPLER_DESC sampDesc;
 		ZeroMemory(&sampDesc, sizeof(sampDesc));
 		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // Linear Interpolation

@@ -148,7 +148,7 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
 
-		// ⺻  
+		//   
 		CopyBasicSettings(cloned.get());
 
 		// Billboard  
@@ -159,7 +159,7 @@ namespace DE {
 		cloned->m_frameTiles = this->m_frameTiles;
 		cloned->m_frameCount = this->m_frameCount;
 
-		// GPU ۴ ParticleEmitter 
+		// GPU  ParticleEmitter 
 
 		return cloned;
 	}
@@ -226,14 +226,14 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<MeshRenderModule>();
 
-		// ⺻  
+		//   
 		CopyBasicSettings(cloned.get());
 
 		// Mesh  
 		cloned->m_modelIdx = this->m_modelIdx;
 		cloned->m_meshCount = this->m_meshCount;
 
-		// GPU ۴ ParticleEmitter 
+		// GPU  ParticleEmitter 
 
 		return cloned;
 	}

@@ -57,6 +57,8 @@ namespace DE {
 		void SetShadowSRVs();
 		void SetShadowMap(int idx);
 
+		void SetLowResRender();
+
 		// 미리 설정해둔 Setting들
 		static GraphicsCommon graphicsCommon;
 		static ComputeCommon computeCommon;
@@ -114,5 +116,15 @@ namespace DE {
 		// 설정한 그림자 맵 해상도에 맞춰서 그림자맵용 viewport 설정
 		Texture2D m_shadowArrayBuffer; // light 개수만큼 shadow 맵 생성
 		std::vector<ComPtr<ID3D11DepthStencilView>> m_shadowDSVs;
+
+		// Particle 용
+		ComPtr<ID3D11DepthStencilView> m_lowResDSV;
+		Texture2D m_lowResDepth;
+
+		int m_lowResWidth = static_cast<int>(m_screenWidth * 0.5f);
+		int m_lowResHeight = static_cast<int>(m_screenHeight * 0.5f);
+		Texture2D m_lowResParticleTexture;
+
+		D3D11_VIEWPORT m_lowResViewport = D3D11_VIEWPORT();
 	};
 }

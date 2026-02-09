@@ -154,6 +154,7 @@ namespace DE {
 			}
 		}
 
+		GET_SINGLE(RenderBase)->SetLowResRender();
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		for (auto* system : m_activeSystems[1]) {
 			if (system) {
@@ -173,12 +174,61 @@ namespace DE {
 		}
 
 		m_memoryPool->UnbindRender();
+		GET_SINGLE(RenderBase)->SetViewport();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 
 		// [Added] Update Culling Stats
 		m_runtimeProfile.totalSystems = totalCount;
 		m_runtimeProfile.visibleSystems = visibleCount;
 		m_runtimeProfile.culledSystems = totalCount - visibleCount;
+	}
+
+	void ParticleManager::RenderDepth()
+	{
+		if (m_activeSystems[0].empty()) return;
+
+		// [Added] CPU Frustum Culling
+		// Projection 행렬로 view space frustum 생성
+		DirectX::BoundingFrustum frustum(m_proj);
+
+		// Extract camera position from view matrix (inverse translation)
+		Matrix invView = m_view.Invert();
+		Vector3 cameraPos(invView._41, invView._42, invView._43);
+
+		// Update spawn ratios for overdraw control before rendering
+		for (auto* system : m_activeSystems[0]) {
+			if (system) {
+				system->UpdateSpawnRatios(cameraPos);
+			}
+		}
+		for (auto* system : m_activeSystems[1]) {
+			if (system) {
+				system->UpdateSpawnRatios(cameraPos);
+			}
+		}
+
+		m_memoryPool->UploadFrameConsts();
+		m_memoryPool->BindRender();
+		m_memoryPool->UpdateRenderArgs();
+
+		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
+		for (auto* system : m_activeSystems[0]) {
+			if (system) {
+				// Frustum Culling Test (view space)
+				Vector3 posWorld = system->GetWorldPosition();
+				Vector3 posView = Vector3::Transform(posWorld, m_view);  // World -> View space
+				float radius = system->GetBoundingRadius();
+				DirectX::BoundingSphere sphere(posView, radius);
+
+				if (frustum.Intersects(sphere)) {
+					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					system->Render();
+				}
+			}
+		}
+
+		m_memoryPool->UnbindRender();
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
 	}
 
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)

@@ -142,7 +142,7 @@ namespace DE {
 
 		// SubEmitters Emitter 
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		//   SubEmitter 
+		// SubEmitter 
 		std::vector<ParticleEmitter*> m_activeSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
 
