@@ -51,6 +51,7 @@ namespace DE {
 		, m_initialSpawnPos(other.m_initialSpawnPos)
 		, m_ownerSystem(nullptr)
 		, m_emitterID(0)
+		, m_overdrawSettings(other.m_overdrawSettings)
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {

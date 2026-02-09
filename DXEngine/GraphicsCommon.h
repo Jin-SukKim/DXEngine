@@ -8,19 +8,19 @@ namespace DE {
 		void InitCommonStates(ComPtr<ID3D11Device>& device);
 
 	private:
-		// ���������� InitCommonStates()���� ���
+		//  InitCommonStates() 
 
-		// RasterizerStates ����
+		// RasterizerStates 
 		void initRasterizerStates(ComPtr<ID3D11Device>& device);
-		// Depth-Stencil State ����
+		// Depth-Stencil State 
 		void initDepthStencilStates(ComPtr<ID3D11Device>& device);
-		// InputLayout�� Shader ����
+		// InputLayout Shader 
 		void initShaders(ComPtr<ID3D11Device>& device);
-		// SamplerState ����
+		// SamplerState 
 		void initSamplers(ComPtr<ID3D11Device>& device);
-		// BlendState ����
+		// BlendState 
 		void initBlendStates(ComPtr<ID3D11Device>& device);
-		// GraphcisPSO ����
+		// GraphcisPSO 
 		void initPipelineStates(ComPtr<ID3D11Device>& device);
 
 	public:
@@ -66,7 +66,7 @@ namespace DE {
 		} mirror;
 
 		struct {
-			GraphicsPSO depthOnlyPSO; // Depth���� �����ϱ� ���� PSO
+			GraphicsPSO depthOnlyPSO; // Depth ϱ  PSO
 		} depth;
 
 		struct {
@@ -75,7 +75,7 @@ namespace DE {
 			GraphicsPSO billboardInstancedPSO; // GS 없는 인스턴싱 빌보드
 		} particle;
 
-		// Shader���� �������� ����� Sampler
+		// Shader   Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
 		// Rasterizer State (CCW : Counter-Clockwise)
@@ -84,17 +84,17 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> postProcessRS;
 		// front and back (cull-none)
 		ComPtr<ID3D11RasterizerState> solidBothRS; 
-		// Counter-Clockwise�� FrontFace ������ �Ǿ� ������ ������
-		ComPtr<ID3D11RasterizerState> solidCcwRS; // index�� �ݽð� ���� ������ ������
+		// Counter-Clockwise FrontFace  Ǿ  
+		ComPtr<ID3D11RasterizerState> solidCcwRS; // index ݽð   
 		ComPtr<ID3D11RasterizerState> wireCcwRS; 
 
 		// Depth Stencil State
 
-		// �Ϲ���(Default)
+		// Ϲ(Default)
 		ComPtr<ID3D11DepthStencilState> drawDSS; 
-		// ��� �׸��� Masking�ϴ� State
+		//  ׸ Maskingϴ State
 		ComPtr<ID3D11DepthStencilState> maskDSS;
-		// Stencil Buffer�� Masking�� ���� �������� �� �ִ� DSS
+		// Stencil Buffer Masking    ִ DSS
 		ComPtr<ID3D11DepthStencilState> drawMaskedDSS; 
 
 		// InputLayouts
@@ -115,7 +115,7 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> skyboxVS;
 		ComPtr<ID3D11PixelShader> skyboxPS;
 
-		// DepthStencilBuffer�� ����ϰ� ������ ���
+		// DepthStencilBuffer ϰ  
 		ComPtr<ID3D11VertexShader> depthOnlyVS; 
 		ComPtr<ID3D11PixelShader> depthOnlyPS;
 
@@ -148,8 +148,8 @@ namespace DE {
 		ComPtr<ID3D11SamplerState> shadowPointSS;
 		ComPtr<ID3D11SamplerState> shadowCompareSS;
 
-		// Blend States (���� �������� �� �� ���� ���ο� ���� ��� �������� �� ����ϴ� ���)
-		 // 2���� ���� Alpha(����)�� �����ִ� Alpha Blending
+		// Blend States (     ο     ϴ )
+		 // 2  Alpha() ִ Alpha Blending
 		ComPtr<ID3D11BlendState> mirrorBS;
 
 		// Particle System
@@ -158,7 +158,7 @@ namespace DE {
 		ComPtr<ID3D11GeometryShader> particleGS;
 		ComPtr<ID3D11PixelShader> particlePS;
 		ComPtr<ID3D11PixelShader> particlePbrPS;
-		ComPtr<ID3D11BlendState> accumulateBS; // ���� ���� ���ϸ鼭 ������
+		ComPtr<ID3D11BlendState> accumulateBS; //   ϸ鼭 
 		ComPtr<ID3D11BlendState> alphaBS; 
 		ComPtr<ID3D11DepthStencilState> particleDDS;
 

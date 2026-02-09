@@ -1,4 +1,4 @@
-// RenderModule.cpp (����)
+// RenderModule.cpp ()
 #include "pch.h"
 #include "RenderModule.h"
 #include "ParticleEmitter.h"
@@ -74,7 +74,6 @@ namespace DE {
 		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
-		consts.spawnRatio = 1.0f;
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -149,10 +148,10 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
 
-		// �⺻ ���� ����
+		// ⺻  
 		CopyBasicSettings(cloned.get());
 
-		// Billboard ���� ����
+		// Billboard  
 		cloned->m_textureMode = this->m_textureMode;
 		cloned->m_texturePath = this->m_texturePath;
 		cloned->m_textureIdx = this->m_textureIdx;
@@ -160,7 +159,7 @@ namespace DE {
 		cloned->m_frameTiles = this->m_frameTiles;
 		cloned->m_frameCount = this->m_frameCount;
 
-		// GPU ���۴� ParticleEmitter�� ����
+		// GPU ۴ ParticleEmitter 
 
 		return cloned;
 	}
@@ -177,10 +176,9 @@ namespace DE {
 		if (!model)
 			return;
 
-		// ParticleEmitter�� �޽� Args ���� �ʱ�ȭ
+		// ParticleEmitter ޽ Args  ʱȭ
 		auto& mesh = model->meshes[0];
 		ctx.consts.render.indexCount = mesh.indexCount;
-		ctx.consts.render.spawnRatio = 1.0f;
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)
@@ -228,14 +226,14 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<MeshRenderModule>();
 
-		// �⺻ ���� ����
+		// ⺻  
 		CopyBasicSettings(cloned.get());
 
-		// Mesh ���� ����
+		// Mesh  
 		cloned->m_modelIdx = this->m_modelIdx;
 		cloned->m_meshCount = this->m_meshCount;
 
-		// GPU ���۴� ParticleEmitter�� ����
+		// GPU ۴ ParticleEmitter 
 
 		return cloned;
 	}

@@ -54,18 +54,18 @@ namespace DE {
 		ground = AddObject<SquareActor>(L"Ground");
 
 		// 기존 Spawner는 잠시 꺼두거나 유지해도 됨 (여기선 유지)
-		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spanwer->SetScene(this);
-		m_spanwer->SetActorType<Firework>();
-		m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		m_spanwer->SetSpawnInterval(0.05f);
-		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(500);
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this);
+		//m_spanwer->SetActorType<Firework>();
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval);
+		//m_spanwer->SetSpawnInterval(0.05f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(500);
 
-		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
 
 		// m_test2는 시나리오 중간(15초)에 생성하기 위해 비워둠
@@ -98,8 +98,8 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -107,7 +107,7 @@ namespace DE {
 		Scene::Update(dt);
 		FileWatcher::Get().Update();
 
-		StressTest(dt);
+		//StressTest(dt);
 	}
 
 	void ParticleEditor::StressTest(const float& dt)

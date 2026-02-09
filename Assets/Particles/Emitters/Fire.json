@@ -34,8 +34,8 @@
     },
     "spawnLimiting": {
       "enabled": true,
-      "nearDistance": 5.0,
-      "farDistance": 15.0,
+      "nearDistance": 0.5,
+      "farDistance": 2.0,
       "nearSpawnRatio": 0.5
     }
   }

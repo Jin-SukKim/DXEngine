@@ -1,27 +1,27 @@
 #include "ParticleCommon.hlsli"
 
-// ���ε� ���� (C++ �ڵ�� ����� ��)
-RWBuffer<uint> billboardArgs : register(u0); // Render�� (DrawInstancedIndirect) <--- �߰�!
+// ε  (C++ ڵ  )
+RWBuffer<uint> billboardArgs : register(u0); // Render (DrawInstancedIndirect) <--- ߰!
 RWBuffer<uint> meshArgs : register(u1);
 
-[numthreads(256, 1, 1)] // 1,1,1�� ��ȿ�����̹Ƿ� 256 ����
+[numthreads(256, 1, 1)] // 1,1,1 ȿ̹Ƿ 256 
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    // [���� 1] emitterID(���) ��� ������ ID ���
+    // [ 1] emitterID()   ID 
     uint myEmitterID = DTid.x;
 
-    // ���� Emitter�� ��ƼŬ ���� ��������
+    //  Emitter ƼŬ  
     uint count = readCount[myEmitterID];
 
     // Apply spawn ratio for distance-based overdraw control
-    float ratio = consts[myEmitterID].render.spawnRatio;
+    float ratio = frameConsts[myEmitterID].spawnRatio;
     uint adjustedCount = uint(float(count) * ratio);
 
     // --------------------------------------------------------
-    // 2. Billboard Args ���� (Render �ܰ��) -> [�̰� ��� 1���� ����]
+    // 2. Billboard Args  (Render ܰ) -> [̰  1 ]
     // --------------------------------------------------------
-    // DrawInstancedArgs ����ü: { VertexCount, InstanceCount, StartVertex, StartInstance }
-    // uint4 ����ü�̹Ƿ� stride = 4
+    // DrawInstancedArgs ü: { VertexCount, InstanceCount, StartVertex, StartInstance }
+    // uint4 ü̹Ƿ stride = 4
     uint drawIdx = myEmitterID * 5; // DrawIndexedInstancedArgs는 5개 필드
 
     // DrawIndexedInstancedArgs: { IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation }

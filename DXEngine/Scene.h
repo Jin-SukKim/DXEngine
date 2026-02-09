@@ -38,10 +38,10 @@ namespace DE {
 
 		CameraActor* GetMainCamera() { return m_mainCamera.get(); }
 
-		// ���� EffectActor �߰�
+		//  EffectActor ߰
 		template<class T = EffectActor>
 		T* SpawnEffect(const std::wstring& name, const std::wstring& presetPath, const Vector3& worldPos);
-		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); // ���� �߰�
+		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); //  ߰
 		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category);
 		bool ContainsEffect(EffectActor* effect) const;
 	protected:
@@ -104,13 +104,13 @@ namespace DE {
 		std::vector<std::unique_ptr<Actor>> m_lights;
 		std::vector<std::unique_ptr<Gui>> m_guis;
 
-		// Input - ��ư�� ���� ����
+		// Input - ư  
 		InputButton m_fButton = InputButton::F;
 		InputButton m_lButton = InputButton::LButton;
 		InputButton m_rButton = InputButton::RButton;
 		InputAxis m_xAxis = InputAxis::XAxis;
 		
-		// InputAction�� ���߿� ���� (��ư�� ����)
+		// InputAction ߿  (ư )
 		InputAction m_fpv;
 		InputAxisAction m_mouseClick;
 	};

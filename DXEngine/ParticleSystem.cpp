@@ -48,7 +48,7 @@ namespace DE {
 		, m_currentParticleOffset(0)
 		, m_basePriority(other.m_basePriority)
 	{
-		// Main Emitter ����
+		// Main Emitter 
 		for (const auto& emitter : other.m_emitters) {
 			if (emitter) {
 				m_emitters.push_back(std::make_unique<ParticleEmitter>(*emitter));
@@ -57,7 +57,7 @@ namespace DE {
 		m_meshConsts.Initialize();
 		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 
-		// SubEmitter ����
+		// SubEmitter 
 		for (const auto& [path, emitterPtr] : other.m_subEmitterPool) {
 			if (emitterPtr) {
 				m_subEmitterPool[path] = std::make_unique<ParticleEmitter>(*emitterPtr);
@@ -71,8 +71,8 @@ namespace DE {
 		m_currentParticleOffset = 0;
 		m_maxEmitters = 0;
 		m_currentEmitterIndex = 0;
-		m_currentSpawnPosOffset = 0;  // ���յ� offset
-		m_spawnPosCache.clear();      // ���յ� ĳ��
+		m_currentSpawnPosOffset = 0;  // յ offset
+		m_spawnPosCache.clear();      // յ ĳ
 		m_subEmitterPool.clear();
 		m_activeSubEmitters.clear();
 
@@ -94,13 +94,13 @@ namespace DE {
 	{
 		std::set<std::wstring> processedPaths;
 
-		// 1. Main Emitter ó�� ���� ����
+		// 1. Main Emitter ó  
 		for (auto& emitter : m_emitters) {
 			ProcessEmitter(emitter.get(), initialData);
 		}
 
 
-		// 2. SubEmitter ó�� ���� ���� (���Ⱑ ���� ���� ����)
+		// 2. SubEmitter ó   (Ⱑ   )
 		for (auto& emitter : m_emitters) {
 			LoadSubEmitters(emitter.get(), initialData, processedPaths);
 		}
@@ -129,7 +129,7 @@ namespace DE {
 			this->OnEmitterEvent(event, em);
 		});
 
-		// ���յ� SpawnPosition ó��
+		// յ SpawnPosition ó
 		RegisterSpawnPositions(emitter, initialData.spawnPositions, pConsts, eID);
 
 		UINT capacity = pfConsts.maxParticles;
@@ -149,20 +149,20 @@ namespace DE {
 		ParticleEmitter* emitter,
 		ParticleInitializer& initialData, std::set<std::wstring>& processedPaths)
 	{
-		// ���� ���� emitter�� SubEmitter ��ε��� ���� (iterator ��ȿȭ ����)
+		//   emitter SubEmitter ε  (iterator ȿȭ )
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
 		
 		for (const auto& sub : subEmittersCopy) {
 			ParticleEmitter* targetEmitter = nullptr;
 
-			// [Pool �˻�]
+			// [Pool ˻]
 			auto it = m_subEmitterPool.find(sub.emitterPath);
 			if (it != m_subEmitterPool.end()) {
-				// �� HIT: ���� ������ ���п� �̹� �޸𸮿� ������! (���� �ε� X)
+				//  HIT:   п ̹ ޸𸮿 ! ( ε X)
 				targetEmitter = it->second.get();
 			}
 			else {
-				// MISS: Prototype�� ó�� ������ ���� ����� ���� (���� �ε� O)
+				// MISS: Prototype ó     ( ε O)
 				auto loaded = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
 				if (!loaded) continue;
 
@@ -170,14 +170,14 @@ namespace DE {
 				m_subEmitterPool[sub.emitterPath] = std::move(loaded);
 			}
 
-			// [�ʱ�ȭ ����] Pool�� �־��� ���� �ε��ߵ�, �̹� �ý����� ���� �������� �Ҵ��ؾ� ��
+			// [ʱȭ ] Pool ־  εߵ, ̹ ý   Ҵؾ 
 			if (targetEmitter) {
 				ProcessEmitter(targetEmitter, initialData);
 
-				// ó�� �Ϸ� ǥ��
+				// ó Ϸ ǥ
 				processedPaths.insert(sub.emitterPath);
 
-				// ��� ȣ�� (�ڽ��� �ڽ� ó��)
+				//  ȣ (ڽ ڽ ó)
 				LoadSubEmitters(targetEmitter, initialData, processedPaths);
 			}
 		}
@@ -195,7 +195,7 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
-		// Main Emitter�� OnSpawn (SubEmitter�� �̺�Ʈ �߻� �� Ȱ��ȭ)
+		// Main Emitter OnSpawn (SubEmitter ̺Ʈ ߻  Ȱȭ)
 		for (auto& emitter : m_emitters) {
 			emitter->OnSpawn();
 		}
@@ -249,7 +249,7 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		// �Ϸ�� SubEmitter ����
+		// Ϸ SubEmitter 
 		std::erase_if(m_activeSubEmitters, [](auto* em) { return em->IsCompleted(); });
 
 		ActivateSubEmitters();
@@ -261,7 +261,7 @@ namespace DE {
 
 	void ParticleSystem::ActivateSubEmitters()
 	{
-		// ��� ���� SubEmitter Ȱ��ȭ
+		//   SubEmitter Ȱȭ
 		for (auto& [emitter, pos] : m_pendingSubEmitters) {
 			emitter->Reset();
 			emitter->SetSpawnOffset(pos);
@@ -280,7 +280,7 @@ namespace DE {
 
 		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
 
-		// Main Emitter ������
+		// Main Emitter 
 		for (auto& emitter : m_emitters)
 			emitter->Render({
 				m_billboardArgsBuffer->GetBuffer(),
@@ -293,7 +293,7 @@ namespace DE {
 					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 				});
 
-		// Active SubEmitter ������ (null üũ)
+		// Active SubEmitter  (null üũ)
 		for (auto* emitter : m_activeSubEmitters) {
 			if (emitter)
 				emitter->Render({
@@ -322,7 +322,7 @@ namespace DE {
 			ParticleEmitter* subEmitter = it->second.get();
 			Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
 
-			// �ߺ� üũ �� �߰�
+			// ߺ üũ  ߰
 			auto isMatch = [subEmitter](const auto& p) { return p.first == subEmitter; };
 			bool alreadyPending = std::ranges::any_of(m_pendingSubEmitters, isMatch);
 			bool alreadyActive = std::ranges::find(m_activeSubEmitters, subEmitter) != m_activeSubEmitters.end();
@@ -337,7 +337,7 @@ namespace DE {
 		if (!subEmitter)
 			return;
 
-		// �̹� Ȱ��ȭ�� ��� ��ŵ
+		// ̹ Ȱȭ  ŵ
 		for (auto* em : m_activeSubEmitters) {
 			if (em == subEmitter)
 				return;
@@ -502,7 +502,7 @@ namespace DE {
 
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
-		// Manager�� ���� ���ε�
+		// Manager  ε
 		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
 	}
 
@@ -543,7 +543,7 @@ namespace DE {
 		meshConsts.worldIT = meshConsts.world.Invert();
 		this->SetTransform(meshConsts);
 
-		// Pool�� ���ε� (System �ε��� ���)
+		// Pool ε (System ε )
 		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, meshConsts);
 	}
 
@@ -571,19 +571,19 @@ namespace DE {
 		ParticleConsts& pConsts, 
 		EmitterID& eID)
 	{
-		eID.spawnPosOffset = UINT_MAX;  // �⺻��: �̻��
+		eID.spawnPosOffset = UINT_MAX;  // ⺻: ̻
 		
 		if (!emitter->GetBakedPath().empty()) {
 			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
 			if (it != m_spawnPosCache.end()) {
-				// ĳ�� ��Ʈ
+				// ĳ Ʈ
 				emitter->SetSpawnPosInfo(it->second.first);
 				eID.spawnPosOffset = it->second.first;
 				pConsts.spawn.bakedCount = it->second.second;
 				return;
 			}
 
-			// ĳ�� �̽�
+			// ĳ ̽
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
 			
@@ -593,7 +593,7 @@ namespace DE {
 			m_spawnPosCache[emitter->GetBakedPath()] = { m_currentSpawnPosOffset, bakedCount };
 			m_currentSpawnPosOffset += bakedCount;
 		}
-		// Custom Position ó��
+		// Custom Position ó
 		else if (emitter->IsUsingCustomPositions()) {
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
@@ -652,12 +652,6 @@ namespace DE {
 				spawnRatio = settings.nearSpawnRatio + t * (1.0f - settings.nearSpawnRatio);
 			}
 
-			// Set spawn ratio in render module
-			auto* renderModule = emitter->GetModule<RenderModule>();
-			if (renderModule) {
-				renderModule->SetSpawnRatio(spawnRatio);
-			}
-
 			// Upload to GPU
 			UINT globalEmitterID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
 			memoryPool.UpdateRenderConst(globalEmitterID, spawnRatio);
@@ -674,11 +668,6 @@ namespace DE {
 				float t = (distance - settings.nearDistance) / (settings.farDistance - settings.nearDistance);
 				t = std::max(0.0f, std::min(1.0f, t));
 				spawnRatio = settings.nearSpawnRatio + t * (1.0f - settings.nearSpawnRatio);
-			}
-
-			auto* renderModule = emitter->GetModule<RenderModule>();
-			if (renderModule) {
-				renderModule->SetSpawnRatio(spawnRatio);
 			}
 
 			// Upload to GPU

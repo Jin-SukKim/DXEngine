@@ -26,23 +26,23 @@ float4 SampleParticleTexture(float3 uvw)
     // [Mode 0: Material]
     if (render.textureMode == 0)
     {
-        // Albedo ���ø�
+        // Albedo ø
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
 
-        // Emissive �߰� (���� ���� - ��ƼŬ�� �ַ� Emissive �Ӽ��� ���ϹǷ� �����ִ� ��찡 ����)
+        // Emissive ߰ (  - ƼŬ ַ Emissive Ӽ ϹǷ ִ 찡 )
         // float4 emissive = materialEmissiveMap.SampleLevel(samp, uvw.xy, lod);
         // color.rgb += emissive.rgb; 
     }
     // [Mode 1: Single Texture]
     else if (render.textureMode == 1)
     {
-        // ���� �ؽ�ó ���ø� (uvw.z �ε��� ����)
+        //  ؽó ø (uvw.z ε )
         color = albedoTex.Sample(linearClampSampler, uvw.xy);
     }
     // [Mode 2: Texture Array (Default)]
     else
     {
-        // �ؽ�ó �迭 ���ø� (uvw.z = Array Index)
+        // ؽó 迭 ø (uvw.z = Array Index)
         color = particleTex.Sample(linearClampSampler, uvw);
     }
 
@@ -52,16 +52,16 @@ float4 SampleParticleTexture(float3 uvw)
 float4 SpriteTexture(float lifeRatio, float2 uv) {
     RenderConsts render = consts[emitterID].render;
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
-        // ���� frame
+        //  frame
         uint currentFrame = floor(lifeRatio * render.frameCount);
         currentFrame = min(currentFrame, render.frameCount - 1);
 
-        // Sprite Sheet�� col, row
+        // Sprite Sheet col, row
         uint width = render.frameTiles.x;
         uint col = currentFrame % width;
         uint row = currentFrame / width;
 
-        float2 uvSize = 1.f / render.frameTiles; // Tile 1ĭ�� ũ��
+        float2 uvSize = 1.f / render.frameTiles; // Tile 1ĭ ũ
 
         uv = (uv + float2(col, row)) * uvSize;
     }
@@ -76,7 +76,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
     RenderConsts render = consts[emitterID].render;
     bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
     // --------------------------------------------------------
-    // Case 1: �ؽ�ó�� �ִ� ��� (Sprite / Animation)
+    // Case 1: ؽó ִ  (Sprite / Animation)
     // --------------------------------------------------------
     if (hasTexture)
     {
@@ -87,11 +87,11 @@ float4 main(ParticlePSInput input) : SV_TARGET
         // Alpha Blend가 자동으로 투명도 처리
     }
     // --------------------------------------------------------
-    // Case 2: �ؽ�ó�� ���� ��� (�⺻ ���� Glow)
+    // Case 2: ؽó   (⺻  Glow)
     // --------------------------------------------------------
     else
     {
-        // �ؽ�ó�� ���� ���� ���������� ���� �׸��ϴ�.
+        // ؽó     ׸ϴ.
         float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
 

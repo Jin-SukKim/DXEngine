@@ -19,9 +19,9 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
 		std::vector<EmitterID> emitterIDs;
 
-		// Baked/Custom ����
-		std::vector<Vector3> spawnPositions;  // ���յ� SpawnPosition
-		UINT totalSpawnPosCount = 0;          // �� SpawnPosition ����
+		// Baked/Custom 
+		std::vector<Vector3> spawnPositions;  // յ SpawnPosition
+		UINT totalSpawnPosCount = 0;          //  SpawnPosition 
 	};
 
 	class ParticleSystem : public Object
@@ -56,20 +56,20 @@ namespace DE {
 			ParticleEmitter* emitter,
 			ParticleInitializer& initialData);
 
-		// [���� �Լ�]
+		// [ Լ]
 		void Play();
 		void Pause();
 		void Stop();
 		void Restart();
 
-		// [�Ӽ� ����]
+		// [Ӽ ]
 		void SetLooping(bool loop) { m_looping = loop; }
 		void SetDuration(float duration) { m_duration = duration; }
 		void SetPlayRate(float rate) { m_playRate = rate; }
 		void SetPreWarmTime(float time) { m_preWarmTime = time; }
 		void SetTargetMesh(const int& modelIdx);
 
-		// Mesh ������ ������
+		// Mesh  
 		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
 		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
 		UINT GetVertexCount() const { return m_vertexCount; }
@@ -123,7 +123,7 @@ namespace DE {
 
 		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
 
-		// SubEmitter ó�� (�ܼ�ȭ)
+		// SubEmitter ó (ܼȭ)
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
 			ParticleInitializer& initialData, std::set<std::wstring>& processedPaths);
@@ -145,9 +145,9 @@ namespace DE {
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
 
-		// SubEmitters (�̸� �ε��, ��� -> Emitter ����)
+		// SubEmitters (̸ ε,  -> Emitter )
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		// ���� Ȱ��ȭ�� SubEmitter �����͵�
+		//  Ȱȭ SubEmitter ͵
 		std::vector<ParticleEmitter*> m_activeSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
 
@@ -155,7 +155,7 @@ namespace DE {
 		FileWatcher::CallbackID m_watcherID = 0;
 		ConstantBuffer<ParticleMeshConsts> m_meshConsts;
 
-		// Mesh ������
+		// Mesh 
 		StructuredBuffer<Vector3> m_meshVertex;
 		StructuredBuffer<uint32_t> m_meshIndices;
 		UINT m_vertexCount = 0;
@@ -163,13 +163,13 @@ namespace DE {
 
 		PoolHandle m_poolHandle;
 
-		// ��ƼŬ ���� (���� ���۸�)
+		// ƼŬ  ( ۸)
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		// ���յ� SpawnPosition ����
+		// յ SpawnPosition 
 		UINT m_currentSpawnPosOffset = 0;
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 

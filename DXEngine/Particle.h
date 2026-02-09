@@ -18,7 +18,7 @@ namespace DE {
         UINT readParticleOffset;
         UINT writeParticleOffset;
         UINT emitterID;
-        UINT spawnPosOffset;  // bakedOffset + customOffset ����
+        UINT spawnPosOffset;  // bakedOffset + customOffset 
     };
 
     struct ParticleFrameConsts {
@@ -26,6 +26,8 @@ namespace DE {
         float time;
         UINT spawnCount;
         UINT maxParticles;
+        float spawnRatio = 1.0f;       // Current frame spawn ratio (0.0 ~ 1.0)
+        Vector3 padding2;
     };
 
     struct SpawnConsts {
@@ -107,9 +109,7 @@ namespace DE {
         UINT indexCount;
         UINT textureMode;
         int singleTextureIdx;
-        UINT useSorting; // �߰�
-        float spawnRatio = 1.0f;       // Current frame spawn ratio (0.0 ~ 1.0)
-        Vector3 padding2;
+        UINT useSorting; // ߰
     };
 
     struct ParticleConsts {

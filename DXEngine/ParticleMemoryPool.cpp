@@ -52,7 +52,7 @@ namespace DE {
 		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
 		m_emitterIDBuffer.Initialize();
 
-		// MeshConsts Pool (System��)
+		// MeshConsts Pool (System)
 		m_meshConstsCPU.resize(maxSystems);
 		m_meshConstsBuffer.Initialize();
 
@@ -97,13 +97,13 @@ namespace DE {
 		if (reqEmitterCount >= m_emitterSlotTable.size())
 			return handle;
 
-		// 1. System Slot �Ҵ�
+		// 1. System Slot Ҵ
 		handle.systemSlot = AllocateSystemSlot();
 		if (handle.systemSlot == UINT_MAX) {
 			return handle;
 		}
 
-		// 2. Particle Block �Ҵ�
+		// 2. Particle Block Ҵ
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
 		UINT foundBlock = UINT_MAX;
 		UINT consecutive = 0;
@@ -127,7 +127,7 @@ namespace DE {
 			foundBlock = UINT_MAX;
 		}
 
-		// 3. Emitter Slot �Ҵ�
+		// 3. Emitter Slot Ҵ
 		std::vector<UINT> IDs;
 
 		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
@@ -139,7 +139,7 @@ namespace DE {
 			}
 		}
 
-		// 4. SpawnPosition Block �Ҵ� (reqSpawnPosCount > 0�� ���)
+		// 4. SpawnPosition Block Ҵ (reqSpawnPosCount > 0 )
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
 		
@@ -165,23 +165,23 @@ namespace DE {
 			}
 		}
 
-		// �Ҵ� ���� ���� Ȯ��
+		// Ҵ   Ȯ
 		bool particleOk = (foundBlock != UINT_MAX);
 		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
 		if (particleOk && emitterOk && spawnPosOk) {
-			// Particle blocks ��ŷ
+			// Particle blocks ŷ
 			for (UINT i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
 
 			m_fragmentationDirty = true;  // Invalidate cache
 
-			// Emitter slots ��ŷ
+			// Emitter slots ŷ
 			for (UINT i = 0; i < reqEmitterCount; ++i)
 				m_emitterSlotTable[IDs[i]] = true;
 
-			// SpawnPos blocks ��ŷ
+			// SpawnPos blocks ŷ
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
 
@@ -196,7 +196,7 @@ namespace DE {
 			}
 		}
 		else {
-			// �Ҵ� ���� �� System Slot ����
+			// Ҵ   System Slot 
 			FreeSystemSlot(handle.systemSlot);
 			handle.systemSlot = UINT_MAX;
 		}
@@ -208,10 +208,10 @@ namespace DE {
 	{
 		if (!handle.IsActive()) return;
 
-		// System slot ����
+		// System slot 
 		FreeSystemSlot(handle.systemSlot);
 
-		// Particle blocks ����
+		// Particle blocks 
 		size_t startBlock = handle.particleOffset / m_blockSize;
 		for (size_t i = 0; i < handle.blockCount; ++i) {
 			if (startBlock + i < m_particleBlockTable.size()) {
@@ -221,13 +221,13 @@ namespace DE {
 
 		m_fragmentationDirty = true;  // Invalidate cache
 
-		// Emitter slots ����
+		// Emitter slots 
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
 			if (handle.emitterIDs[i] < m_emitterSlotTable.size())
 				m_emitterSlotTable[handle.emitterIDs[i]] = false;
 		}
 
-		// SpawnPos blocks ����
+		// SpawnPos blocks 
 		if (handle.spawnPosOffset != UINT_MAX) {
 			startBlock = handle.spawnPosOffset / m_blockSize;
 			for (size_t i = 0; i < handle.spawnPosBlockCount; ++i) {
@@ -314,26 +314,26 @@ namespace DE {
 
 	void ParticleMemoryPool::UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data)
 	{
-		if (emitterIDs.size() != data.size()) return; // ���� ��ġ
+		if (emitterIDs.size() != data.size()) return; //  ġ
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
 		{
 			D3D11_BOX box;
-			// GPU ���� ���� ��ġ (�񿬼����� ���� ID ���)
+			// GPU   ġ (񿬼  ID )
 			box.left = emitterIDs[i] * sizeof(ParticleConsts);
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// �߿�: CPU ������ �ҽ� ��ġ�� i��ŭ �̵����Ѿ� ��
+			// ߿: CPU  ҽ ġ iŭ ̵Ѿ 
 			const void* pSrcData = data.data() + i;
 
 			context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
 	}
 
-	// FrameConsts�� �����ϰ� ����
+	// FrameConsts ϰ 
 	void ParticleMemoryPool::UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
@@ -354,18 +354,7 @@ namespace DE {
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		// Update only the spawnRatio field in RenderConsts
-		// RenderConsts is inside ParticleConsts, so we need to calculate the offset
-		D3D11_BOX box;
-		UINT constsOffset = emitterID * sizeof(ParticleConsts);
-		UINT renderConstsOffset = offsetof(ParticleConsts, render);
-		UINT spawnRatioOffset = offsetof(RenderConsts, spawnRatio);
-
-		box.left = constsOffset + renderConstsOffset + spawnRatioOffset;
-		box.right = box.left + sizeof(float);
-		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
-
-		context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, &spawnRatio, 0, 0);
+		m_frameConsts.Get(emitterID).spawnRatio = spawnRatio;
 	}
 
 	void ParticleMemoryPool::UpdateArgs()
@@ -470,14 +459,14 @@ namespace DE {
 	    std::vector<UINT> newOffsets;
 	    newOffsets.reserve(activeHandles.size());
 	    
-	    // ���� ���̺� �ʱ�ȭ
+	    //  ̺ ʱȭ
 	    std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
 	    
 	    UINT currentBlock = 0;
 	    for (const auto& handle : activeHandles) {
 	        newOffsets.push_back(currentBlock * m_blockSize);
 
-	        // ���� ���̺� ������Ʈ
+	        //  ̺ Ʈ
 	        for (UINT i = 0; i < handle.blockCount; ++i) {
 	            m_particleBlockTable[currentBlock + i] = true;
 	        }

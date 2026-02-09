@@ -66,12 +66,12 @@ namespace DE {
 
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
-		// Texture Bake ������ ���� (Spawn ���)
+		// Texture Bake   (Spawn )
 		void SetBakedSpawnPath(const std::string& path);
 		UINT LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos);
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
-		// ���յ� SpawnPos ����
+		// յ SpawnPos 
 		void SetSpawnPosInfo(UINT offset) { m_spawnPosPoolOffset = offset; }
 		UINT GetSpawnPosOffset() const { return m_spawnPosPoolOffset; }
 		
@@ -119,7 +119,7 @@ namespace DE {
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
 		
-		// SpawnPosition ���� (Baked/Custom)
+		// SpawnPosition  (Baked/Custom)
 		UINT m_spawnPosPoolOffset = 0;
 		std::string m_bakedPath = "";
 		UINT m_bakedCount = 0;

@@ -152,7 +152,7 @@ namespace DE {
 
 	void Scene::InitializeInput()
 	{
-		// F Ű�� ������ ī�޶� FPV ��� ���
+		// F Ű  ī޶ FPV  
 		AppBase::GetInputManager().BindInputAction(m_fpv, InputState::Pressed, this, &Scene::EnableCameraFPV);
 	}
 
@@ -169,7 +169,7 @@ namespace DE {
 		UpdateLights(deltaTime);
 		UpdateActors(deltaTime);
 
-		// �������� �߰��� EffectActor�� �Ϸ�� �͵� ����
+		//  ߰ EffectActor Ϸ ͵ 
 		CleanupFinishedEffects();
 
 		// ParticleManager handles all particle updates
@@ -372,7 +372,7 @@ namespace DE {
 	{
 		auto& effectList = m_actorList[static_cast<size_t>(ActorCategory::Effect)];
 
-		// �Ϸ�� �͵� ����
+		// Ϸ ͵ 
 		std::erase_if(effectList,
 			[](const std::unique_ptr<Actor>& actor) {
 				if (auto* effect = dynamic_cast<EffectActor*>(actor.get())) {

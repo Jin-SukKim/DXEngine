@@ -22,7 +22,7 @@ namespace DE {
 
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			// �� �籸�� �ð� ���� (Legacy Metric - Cumulative Average)
+			//  籸 ð  (Legacy Metric - Cumulative Average)
 			auto start = std::chrono::high_resolution_clock::now();
 			Defragment(); // Defragment internally also measures for RuntimeProfile
 
@@ -88,7 +88,7 @@ namespace DE {
 			m_memoryPool->UnbindCompute();
 		}
 
-		// Compute ��, SwapBuffer ���� Read ������ ����ȭ
+		// Compute , SwapBuffer  Read  ȭ
 		if (m_needsSyncReadOffset) {
 			SyncReadOffsets();
 			m_needsSyncReadOffset = false;
@@ -132,6 +132,7 @@ namespace DE {
 			}
 		}
 
+		m_memoryPool->UploadFrameConsts();
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
 
@@ -345,14 +346,14 @@ namespace DE {
 				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
 				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
 
-				// �� ����ȭ ����
+				//  ȭ 
 				float fragRatio = m_memoryPool->GetFragmentationRatio();
 				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0, 1, 0, 1) :
 					(fragRatio < 0.5f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
 				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
 			}
 
-			// �� ���� ��Ʈ�� ���� �߰�
+			//   Ʈ  ߰
 			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
@@ -366,15 +367,15 @@ namespace DE {
 				}
 			}
 
-			// 2. ���� �ð�ȭ (Grid Visualizer)
-			// ���: ��� ��, ȸ��: �� ����
+			// 2.  ðȭ (Grid Visualizer)
+			// :  , ȸ:  
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
 				std::vector<std::string> blockOwners(totalBlocks, "Free");
 
 				const auto& table = m_memoryPool->GetParticleBlockTable();
-				int columns = 32; // �� �ٿ� ������ ���� ����
+				int columns = 32; //  ٿ   
 				float cellSize = 10.0f;
 				float spacing = 2.0f;
 
@@ -395,11 +396,11 @@ namespace DE {
 						color
 					);
 
-					// ���콺 ���� �� ���� ��ȣ ����
+					// 콺    ȣ 
 					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
 					{
 						ImGui::BeginTooltip();
-						// [����] ������ �̸����� ���
+						// []  ̸ 
 						ImGui::Text("Block ID: %llu", i);
 						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
 							"Status: %s", table[i] ? "Used" : "Free");
@@ -411,7 +412,7 @@ namespace DE {
 					}
 				}
 
-				// �׸��� ���̸�ŭ Ŀ�� �̵�
+				// ׸ ̸ŭ Ŀ ̵
 				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
 				ImGui::Dummy(ImVec2(0, totalHeight));
 			}
@@ -563,7 +564,7 @@ namespace DE {
 
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
-		// �Ҵ� ���� �� ���� ������ Defragment ���� (��� ���� X)
+		// Ҵ     Defragment  (  X)
 		if (!handle.IsActive()) {
 			m_needsDefragment = true;
 		}
@@ -585,7 +586,7 @@ namespace DE {
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
 
-			// spawnPos�� ����ϴ� emitter�� ������ ����
+			// spawnPos ϴ emitter  
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
@@ -644,7 +645,7 @@ namespace DE {
 			}
 		}
 
-		m_needsSyncReadOffset = true;  // �̹� ������ Compute �� ����ȭ
+		m_needsSyncReadOffset = true;  // ̹  Compute  ȭ
 	}
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
@@ -656,7 +657,7 @@ namespace DE {
 		const ParticleInitializer& initialData = system->GetInitialData();
 
 		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
-			// writeParticleOffset�� �� ��ġ�� ����
+			// writeParticleOffset  ġ 
 			UINT globalEmitterID = handle.emitterIDs[i];
 			UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
 

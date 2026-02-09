@@ -96,10 +96,10 @@ namespace DE {
 		ParticleSystem* CreateSystem(const std::wstring& path);
 		void DestroyInstance(ParticleSystem* system);
 
-		// EmitterID ���ε� (Manager���� ó��)
+		// EmitterID ε (Manager ó)
 		void BindEmitterID(UINT globalSlotIndex);
 
-		// MeshConsts ���� �߰�
+		// MeshConsts  ߰
 		void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
 		void BindMeshConsts(UINT systemIndex);
 
@@ -143,11 +143,11 @@ namespace DE {
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 
-		// ��� ���� �߰�
+		//   ߰
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
 
-		// private ��� �߰�
+		// private  ߰
 		UINT m_rebuildCount = 0;
 		float m_totalRebuildTime = 0.0f;
 		float m_avgRebuildTime = 0.0f;

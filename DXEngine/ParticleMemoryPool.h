@@ -61,12 +61,12 @@ public:
 	void UpdateRenderArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 
-	// EmitterID ConstantBuffer ����
+	// EmitterID ConstantBuffer 
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
 	void BindEmitterID(UINT slotIndex);
 	void UploadEmitterIDs();
 	
-	// MeshConsts ����
+	// MeshConsts 
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
 	 void BindMeshConsts(UINT systemSlot);
 
@@ -93,32 +93,32 @@ public:
 	UINT GetBlockCount() const { return m_blockCount; }
 
 	// Debug
-	// ������ Getter �߰�
+	//  Getter ߰
 	UINT GetTotalBlockCount() const { return m_blockCount; }
 	UINT GetBlockSize() const { return m_blockSize; }
 
-	// ��� ���� ���� ���� ī��Ʈ
+	//     īƮ
 	UINT GetUsedBlockCount() const {
 		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
 	}
 
-	// ��ü/����� Emitter ����
+	// ü/ Emitter 
 	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
 	UINT GetUsedEmitterSlots() const {
 		return (UINT)std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true);
 	}
 
-	// ��ü/����� System ����
+	// ü/ System 
 	UINT GetTotalSystemSlots() const { return m_maxSystems; }
 	UINT GetUsedSystemSlots() const {
 		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
 	}
 
-	// �ð�ȭ�� ���� ���̺� ��ü�� ���� ���� ��ȯ (const)
+	// ðȭ  ̺ ü   ȯ (const)
 	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
 	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
 
-	// ParticleMemoryPool.h�� �߰�
+	// ParticleMemoryPool.h ߰
 	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
 	void UpdateBlockTable(const std::vector<PoolHandle>& activeHandles);
 	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
@@ -126,11 +126,11 @@ public:
 
 	void SyncReadOffset(UINT slotIndex);
 
-	// public ��� �Լ��� �߰�
+	// public  Լ ߰
 	float GetFragmentationRatio() const;
 
 private:
-	// System Slot ����
+	// System Slot 
 	UINT AllocateSystemSlot();
 	void FreeSystemSlot(UINT slot);
 
@@ -165,7 +165,7 @@ private:
 	StructuredBuffer<EmitterID> m_emitterIDs;
 	ConstantBuffer<EmitterID> m_emitterIDBuffer;
 
-	// MeshConsts Pool (System��)
+	// MeshConsts Pool (System)
 	std::vector<ParticleMeshConsts> m_meshConstsCPU;
 	ConstantBuffer<ParticleMeshConsts> m_meshConstsBuffer;
 

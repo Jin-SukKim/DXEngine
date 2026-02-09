@@ -21,15 +21,11 @@ public:
 	virtual std::unique_ptr<ParticleModule> Clone() const override = 0;
 	void CopyBasicSettings(RenderModule* cloned) const;
 
-	// Overdraw Control - Spawn Ratio
-	void SetSpawnRatio(float ratio) { m_currentSpawnRatio = ratio; }
-	float GetSpawnRatio() const { return m_currentSpawnRatio; }
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
 	ID3D11BlendState* m_blendState = NULL;
-	float m_currentSpawnRatio = 1.0f;
-	// BitonicSort ���� - ParticleEmitter�� ����
+	// BitonicSort  - ParticleEmitter 
 };
 
 class BillboardRenderModule : public RenderModule
@@ -43,20 +39,20 @@ public:
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
-	// 0 : TextureArray (Size�� �����Ǿ� ����)
-	// 1 : Single Texture (���� Texture 1��, �پ��� �ػ� ����)
-	// 2 : MaterialModule�� ��� (PBR)
+	// 0 : TextureArray (Size Ǿ )
+	// 1 : Single Texture ( Texture 1, پ ػ )
+	// 2 : MaterialModule  (PBR)
 	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
-	// Texture ����
+	// Texture 
 	std::string m_texturePath;
 	int m_textureIdx = -1;
 
-	// �پ��� �ػ��� Texture 1���� ����Ҷ�
+	// پ ػ Texture 1 Ҷ
 	int m_singleTextureIdx = -1;
 
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
-	// IndirectArgsBuffer ���� - ParticleEmitter�� ����
+	// IndirectArgsBuffer  - ParticleEmitter 
 };
 
 class MeshRenderModule : public RenderModule
@@ -70,7 +66,7 @@ public:
 private:
 	int m_modelIdx = -1;
 	UINT m_meshCount = 0;
-	// IndirectArgsBuffer ���� - ParticleEmitter�� ����
+	// IndirectArgsBuffer  - ParticleEmitter 
 };
 }
 

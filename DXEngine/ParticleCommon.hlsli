@@ -26,7 +26,7 @@ cbuffer EmitterID : register(b5)
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset ����
+    uint spawnPosOffset;  // bakedOffset + customOffset 
 };
 
 struct EmitterID
@@ -34,7 +34,7 @@ struct EmitterID
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset ����
+    uint spawnPosOffset;  // bakedOffset + customOffset 
 };
 
 struct ParticleFrameConsts
@@ -43,6 +43,8 @@ struct ParticleFrameConsts
     float time;
     uint spawnCount;
     uint maxParticles;
+    float spawnRatio;       // Current frame spawn ratio (0.0 ~ 1.0)
+    float3 padding2;
 };
 
 struct SpawnConsts
@@ -55,7 +57,7 @@ struct SpawnConsts
 
     float2 lifeRange;
     int spawnShape;
-    uint bakedCount; // Baked/Custom ���� ����
+    uint bakedCount; // Baked/Custom  
     uint simulationSpace;
 
     uint spawnStartIndex;
@@ -108,8 +110,6 @@ struct RenderConsts
     uint textureMode;
     int singleTextureIdx;
     uint useSorting;
-    float spawnRatio;       // Current frame spawn ratio (0.0 ~ 1.0)
-    float3 padding2;
 };
 
 struct VortexConsts
@@ -145,8 +145,8 @@ struct ParticleConsts
 
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
 StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // ���յ� SpawnPosition ����
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // ���յ� SpawnPosition ����
+StructuredBuffer<float3> spawnPositions : register(t10); // յ SpawnPosition 
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // յ SpawnPosition 
 
 cbuffer ParticleMeshConsts : register(b6)
 {
