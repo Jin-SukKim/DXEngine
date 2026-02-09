@@ -131,7 +131,7 @@ namespace DE {
 		// Priority-based eviction helpers
 		float CalculatePriority(ParticleSystem* system, const Vector3& cameraPos,
 			const DirectX::BoundingFrustum& frustum) const;
-		ParticleSystem* FindLowestPrioritySystem();
+		ParticleSystem* FindLowestPrioritySystem(UINT particleCount);
 		bool TryEvictAndRetry(UINT particleCount, UINT emitterCount, UINT spawnPosCount,
 			PoolHandle& outHandle);
 

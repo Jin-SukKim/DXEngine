@@ -729,7 +729,7 @@ namespace DE {
 		return priority;
 	}
 
-	ParticleSystem* ParticleManager::FindLowestPrioritySystem()
+	ParticleSystem* ParticleManager::FindLowestPrioritySystem(UINT particleCount)
 	{
 		if (m_instances.empty())
 			return nullptr;
@@ -752,7 +752,8 @@ namespace DE {
 
 			float priority = CalculatePriority(system, cameraPos, frustum);
 
-			if (priority < lowestPriority)
+			if (particleCount >= system->GetTotalParticleCount() 
+				&& priority < lowestPriority)
 			{
 				lowestPriority = priority;
 				lowestPrioritySystem = system;
@@ -775,7 +776,7 @@ namespace DE {
 		for (int attempt = 0; attempt < MAX_EVICTION_ATTEMPTS; ++attempt)
 		{
 			// Find lowest priority system
-			ParticleSystem* victim = FindLowestPrioritySystem();
+			ParticleSystem* victim = FindLowestPrioritySystem(particleCount);
 
 			if (!victim)
 			{
