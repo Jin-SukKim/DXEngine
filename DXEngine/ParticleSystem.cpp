@@ -206,7 +206,6 @@ namespace DE {
 		}
 
 		//ExecutePreWarm(*m_dispatchArgs);
-		TextureManager::Get().BindParticleTextures();
 	}
 
 	void ParticleSystem::PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts)

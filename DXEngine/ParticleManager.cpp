@@ -4,6 +4,7 @@
 #include "RenderBase.h"
 #include "ScopedTimer.h" // [Added] Include ScopedTimer
 #include "ModelManager.h"
+#include "TextureManager.h"
 #include <DirectXCollision.h> // [Added] For Frustum Culling
 
 namespace DE {
@@ -11,6 +12,7 @@ namespace DE {
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
 		m_memoryPool->Initialize(10000000, 20000, 20000);
+		TextureManager::Get().BindParticleTextures();
 	}
 
 	void ParticleManager::Update(const float& dt)
