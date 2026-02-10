@@ -17,9 +17,13 @@ namespace DE {
 		UINT blockCount = (maxParticles + m_blockSize - 1) / m_blockSize;
 		m_blockCount = blockCount;
 		m_particleBlockTable.assign(blockCount, false);
-		m_emitterSlotTable.assign(maxEmitters, false);
 		m_spawnPosBlockTable.assign(blockCount, false);
-		m_systemSlotTable.assign(maxSystems, false);
+		
+		std::queue<UINT> emptyQueue;
+		std::swap(m_freeEmitterSlots, emptyQueue);
+		std::swap(m_freeSystemSlots, emptyQueue);
+		for (UINT i = 0; i < maxEmitters; ++i) m_freeEmitterSlots.push(i);
+		for (UINT i = 0; i < maxSystems; ++i) m_freeSystemSlots.push(i);
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -72,36 +76,18 @@ namespace DE {
 		m_fragmentationDirty = true;
 	}
 
-	UINT ParticleMemoryPool::AllocateSystemSlot()
-	{
-		for (UINT i = 0; i < m_maxSystems; ++i) {
-			if (!m_systemSlotTable[i]) {
-				m_systemSlotTable[i] = true;
-				return i;
-			}
-		}
-		return UINT_MAX;
-	}
-
-	void ParticleMemoryPool::FreeSystemSlot(UINT slot)
-	{
-		if (slot < m_maxSystems) {
-			m_systemSlotTable[slot] = false;
-		}
-	}
-
 	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount)
 	{
 		PoolHandle handle;
 
-		if (reqEmitterCount >= m_emitterSlotTable.size())
+		if (m_freeSystemSlots.empty())
 			return handle;
 
-		// 1. System Slot Ҵ
-		handle.systemSlot = AllocateSystemSlot();
-		if (handle.systemSlot == UINT_MAX) {
+		if (reqEmitterCount > m_freeEmitterSlots.size())
 			return handle;
-		}
+
+		handle.systemSlot = m_freeSystemSlots.front();
+		m_freeSystemSlots.pop();
 
 		// 2. Particle Block Ҵ
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
@@ -129,14 +115,9 @@ namespace DE {
 
 		// 3. Emitter Slot Ҵ
 		std::vector<UINT> IDs;
-
-		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
-			if (!m_emitterSlotTable[i]) {
-				IDs.push_back(i);
-				if (IDs.size() == reqEmitterCount) {
-					break;
-				}
-			}
+		for (UINT i = 0; i < reqEmitterCount; ++i) {
+			IDs.push_back(m_freeEmitterSlots.front());
+			m_freeEmitterSlots.pop();
 		}
 
 		// 4. SpawnPosition Block Ҵ (reqSpawnPosCount > 0 )
@@ -167,23 +148,18 @@ namespace DE {
 
 		// Ҵ   Ȯ
 		bool particleOk = (foundBlock != UINT_MAX);
-		bool emitterOk = (IDs.size() == reqEmitterCount);
 		bool spawnPosOk = (reqSpawnPosCount == 0) || (foundSpawnPosBlock != UINT_MAX);
 
-		if (particleOk && emitterOk && spawnPosOk) {
+		if (particleOk && spawnPosOk) {
 			// Particle blocks ŷ
 			for (UINT i = 0; i < neededBlocks; ++i)
 				m_particleBlockTable[foundBlock + i] = true;
 
-			m_fragmentationDirty = true;  // Invalidate cache
-
-			// Emitter slots ŷ
-			for (UINT i = 0; i < reqEmitterCount; ++i)
-				m_emitterSlotTable[IDs[i]] = true;
-
 			// SpawnPos blocks ŷ
 			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
 				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
+
+			m_fragmentationDirty = true;  // Invalidate cache
 
 			handle.particleOffset = foundBlock * m_blockSize;
 			handle.blockCount = neededBlocks;
@@ -196,9 +172,14 @@ namespace DE {
 			}
 		}
 		else {
-			// Ҵ   System Slot 
-			FreeSystemSlot(handle.systemSlot);
+			// System Slot 
+			m_freeSystemSlots.push(handle.systemSlot);
 			handle.systemSlot = UINT_MAX;
+
+			// Emitter Slot들도 복구
+			for (UINT id : IDs) {
+				m_freeEmitterSlots.push(id);
+			}
 		}
 
 		return handle;
@@ -209,7 +190,7 @@ namespace DE {
 		if (!handle.IsActive()) return;
 
 		// System slot 
-		FreeSystemSlot(handle.systemSlot);
+		m_freeSystemSlots.push(handle.systemSlot);
 
 		// Particle blocks 
 		size_t startBlock = handle.particleOffset / m_blockSize;
@@ -222,10 +203,8 @@ namespace DE {
 		m_fragmentationDirty = true;  // Invalidate cache
 
 		// Emitter slots 
-		for (size_t i = 0; i < handle.emitterCount; ++i) {
-			if (handle.emitterIDs[i] < m_emitterSlotTable.size())
-				m_emitterSlotTable[handle.emitterIDs[i]] = false;
-		}
+		for (UINT id : handle.emitterIDs) 
+			m_freeEmitterSlots.push(id);
 
 		// SpawnPos blocks 
 		if (handle.spawnPosOffset != UINT_MAX) {

@@ -105,13 +105,13 @@ public:
 	// ü/ Emitter 
 	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
 	UINT GetUsedEmitterSlots() const {
-		return (UINT)std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true);
+		return m_maxEmitters - (UINT)m_freeEmitterSlots.size();
 	}
 
 	// ü/ System 
 	UINT GetTotalSystemSlots() const { return m_maxSystems; }
 	UINT GetUsedSystemSlots() const {
-		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
+		return m_maxSystems - (UINT)m_freeSystemSlots.size();
 	}
 
 	// ðȭ  ̺ ü   ȯ (const)
@@ -128,11 +128,6 @@ public:
 
 	// public  Լ ߰
 	float GetFragmentationRatio() const;
-
-private:
-	// System Slot 
-	UINT AllocateSystemSlot();
-	void FreeSystemSlot(UINT slot);
 
 private:
 	UINT m_blockSize = 1024;
@@ -171,9 +166,10 @@ private:
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable;
-	std::vector<bool> m_emitterSlotTable;
 	std::vector<bool> m_spawnPosBlockTable;
-	std::vector<bool> m_systemSlotTable;
+
+	std::queue<UINT> m_freeEmitterSlots;
+	std::queue<UINT> m_freeSystemSlots;
 
 	// Cached fragmentation metrics (dirty flag pattern)
 	mutable UINT m_cachedLastUsedBlock = 0;
