@@ -27,7 +27,6 @@ namespace DE {
 	void RenderModule::OnRender(const RenderContext& ctx)
 	{
 		ParticleModule::OnRender(ctx);
-		ctx.context->OMSetBlendState(m_blendState, RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 	}
 
 	void RenderModule::SetBlendState()

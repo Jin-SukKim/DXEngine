@@ -146,6 +146,7 @@ namespace DE {
 			}
 		}
 
+		auto context = GET_SINGLE(RenderBase)->GetContext();
 		ModelManager::Get().BindBuffersForRender();
 		m_memoryPool->BindMeshConsts();
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
@@ -158,6 +159,7 @@ namespace DE {
 
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		GET_SINGLE(RenderBase)->SetLowResRender();
+		context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
 		
 		for (auto* system : renderSystems) {
