@@ -2,6 +2,7 @@
 #include "Particle.h"
 #include "StructuredBuffer.h"
 #include "IndirectArgsBuffer.h"
+#include <map>
 
 namespace DE {
 	class ParticleSystem;
@@ -97,7 +98,7 @@ public:
 	UINT GetBlockSize() const { return m_blockSize; }
 
 	UINT GetUsedBlockCount() const {
-		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
+		return m_cachedUsedBlocks;  // O(1) cached value
 	}
 
 	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
@@ -110,8 +111,21 @@ public:
 		return m_maxSystems - (UINT)m_freeSystemSlots.size();
 	}
 
-	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
-	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
+	const std::vector<bool>& GetParticleBlockTable() const {
+		if (m_visualizationDirty) {
+			RebuildVisualizationCache();
+			m_visualizationDirty = false;
+		}
+		return m_particleBlockTableCache;
+	}
+
+	const std::vector<bool>& GetSpawnPosBlockTable() const {
+		if (m_visualizationDirty) {
+			RebuildVisualizationCache();
+			m_visualizationDirty = false;
+		}
+		return m_spawnPosBlockTableCache;
+	}
 
 	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
 	void UpdateBlockTable(const std::vector<PoolHandle>& activeHandles);
@@ -121,6 +135,18 @@ public:
 	void SyncReadOffset(UINT slotIndex);
 
 	float GetFragmentationRatio() const;
+
+#ifdef _DEBUG
+	// Performance benchmarking getters
+	UINT GetAllocateCallCount() const { return m_allocateCallCount; }
+	UINT GetFreeCallCount() const { return m_freeCallCount; }
+	double GetAvgAllocateTime() const {
+		return m_allocateCallCount > 0 ? m_totalAllocateTime / m_allocateCallCount : 0.0;
+	}
+	double GetAvgFreeTime() const {
+		return m_freeCallCount > 0 ? m_totalFreeTime / m_freeCallCount : 0.0;
+	}
+#endif
 
 private:
 	UINT m_blockSize = 1024;
@@ -156,9 +182,9 @@ private:
 	// MeshConsts Pool (System)
 	StructuredBuffer<ParticleMeshConsts> m_meshConsts;
 
-	// Block Allocator
-	std::vector<bool> m_particleBlockTable;
-	std::vector<bool> m_spawnPosBlockTable;
+	// Block Allocator - Map-based (startBlock -> blockCount)
+	std::map<UINT, UINT> m_particleBlockMap;
+	std::map<UINT, UINT> m_spawnPosBlockMap;
 
 	std::queue<UINT> m_freeEmitterSlots;
 	std::queue<UINT> m_freeSystemSlots;
@@ -167,6 +193,25 @@ private:
 	mutable UINT m_cachedLastUsedBlock = 0;
 	mutable UINT m_cachedTotalUsedBlocks = 0;
 	mutable bool m_fragmentationDirty = true;
+
+	// O(1) GetUsedBlockCount cached value
+	mutable UINT m_cachedUsedBlocks = 0;
+
+	// GUI visualization cache (lazy generation)
+	mutable std::vector<bool> m_particleBlockTableCache;
+	mutable std::vector<bool> m_spawnPosBlockTableCache;
+	mutable bool m_visualizationDirty = true;
+
+	// Helper method for visualization cache
+	void RebuildVisualizationCache() const;
+
+#ifdef _DEBUG
+	// Performance benchmarking
+	mutable UINT m_allocateCallCount = 0;
+	mutable UINT m_freeCallCount = 0;
+	mutable double m_totalAllocateTime = 0.0;  // microseconds
+	mutable double m_totalFreeTime = 0.0;      // microseconds
+#endif
 };
 
 }

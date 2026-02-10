@@ -389,6 +389,15 @@ namespace DE {
 				ImGui::Text("Avg Rebuild Time: %.3f ms", m_avgRebuildTime);
 				ImGui::Text("Total Rebuild Time: %.3f ms", m_totalRebuildTime);
 
+#ifdef _DEBUG
+				ImGui::Separator();
+				ImGui::Text("Memory Pool Allocations:");
+				ImGui::Text("  Allocate Calls: %u", m_memoryPool->GetAllocateCallCount());
+				ImGui::Text("  Avg Allocate Time: %.6f ms", m_memoryPool->GetAvgAllocateTime() / 1000.0);
+				ImGui::Text("  Free Calls: %u", m_memoryPool->GetFreeCallCount());
+				ImGui::Text("  Avg Free Time: %.6f ms", m_memoryPool->GetAvgFreeTime() / 1000.0);
+#endif
+
 				if (ImGui::Button("Reset Metrics")) {
 					m_rebuildCount = 0;
 					m_avgRebuildTime = 0.0f;
