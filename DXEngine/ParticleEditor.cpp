@@ -65,8 +65,8 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
 
 		// m_test2는 시나리오 중간(15초)에 생성하기 위해 비워둠
 		m_test2 = nullptr;
@@ -245,8 +245,8 @@ namespace DE {
 		for (int i = 0; i < 100; ++i)
 		{
 			// 1. 이펙트 생성 (Smoke나 Firework 등)
-			//auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
-			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
+			//auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 
 			if (sys) {
 				// 성공 시 리스트에 추가 (나중에 정리용)

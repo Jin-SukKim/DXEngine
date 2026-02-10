@@ -23,12 +23,14 @@
     "gravity": [ 0.0, 0.0, 0.0 ],
     "drag": 0.9
   },
-  "BillboardRender": {
-    "blendMode": "Additive",
-    "texture": "Textures\\explosion2.png",
+  "Material": {
     "sprite": {
       "frameTiles": [ 4, 4 ],
       "frameCount": 16
     }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "texture": "Textures\\explosion2.png"
   }
 }

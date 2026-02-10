@@ -114,7 +114,7 @@ namespace DE {
         UINT indexCount;
         UINT textureMode;
         int singleTextureIdx;
-        UINT useSorting; // ߰
+        UINT useSorting;
     };
 
     struct ParticleConsts {

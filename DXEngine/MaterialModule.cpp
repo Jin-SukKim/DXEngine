@@ -9,6 +9,9 @@ namespace DE {
 	{
 		ParticleModule::Initialize(ctx);
 
+		RenderConsts& consts = ctx.consts.render;
+		consts.frameTiles = m_frameTiles;
+		consts.frameCount = m_frameCount;
 		if (!m_isLoadedFromJson && ctx.renderModule) {
 			const Model* model = ModelManager::Get().GetModel(ctx.renderModule->GetModelIndex());
 			if (model)
@@ -44,6 +47,12 @@ namespace DE {
 
 		if (!m_materialIndices.empty())
 			m_isLoadedFromJson = true;
+
+		if (data.contains("sprite")) {
+			auto& sprite = data["sprite"];
+			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);
+			if (sprite.contains("frameCount")) m_frameCount = sprite["frameCount"];
+		}
 	}
 	std::unique_ptr<ParticleModule> MaterialModule::Clone() const
 	{
@@ -52,6 +61,8 @@ namespace DE {
 		cloned->m_isEnabled = this->m_isEnabled;
 		cloned->m_isLoadedFromJson = this->m_isLoadedFromJson;
 		cloned->m_materialIndices = this->m_materialIndices;
+		cloned->m_frameTiles = this->m_frameTiles;
+		cloned->m_frameCount = this->m_frameCount;
 
 		return std::move(cloned);
 	}

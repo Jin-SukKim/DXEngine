@@ -69,8 +69,6 @@ namespace DE {
 		RenderModule::Initialize(ctx);
 		RenderConsts& consts = ctx.consts.render;
 		consts.textureIdx = m_textureIdx;
-		consts.frameTiles = m_frameTiles;
-		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
 		m_modelIdx = 0;
@@ -126,12 +124,6 @@ namespace DE {
 				m_textureIdx = idx;
 			}
 		}
-
-		if (data.contains("sprite")) {
-			auto& sprite = data["sprite"];
-			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);
-			if (sprite.contains("frameCount")) m_frameCount = sprite["frameCount"];
-		}
 	}
 
 	std::unique_ptr<ParticleModule> BillboardRenderModule::Clone() const
@@ -145,8 +137,6 @@ namespace DE {
 		cloned->m_texturePath = this->m_texturePath;
 		cloned->m_textureIdx = this->m_textureIdx;
 		cloned->m_singleTextureIdx = this->m_singleTextureIdx;
-		cloned->m_frameTiles = this->m_frameTiles;
-		cloned->m_frameCount = this->m_frameCount;
 
 		// GPU ۴ ParticleEmitter 
 
@@ -159,15 +149,6 @@ namespace DE {
 	{
 		RenderModule::Initialize(ctx);
 
-		if (m_modelIdx < 0)
-			return;
-		Model* model = ModelManager::Get().GetModel(m_modelIdx);
-		if (!model)
-			return;
-
-		// ParticleEmitter ޽ Args  ʱȭ
-		auto& mesh = model->meshes[0];
-		ctx.consts.render.indexCount = mesh.indexCount;
 	}
 
 	void MeshRenderModule::OnRender(const RenderContext& ctx)
@@ -203,6 +184,9 @@ namespace DE {
 				m_modelIdx = ModelManager::Get().LoadModel("ParticleSphere", GeometryGenerator::MakeSphere(1.f, 10, 10));
 				break;
 			}
+		}
+		else {
+			m_modelIdx = ModelManager::Get().LoadModel("ParticleBox", GeometryGenerator::MakeBox());
 		}
 	}
 

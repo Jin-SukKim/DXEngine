@@ -21,6 +21,8 @@ private:
 
 	// JSON에서 로드된 재질 이름들 (저장/복원용)
 	bool m_isLoadedFromJson = false;
+	Vector2 m_frameTiles = { 1, 1 };
+	UINT m_frameCount = 1;
 };
 }
 
