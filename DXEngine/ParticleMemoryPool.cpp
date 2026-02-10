@@ -436,6 +436,19 @@ namespace DE {
 		m_meshConsts.Upload(context.Get());
 	}
 
+	void ParticleMemoryPool::BindBillboardMesh()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		// 쿼드 메쉬 바인딩
+		ID3D11Buffer* quadVB = GetQuadVertexBuffer();
+		ID3D11Buffer* quadIB =GetQuadIndexBuffer();
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		context->IASetVertexBuffers(0, 1, &quadVB, &stride, &offset);
+		context->IASetIndexBuffer(quadIB, DXGI_FORMAT_R32_UINT, 0);
+
+	}
+
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)
 	{
 	    std::vector<UINT> newOffsets;

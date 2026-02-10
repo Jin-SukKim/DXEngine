@@ -148,9 +148,9 @@ namespace DE {
 		std::vector<ParticleEmitter*> m_meshEmitters;
 		std::vector<ParticleEmitter*> m_billboardEmitters;
 
-		// SubEmitters (̸ ε,  -> Emitter )
+		// SubEmitters
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		//  Ȱȭ SubEmitter ͵
+		//  SubEmitter
 		std::vector<ParticleEmitter*> m_activeMeshSubEmitters;
 		std::vector<ParticleEmitter*> m_activeBillboardSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
@@ -167,13 +167,12 @@ namespace DE {
 
 		PoolHandle m_poolHandle;
 
-		// ƼŬ  ( ۸)
 		UINT m_currentParticleOffset = 0;
 		UINT m_currentEmitterIndex = 0;
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		// յ SpawnPosition 
+		// SpawnPosition 
 		UINT m_currentSpawnPosOffset = 0;
 		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 

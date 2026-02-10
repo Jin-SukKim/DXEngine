@@ -157,6 +157,7 @@ namespace DE {
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		GET_SINGLE(RenderBase)->SetLowResRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
+		m_memoryPool->BindBillboardMesh();
 		for (auto* system : renderSystems) {
 			if (system) {
 				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);

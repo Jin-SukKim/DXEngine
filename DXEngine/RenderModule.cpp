@@ -103,15 +103,6 @@ namespace DE {
 			break;
 		}
 
-		// 쿼드 메쉬 바인딩
-		auto& memoryPool = ParticleManager::Get().GetMemoryPool();
-		ID3D11Buffer* quadVB = memoryPool.GetQuadVertexBuffer();
-		ID3D11Buffer* quadIB = memoryPool.GetQuadIndexBuffer();
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		ctx.context->IASetVertexBuffers(0, 1, &quadVB, &stride, &offset);
-		ctx.context->IASetIndexBuffer(quadIB, DXGI_FORMAT_R32_UINT, 0);
-
 		// DrawIndexedInstancedIndirect (쿼드 메쉬 인스턴싱)
 		ctx.context->DrawIndexedInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);
 	}
