@@ -81,8 +81,7 @@ namespace DE {
 		RenderModule::OnRender(ctx);
 
 		// GS 없는 인스턴싱 빌보드 PSO 사용
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-
+		
 		ID3D11ShaderResourceView* texSRV = nullptr;
 		switch (m_textureMode)
 		{
@@ -187,8 +186,6 @@ namespace DE {
 
 		Model* model = ModelManager::Get().GetModel(m_modelIdx);
 		if (!model) return;
-
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 
 		for (UINT i = 0; i < model->meshes.size(); ++i) {
 			auto& mesh = model->meshes[i];
