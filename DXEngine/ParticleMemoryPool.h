@@ -68,7 +68,8 @@ public:
 	
 	// MeshConsts 
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
-	 void BindMeshConsts(UINT systemSlot);
+	void BindMeshConsts(UINT systemSlot);
+	void UploadMeshConsts();
 
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
@@ -81,7 +82,6 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
-	std::vector<ParticleMeshConsts>& GetMeshConsts() { return m_meshConstsCPU; }
 
 	// Quad Mesh Getters
 	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
@@ -153,8 +153,7 @@ private:
 	ConstantBuffer<EmitterID> m_emitterIDBuffer;
 
 	// MeshConsts Pool (System)
-	std::vector<ParticleMeshConsts> m_meshConstsCPU;
-	ConstantBuffer<ParticleMeshConsts> m_meshConstsBuffer;
+	StructuredBuffer<ParticleMeshConsts> m_meshConsts;
 
 	// Block Allocator
 	std::vector<bool> m_particleBlockTable;

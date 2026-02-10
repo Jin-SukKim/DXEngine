@@ -144,8 +144,8 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID, uint3 dtID : SV
 
         if (spawn.spawnShape == 0) spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
         else if (spawn.spawnShape == 1) spawnPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
-        else if (spawn.spawnShape == 2) VertexSpawn(rngState, vertexCount, spawnPos);
-        else if (spawn.spawnShape == 3) SurfaceSpawn(rngState, indexCount, spawnPos);
+        else if (spawn.spawnShape == 2) VertexSpawn(rngState, meshConsts[p.systemID].vertexCount, spawnPos);
+        else if (spawn.spawnShape == 3) SurfaceSpawn(rngState, meshConsts[p.systemID].indexCount, spawnPos);
         else if (spawn.spawnShape == 4) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, 0, dtID.x, false);
         else if (spawn.spawnShape == 5) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, spawn.spawnStartIndex, dtID.x, true);
 
@@ -164,6 +164,7 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID, uint3 dtID : SV
 
         if (spawn.simulationSpace == 1) // World Space
         {
+            matrix pWorld = meshConsts[systemID].pWorld;
             p.position = mul(float4(localPos, 1.0f), pWorld).xyz;
             p.velocity = mul(localVel, (float3x3) pWorld);
         }
@@ -221,6 +222,7 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID, uint3 dtID : SV
         if (finalIndex < frameConsts[emitterID].maxParticles)
         {
             p.ownerID = emitterID;
+            p.systemID = systemID;
             writeParticles[writeParticleOffset + finalIndex] = p;
         }
     }

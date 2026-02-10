@@ -12,6 +12,7 @@ struct Particle
     float3 rotation;
     float3 rotSpeed;
     uint ownerID;
+    uint systemID;
 };
 
 RWStructuredBuffer<Particle> writeParticles : register(u6);
@@ -27,6 +28,8 @@ cbuffer EmitterID : register(b5)
     uint writeParticleOffset;
     uint emitterID;
     uint spawnPosOffset;  // bakedOffset + customOffset 
+    uint systemID;
+    float3 paddingID;
 };
 
 struct EmitterID
@@ -35,6 +38,8 @@ struct EmitterID
     uint writeParticleOffset;
     uint emitterID;
     uint spawnPosOffset;  // bakedOffset + customOffset 
+    uint systemID;
+    float3 paddingID;
 };
 
 struct ParticleFrameConsts
@@ -143,12 +148,7 @@ struct ParticleConsts
     OrbitConsts orbit;
 };
 
-StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
-StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // յ SpawnPosition 
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // յ SpawnPosition 
-
-cbuffer ParticleMeshConsts : register(b6)
+struct ParticleMeshConsts
 {
     matrix pWorld;
     matrix pWorldIT;
@@ -156,6 +156,12 @@ cbuffer ParticleMeshConsts : register(b6)
     uint indexCount;
     float2 padding;
 };
+
+StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
+StructuredBuffer<ParticleConsts> consts : register(t9);
+StructuredBuffer<float3> spawnPositions : register(t10); // յ SpawnPosition 
+StructuredBuffer<EmitterID> emitterIDs : register(t11); // յ SpawnPosition 
+StructuredBuffer<ParticleMeshConsts> meshConsts : register(t16);
 
 struct SortElement
 {

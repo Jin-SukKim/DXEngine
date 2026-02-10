@@ -12,6 +12,7 @@ namespace DE {
 		Vector3 rotation = Vector3(0.f);
 		Vector3 rotSpeed = Vector3(0.f);
         UINT ownerID = UINT_MAX;
+        UINT systemID = UINT_MAX;
 	};
 
     struct EmitterID {
@@ -19,6 +20,8 @@ namespace DE {
         UINT writeParticleOffset;
         UINT emitterID;
         UINT spawnPosOffset;  // bakedOffset + customOffset 
+        UINT systemID;
+        Vector3 paddingID;
     };
 
     struct ParticleFrameConsts {

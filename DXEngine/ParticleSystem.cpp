@@ -118,6 +118,7 @@ namespace DE {
 		EmitterID eID = { 0, 0, 0, 0 };
 
 		eID.emitterID = m_currentEmitterIndex;
+		eID.systemID = m_poolHandle.systemSlot;
 		eID.readParticleOffset = m_currentParticleOffset;
 		eID.writeParticleOffset = m_currentParticleOffset;
 
@@ -623,7 +624,7 @@ namespace DE {
 
 	void ParticleSystem::BindConstantID(UINT emitterID)
 	{
-		// Manager  ε
+		// Manager
 		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
 	}
 

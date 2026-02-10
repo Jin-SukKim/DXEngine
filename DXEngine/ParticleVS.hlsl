@@ -49,7 +49,7 @@ GSInput main(uint vertexID : SV_VertexID)
     else
     {
         // ±âÁ¸: Local ÁÂÇ¥ÀÌ¹Ç·Î World Çà·Ä °ö¼À ÇÊ¿ä
-        output.position = mul(float4(p.position.xyz, 1.0), pWorld);
+        output.position = mul(float4(p.position.xyz, 1.0), meshConsts[p.systemID].pWorld);
     }
 
     /*float3x3 rotMatrix = GetRotationMatrix(p.rotation);

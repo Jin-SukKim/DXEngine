@@ -61,6 +61,7 @@ namespace DE {
 				ScopedTimer tUpload([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_upload, t); });
 				m_memoryPool->UploadFrameConsts();
 				m_memoryPool->UploadEmitterIDs();
+				m_memoryPool->UploadMeshConsts();
 			}
 		}
 
@@ -605,6 +606,7 @@ namespace DE {
 			EmitterID eID = initialData.emitterIDs[i];
 
 			eID.emitterID = handle.emitterIDs[i];
+			eID.systemID = handle.systemSlot;
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
 

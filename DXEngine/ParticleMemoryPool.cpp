@@ -57,8 +57,7 @@ namespace DE {
 		m_emitterIDBuffer.Initialize();
 
 		// MeshConsts Pool (System)
-		m_meshConstsCPU.resize(maxSystems);
-		m_meshConstsBuffer.Initialize();
+		m_meshConsts.InitializeDynamicSRV(device, maxSystems);
 
 		// Quad Mesh for Billboard Instancing (GS 제거용)
 		MeshData quadMesh = GeometryGenerator::MakeSquare(1.0f);
@@ -419,19 +418,22 @@ namespace DE {
 	{
 		if (systemIndex >= m_maxSystems) return;
 		
-		m_meshConstsCPU[systemIndex] = data;
+		m_meshConsts.Get(systemIndex) = data;
 	}
 
 	void ParticleMemoryPool::BindMeshConsts(UINT systemIndex)
 	{
 		if (systemIndex >= m_maxSystems) return;
-		
-		m_meshConstsBuffer.SetCpuData(m_meshConstsCPU[systemIndex]);
-		m_meshConstsBuffer.Upload();
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
-		context->VSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());
+		context->CSSetShaderResources(16, 1, m_meshConsts.GetAddressOfSRV());
+		context->VSSetShaderResources(16, 1, m_meshConsts.GetAddressOfSRV());
+	}
+
+	void ParticleMemoryPool::UploadMeshConsts()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		m_meshConsts.Upload(context.Get());
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)

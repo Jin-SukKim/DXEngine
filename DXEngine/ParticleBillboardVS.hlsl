@@ -55,7 +55,7 @@ ParticlePSInput main(VSParticleInput input)
     else
     {
         // Local Space
-        particleCenter = mul(float4(p.position.xyz, 1.0), pWorld);
+        particleCenter = mul(float4(p.position.xyz, 1.0), meshConsts[p.systemID].pWorld);
     }
 
     output.center = particleCenter;
