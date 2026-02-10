@@ -39,7 +39,9 @@ struct EmitterID
     uint emitterID;
     uint spawnPosOffset;  // bakedOffset + customOffset 
     uint systemID;
-    float3 paddingID;
+    uint indexCount;
+    uint startIndexLocation;
+    uint baseVertexLocation;
 };
 
 struct ParticleFrameConsts

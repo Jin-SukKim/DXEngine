@@ -39,15 +39,15 @@ public:
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
-	// 0 : TextureArray (Size Ǿ )
-	// 1 : Single Texture ( Texture 1, پ ػ )
+	// 0 : TextureArray (Size)
+	// 1 : Single Texture ( Texture 1 )
 	// 2 : MaterialModule  (PBR)
 	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
 	// Texture 
 	std::string m_texturePath;
 	int m_textureIdx = -1;
 
-	// پ ػ Texture 1 Ҷ
+	// Texture
 	int m_singleTextureIdx = -1;
 
 	Vector2 m_frameTiles = { 1, 1 };

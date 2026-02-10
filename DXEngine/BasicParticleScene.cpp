@@ -96,7 +96,7 @@ namespace DE {
 		m_spawnModule = AddObject<SpawnEffectsActor>(L"SpawnEffectsActor");
 		m_billboardModule = AddObject<BillboardEffectsActor>(L"BillboardEffectsActor");
 		m_forceModule = AddObject<ForceEffectsActor>(L"ForceEffectsActor");
-		m_materialModule = AddObject<MaterialEffectsActor>(L"MaterialEffectsActor");
+		//m_materialModule = AddObject<MaterialEffectsActor>(L"MaterialEffectsActor");
 		m_meshModule = AddObject<MeshEffectsActor>(L"MeshEffectsActor");
 		m_orbitModule = AddObject<OrbitEffectsActor>(L"OrbitEffectsActor");
 		m_subEmitSystem = AddObject<SubEmitterEffectsActor>(L"SubEmitterEffectsActor");
@@ -142,7 +142,7 @@ namespace DE {
 		m_spawnModule->SetPosOffset(Vector3(-15.f, 0.f, -10.f));
 		m_billboardModule->SetPosOffset(Vector3(-15.f, 0.f, 0.f));
 		m_forceModule->SetPosOffset(Vector3(-15.f, 0.f, 10.f));
-		m_materialModule->SetPosOffset(Vector3(3.f, 0.f, 0.f));
+		//m_materialModule->SetPosOffset(Vector3(3.f, 0.f, 0.f));
 		m_orbitModule->SetPosOffset(Vector3(0.f, 0.f, 5.f));
 		m_subEmitSystem->SetPosOffset(Vector3(0.f, 0.f, 10.f));
 		m_visualModule->SetPosOffset(Vector3(0.f, 0.f, 15.f));
@@ -170,5 +170,11 @@ namespace DE {
 	void BasicParticleScene::ClickEvent()
 	{
 		ClickEffectManager::Get().TriggerPreset("Thunder");
+	}
+
+	void BasicParticleScene::UpdateGUI()
+	{
+		Scene::UpdateGUI();
+		ParticleManager::Get().RenderMemoryPoolGUI();
 	}
 }

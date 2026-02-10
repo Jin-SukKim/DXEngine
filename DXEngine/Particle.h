@@ -21,7 +21,9 @@ namespace DE {
         UINT emitterID;
         UINT spawnPosOffset;  // bakedOffset + customOffset 
         UINT systemID;
-        Vector3 paddingID;
+        UINT indexCount;
+        UINT startIndexLocation;
+        UINT baseVertexLocation;
     };
 
     struct ParticleFrameConsts {

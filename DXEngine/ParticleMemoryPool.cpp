@@ -255,21 +255,23 @@ namespace DE {
 			GetReadBuffer().GetSRV(),
 			GetReadCount().GetSRV(),
 			m_frameConsts.GetSRV(),
-			m_consts.GetSRV()
+			m_consts.GetSRV(),
+			m_spawnPositions.GetSRV(),
+			m_emitterIDs.GetSRV()
 		};
-		context->CSSetShaderResources(6, 4, srvs);
-		context->VSSetShaderResources(6, 4, srvs);
-		context->PSSetShaderResources(6, 4, srvs);
+		context->CSSetShaderResources(6, 6, srvs);
+		context->VSSetShaderResources(6, 6, srvs);
+		context->PSSetShaderResources(6, 6, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindRender()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 4, srvs);
-		context->VSSetShaderResources(6, 4, srvs);
-		context->PSSetShaderResources(6, 4, srvs);
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(6, 6, srvs);
+		context->VSSetShaderResources(6, 6, srvs);
+		context->PSSetShaderResources(6, 6, srvs);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()
@@ -444,7 +446,6 @@ namespace DE {
 		UINT offset = 0;
 		context->IASetVertexBuffers(0, 1, &quadVB, &stride, &offset);
 		context->IASetIndexBuffer(quadIB, DXGI_FORMAT_R32_UINT, 0);
-
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)

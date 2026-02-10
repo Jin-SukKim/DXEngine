@@ -17,6 +17,7 @@
 #include "TextureManager.h"
 #include "MaterialSystem.h"
 #include "ParticleManager.h"
+#include "ModelManager.h"
 
 namespace DE {
 
@@ -74,6 +75,7 @@ namespace DE {
 		// Initialize managers
 		TextureManager::Get().Initialize();
 		MaterialSystem::Get().Initialize();
+		ModelManager::Get().Initialize();
 		ParticleManager::Get().Initialize();
 
 		// Create core actors

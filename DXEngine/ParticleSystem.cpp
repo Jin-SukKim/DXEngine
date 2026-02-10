@@ -126,6 +126,12 @@ namespace DE {
 		emitter->SetMemoryInfo(m_currentEmitterIndex);
 		emitter->Initialize(pConsts, pfConsts, pMeshArgs);
 
+		// TODO: RenderModule로부터 modelIdx가져오기
+		MeshRange range = ModelManager::Get().GetMeshRange(0); // TODO: modelIdx
+		eID.indexCount = range.indexCount;
+		eID.startIndexLocation = range.startIndexLocation;
+		eID.baseVertexLocation = range.baseVertexLocation;
+
 		emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
 			this->OnEmitterEvent(event, em);
 		});
@@ -155,7 +161,7 @@ namespace DE {
 		ParticleEmitter* emitter,
 		ParticleInitializer& initialData, std::set<std::wstring>& processedPaths)
 	{
-		//   emitter SubEmitter ε  (iterator ȿȭ )
+		//   emitter SubEmitter  (iterator)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
 		
 		for (const auto& sub : subEmittersCopy) {

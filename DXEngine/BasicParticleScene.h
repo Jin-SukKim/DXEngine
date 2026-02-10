@@ -35,6 +35,7 @@ namespace DE {
 		void Update(const float& deltaTime) override;
 
 		void ClickEvent();
+		void UpdateGUI();
 	private:
 		SquareActor* ground;
 		InputAction m_click;

@@ -57,13 +57,11 @@ namespace DE {
 			ParticleEmitter* emitter,
 			ParticleInitializer& initialData);
 
-		// [ Լ]
 		void Play();
 		void Pause();
 		void Stop();
 		void Restart();
 
-		// [Ӽ ]
 		void SetLooping(bool loop) { m_looping = loop; }
 		void SetDuration(float duration) { m_duration = duration; }
 		void SetPlayRate(float rate) { m_playRate = rate; }

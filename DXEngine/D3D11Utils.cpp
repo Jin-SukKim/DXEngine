@@ -24,6 +24,7 @@ namespace DE {
 
 		device->CreateBuffer(&desc, &indexData, indexBuffer.GetAddressOf());
 	}
+
 	void D3D11Utils::CreateVSAndIL(ComPtr<ID3D11Device>& device, const std::wstring& filename, const std::vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
 	{
 		// 임시로 사용할 데이터를 저장할 Blob 공간

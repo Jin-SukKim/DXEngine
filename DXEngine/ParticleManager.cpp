@@ -3,6 +3,7 @@
 #include "ParticleLoader.h"
 #include "RenderBase.h"
 #include "ScopedTimer.h" // [Added] Include ScopedTimer
+#include "ModelManager.h"
 #include <DirectXCollision.h> // [Added] For Frustum Culling
 
 namespace DE {
@@ -157,7 +158,7 @@ namespace DE {
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		GET_SINGLE(RenderBase)->SetLowResRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-		m_memoryPool->BindBillboardMesh();
+		ModelManager::Get().BindBuffersForRender();
 		for (auto* system : renderSystems) {
 			if (system) {
 				system->RenderBillboard();
@@ -587,7 +588,7 @@ namespace DE {
 
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
-		// Ҵ     Defragment  (  X)
+		// Defragment  
 		if (!handle.IsActive()) {
 			m_needsDefragment = true;
 		}

@@ -58,9 +58,9 @@ namespace DE {
 		m_spanwer->SetScene(this);
 		m_spanwer->SetActorType<Firework>();
 		m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		m_spanwer->SetSpawnInterval(0.05f);
+		m_spanwer->SetSpawnInterval(0.01f);
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(500);
+		m_spanwer->SetMaxActiveParticles(3000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 

@@ -38,6 +38,33 @@ namespace DE {
 
 		static void CreateIndexBuffer(ComPtr<ID3D11Device>& device, const std::vector<uint32_t>& indices, ComPtr<ID3D11Buffer>& indexBuffer);
 		
+		template<typename T_VERTEX>
+		static void CreateVertexBufferPool(ComPtr<ID3D11Device>& device, const UINT& maxCount, ComPtr<ID3D11Buffer>& vertexBuffer) {
+			D3D11_BUFFER_DESC desc = {};
+			desc.Usage = D3D11_USAGE_DEFAULT; // 중요: UpdateSubresource 사용 가능
+			desc.ByteWidth = UINT(sizeof(T_VERTEX) * maxCount); // 미리 크게 잡음 (예: 100만개)
+			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			desc.CPUAccessFlags = 0; // CPU 직접 접근 안 함 (UpdateSubresource 쓸 것임)
+			desc.StructureByteStride = sizeof(T_VERTEX);
+
+			// 초기 데이터 없이 생성 (nullptr)
+			ThrowIfFailed(device->CreateBuffer(&desc, nullptr, vertexBuffer.GetAddressOf()));
+		}
+
+		static void CreateIndexBufferPool(ComPtr<ID3D11Device>& device, const UINT& maxCount, ComPtr<ID3D11Buffer>& indexBuffer)
+		{
+			D3D11_BUFFER_DESC desc = {};
+			// [중요 변경] IMMUTABLE -> DEFAULT
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			desc.ByteWidth = UINT(sizeof(uint32_t) * maxCount);
+			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			desc.CPUAccessFlags = 0;
+			desc.StructureByteStride = sizeof(uint32_t);
+
+			// 초기 데이터 없이 생성
+			device->CreateBuffer(&desc, nullptr, indexBuffer.GetAddressOf());
+		}
+
 		// ConstantBuffer는 보통 Update에서 값을 매 프레임 바꿔주므로 CPU에서 쓰기, GPU에서 읽기가 가능한 Buffer를 생성
 		template<typename T_CONSTANT>
 		static void CreateConstantBuffer(ID3D11Device* device, const T_CONSTANT& constantData, ComPtr<ID3D11Buffer>& constantBuffer) {

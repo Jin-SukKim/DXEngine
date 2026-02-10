@@ -32,6 +32,7 @@ namespace DE {
 
 		SampleActor* m_sample = nullptr;
 		ParticleSpawner* m_spanwer = nullptr;
+		ParticleSpawner* m_spanwer2 = nullptr;
 		Firework* m_firework = nullptr;
 		RoseEffect* m_rose = nullptr;
 
