@@ -103,7 +103,6 @@ namespace DE {
 
 		// MeshConsts 
 		void UpdateMeshConsts(UINT systemIndex, const ParticleMeshConsts& data);
-		void BindMeshConsts(UINT systemIndex);
 
 		// Debug
 		void RenderMemoryPoolGUI();

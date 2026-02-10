@@ -68,7 +68,7 @@ public:
 	
 	// MeshConsts 
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
-	void BindMeshConsts(UINT systemSlot);
+	void BindMeshConsts();
 	void UploadMeshConsts();
 
 	void BindBillboardMesh();

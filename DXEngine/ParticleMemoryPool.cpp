@@ -421,10 +421,8 @@ namespace DE {
 		m_meshConsts.Get(systemIndex) = data;
 	}
 
-	void ParticleMemoryPool::BindMeshConsts(UINT systemIndex)
+	void ParticleMemoryPool::BindMeshConsts()
 	{
-		if (systemIndex >= m_maxSystems) return;
-
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetShaderResources(16, 1, m_meshConsts.GetAddressOfSRV());
 		context->VSSetShaderResources(16, 1, m_meshConsts.GetAddressOfSRV());

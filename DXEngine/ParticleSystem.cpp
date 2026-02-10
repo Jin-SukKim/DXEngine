@@ -213,7 +213,6 @@ namespace DE {
 		UpdateTransform();
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		if (m_vertexCount && m_indexCount) {
 			ID3D11ShaderResourceView* srvs[] = { m_meshVertex.GetSRV(), m_meshIndices.GetSRV() };
@@ -290,8 +289,6 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
-
 		// Main Emitter 
 		for (auto& emitter : m_meshEmitters)
 			emitter->Render({
@@ -352,8 +349,6 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
-
 		// Main Emitter 
 		for (auto& emitter : m_meshEmitters)
 			emitter->Render({
@@ -389,8 +384,6 @@ namespace DE {
 			return;
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		for (auto& emitter : m_billboardEmitters)
 			emitter->Render({
