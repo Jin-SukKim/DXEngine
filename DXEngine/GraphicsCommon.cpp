@@ -224,6 +224,7 @@ namespace DE {
 		D3D11Utils::CreateGS(device, L"ParticleGS.hlsl", particleGS);
 		D3D11Utils::CreatePS(device, L"ParticlePS.hlsl", particlePS);
 		D3D11Utils::CreatePS(device, L"ParticlePBR.hlsl", particlePbrPS);
+		D3D11Utils::CreatePS(device, L"ParticleCompositePS.hlsl", particleCompositePS);
 
 		// Billboard Instancing (GS 없음) - Vertex 구조체 사용
 		std::vector<D3D11_INPUT_ELEMENT_DESC> particleBillboardIEs = {
@@ -474,5 +475,9 @@ namespace DE {
 		particle.billboardInstancedPSO.vertexShader = particleBillboardVS;
 		particle.billboardInstancedPSO.geometryShader = nullptr; // GS 제거
 		particle.billboardInstancedPSO.primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	
+		postProcess.particleCompositePSO = postProcess.basicPSO;
+		postProcess.particleCompositePSO.pixelShader = particleCompositePS;
+		postProcess.particleCompositePSO.blendState = accumulateBS;
 	}
 }

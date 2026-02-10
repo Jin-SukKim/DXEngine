@@ -84,6 +84,8 @@ namespace DE {
 		void Update(const float& dt);
 		void Render();
 
+		void RenderDepth();
+
 		// Frustum Culling용
 		void SetViewAndProj(const Matrix& view, const Matrix& proj) {
 			m_view = view;

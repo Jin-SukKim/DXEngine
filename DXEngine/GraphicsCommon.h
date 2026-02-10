@@ -44,6 +44,7 @@ namespace DE {
 		struct {
 			GraphicsPSO basicPSO;
 			GraphicsPSO copyPSO;
+			GraphicsPSO particleCompositePSO;
 		} postProcess;
 
 		struct {
@@ -167,6 +168,7 @@ namespace DE {
 		// Billboard Instancing (GS 없음)
 		ComPtr<ID3D11InputLayout> particleBillboardIL;
 		ComPtr<ID3D11VertexShader> particleBillboardVS;
+		ComPtr<ID3D11PixelShader> particleCompositePS;
 
 	};
 

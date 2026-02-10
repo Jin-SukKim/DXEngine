@@ -285,7 +285,8 @@ namespace DE {
 
 		RenderActors(ActorCategory::Normal);
 		RenderActors(ActorCategory::Billboard);
-		
+		RenderActors(ActorCategory::Effect);
+		ParticleManager::Get().RenderDepth();
 		//m_skybox->Render();
 	}
 
@@ -325,13 +326,13 @@ namespace DE {
 		//renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
 		//m_skybox->Render();
 
+		// Render debug geometry
+		RenderDebugGeometry();
+
 		// Render particles (ParticleManager handles PSO restoration)
 		// CPU Frustum Culling용으로 Update()에서 저장한 View, Proj 전달
 		ParticleManager::Get().SetViewAndProj(m_view, m_proj);
 		ParticleManager::Get().Render();
-
-		// Render debug geometry
-		RenderDebugGeometry();
 	}
 
 	void Scene::RenderActors(ActorCategory category)
