@@ -157,7 +157,7 @@ namespace DE {
 
 		std::wstring m_jsonPath;
 		FileWatcher::CallbackID m_watcherID = 0;
-		ConstantBuffer<ParticleMeshConsts> m_meshConsts;
+		ParticleMeshConsts m_meshConsts;
 
 		// Mesh 
 		StructuredBuffer<Vector3> m_meshVertex;

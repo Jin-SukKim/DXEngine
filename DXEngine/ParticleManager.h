@@ -101,8 +101,8 @@ namespace DE {
 		// EmitterID ε (Manager ó)
 		void BindEmitterID(UINT globalSlotIndex);
 
-		// MeshConsts  ߰
-		void UpdateMeshConsts(UINT systemIndex, const MeshConstants& data);
+		// MeshConsts 
+		void UpdateMeshConsts(UINT systemIndex, const ParticleMeshConsts& data);
 		void BindMeshConsts(UINT systemIndex);
 
 		// Debug

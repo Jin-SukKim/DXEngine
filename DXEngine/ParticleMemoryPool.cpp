@@ -427,6 +427,7 @@ namespace DE {
 		if (systemIndex >= m_maxSystems) return;
 		
 		m_meshConstsBuffer.SetCpuData(m_meshConstsCPU[systemIndex]);
+		m_meshConstsBuffer.Upload();
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		context->CSSetConstantBuffers(6, 1, m_meshConstsBuffer.GetAddressOf());

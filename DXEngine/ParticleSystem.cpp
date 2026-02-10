@@ -14,7 +14,6 @@
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
 	{
-		m_meshConsts.Initialize();
 		m_creationTime = 0.0f;
 		m_basePriority = 0.5f;
 	}
@@ -47,6 +46,7 @@ namespace DE {
 		, m_maxEmitters(0)
 		, m_currentParticleOffset(0)
 		, m_basePriority(other.m_basePriority)
+		, m_meshConsts(other.m_meshConsts)
 	{
 		// Main Emitter 
 		for (const auto& emitter : other.m_emitters) {
@@ -54,8 +54,6 @@ namespace DE {
 				m_emitters.push_back(std::make_unique<ParticleEmitter>(*emitter));
 			}
 		}
-		m_meshConsts.Initialize();
-		m_meshConsts.SetCpuData(other.m_meshConsts.GetCpu());
 
 		// SubEmitter 
 		for (const auto& [path, emitterPtr] : other.m_subEmitterPool) {
@@ -214,7 +212,7 @@ namespace DE {
 		UpdateTransform();
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		if (m_vertexCount && m_indexCount) {
 			ID3D11ShaderResourceView* srvs[] = { m_meshVertex.GetSRV(), m_meshIndices.GetSRV() };
@@ -291,7 +289,7 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		// Main Emitter 
 		for (auto& emitter : m_meshEmitters)
@@ -353,7 +351,7 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		// Main Emitter 
 		for (auto& emitter : m_meshEmitters)
@@ -391,7 +389,7 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		context->VSSetConstantBuffers(6, 1, m_meshConsts.GetAddressOf());
+		ParticleManager::Get().BindMeshConsts(m_poolHandle.systemSlot);
 
 		for (auto& emitter : m_billboardEmitters)
 			emitter->Render({
@@ -585,21 +583,21 @@ namespace DE {
 		m_meshVertex.SetData(vertices);
 		m_meshIndices.SetData(meshes.indexCPU);
 
-		auto& cpuData = m_meshConsts.GetCpu();
-		cpuData.vertexCount = m_vertexCount;
-		cpuData.indexCount = m_indexCount;
+		m_meshConsts.vertexCount = m_vertexCount;
+		m_meshConsts.indexCount = m_indexCount;
 
 		m_meshVertex.Upload(context.Get());
 		m_meshIndices.Upload(context.Get());
-		m_meshConsts.Upload();
+		
+		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, m_meshConsts);
 	}
 
 	void ParticleSystem::SetTransform(const MeshConstants& transform)
 	{
-		auto& cpuData = m_meshConsts.GetCpu();
+		auto& cpuData = m_meshConsts;
 		cpuData.world = transform.world;
 		cpuData.worldIT = transform.worldIT;
-		m_meshConsts.Upload();
+		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, m_meshConsts);
 	}
 
 	void ParticleSystem::SetTarget(Actor* owner, const int& modelIdx)
@@ -666,9 +664,6 @@ namespace DE {
 		meshConsts.world = tr->GetTransformMatrix().Transpose();
 		meshConsts.worldIT = meshConsts.world.Invert();
 		this->SetTransform(meshConsts);
-
-		// Pool ε (System ε )
-		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, meshConsts);
 	}
 
 	Vector3 ParticleSystem::GetWorldPosition() const
@@ -684,7 +679,7 @@ namespace DE {
 		}
 
 		// owner가 없으면 meshConsts에서 추출
-		const auto& cpuData = m_meshConsts.GetCpu();
+		const auto& cpuData = m_meshConsts;
 		// world 행렬의 4번째 열 (translation) - 이미 Transpose된 상태일 수 있음
 		return Vector3(cpuData.world._41, cpuData.world._42, cpuData.world._43);
 	}
@@ -695,19 +690,17 @@ namespace DE {
 		ParticleConsts& pConsts, 
 		EmitterID& eID)
 	{
-		eID.spawnPosOffset = UINT_MAX;  // ⺻: ̻
+		eID.spawnPosOffset = UINT_MAX; 
 		
 		if (!emitter->GetBakedPath().empty()) {
 			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
 			if (it != m_spawnPosCache.end()) {
-				// ĳ Ʈ
 				emitter->SetSpawnPosInfo(it->second.first);
 				eID.spawnPosOffset = it->second.first;
 				pConsts.spawn.bakedCount = it->second.second;
 				return;
 			}
 
-			// ĳ ̽
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
 			

@@ -617,15 +617,9 @@ namespace DE {
 		}
 	}
 
-	void ParticleManager::UpdateMeshConsts(UINT systemSlot, const MeshConstants& data)
+	void ParticleManager::UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data)
 	{
-		ParticleMeshConsts pmConsts;
-		pmConsts.world = data.world;
-		pmConsts.worldIT = data.worldIT;
-		pmConsts.vertexCount = 0;
-		pmConsts.indexCount = 0;
-
-		m_memoryPool->UpdateMeshConsts(systemSlot, pmConsts);
+		m_memoryPool->UpdateMeshConsts(systemSlot, data);
 	}
 
 	void ParticleManager::BindMeshConsts(UINT systemSlot)
