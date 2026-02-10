@@ -67,79 +67,33 @@ namespace DE {
 	void BillboardRenderModule::Initialize(ParticleInitContext& ctx)
 	{
 		RenderModule::Initialize(ctx);
-		RenderConsts& consts = ctx.consts.render;
-		consts.textureIdx = m_textureIdx;
-		consts.textureMode = static_cast<UINT>(m_textureMode);
-		consts.singleTextureIdx = m_singleTextureIdx;
-		m_modelIdx = 0;
+		m_modelIdx = 0; // Billboard quad
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
 	{
 		RenderModule::OnRender(ctx);
 
-		// GS 없는 인스턴싱 빌보드 PSO 사용
-		
-		ID3D11ShaderResourceView* texSRV = nullptr;
-		switch (m_textureMode)
-		{
-		case BillboardTextureMode::Material:
-			if (ctx.materialModule) {
-				ctx.materialModule->BindMaterialForMesh(0);
-			}
-			break;
+		// Always use Material system for texture binding
+		if (ctx.materialModule)
+			ctx.materialModule->BindMaterialForMesh(0);
+		else
+			MaterialSystem::Get().BindMaterial(0); // Fallback to default material
 
-		case BillboardTextureMode::SingleTexture:
-			if (m_singleTextureIdx >= 0) {
-				texSRV = TextureManager::Get().GetTextureSRV(m_singleTextureIdx);
-				ctx.context->PSSetShaderResources(0, 1, &texSRV);
-			}
-			break;
-
-		case BillboardTextureMode::TextureArray:
-		default:
-			break;
-		}
-
-		// DrawIndexedInstancedIndirect (쿼드 메쉬 인스턴싱)
+		// DrawIndexedInstancedIndirect (instanced billboard quad)
 		ctx.context->DrawIndexedInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
 	{
-		RenderModule::LoadFromJson(data);
-
-		if (data.contains("useMaterial") && data["useMaterial"] == true)
-			m_textureMode = BillboardTextureMode::Material;
-		else if (data.contains("useSingleTexture") && data["useSingleTexture"] == true) {
-			m_textureMode = BillboardTextureMode::SingleTexture;
-			if (data.contains("texture"))
-				m_singleTextureIdx = TextureManager::Get().LoadTexture(data["texture"], data.value("isSRGB", true));
-		}
-		else {
-			m_textureMode = BillboardTextureMode::TextureArray;
-			if (data.contains("texture")) {
-				const auto [path, idx] = TextureManager::Get().LoadParticleTexture(data["texture"]);
-				m_texturePath = path;
-				m_textureIdx = idx;
-			}
-		}
+		RenderModule::LoadFromJson(data); // Only parses blendMode
+		// All texture loading moved to MaterialModule
 	}
 
 	std::unique_ptr<ParticleModule> BillboardRenderModule::Clone() const
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
-
-		CopyBasicSettings(cloned.get());
-
-		// Billboard  
-		cloned->m_textureMode = this->m_textureMode;
-		cloned->m_texturePath = this->m_texturePath;
-		cloned->m_textureIdx = this->m_textureIdx;
-		cloned->m_singleTextureIdx = this->m_singleTextureIdx;
-
-		// GPU ۴ ParticleEmitter 
-
+		CopyBasicSettings(cloned.get()); // Only blendMode and m_blendState
 		return cloned;
 	}
 

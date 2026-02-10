@@ -23,10 +23,10 @@
         "gravity": [0.0, 0.0, 0.0],
         "drag": 0.02
     },
+  "Material": {
+    "texture": "Textures/glassParticle.png"
+  },
   "BillboardRender": {
-    "blendMode": "Additive",
-    "useSingleTexture": true,
-    "texture": "Textures/glassParticle.png",
-    "isSRGB": true
+    "blendMode": "Additive"
   }
 }

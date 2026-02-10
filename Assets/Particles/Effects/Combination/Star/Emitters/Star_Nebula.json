@@ -38,10 +38,11 @@
         "vortexFalloff": 0.3,
         "pull": [-0.8, 0.0]
     },
-  "BillboardRender": {
-    "blendMode": "Additive",
-    "useSingleTexture": true,
+  "Material": {
     "texture": "Textures/core2.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   },
     "SubEmitters": [
       {

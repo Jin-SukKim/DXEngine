@@ -15,7 +15,7 @@ namespace DE {
 		if (!m_isLoadedFromJson && ctx.renderModule) {
 			const Model* model = ModelManager::Get().GetModel(ctx.renderModule->GetModelIndex());
 			if (model)
-				m_materialIndices = model->materialIndices; // ¸ðµ¨ÀÇ ±âº» Material Index º¹»ç
+				m_materialIndices = model->materialIndices; // ï¿½ï¿½ï¿½ï¿½ ï¿½âº» Material Index ï¿½ï¿½ï¿½ï¿½
 		}
 	}
 
@@ -23,12 +23,12 @@ namespace DE {
 	{
 		int matIndex = 0; // Default
 
-		// À¯È¿ÇÑ ÀÎµ¦½ºÀÎÁö È®ÀÎ
+		// ï¿½ï¿½È¿ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 		if (subMeshIndex >= 0 && subMeshIndex < m_materialIndices.size()) {
 			matIndex = m_materialIndices[subMeshIndex];
 		}
 		else if (!m_materialIndices.empty()) {
-			// ÀÎµ¦½º°¡ ¹üÀ§¸¦ ¹þ¾î³ª¸é Ã¹ ¹øÂ° ÀçÁúÀÌ¶óµµ »ç¿ë (¾ÈÀüÀåÄ¡)
+			// ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î³ªï¿½ï¿½ Ã¹ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½Ì¶ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡)
 			matIndex = m_materialIndices[0];
 		}
 
@@ -37,17 +37,42 @@ namespace DE {
 
 	void MaterialModule::LoadFromJson(const json& data)
 	{
+		std::cout << "[MaterialModule] LoadFromJson called!" << std::endl;
+		std::cout << "[MaterialModule] JSON data: " << data.dump(2) << std::endl;
+
 		m_materialIndices.clear();
 
+		// Option 1: Full PBR material JSON files
 		if (data.contains("materials") && data["materials"].is_array())
-			// ¹è¿­·Î µÈ ÀçÁú Á¤ÀÇ ·Îµå
+		{
+			std::cout << "[MaterialModule] Loading PBR materials array" << std::endl;
 			for (const auto& matPath : data["materials"])
 				m_materialIndices.emplace_back(
 					MaterialSystem::Get().CreateMaterialFromJson(matPath));
+		}
+		// Option 2: Simple inline texture (creates material automatically)
+		else if (data.contains("texture"))
+		{
+			std::string texturePath = data["texture"];
+			std::cout << "[MaterialModule] Loading inline texture: " << texturePath << std::endl;
+			MaterialConstants constants = {}; // Zero-initialize all fields
+			constants.albedoFactor = Vector3(1.0f);
+			// All use*Map flags are now explicitly 0 (will be set to 1 when texture loads)
+			std::vector<std::string> texPaths = { texturePath };
+			int matIdx = MaterialSystem::Get().CreateMaterial(
+				"Inline_" + texturePath, constants, texPaths);
+			m_materialIndices.emplace_back(matIdx);
+			std::cout << "[MaterialModule] Created material index: " << matIdx << std::endl;
+		}
+		else
+		{
+			std::cout << "[MaterialModule] WARNING: No 'materials' or 'texture' found in JSON!" << std::endl;
+		}
 
 		if (!m_materialIndices.empty())
 			m_isLoadedFromJson = true;
 
+		// Sprite animation settings
 		if (data.contains("sprite")) {
 			auto& sprite = data["sprite"];
 			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);

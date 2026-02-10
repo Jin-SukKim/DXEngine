@@ -37,13 +37,14 @@
     "rotationRate": 0.5,
     "offset": 0.0
   },
-  "BillboardRender": {
-    "blendMode": "Additive",
-    "useSingleTexture": true,
+  "Material": {
     "texture": "Textures\\explosion2.png",
     "sprite": {
       "frameTiles": [ 4, 4 ],
       "frameCount": 16
     }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   }
 }

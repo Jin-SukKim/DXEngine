@@ -21,14 +21,20 @@ void ParticleLoader::ApplyJsonTo<ParticleEmitter>(ParticleEmitter* target, const
 	}
 
 	for (auto& [key, value] : jsonData.items()) {
-		// Module  ƴ϶ Emitter  ؿ  
+		// Module  ƴ϶ Emitter  ؿ
 		if (key == "Name" || key == "Duration" || key == "CompletionDelay" || key == "SubEmitters" || key == "overdrawControl")
 			continue;
 
+		std::cout << "[ParticleLoader] Processing key: " << key << std::endl;
 		auto module = ParticleModuleFactory::Create(key);
 		if (module) {
+			std::cout << "[ParticleLoader] Created module for key: " << key << std::endl;
+			std::cout << "[ParticleLoader] Module data: " << value.dump(2) << std::endl;
 			module->LoadFromJson(value);
 			target->AddModule(std::move(module));
+		}
+		else {
+			std::cout << "[ParticleLoader] No module found for key: " << key << std::endl;
 		}
 	}
 

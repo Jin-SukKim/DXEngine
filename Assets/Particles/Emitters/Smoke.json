@@ -24,13 +24,13 @@
     "drag": 0.9
   },
   "Material": {
+    "texture": "Textures\\explosion2.png",
     "sprite": {
       "frameTiles": [ 4, 4 ],
       "frameCount": 16
     }
   },
   "BillboardRender": {
-    "blendMode": "Additive",
-    "texture": "Textures\\explosion2.png"
+    "blendMode": "Additive"
   }
 }

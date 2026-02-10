@@ -108,13 +108,11 @@ namespace DE {
     };
 
     struct RenderConsts {
-        int textureIdx;
         UINT frameCount;
         Vector2 frameTiles;
         UINT indexCount;
-        UINT textureMode;
-        int singleTextureIdx;
         UINT useSorting;
+        Vector3 renderPadding;
     };
 
     struct ParticleConsts {

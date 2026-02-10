@@ -7,19 +7,21 @@ namespace DE {
 	{
 		auto device = GET_SINGLE(RenderBase)->GetDevice();
 
-		static MaterialConstants constant;
-		constant.albedoFactor = Vector3(0.5f);
+		static MaterialConstants constant = {}; // Zero-initialize all fields
+		constant.albedoFactor = Vector3(1.0f);
 		constant.roughnessFactor = 0.5f;
 		constant.metallicFactor = 0.5f;
 		constant.emissionFactor = Vector3(0.f);
+		// All use*Map flags are explicitly 0 (no textures)
+		// This ensures particles without Material module show glow circle
 
-		static std::vector<std::string> textures = { "Materials\\default.png"};
+		static std::vector<std::string> textures = {}; // No textures for default material
 		CreateMaterial("DefaultMaterial", constant, textures);
 	}
 
 	int MaterialSystem::CreateMaterial(const std::string& name, const MeshData& meshData, bool isGLTF)
 	{
-		// nameÀº ÀÌ¹Ì »ó´ë °æ·Î (¿¹: "Models/Chair.obj")
+		// nameï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½: "Models/Chair.obj")
 		if (m_materialMap.find(name) != m_materialMap.end())
 			return m_materialMap[name];
 		
@@ -29,7 +31,7 @@ namespace DE {
 		Material mat;
 		mat.name = name;
 
-		// ÅØ½ºÃ³ °æ·Îµµ »ó´ë °æ·Î·Î ÀúÀåµÊ
+		// ï¿½Ø½ï¿½Ã³ ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Î·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (!meshData.albedoTextureFilename.empty()) {
 			std::cout << "Loading albedo: " << meshData.albedoTextureFilename << std::endl;
 			mat.albedoTexture = TextureManager::Get().LoadTexture(meshData.albedoTextureFilename, true);
@@ -108,10 +110,16 @@ namespace DE {
 		Material mat;
 		mat.name = name;
 
-		// texturePaths´Â ÀÌ¹Ì »ó´ë °æ·Î
+		// texturePathsï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		if (texturePaths.size() > 0 && !texturePaths[0].empty()) {
 			mat.albedoTexture = TextureManager::Get().LoadTexture(texturePaths[0], true);
-			if (mat.albedoTexture >= 0) consts.GetCpu().useAlbedoMap = 1;
+			if (mat.albedoTexture >= 0) {
+				consts.GetCpu().useAlbedoMap = 1;
+				std::cout << "[MaterialSystem] Loaded albedo texture: " << texturePaths[0] << " (index: " << mat.albedoTexture << ")" << std::endl;
+			}
+			else {
+				std::cout << "[MaterialSystem] FAILED to load albedo texture: " << texturePaths[0] << std::endl;
+			}
 		}
 		if (texturePaths.size() > 1 && !texturePaths[1].empty()) {
 			mat.normalTexture = TextureManager::Get().LoadTexture(texturePaths[1], false);
@@ -248,22 +256,22 @@ namespace DE {
 
 	std::string MaterialSystem::SimplifyTexturePath(const std::string& fullPath)
 	{
-		// "Models/DamagedHelmet/Default_albedo.jpg" ¡æ "DamagedHelmet/Default_albedo.jpg"
-		// "Models/" ºÎºÐ Á¦°Å
+		// "Models/DamagedHelmet/Default_albedo.jpg" ï¿½ï¿½ "DamagedHelmet/Default_albedo.jpg"
+		// "Models/" ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½
 		
 		size_t modelsPos = fullPath.find("Assets/");
 		if (modelsPos != std::string::npos) {
-			// "Models/" ÀÌÈÄ ºÎºÐ ¹ÝÈ¯
-			return fullPath.substr(modelsPos + 7); // "Models/" ±æÀÌ = 7
+			// "Models/" ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½È¯
+			return fullPath.substr(modelsPos + 7); // "Models/" ï¿½ï¿½ï¿½ï¿½ = 7
 		}
 		
-		// "Models\"·Î ÀúÀåµÈ °æ¿ì (Windows °æ·Î)
+		// "Models\"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (Windows ï¿½ï¿½ï¿½)
 		modelsPos = fullPath.find("Assets\\");
 		if (modelsPos != std::string::npos) {
 			return fullPath.substr(modelsPos + 7);
 		}
 		
-		// "Models/"°¡ ¾øÀ¸¸é ±×´ë·Î ¹ÝÈ¯
+		// "Models/"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½È¯
 		return fullPath;
 	}
 
@@ -281,7 +289,7 @@ namespace DE {
 		data["Metallic"] = constants.metallicFactor;
 		data["Emission"] = { constants.emissionFactor.x, constants.emissionFactor.y, constants.emissionFactor.z };
 
-		// ÅØ½ºÃ³ °æ·Î ÀúÀå ½Ã "Models/" ºÎºÐ Á¦°Å
+		// ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ "Models/" ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (mat->albedoTexture >= 0) {
 			std::string path = TextureManager::Get().GetTexturePath(mat->albedoTexture);
 			data["Textures"]["albedo"] = SimplifyTexturePath(path);
@@ -311,14 +319,14 @@ namespace DE {
 			data["Textures"]["height"] = SimplifyTexturePath(path);
 		}
 
-		// ÆÄÀÏ¸íÀº nameÀÇ ¸¶Áö¸· ºÎºÐ »ç¿ë
+		// ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ nameï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½
 		std::filesystem::path baseDir = "..\\Assets\\Materials\\";
 		std::filesystem::path materialPath(mat->name);
-		std::string filename = materialPath.stem().string();  // È®ÀåÀÚ Á¦°Å
+		std::string filename = materialPath.stem().string();  // È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 		std::filesystem::path fullPath = baseDir / (filename + ".json");
 
-		// µð·ºÅä¸®°¡ ¾øÀ¸¸é »ý¼º
+		// ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (!std::filesystem::exists(baseDir))
 			std::filesystem::create_directories(baseDir);
 
@@ -337,31 +345,31 @@ namespace DE {
 	{
 		std::ifstream file("..\\Assets\\" + jsonPath);
 		if (!file.is_open()) {
-			// ·Î±×: ÆÄÀÏ ¿­±â ½ÇÆÐ
-			return 0; // Default ÀçÁú
+			// ï¿½Î±ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+			return 0; // Default ï¿½ï¿½ï¿½ï¿½
 		}
 
 		json data;
 		file >> data;
 		file.close();
 
-		// 2. JSON µ¥ÀÌÅÍ ÆÄ½Ì
+		// 2. JSON ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½
 		std::string matName = data.value("Name", "Unnamed_Material");
 
-		// ÀÌ¸§À¸·Î Áßº¹ È®ÀÎ
+		// ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ßºï¿½ È®ï¿½ï¿½
 		if (m_materialMap.find(matName) != m_materialMap.end())
 			return m_materialMap[matName];
 
 		MaterialConstants constants;
 		std::vector<std::string> texPaths(7); // Albedo, Normal, Metallic, Roughness, AO, Emissive, Height
 
-		// °ª ·Îµå
+		// ï¿½ï¿½ ï¿½Îµï¿½
 		if (data.contains("AlbedoFactor")) constants.albedoFactor = JsonToVec3(data["AlbedoFactor"]);
 		if (data.contains("RoughnessFactor")) constants.roughnessFactor = data["RoughnessFactor"];
 		if (data.contains("MetallicFactor")) constants.metallicFactor = data["MetallicFactor"];
 		if (data.contains("EmissionFactor")) constants.emissionFactor = JsonToVec3(data["EmissionFactor"]);
 
-		// ÅØ½ºÃ³ °æ·Î ·Îµå
+		// ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ ï¿½Îµï¿½
 		if (data.contains("Textures")) {
 			auto& tex = data["Textures"];
 			if (tex.contains("albedo")) texPaths[0] = tex["albedo"];
@@ -373,7 +381,7 @@ namespace DE {
 			if (tex.contains("height")) texPaths[6] = tex["height"];
 		}
 
-		// 3. ÀçÁú »ý¼º È£Ãâ
+		// 3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½
 		return CreateMaterial(matName, constants, texPaths);
 	}
 }

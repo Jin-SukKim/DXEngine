@@ -18,84 +18,44 @@ struct ParticlePSInput
     float lifeRatio : TEXCOORD1;
 };
 
-float4 SampleParticleTexture(float3 uvw)
-{
-    float4 color = float4(1, 1, 1, 1);
-
-    RenderConsts render = consts[emitterID].render;
-    // [Mode 0: Material]
-    if (render.textureMode == 0)
-    {
-        // Albedo ø
-        color = albedoTex.Sample(linearClampSampler, uvw.xy);
-
-        // Emissive ߰ (  - ƼŬ ַ Emissive Ӽ ϹǷ ִ 찡 )
-        // float4 emissive = materialEmissiveMap.SampleLevel(samp, uvw.xy, lod);
-        // color.rgb += emissive.rgb; 
-    }
-    // [Mode 1: Single Texture]
-    else if (render.textureMode == 1)
-    {
-        //  ؽó ø (uvw.z ε )
-        color = albedoTex.Sample(linearClampSampler, uvw.xy);
-    }
-    // [Mode 2: Texture Array (Default)]
-    else
-    {
-        // ؽó 迭 ø (uvw.z = Array Index)
-        color = particleTex.Sample(linearClampSampler, uvw);
-    }
-
-    return color;
-}
-
+// Sprite animation texture sampling - always uses albedoTex (t0)
 float4 SpriteTexture(float lifeRatio, float2 uv) {
     RenderConsts render = consts[emitterID].render;
+
+    // Sprite animation processing
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
-        //  frame
         uint currentFrame = floor(lifeRatio * render.frameCount);
         currentFrame = min(currentFrame, render.frameCount - 1);
 
-        // Sprite Sheet col, row
+        // Sprite Sheet col, row calculation
         uint width = render.frameTiles.x;
         uint col = currentFrame % width;
         uint row = currentFrame / width;
 
-        float2 uvSize = 1.f / render.frameTiles; // Tile 1ĭ ũ
-
+        float2 uvSize = 1.f / render.frameTiles;
         uv = (uv + float2(col, row)) * uvSize;
     }
 
-    return SampleParticleTexture(float3(uv, render.textureIdx));
+    // Always sample from albedoTex (t0) bound by MaterialSystem
+    return albedoTex.Sample(linearClampSampler, uv);
 }
 
 float4 main(ParticlePSInput input) : SV_TARGET
 {
     float4 finalColor = input.color;
 
-    RenderConsts render = consts[emitterID].render;
-    bool hasTexture = (render.textureMode != 2) || (render.textureIdx >= 0);
-    // --------------------------------------------------------
-    // Case 1: ؽó ִ  (Sprite / Animation)
-    // --------------------------------------------------------
-    if (hasTexture)
+    // Use MaterialConstants.useAlbedoMap to determine if texture exists
+    if (useAlbedoMap)
     {
+        // Case 1: Texture exists (Sprite / Animation)
         float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
         finalColor *= texColor;
-
-        // Additive Blend에서는 discard 제거 (성능 향상)
-        // Alpha Blend가 자동으로 투명도 처리
     }
-    // --------------------------------------------------------
-    // Case 2: ؽó   (⺻  Glow)
-    // --------------------------------------------------------
     else
     {
-        // ؽó     ׸ϴ.
+        // Case 2: No texture - Default Glow Circle
         float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
-
-        // Additive Blend에서는 discard 제거 (성능 향상)
         finalColor.a *= circleAlpha;
     }
 

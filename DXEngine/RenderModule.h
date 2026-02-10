@@ -31,27 +31,14 @@ protected:
 
 class BillboardRenderModule : public RenderModule
 {
-	enum class BillboardTextureMode {
-		Material, SingleTexture, TextureArray
-	};
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
-	// 0 : TextureArray (Size)
-	// 1 : Single Texture ( Texture 1 )
-	// 2 : MaterialModule  (PBR)
-	BillboardTextureMode m_textureMode = BillboardTextureMode::TextureArray;
-	// Texture 
-	std::string m_texturePath;
-	int m_textureIdx = -1;
-
-	// Texture
-	int m_singleTextureIdx = -1;
-
-	// IndirectArgsBuffer  - ParticleEmitter 
+	// All texture handling moved to MaterialModule
+	// IndirectArgsBuffer  - ParticleEmitter
 };
 
 class MeshRenderModule : public RenderModule

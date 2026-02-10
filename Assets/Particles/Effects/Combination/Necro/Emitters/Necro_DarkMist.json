@@ -31,9 +31,10 @@
         "gravity": [0.0, 0.0, 0.0],
         "drag": 0.0
     },
-  "BillboardRender": {
-    "blendMode": "Additive",
-    "useSingleTexture": true,
+  "Material": {
     "texture": "Textures/purple.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   }
 }

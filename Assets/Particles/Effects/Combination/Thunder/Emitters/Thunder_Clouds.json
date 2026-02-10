@@ -37,14 +37,15 @@
         "vortexFalloff": 0.3,
         "pull": [-0.3, 0.0]
     },
-  "BillboardRender": {
-    "blendMode": "Additive",
-    "useSingleTexture": true,
+  "Material": {
     "texture": "Textures/SmokeSprite2.png",
     "sprite": {
       "frameTiles": [ 4.0, 4.0 ],
       "frameCount": 16
     }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   },
     "SubEmitters": [
       {

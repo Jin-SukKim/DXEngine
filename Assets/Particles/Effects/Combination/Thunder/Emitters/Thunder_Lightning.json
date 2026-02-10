@@ -31,13 +31,15 @@
         "gravity": [0.0, 0.0, 0.0],
         "drag": 0.0
     },
-  "BillboardRender": {
-    "blendMode": "Additive",
+  "Material": {
     "texture": "Textures/thunder2.jpg",
     "sprite": {
       "frameTiles": [ 4.0, 4.0 ],
       "frameCount": 16
     }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   },
     "SubEmitters": [
       {

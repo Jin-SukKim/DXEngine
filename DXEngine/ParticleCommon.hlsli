@@ -106,13 +106,11 @@ struct ForceConsts
 
 struct RenderConsts
 {
-    int textureIdx;
     uint frameCount;
     float2 frameTiles;
     uint indexCount;
-    uint textureMode;
-    int singleTextureIdx;
     uint useSorting;
+    float3 renderPadding;
 };
 
 struct VortexConsts

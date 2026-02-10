@@ -45,13 +45,14 @@
     "rotationRate": 1.0,
     "offset": 0.0
   },
-  "BillboardRender": {
-    "blendMode": "Additive",
-    "useSingleTexture": true,
+  "Material": {
     "texture": "Textures/runes.png",
     "sprite": {
       "frameTiles": [ 9, 3 ],
       "frameCount": 27
     }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   }
 }
