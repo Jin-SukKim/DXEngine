@@ -44,7 +44,6 @@ namespace DE {
 				ScopedTimer tSetup([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_setup, t); });
 				m_memoryPool->ClearWriteCount();
 				m_memoryPool->BindCompute();
-				m_memoryPool->BindMeshConsts();
 			}
 
 			// (B) CPU PreUpdate
@@ -148,7 +147,6 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		ModelManager::Get().BindBuffersForRender();
-		m_memoryPool->BindMeshConsts();
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 		for (auto* system : renderSystems) {
@@ -203,7 +201,6 @@ namespace DE {
 
 		m_memoryPool->UploadFrameConsts();
 		m_memoryPool->BindRender();
-		m_memoryPool->BindMeshConsts();
 		m_memoryPool->UpdateRenderArgs();
 		ModelManager::Get().BindBuffersForRender();
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)

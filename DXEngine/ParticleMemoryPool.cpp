@@ -231,9 +231,10 @@ namespace DE {
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV(),
 			m_spawnPositions.GetSRV(),
-			m_emitterIDs.GetSRV()
+			m_emitterIDs.GetSRV(),
+			m_meshConsts.GetSRV()
 		};
-		context->CSSetShaderResources(6, 6, srvs);
+		context->CSSetShaderResources(16, 7, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindCompute()
@@ -243,8 +244,8 @@ namespace DE {
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
 
-		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 6, srvs);
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(16, 7, srvs);
 	}
 	
 	void ParticleMemoryPool::BindRender()
@@ -257,21 +258,22 @@ namespace DE {
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV(),
 			m_spawnPositions.GetSRV(),
-			m_emitterIDs.GetSRV()
+			m_emitterIDs.GetSRV(),
+			m_meshConsts.GetSRV()
 		};
-		context->CSSetShaderResources(6, 6, srvs);
-		context->VSSetShaderResources(6, 6, srvs);
-		context->PSSetShaderResources(6, 6, srvs);
+		context->CSSetShaderResources(16, 7, srvs);
+		context->VSSetShaderResources(16, 7, srvs);
+		context->PSSetShaderResources(16, 7, srvs);
 	}
 
 	void ParticleMemoryPool::UnbindRender()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetShaderResources(6, 6, srvs);
-		context->VSSetShaderResources(6, 6, srvs);
-		context->PSSetShaderResources(6, 6, srvs);
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(16, 7, srvs);
+		context->VSSetShaderResources(16, 7, srvs);
+		context->PSSetShaderResources(16, 7, srvs);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()
@@ -423,29 +425,10 @@ namespace DE {
 		m_meshConsts.Get(systemIndex) = data;
 	}
 
-	void ParticleMemoryPool::BindMeshConsts()
-	{
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-		context->CSSetShaderResources(16, 1, m_meshConsts.GetAddressOfSRV());
-		context->VSSetShaderResources(16, 1, m_meshConsts.GetAddressOfSRV());
-	}
-
 	void ParticleMemoryPool::UploadMeshConsts()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		m_meshConsts.Upload(context.Get());
-	}
-
-	void ParticleMemoryPool::BindBillboardMesh()
-	{
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-		// 쿼드 메쉬 바인딩
-		ID3D11Buffer* quadVB = GetQuadVertexBuffer();
-		ID3D11Buffer* quadIB =GetQuadIndexBuffer();
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, &quadVB, &stride, &offset);
-		context->IASetIndexBuffer(quadIB, DXGI_FORMAT_R32_UINT, 0);
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)

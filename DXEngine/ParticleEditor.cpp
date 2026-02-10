@@ -58,9 +58,9 @@ namespace DE {
 		m_spanwer->SetScene(this);
 		m_spanwer->SetActorType<Firework>();
 		m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		m_spanwer->SetSpawnInterval(0.01f);
+		m_spanwer->SetSpawnInterval(0.05f);
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(3000);
+		m_spanwer->SetMaxActiveParticles(500);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
@@ -245,7 +245,8 @@ namespace DE {
 		for (int i = 0; i < 100; ++i)
 		{
 			// 1. 이펙트 생성 (Smoke나 Firework 등)
-			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
+			//auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
+			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 
 			if (sys) {
 				// 성공 시 리스트에 추가 (나중에 정리용)

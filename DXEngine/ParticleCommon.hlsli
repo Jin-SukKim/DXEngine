@@ -18,10 +18,6 @@ struct Particle
 RWStructuredBuffer<Particle> writeParticles : register(u6);
 RWStructuredBuffer<uint> writeCount : register(u7);
 
-StructuredBuffer<Particle> readParticles : register(t6);
-StructuredBuffer<uint> readCount : register(t7);
-Texture2DArray particleTex : register(t14);
-
 cbuffer EmitterID : register(b5)
 {
     uint readParticleOffset;
@@ -158,12 +154,15 @@ struct ParticleMeshConsts
     uint indexCount;
     float2 padding;
 };
+Texture2DArray particleTex : register(t14);
 
-StructuredBuffer<ParticleFrameConsts> frameConsts : register(t8);
-StructuredBuffer<ParticleConsts> consts : register(t9);
-StructuredBuffer<float3> spawnPositions : register(t10); // յ SpawnPosition 
-StructuredBuffer<EmitterID> emitterIDs : register(t11); // յ SpawnPosition 
-StructuredBuffer<ParticleMeshConsts> meshConsts : register(t16);
+StructuredBuffer<Particle> readParticles : register(t16);
+StructuredBuffer<uint> readCount : register(t17);
+StructuredBuffer<ParticleFrameConsts> frameConsts : register(t18);
+StructuredBuffer<ParticleConsts> consts : register(t19);
+StructuredBuffer<float3> spawnPositions : register(t20); // յ SpawnPosition 
+StructuredBuffer<EmitterID> emitterIDs : register(t21); // յ SpawnPosition 
+StructuredBuffer<ParticleMeshConsts> meshConsts : register(t22);
 
 struct SortElement
 {
