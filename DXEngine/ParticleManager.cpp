@@ -417,14 +417,14 @@ namespace DE {
 			}
 
 			// 2.  ðȭ (Grid Visualizer)
-			// :  , ȸ:  
+			// :  , ȸ:
 			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
 				std::vector<std::string> blockOwners(totalBlocks, "Free");
 
-				const auto& table = m_memoryPool->GetParticleBlockTable();
-				int columns = 32; //  ٿ   
+				const auto& blockMap = m_memoryPool->GetParticleBlockMap();
+				int columns = 32; //  ٿ
 				float cellSize = 10.0f;
 				float spacing = 2.0f;
 
@@ -432,12 +432,23 @@ namespace DE {
 				float startX = p.x;
 				float startY = p.y;
 
-				for (size_t i = 0; i < table.size(); ++i)
+				for (UINT i = 0; i < totalBlocks; ++i)
 				{
 					float x = startX + (i % columns) * (cellSize + spacing);
 					float y = startY + (i / columns) * (cellSize + spacing);
 
-					ImU32 color = table[i] ? IM_COL32(50, 205, 50, 255) : IM_COL32(50, 50, 50, 255); // Green vs Gray
+					// Check if block is allocated
+					bool isAllocated = false;
+					for (const auto& pair : blockMap) {
+						UINT blockStart = pair.first;
+						UINT blockCount = pair.second;
+						if (i >= blockStart && i < blockStart + blockCount) {
+							isAllocated = true;
+							break;
+						}
+					}
+
+					ImU32 color = isAllocated ? IM_COL32(50, 205, 50, 255) : IM_COL32(50, 50, 50, 255); // Green vs Gray
 
 					ImGui::GetWindowDrawList()->AddRectFilled(
 						ImVec2(x, y),
@@ -445,16 +456,16 @@ namespace DE {
 						color
 					);
 
-					// 콺    ȣ 
+					// 콺    ȣ
 					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
 					{
 						ImGui::BeginTooltip();
-						// []  ̸ 
-						ImGui::Text("Block ID: %llu", i);
-						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
-							"Status: %s", table[i] ? "Used" : "Free");
+						// []  ̸
+						ImGui::Text("Block ID: %u", i);
+						ImGui::TextColored(isAllocated ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
+							"Status: %s", isAllocated ? "Used" : "Free");
 
-						if (table[i]) {
+						if (isAllocated) {
 							ImGui::Text("Owner: %s", blockOwners[i].c_str());
 						}
 						ImGui::EndTooltip();
@@ -462,7 +473,7 @@ namespace DE {
 				}
 
 				// ׸ ̸ŭ Ŀ ̵
-				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
+				float totalHeight = ((totalBlocks + columns - 1) / columns) * (cellSize + spacing);
 				ImGui::Dummy(ImVec2(0, totalHeight));
 			}
 		}

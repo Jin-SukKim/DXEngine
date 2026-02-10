@@ -2,6 +2,8 @@
 #include "Particle.h"
 #include "StructuredBuffer.h"
 #include "IndirectArgsBuffer.h"
+#include <queue>
+#include <map>
 
 namespace DE {
 	class ParticleSystem;
@@ -99,24 +101,28 @@ public:
 
 	//     īƮ
 	UINT GetUsedBlockCount() const {
-		return (UINT)std::count(m_particleBlockTable.begin(), m_particleBlockTable.end(), true);
+		UINT total = 0;
+		for (const auto& pair : m_particleBlockMap) {
+			total += pair.second;
+		}
+		return total;
 	}
 
-	// ü/ Emitter 
+	// ü/ Emitter
 	UINT GetTotalEmitterSlots() const { return m_maxEmitters; }
 	UINT GetUsedEmitterSlots() const {
-		return (UINT)std::count(m_emitterSlotTable.begin(), m_emitterSlotTable.end(), true);
+		return m_usedEmitterCount;
 	}
 
-	// ü/ System 
+	// ü/ System
 	UINT GetTotalSystemSlots() const { return m_maxSystems; }
 	UINT GetUsedSystemSlots() const {
-		return (UINT)std::count(m_systemSlotTable.begin(), m_systemSlotTable.end(), true);
+		return m_usedSystemCount;
 	}
 
 	// ðȭ  ̺ ü   ȯ (const)
-	const std::vector<bool>& GetParticleBlockTable() const { return m_particleBlockTable; }
-	const std::vector<bool>& GetSpawnPosBlockTable() const { return m_spawnPosBlockTable; }
+	const std::map<UINT, UINT>& GetParticleBlockMap() const { return m_particleBlockMap; }
+	const std::map<UINT, UINT>& GetSpawnPosBlockMap() const { return m_spawnPosBlockMap; }
 
 	// ParticleMemoryPool.h ߰
 	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
@@ -170,10 +176,12 @@ private:
 	ConstantBuffer<ParticleMeshConsts> m_meshConstsBuffer;
 
 	// Block Allocator
-	std::vector<bool> m_particleBlockTable;
-	std::vector<bool> m_emitterSlotTable;
-	std::vector<bool> m_spawnPosBlockTable;
-	std::vector<bool> m_systemSlotTable;
+	std::map<UINT, UINT> m_particleBlockMap;      // key: blockOffset, value: blockCount
+	std::queue<UINT> m_freeEmitterSlots;          // free emitter slot indices
+	std::map<UINT, UINT> m_spawnPosBlockMap;      // key: blockOffset, value: blockCount
+	std::queue<UINT> m_freeSystemSlots;           // free system slot indices
+	UINT m_usedEmitterCount = 0;                  // track used emitter slots
+	UINT m_usedSystemCount = 0;                   // track used system slots
 
 	// Cached fragmentation metrics (dirty flag pattern)
 	mutable UINT m_cachedLastUsedBlock = 0;

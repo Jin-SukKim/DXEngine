@@ -16,10 +16,23 @@ namespace DE {
 
 		UINT blockCount = (maxParticles + m_blockSize - 1) / m_blockSize;
 		m_blockCount = blockCount;
-		m_particleBlockTable.assign(blockCount, false);
-		m_emitterSlotTable.assign(maxEmitters, false);
-		m_spawnPosBlockTable.assign(blockCount, false);
-		m_systemSlotTable.assign(maxSystems, false);
+
+		// Initialize particle and spawn block maps (empty at start)
+		m_particleBlockMap.clear();
+		m_spawnPosBlockMap.clear();
+
+		// Initialize free slot queues
+		m_freeEmitterSlots = std::queue<UINT>();
+		for (UINT i = 0; i < maxEmitters; ++i) {
+			m_freeEmitterSlots.push(i);
+		}
+		m_usedEmitterCount = 0;
+
+		m_freeSystemSlots = std::queue<UINT>();
+		for (UINT i = 0; i < maxSystems; ++i) {
+			m_freeSystemSlots.push(i);
+		}
+		m_usedSystemCount = 0;
 
 		for (UINT i = 0; i < 2; ++i) {
 			m_particles[i].Initialize(device, maxParticles);
@@ -74,19 +87,23 @@ namespace DE {
 
 	UINT ParticleMemoryPool::AllocateSystemSlot()
 	{
-		for (UINT i = 0; i < m_maxSystems; ++i) {
-			if (!m_systemSlotTable[i]) {
-				m_systemSlotTable[i] = true;
-				return i;
-			}
+		if (m_freeSystemSlots.empty()) {
+			return UINT_MAX;
 		}
-		return UINT_MAX;
+
+		UINT slot = m_freeSystemSlots.front();
+		m_freeSystemSlots.pop();
+		++m_usedSystemCount;
+		return slot;
 	}
 
 	void ParticleMemoryPool::FreeSystemSlot(UINT slot)
 	{
 		if (slot < m_maxSystems) {
-			m_systemSlotTable[slot] = false;
+			m_freeSystemSlots.push(slot);
+			if (m_usedSystemCount > 0) {
+				--m_usedSystemCount;
+			}
 		}
 	}
 
@@ -106,62 +123,63 @@ namespace DE {
 		// 2. Particle Block Ҵ
 		UINT neededBlocks = (reqParticleCount + m_blockSize - 1) / m_blockSize;
 		UINT foundBlock = UINT_MAX;
-		UINT consecutive = 0;
 
-		for (size_t i = 0; i < m_particleBlockTable.size(); ++i) {
-			if (!m_particleBlockTable[i]) {
-				if (consecutive == 0) {
-					foundBlock = static_cast<UINT>(i);
-				}
-				if (++consecutive == neededBlocks) {
-					break;
-				}
+		// Find consecutive free blocks
+		UINT searchStart = 0;
+		for (const auto& pair : m_particleBlockMap) {
+			UINT allocatedStart = pair.first;
+			UINT allocatedCount = pair.second;
+
+			// Check gap before this allocated block
+			if (allocatedStart >= searchStart + neededBlocks) {
+				foundBlock = searchStart;
+				break;
 			}
-			else {
-				consecutive = 0;
-				foundBlock = UINT_MAX;
-			}
+
+			// Move search start to after this allocated block
+			searchStart = allocatedStart + allocatedCount;
 		}
 
-		if (consecutive < neededBlocks) {
-			foundBlock = UINT_MAX;
+		// Check gap after all allocated blocks
+		if (foundBlock == UINT_MAX && searchStart + neededBlocks <= m_blockCount) {
+			foundBlock = searchStart;
 		}
 
 		// 3. Emitter Slot Ҵ
 		std::vector<UINT> IDs;
+		std::queue<UINT> tempQueue = m_freeEmitterSlots;
 
-		for (size_t i = 0; i < m_emitterSlotTable.size(); ++i) {
-			if (!m_emitterSlotTable[i]) {
-				IDs.push_back(i);
-				if (IDs.size() == reqEmitterCount) {
-					break;
-				}
-			}
+		for (UINT i = 0; i < reqEmitterCount && !tempQueue.empty(); ++i) {
+			IDs.push_back(tempQueue.front());
+			tempQueue.pop();
 		}
 
 		// 4. SpawnPosition Block Ҵ (reqSpawnPosCount > 0 )
 		UINT foundSpawnPosBlock = UINT_MAX;
 		UINT neededSpawnPosBlocks = 0;
-		
+
 		if (reqSpawnPosCount > 0) {
 			neededSpawnPosBlocks = (reqSpawnPosCount + m_blockSize - 1) / m_blockSize;
-			consecutive = 0;
-			UINT spawnStart = UINT_MAX;
 
-			for (size_t i = 0; i < m_spawnPosBlockTable.size(); ++i) {
-				if (!m_spawnPosBlockTable[i]) {
-					if (consecutive == 0) {
-						spawnStart = static_cast<UINT>(i);
-					}
-					if (++consecutive == neededSpawnPosBlocks) {
-						foundSpawnPosBlock = spawnStart;
-						break;
-					}
+			// Find consecutive free blocks
+			UINT searchStart = 0;
+			for (const auto& pair : m_spawnPosBlockMap) {
+				UINT allocatedStart = pair.first;
+				UINT allocatedCount = pair.second;
+
+				// Check gap before this allocated block
+				if (allocatedStart >= searchStart + neededSpawnPosBlocks) {
+					foundSpawnPosBlock = searchStart;
+					break;
 				}
-				else {
-					consecutive = 0;
-					spawnStart = UINT_MAX;
-				}
+
+				// Move search start to after this allocated block
+				searchStart = allocatedStart + allocatedCount;
+			}
+
+			// Check gap after all allocated blocks
+			if (foundSpawnPosBlock == UINT_MAX && searchStart + neededSpawnPosBlocks <= m_blockCount) {
+				foundSpawnPosBlock = searchStart;
 			}
 		}
 
@@ -172,18 +190,20 @@ namespace DE {
 
 		if (particleOk && emitterOk && spawnPosOk) {
 			// Particle blocks ŷ
-			for (UINT i = 0; i < neededBlocks; ++i)
-				m_particleBlockTable[foundBlock + i] = true;
+			m_particleBlockMap[foundBlock] = neededBlocks;
 
 			m_fragmentationDirty = true;  // Invalidate cache
 
-			// Emitter slots ŷ
-			for (UINT i = 0; i < reqEmitterCount; ++i)
-				m_emitterSlotTable[IDs[i]] = true;
+			// Emitter slots ŷ - remove from queue
+			for (UINT i = 0; i < reqEmitterCount; ++i) {
+				m_freeEmitterSlots.pop();
+			}
+			m_usedEmitterCount += reqEmitterCount;
 
 			// SpawnPos blocks ŷ
-			for (UINT i = 0; i < neededSpawnPosBlocks; ++i)
-				m_spawnPosBlockTable[foundSpawnPosBlock + i] = true;
+			if (neededSpawnPosBlocks > 0) {
+				m_spawnPosBlockMap[foundSpawnPosBlock] = neededSpawnPosBlocks;
+			}
 
 			handle.particleOffset = foundBlock * m_blockSize;
 			handle.blockCount = neededBlocks;
@@ -208,31 +228,34 @@ namespace DE {
 	{
 		if (!handle.IsActive()) return;
 
-		// System slot 
+		// System slot
 		FreeSystemSlot(handle.systemSlot);
 
-		// Particle blocks 
-		size_t startBlock = handle.particleOffset / m_blockSize;
-		for (size_t i = 0; i < handle.blockCount; ++i) {
-			if (startBlock + i < m_particleBlockTable.size()) {
-				m_particleBlockTable[startBlock + i] = false;
-			}
+		// Particle blocks
+		UINT startBlock = handle.particleOffset / m_blockSize;
+		auto it = m_particleBlockMap.find(startBlock);
+		if (it != m_particleBlockMap.end()) {
+			m_particleBlockMap.erase(it);
 		}
 
 		m_fragmentationDirty = true;  // Invalidate cache
 
-		// Emitter slots 
+		// Emitter slots - return to queue
 		for (size_t i = 0; i < handle.emitterCount; ++i) {
-			if (handle.emitterIDs[i] < m_emitterSlotTable.size())
-				m_emitterSlotTable[handle.emitterIDs[i]] = false;
+			if (handle.emitterIDs[i] < m_maxEmitters) {
+				m_freeEmitterSlots.push(handle.emitterIDs[i]);
+			}
+		}
+		if (m_usedEmitterCount >= handle.emitterCount) {
+			m_usedEmitterCount -= handle.emitterCount;
 		}
 
-		// SpawnPos blocks 
+		// SpawnPos blocks
 		if (handle.spawnPosOffset != UINT_MAX) {
 			startBlock = handle.spawnPosOffset / m_blockSize;
-			for (size_t i = 0; i < handle.spawnPosBlockCount; ++i) {
-				if (startBlock + i < m_spawnPosBlockTable.size())
-					m_spawnPosBlockTable[startBlock + i] = false;
+			auto it = m_spawnPosBlockMap.find(startBlock);
+			if (it != m_spawnPosBlockMap.end()) {
+				m_spawnPosBlockMap.erase(it);
 			}
 		}
 	}
@@ -458,18 +481,16 @@ namespace DE {
 	{
 	    std::vector<UINT> newOffsets;
 	    newOffsets.reserve(activeHandles.size());
-	    
-	    //  ̺ ʱȭ
-	    std::fill(m_particleBlockTable.begin(), m_particleBlockTable.end(), false);
-	    
+
+	    // Clear map
+	    m_particleBlockMap.clear();
+
 	    UINT currentBlock = 0;
 	    for (const auto& handle : activeHandles) {
 	        newOffsets.push_back(currentBlock * m_blockSize);
 
-	        //  ̺ Ʈ
-	        for (UINT i = 0; i < handle.blockCount; ++i) {
-	            m_particleBlockTable[currentBlock + i] = true;
-	        }
+	        // Update map
+	        m_particleBlockMap[currentBlock] = handle.blockCount;
 	        currentBlock += handle.blockCount;
 	    }
 
@@ -495,19 +516,20 @@ namespace DE {
 
 	float ParticleMemoryPool::GetFragmentationRatio() const
 	{
-		if (m_particleBlockTable.empty()) return 0.0f;
+		if (m_particleBlockMap.empty()) return 0.0f;
 
 		// Rebuild cache only when dirty flag is set
 		if (m_fragmentationDirty) {
 			m_cachedLastUsedBlock = 0;
 			m_cachedTotalUsedBlocks = 0;
 
-			// Same calculation logic, now cached
-			for (UINT i = 0; i < static_cast<UINT>(m_particleBlockTable.size()); ++i) {
-				if (m_particleBlockTable[i]) {
-					m_cachedLastUsedBlock = i + 1;
-					++m_cachedTotalUsedBlocks;
+			// Calculate from map
+			for (const auto& pair : m_particleBlockMap) {
+				UINT blockEnd = pair.first + pair.second;
+				if (blockEnd > m_cachedLastUsedBlock) {
+					m_cachedLastUsedBlock = blockEnd;
 				}
+				m_cachedTotalUsedBlocks += pair.second;
 			}
 			m_fragmentationDirty = false;
 		}
