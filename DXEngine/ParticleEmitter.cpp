@@ -210,6 +210,11 @@ namespace DE {
 		}
 	}
 
+	int ParticleEmitter::GetModelIndex()
+	{
+		return GetModule<RenderModule>()->GetModelIndex();;
+	}
+
 	void ParticleEmitter::ExecuteEvent(EmitterEvent event)
 	{
 		if (m_eventCallback)

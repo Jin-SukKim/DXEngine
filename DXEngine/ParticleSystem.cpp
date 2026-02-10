@@ -127,7 +127,7 @@ namespace DE {
 		emitter->Initialize(pConsts, pfConsts, pMeshArgs);
 
 		// TODO: RenderModule로부터 modelIdx가져오기
-		MeshRange range = ModelManager::Get().GetMeshRange(0); // TODO: modelIdx
+		MeshRange range = ModelManager::Get().GetMeshRange(emitter->GetModelIndex()); // TODO: modelIdx
 		eID.indexCount = range.indexCount;
 		eID.startIndexLocation = range.startIndexLocation;
 		eID.baseVertexLocation = range.baseVertexLocation;

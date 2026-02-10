@@ -74,6 +74,7 @@ namespace DE {
 		consts.frameCount = m_frameCount;
 		consts.textureMode = static_cast<UINT>(m_textureMode);
 		consts.singleTextureIdx = m_singleTextureIdx;
+		m_modelIdx = 0;
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)

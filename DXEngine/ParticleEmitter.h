@@ -106,6 +106,7 @@ namespace DE {
 		void LoadOverdrawSettings(const json& j);
 		OverdrawControlSettings& GetOverdrawSettings() { return m_overdrawSettings; }
 		const OverdrawControlSettings& GetOverdrawSettings() const { return m_overdrawSettings; }
+		int GetModelIndex();
 	private:
 		void ExecuteEvent(EmitterEvent event);
 	private:

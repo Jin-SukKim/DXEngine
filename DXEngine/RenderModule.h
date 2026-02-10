@@ -20,10 +20,11 @@ public:
 	virtual int GetModelIndex() const { return -1; };
 	virtual std::unique_ptr<ParticleModule> Clone() const override = 0;
 	void CopyBasicSettings(RenderModule* cloned) const;
-
+	int GetModelIndex() { return m_modelIdx; }
 public:
 	BlendMode blendMode = BlendMode::Additive;
 protected:
+	int m_modelIdx = -1;
 	ID3D11BlendState* m_blendState = NULL;
 	// BitonicSort  - ParticleEmitter 
 };
@@ -64,7 +65,6 @@ public:
 	int GetModelIndex() const override { return m_modelIdx; }
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
-	int m_modelIdx = -1;
 	UINT m_meshCount = 0;
 	// IndirectArgsBuffer  - ParticleEmitter 
 };
