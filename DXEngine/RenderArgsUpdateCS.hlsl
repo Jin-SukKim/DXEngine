@@ -34,6 +34,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     uint meshIdx = myEmitterID * 5;
 
-    meshArgs[meshIdx] = consts[myEmitterID].render.indexCount;
+    meshArgs[meshIdx] = eID.indexCount;
     meshArgs[meshIdx + 1] = adjustedCount; // 파티클 개수 (spawn ratio 적용)
+    meshArgs[meshIdx + 2] = eID.startIndexLocation; // StartIndexLocation
+    meshArgs[meshIdx + 3] = eID.baseVertexLocation; // BaseVertexLocation
+    meshArgs[meshIdx + 4] = 0; // StartInstanceLocation
 }

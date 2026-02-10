@@ -146,6 +146,7 @@ namespace DE {
 			}
 		}
 
+		ModelManager::Get().BindBuffersForRender();
 		m_memoryPool->BindMeshConsts();
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
@@ -158,7 +159,7 @@ namespace DE {
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		GET_SINGLE(RenderBase)->SetLowResRender();
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-		ModelManager::Get().BindBuffersForRender();
+		
 		for (auto* system : renderSystems) {
 			if (system) {
 				system->RenderBillboard();
@@ -202,7 +203,7 @@ namespace DE {
 		m_memoryPool->BindRender();
 		m_memoryPool->BindMeshConsts();
 		m_memoryPool->UpdateRenderArgs();
-
+		ModelManager::Get().BindBuffersForRender();
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
 		for (auto* system : m_activeSystems) {
 			if (system) {

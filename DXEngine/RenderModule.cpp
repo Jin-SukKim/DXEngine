@@ -139,7 +139,6 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
 
-		// ⺻  
 		CopyBasicSettings(cloned.get());
 
 		// Billboard  
@@ -186,9 +185,6 @@ namespace DE {
 				ctx.materialModule->BindMaterialForMesh(i);
 			else
 				MaterialSystem::Get().BindMaterial(0);
-
-			ctx.context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &mesh.stride, &mesh.offset);
-			ctx.context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgs->buffer, ctx.meshArgs->offset);
 		}
