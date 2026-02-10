@@ -115,6 +115,14 @@ namespace DE {
 		float GetBasePriority() const { return m_basePriority; }
 		void SetBasePriority(float priority) { m_basePriority = std::clamp(priority, 0.0f, 1.0f); }
 		void SetCreationTime(float time) { m_creationTime = time; }
+
+		// Emitter index accessors for ParticleEmitterManager
+		const std::vector<UINT>& GetMainEmitterIndices() const { return m_mainEmitterIndices; }
+		const std::vector<UINT>& GetActiveMeshSubEmitters() const { return m_activeMeshSubEmitters; }
+		const std::vector<UINT>& GetActiveBillboardSubEmitters() const { return m_activeBillboardSubEmitters; }
+
+		// Helper to get emitter from index
+		ParticleEmitter* GetEmitter(UINT index) const;
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
@@ -141,16 +149,16 @@ namespace DE {
 		float m_creationTime = 0.0f;    // Timestamp when created
 		float m_basePriority = 0.5f;    // User-defined importance (0.0-1.0)
 
-		// Main Emitters
-		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
-		std::vector<ParticleEmitter*> m_meshEmitters;
-		std::vector<ParticleEmitter*> m_billboardEmitters;
+		// Main Emitters (stored as indices)
+		std::vector<UINT> m_mainEmitterIndices;
+		std::vector<ParticleEmitter*> m_meshEmitters;     // Cache for rendering (will be removed in Phase 2)
+		std::vector<ParticleEmitter*> m_billboardEmitters; // Cache for rendering (will be removed in Phase 2)
 
-		// SubEmitters
-		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
-		//  SubEmitter
-		std::vector<ParticleEmitter*> m_activeMeshSubEmitters;
-		std::vector<ParticleEmitter*> m_activeBillboardSubEmitters;
+		// SubEmitters (stored as indices)
+		std::unordered_map<std::wstring, UINT> m_subEmitterPool;
+		// Active SubEmitters (stored as indices)
+		std::vector<UINT> m_activeMeshSubEmitters;
+		std::vector<UINT> m_activeBillboardSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
 
 		std::wstring m_jsonPath;

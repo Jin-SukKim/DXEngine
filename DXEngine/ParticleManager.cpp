@@ -5,6 +5,7 @@
 #include "ScopedTimer.h" // [Added] Include ScopedTimer
 #include "ModelManager.h"
 #include "TextureManager.h"
+#include "ParticleEmitterManager.h"
 #include <DirectXCollision.h> // [Added] For Frustum Culling
 
 namespace DE {
@@ -12,6 +13,10 @@ namespace DE {
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
 		m_memoryPool->Initialize(10000000, 20000, 20000);
+
+		// Initialize ParticleEmitterManager
+		ParticleEmitterManager::Get();
+
 		TextureManager::Get().BindParticleTextures();
 	}
 
@@ -147,26 +152,13 @@ namespace DE {
 			}
 		}
 
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-		ModelManager::Get().BindBuffersForRender();
-		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
-		for (auto* system : renderSystems) {
-			if (system) {
-				system->RenderMesh();
-			}
-		}
+		// Use batched rendering via ParticleEmitterManager
+		// 1. Mesh RenderModule (render first to fill depth buffer)
+		ParticleEmitterManager::Get().RenderMeshBatched(renderSystems);
 
-		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
+		// 2. Billboard RenderModule (render after for overdraw reduction)
 		GET_SINGLE(RenderBase)->SetLowResRender();
-		context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-		
-		for (auto* system : renderSystems) {
-			if (system) {
-				system->RenderBillboard();
-			}
-		}
+		ParticleEmitterManager::Get().RenderBillboardBatched(renderSystems);
 
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();

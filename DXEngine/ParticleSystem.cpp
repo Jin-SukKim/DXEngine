@@ -10,6 +10,7 @@
 #include "ParticleManager.h"
 #include "IndirectArgsBuffer.h"
 #include "StructuredBuffer.h"
+#include "ParticleEmitterManager.h"
 
 namespace DE {
 	ParticleSystem::ParticleSystem(const std::wstring& name) : Object(name)
@@ -20,6 +21,14 @@ namespace DE {
 
 	ParticleSystem::~ParticleSystem()
 	{
+		// Destroy all owned emitters
+		for (UINT index : m_mainEmitterIndices) {
+			ParticleEmitterManager::Get().DestroyEmitter(index);
+		}
+		for (auto& [path, index] : m_subEmitterPool) {
+			ParticleEmitterManager::Get().DestroyEmitter(index);
+		}
+
 		if (m_watcherID != 0 && !m_jsonPath.empty()) {
 			try {
 				FileWatcher::Get().Unregister(m_jsonPath, m_watcherID);
@@ -48,17 +57,21 @@ namespace DE {
 		, m_basePriority(other.m_basePriority)
 		, m_meshConsts(other.m_meshConsts)
 	{
-		// Main Emitter 
-		for (const auto& emitter : other.m_emitters) {
-			if (emitter) {
-				m_emitters.push_back(std::make_unique<ParticleEmitter>(*emitter));
+		// Main Emitter
+		for (UINT index : other.m_mainEmitterIndices) {
+			if (auto* emitter = other.GetEmitter(index)) {
+				auto cloned = std::make_unique<ParticleEmitter>(*emitter);
+				UINT newIndex = ParticleEmitterManager::Get().CreateEmitter(std::move(cloned), this);
+				m_mainEmitterIndices.push_back(newIndex);
 			}
 		}
 
-		// SubEmitter 
-		for (const auto& [path, emitterPtr] : other.m_subEmitterPool) {
-			if (emitterPtr) {
-				m_subEmitterPool[path] = std::make_unique<ParticleEmitter>(*emitterPtr);
+		// SubEmitter
+		for (const auto& [path, index] : other.m_subEmitterPool) {
+			if (auto* emitter = other.GetEmitter(index)) {
+				auto cloned = std::make_unique<ParticleEmitter>(*emitter);
+				UINT newIndex = ParticleEmitterManager::Get().CreateEmitter(std::move(cloned), this);
+				m_subEmitterPool[path] = newIndex;
 			}
 		}
 	}
@@ -95,14 +108,18 @@ namespace DE {
 	{
 		std::set<std::wstring> processedPaths;
 
-		// 1. Main Emitter 
-		for (auto& emitter : m_emitters) {
-			ProcessEmitter(emitter.get(), initialData);
+		// 1. Main Emitter
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				ProcessEmitter(emitter, initialData);
+			}
 		}
 
 		// 2. SubEmitter
-		for (auto& emitter : m_emitters) {
-			LoadSubEmitters(emitter.get(), initialData, processedPaths);
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				LoadSubEmitters(emitter, initialData, processedPaths);
+			}
 		}
 
 		m_initialData = initialData;
@@ -160,25 +177,26 @@ namespace DE {
 		ParticleEmitter* emitter,
 		ParticleInitializer& initialData, std::set<std::wstring>& processedPaths)
 	{
-		//   emitter SubEmitter  (iterator)
+		// Copy emitter's SubEmitter list (avoid iterator invalidation)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
-		
+
 		for (const auto& sub : subEmittersCopy) {
-			ParticleEmitter* targetEmitter = nullptr;
+			UINT targetIndex;
 
 			auto it = m_subEmitterPool.find(sub.emitterPath);
 			if (it != m_subEmitterPool.end()) {
-				targetEmitter = it->second.get();
+				targetIndex = it->second;
 			}
 			else {
 				auto loaded = ParticleLoader::Load<ParticleEmitter>(sub.emitterPath);
 				if (!loaded) continue;
 
-				targetEmitter = loaded.get();
-				m_subEmitterPool[sub.emitterPath] = std::move(loaded);
+				targetIndex = ParticleEmitterManager::Get().CreateEmitter(
+					std::move(loaded), this);
+				m_subEmitterPool[sub.emitterPath] = targetIndex;
 			}
 
-			if (targetEmitter) {
+			if (auto* targetEmitter = GetEmitter(targetIndex)) {
 				ProcessEmitter(targetEmitter, initialData);
 
 				processedPaths.insert(sub.emitterPath);
@@ -200,9 +218,11 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
-		// Main Emitter OnSpawn (SubEmitter ̺Ʈ ߻  Ȱȭ)
-		for (auto& emitter : m_emitters) {
-			emitter->OnSpawn();
+		// Main Emitter OnSpawn (SubEmitter event activation)
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->OnSpawn();
+			}
 		}
 
 		//ExecutePreWarm(*m_dispatchArgs);
@@ -224,12 +244,21 @@ namespace DE {
 		}
 
 		// PreUpdate (Main + Sub)
-		for (auto& emitter : m_emitters)
-			emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
-		for (auto* emitter : m_activeMeshSubEmitters)
-			emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
-		for (auto* emitter : m_activeBillboardSubEmitters)
-			emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
+			}
+		}
+		for (UINT index : m_activeMeshSubEmitters) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
+			}
+		}
+		for (UINT index : m_activeBillboardSubEmitters) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->PreUpdate(newDt, fsConsts[m_poolHandle.emitterIDs[emitter->GetEmitterID()]]);
+			}
+		}
 	}
 
 	void ParticleSystem::Update(const float& dt)
@@ -239,30 +268,45 @@ namespace DE {
 
 		float newDt = dt * m_playRate;
 		// Update (Main + Sub)
-		for (auto& emitter : m_emitters)
-			emitter->Update(newDt, 
-				{ m_dispatchArgs->GetBuffer(), 
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
-				});
-		for (auto* emitter : m_activeMeshSubEmitters)
-			emitter->Update(newDt,
-				{ m_dispatchArgs->GetBuffer(),
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		for (auto* emitter : m_activeBillboardSubEmitters)
-			emitter->Update(newDt,
-				{ m_dispatchArgs->GetBuffer(),
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->Update(newDt,
+					{ m_dispatchArgs->GetBuffer(),
+					GetDispatchArgsOffset(
+						m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+					});
+			}
+		}
+		for (UINT index : m_activeMeshSubEmitters) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->Update(newDt,
+					{ m_dispatchArgs->GetBuffer(),
+					GetDispatchArgsOffset(
+						m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+					});
+			}
+		}
+		for (UINT index : m_activeBillboardSubEmitters) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->Update(newDt,
+					{ m_dispatchArgs->GetBuffer(),
+					GetDispatchArgsOffset(
+						m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+					});
+			}
+		}
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		// Ϸ SubEmitter 
-		std::erase_if(m_activeMeshSubEmitters, [](auto* em) { return em->IsCompleted(); });
-		std::erase_if(m_activeBillboardSubEmitters, [](auto* em) { return em->IsCompleted(); });
+		// Remove completed SubEmitters
+		std::erase_if(m_activeMeshSubEmitters, [this](UINT index) {
+			auto* em = GetEmitter(index);
+			return !em || em->IsCompleted();
+		});
+		std::erase_if(m_activeBillboardSubEmitters, [this](UINT index) {
+			auto* em = GetEmitter(index);
+			return !em || em->IsCompleted();
+		});
 
 		ActivateSubEmitters();
 
@@ -273,15 +317,29 @@ namespace DE {
 
 	void ParticleSystem::ActivateSubEmitters()
 	{
-		//   SubEmitter Ȱȭ
+		// Activate pending SubEmitters
 		for (auto& [emitter, pos] : m_pendingSubEmitters) {
 			emitter->Reset();
 			emitter->SetSpawnOffset(pos);
 			emitter->OnSpawn();
-			if (emitter->GetModule<MeshRenderModule>() != nullptr)
-				m_activeMeshSubEmitters.push_back(emitter);
-			else
-				m_activeBillboardSubEmitters.push_back(emitter);
+
+			// Find the index for this emitter
+			UINT emitterIndex = 0;
+			bool found = false;
+			for (const auto& [path, index] : m_subEmitterPool) {
+				if (GetEmitter(index) == emitter) {
+					emitterIndex = index;
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				if (emitter->GetModule<MeshRenderModule>() != nullptr)
+					m_activeMeshSubEmitters.push_back(emitterIndex);
+				else
+					m_activeBillboardSubEmitters.push_back(emitterIndex);
+			}
 		}
 		m_pendingSubEmitters.clear();
 	}
@@ -291,59 +349,21 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		auto context = GET_SINGLE(RenderBase)->GetContext();
+		auto RenderEmitterByIndex = [this](UINT index) {
+			auto* emitter = GetEmitter(index);
+			if (!emitter) return;
+			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			emitter->Render(
+				{ m_billboardArgsBuffer->GetBuffer(), GetBillboardArgsOffset(globalID) },
+				{ m_meshArgsBuffer->GetBuffer(), GetMeshArgsOffset(globalID) });
+		};
 
-		// Main Emitter 
-		for (auto& emitter : m_meshEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		for (auto& emitter : m_billboardEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-
-		// Active SubEmitter  (null üũ)
-		for (auto* emitter : m_activeMeshSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		}
-		for (auto* emitter : m_activeBillboardSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		}
+		for (UINT index : m_mainEmitterIndices)
+			RenderEmitterByIndex(index);
+		for (UINT index : m_activeMeshSubEmitters)
+			RenderEmitterByIndex(index);
+		for (UINT index : m_activeBillboardSubEmitters)
+			RenderEmitterByIndex(index);
 	}
 
 	void ParticleSystem::RenderMesh()
@@ -351,35 +371,27 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		auto context = GET_SINGLE(RenderBase)->GetContext();
+		auto RenderEmitterByIndex = [this](UINT index) {
+			auto* emitter = GetEmitter(index);
+			if (!emitter) return;
+			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			emitter->Render(
+				{ m_billboardArgsBuffer->GetBuffer(), GetBillboardArgsOffset(globalID) },
+				{ m_meshArgsBuffer->GetBuffer(), GetMeshArgsOffset(globalID) });
+		};
 
-		// Main Emitter 
-		for (auto& emitter : m_meshEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-
-		// Active SubEmitter 
-		for (auto* emitter : m_activeMeshSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
+		// Main Mesh Emitters
+		for (auto& emitter : m_meshEmitters) {
+			if (!emitter) continue;
+			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			emitter->Render(
+				{ m_billboardArgsBuffer->GetBuffer(), GetBillboardArgsOffset(globalID) },
+				{ m_meshArgsBuffer->GetBuffer(), GetMeshArgsOffset(globalID) });
 		}
+
+		// Active Mesh SubEmitters
+		for (UINT index : m_activeMeshSubEmitters)
+			RenderEmitterByIndex(index);
 	}
 
 	void ParticleSystem::RenderBillboard()
@@ -387,32 +399,27 @@ namespace DE {
 		if (m_state == ParticleState::Stopped)
 			return;
 
-		auto context = GET_SINGLE(RenderBase)->GetContext();
+		auto RenderEmitterByIndex = [this](UINT index) {
+			auto* emitter = GetEmitter(index);
+			if (!emitter) return;
+			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			emitter->Render(
+				{ m_billboardArgsBuffer->GetBuffer(), GetBillboardArgsOffset(globalID) },
+				{ m_meshArgsBuffer->GetBuffer(), GetMeshArgsOffset(globalID) });
+		};
 
-		for (auto& emitter : m_billboardEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		for (auto* emitter : m_activeBillboardSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
+		// Main Billboard Emitters
+		for (auto& emitter : m_billboardEmitters) {
+			if (!emitter) continue;
+			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			emitter->Render(
+				{ m_billboardArgsBuffer->GetBuffer(), GetBillboardArgsOffset(globalID) },
+				{ m_meshArgsBuffer->GetBuffer(), GetMeshArgsOffset(globalID) });
 		}
+
+		// Active Billboard SubEmitters
+		for (UINT index : m_activeBillboardSubEmitters)
+			RenderEmitterByIndex(index);
 	}
 
 	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)
@@ -425,15 +432,19 @@ namespace DE {
 			if (it == m_subEmitterPool.end())
 				continue;
 
-			ParticleEmitter* subEmitter = it->second.get();
+			UINT subEmitterIndex = it->second;
+			ParticleEmitter* subEmitter = GetEmitter(subEmitterIndex);
+			if (!subEmitter) continue;
+
 			Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
 
-			// ߺ üũ  ߰
+			// Check for duplicates
 			auto isMatch = [subEmitter](const auto& p) { return p.first == subEmitter; };
 			bool alreadyPending = std::ranges::any_of(m_pendingSubEmitters, isMatch);
-			bool alreadyActive = std::ranges::find(m_activeMeshSubEmitters, subEmitter) != m_activeMeshSubEmitters.end();
+
+			bool alreadyActive = std::ranges::find(m_activeMeshSubEmitters, subEmitterIndex) != m_activeMeshSubEmitters.end();
 			if (!alreadyActive)
-				alreadyActive = std::ranges::find(m_activeBillboardSubEmitters, subEmitter) != m_activeBillboardSubEmitters.end();
+				alreadyActive = std::ranges::find(m_activeBillboardSubEmitters, subEmitterIndex) != m_activeBillboardSubEmitters.end();
 
 			if (!alreadyPending && !alreadyActive)
 				m_pendingSubEmitters.emplace_back(subEmitter, pos);
@@ -445,24 +456,32 @@ namespace DE {
 		if (!subEmitter)
 			return;
 
-		for (auto* em : m_activeMeshSubEmitters) {
-			if (em == subEmitter)
-				return;
+		// Find the index for this sub emitter
+		UINT subIndex = 0;
+		bool found = false;
+		for (const auto& [path, index] : m_subEmitterPool) {
+			if (GetEmitter(index) == subEmitter) {
+				subIndex = index;
+				found = true;
+				break;
+			}
 		}
+		if (!found) return;
 
-		for (auto* em : m_activeBillboardSubEmitters) {
-			if (em == subEmitter)
-				return;
-		}
+		// Check if already active
+		if (std::ranges::find(m_activeMeshSubEmitters, subIndex) != m_activeMeshSubEmitters.end())
+			return;
+		if (std::ranges::find(m_activeBillboardSubEmitters, subIndex) != m_activeBillboardSubEmitters.end())
+			return;
 
 		subEmitter->Reset();
 		subEmitter->SetSpawnOffset(position);
 		subEmitter->OnSpawn();
 
 		if (subEmitter->GetModule<MeshRenderModule>() != nullptr)
-			m_activeMeshSubEmitters.push_back(subEmitter);
+			m_activeMeshSubEmitters.push_back(subIndex);
 		else
-			m_activeBillboardSubEmitters.push_back(subEmitter);
+			m_activeBillboardSubEmitters.push_back(subIndex);
 	}
 
 	void ParticleSystem::AddEmitter(const std::string& path)
@@ -470,11 +489,7 @@ namespace DE {
 		std::wstring name(path.begin(), path.end());
 		auto emitter = ParticleLoader::Load<ParticleEmitter>(name);
 		if (emitter) {
-			emitter->SetOwner(this);
-			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
-				this->OnEmitterEvent(event, em);
-			});
-			m_emitters.emplace_back(std::move(emitter));
+			AddEmitter(std::move(emitter));
 		}
 	}
 
@@ -485,16 +500,42 @@ namespace DE {
 			emitter->SetEventCallback([this](EmitterEvent event, ParticleEmitter* em) {
 				this->OnEmitterEvent(event, em);
 			});
-			m_emitters.emplace_back(std::move(emitter));
+
+			// Register with ParticleEmitterManager and get index
+			UINT index = ParticleEmitterManager::Get().CreateEmitter(std::move(emitter), this);
+			m_mainEmitterIndices.push_back(index);
+
+			// Update rendering caches (will be removed in Phase 2)
+			ParticleEmitter* emitterPtr = GetEmitter(index);
+			if (emitterPtr) {
+				if (emitterPtr->GetModule<MeshRenderModule>()) {
+					m_meshEmitters.push_back(emitterPtr);
+				}
+				else if (emitterPtr->GetModule<BillboardRenderModule>()) {
+					m_billboardEmitters.push_back(emitterPtr);
+				}
+			}
 		}
 	}
 
 	void ParticleSystem::ClearEmitters()
 	{
-		m_emitters.clear();
+		// Destroy all main emitters
+		for (UINT index : m_mainEmitterIndices) {
+			ParticleEmitterManager::Get().DestroyEmitter(index);
+		}
+		m_mainEmitterIndices.clear();
+
+		// Destroy all sub emitters
+		for (auto& [path, index] : m_subEmitterPool) {
+			ParticleEmitterManager::Get().DestroyEmitter(index);
+		}
 		m_subEmitterPool.clear();
+
 		m_activeMeshSubEmitters.clear();
 		m_activeBillboardSubEmitters.clear();
+		m_meshEmitters.clear();
+		m_billboardEmitters.clear();
 	}
 
 	void ParticleSystem::LoadFromJson(const json& data)
@@ -608,8 +649,11 @@ namespace DE {
 
 	bool ParticleSystem::IsAllEmittersCompleted() const
 	{
-		for (const auto& emitter : m_emitters)
-			if (!emitter->IsCompleted()) return false;
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				if (!emitter->IsCompleted()) return false;
+			}
+		}
 
 		if (!m_activeMeshSubEmitters.empty())
 			return false;
@@ -627,8 +671,11 @@ namespace DE {
 
 	void ParticleSystem::Reset()
 	{
-		for (auto& emitter : m_emitters)
-			emitter->Reset();
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->Reset();
+			}
+		}
 		m_activeMeshSubEmitters.clear();
 		m_activeBillboardSubEmitters.clear();
 	}
@@ -641,14 +688,15 @@ namespace DE {
 		float t = 0.f;
 		while (t < m_preWarmTime) {
 			t += step;
-			for (auto& emitter : m_emitters) {
-				emitter->Update(step,
-					{ dispatchArgs.GetBuffer(),
-				GetDispatchArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					});
+			for (UINT index : m_mainEmitterIndices) {
+				if (auto* emitter = GetEmitter(index)) {
+					emitter->Update(step,
+						{ dispatchArgs.GetBuffer(),
+						GetDispatchArgsOffset(
+							m_poolHandle.emitterIDs[emitter->GetEmitterID()])
+						});
+				}
 			}
-				
 		}
 	}
 
@@ -724,15 +772,20 @@ namespace DE {
 
 	void ParticleSystem::SetSpawnOffset(const Vector3& offset)
 	{
-		for (auto& emitter : m_emitters)
-			emitter->SetSpawnOffset(offset);
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				emitter->SetSpawnOffset(offset);
+			}
+		}
 	}
 
 	bool ParticleSystem::HasMeshRenderModule() const
 	{
-		for (const auto& emitter : m_emitters) {
-			if (emitter->GetModule<MeshRenderModule>() != nullptr) {
-				return true;
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				if (emitter->GetModule<MeshRenderModule>() != nullptr) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -740,9 +793,11 @@ namespace DE {
 
 	bool ParticleSystem::HasBillboardRenderModule() const
 	{
-		for (const auto& emitter : m_emitters) {
-			if (emitter->GetModule<BillboardRenderModule>() != nullptr) {
-				return true;
+		for (UINT index : m_mainEmitterIndices) {
+			if (auto* emitter = GetEmitter(index)) {
+				if (emitter->GetModule<BillboardRenderModule>() != nullptr) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -756,7 +811,10 @@ namespace DE {
 		auto& memoryPool = ParticleManager::Get().GetMemoryPool();
 
 		// Update spawn ratio for all emitters in this system
-		for (auto& emitter : m_emitters) {
+		for (UINT index : m_mainEmitterIndices) {
+			auto* emitter = GetEmitter(index);
+			if (!emitter) continue;
+
 			auto& settings = emitter->GetOverdrawSettings();
 			float spawnRatio = 1.0f;
 
@@ -773,8 +831,9 @@ namespace DE {
 		}
 
 		// Also update active sub-emitters
-		for (auto* emitter : m_activeMeshSubEmitters) {
-			if (!emitter) continue;
+		auto updateSubEmitterSpawnRatio = [&](UINT index) {
+			auto* emitter = GetEmitter(index);
+			if (!emitter) return;
 
 			auto& settings = emitter->GetOverdrawSettings();
 			float spawnRatio = 1.0f;
@@ -785,26 +844,18 @@ namespace DE {
 				spawnRatio = settings.nearSpawnRatio + t * (1.0f - settings.nearSpawnRatio);
 			}
 
-			// Upload to GPU
 			UINT globalEmitterID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
 			memoryPool.UpdateRenderConst(globalEmitterID, spawnRatio);
-		}
+		};
 
-		for (auto* emitter : m_activeBillboardSubEmitters) {
-			if (!emitter) continue;
+		for (UINT index : m_activeMeshSubEmitters)
+			updateSubEmitterSpawnRatio(index);
+		for (UINT index : m_activeBillboardSubEmitters)
+			updateSubEmitterSpawnRatio(index);
+	}
 
-			auto& settings = emitter->GetOverdrawSettings();
-			float spawnRatio = 1.0f;
-
-			if (settings.enableSpawnLimiting) {
-				float t = (distance - settings.nearDistance) / (settings.farDistance - settings.nearDistance);
-				t = std::max(0.0f, std::min(1.0f, t));
-				spawnRatio = settings.nearSpawnRatio + t * (1.0f - settings.nearSpawnRatio);
-			}
-
-			// Upload to GPU
-			UINT globalEmitterID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
-			memoryPool.UpdateRenderConst(globalEmitterID, spawnRatio);
-		}
+	ParticleEmitter* ParticleSystem::GetEmitter(UINT index) const
+	{
+		return ParticleEmitterManager::Get().GetEmitter(index);
 	}
 }

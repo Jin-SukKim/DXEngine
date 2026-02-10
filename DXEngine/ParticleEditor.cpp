@@ -62,7 +62,7 @@ namespace DE {
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
 		m_spanwer->SetMaxActiveParticles(500);
 
-		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
