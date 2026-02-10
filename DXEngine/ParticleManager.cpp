@@ -49,11 +49,9 @@ namespace DE {
 			{
 				ScopedTimer tCpu([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_cpu, t); });
 				// Mesh와 Billboard 모두 PreUpdate
-				for (int i = 0; i < 2; ++i) {
-					for (auto* system : m_activeSystems[i]) {
-						if (system) {
-							system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
-						}
+				for (auto* system : m_activeSystems) {
+					if (system) {
+						system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
 					}
 				}
 			}
@@ -77,12 +75,10 @@ namespace DE {
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 			m_memoryPool->ExcuteParticleLogic();
 			// Mesh와 Billboard 모두 Update
-			for (int i = 0; i < 2; ++i) {
-				for (auto* system : m_activeSystems[i]) {
-					if (system) {
-						m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-						system->Update(dt);
-					}
+			for (auto* system : m_activeSystems) {
+				if (system) {
+					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+					system->Update(dt);
 				}
 			}
 			m_memoryPool->UnbindCompute();
@@ -106,7 +102,7 @@ namespace DE {
 		// [Added] Measure Render Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
-		if (m_activeSystems[0].empty() && m_activeSystems[1].empty()) return;
+		if (m_activeSystems.empty()) return;
 
 		// [Added] CPU Frustum Culling
 		// Projection 행렬로 view space frustum 생성
@@ -121,12 +117,7 @@ namespace DE {
 		Vector3 cameraPos(invView._41, invView._42, invView._43);
 
 		// Update spawn ratios for overdraw control before rendering
-		for (auto* system : m_activeSystems[0]) {
-			if (system) {
-				system->UpdateSpawnRatios(cameraPos);
-			}
-		}
-		for (auto* system : m_activeSystems[1]) {
+		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->UpdateSpawnRatios(cameraPos);
 			}
@@ -136,8 +127,8 @@ namespace DE {
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
 
-		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
-		for (auto* system : m_activeSystems[0]) {
+		std::vector< ParticleSystem*> renderSystems;
+		for (auto* system : m_activeSystems) {
 			if (system) {
 				totalCount++;
 				// Frustum Culling Test (view space)
@@ -148,28 +139,25 @@ namespace DE {
 
 				if (frustum.Intersects(sphere)) {
 					visibleCount++;
-					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-					system->Render();
+					renderSystems.push_back(system);
 				}
+			}
+		}
+
+		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
+		for (auto* system : renderSystems) {
+			if (system) {
+				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+				system->RenderMesh();
 			}
 		}
 
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
 		GET_SINGLE(RenderBase)->SetLowResRender();
-		for (auto* system : m_activeSystems[1]) {
+		for (auto* system : renderSystems) {
 			if (system) {
-				totalCount++;
-				// Frustum Culling Test (view space)
-				Vector3 posWorld = system->GetWorldPosition();
-				Vector3 posView = Vector3::Transform(posWorld, m_view);  // World -> View space
-				float radius = system->GetBoundingRadius();
-				DirectX::BoundingSphere sphere(posView, radius);
-
-				if (frustum.Intersects(sphere)) {
-					visibleCount++;
-					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-					system->Render();
-				}
+				m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
+				system->RenderBillboard();
 			}
 		}
 
@@ -184,7 +172,7 @@ namespace DE {
 
 	void ParticleManager::RenderDepth()
 	{
-		if (m_activeSystems[0].empty()) return;
+		if (m_activeSystems.empty()) return;
 
 		// [Added] CPU Frustum Culling
 		// Projection 행렬로 view space frustum 생성
@@ -195,12 +183,12 @@ namespace DE {
 		Vector3 cameraPos(invView._41, invView._42, invView._43);
 
 		// Update spawn ratios for overdraw control before rendering
-		for (auto* system : m_activeSystems[0]) {
+		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->UpdateSpawnRatios(cameraPos);
 			}
 		}
-		for (auto* system : m_activeSystems[1]) {
+		for (auto* system : m_activeSystems) {
 			if (system) {
 				system->UpdateSpawnRatios(cameraPos);
 			}
@@ -211,7 +199,7 @@ namespace DE {
 		m_memoryPool->UpdateRenderArgs();
 
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
-		for (auto* system : m_activeSystems[0]) {
+		for (auto* system : m_activeSystems) {
 			if (system) {
 				// Frustum Culling Test (view space)
 				Vector3 posWorld = system->GetWorldPosition();
@@ -221,7 +209,7 @@ namespace DE {
 
 				if (frustum.Intersects(sphere)) {
 					m_memoryPool->BindMeshConsts(system->GetPoolHandle().systemSlot);
-					system->Render();
+					system->RenderMesh();
 				}
 			}
 		}
@@ -234,20 +222,9 @@ namespace DE {
 	{
 		if (!system) return;
 
-		// Mesh RenderModule이 있으면 [0]에 추가
-		if (system->HasMeshRenderModule()) {
-			auto it = std::find(m_activeSystems[0].begin(), m_activeSystems[0].end(), system);
-			if (it == m_activeSystems[0].end()) {
-				m_activeSystems[0].push_back(system);
-			}
-		}
-
-		// Billboard RenderModule이 있으면 [1]에 추가
-		if (system->HasBillboardRenderModule()) {
-			auto it = std::find(m_activeSystems[1].begin(), m_activeSystems[1].end(), system);
-			if (it == m_activeSystems[1].end()) {
-				m_activeSystems[1].push_back(system);
-			}
+		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
+		if (it == m_activeSystems.end()) {
+			m_activeSystems.push_back(system);
 		}
 	}
 
@@ -255,12 +232,9 @@ namespace DE {
 	{
 		if (!system) return;
 
-		// 두 배열 모두에서 제거
-		for (int i = 0; i < 2; ++i) {
-			auto it = std::find(m_activeSystems[i].begin(), m_activeSystems[i].end(), system);
-			if (it != m_activeSystems[i].end()) {
-				m_activeSystems[i].erase(it);
-			}
+		auto it = std::find(m_activeSystems.begin(), m_activeSystems.end(), system);
+		if (it != m_activeSystems.end()) {
+			m_activeSystems.erase(it);
 		}
 	}
 
@@ -540,15 +514,12 @@ namespace DE {
 				// Debug: Show first few systems' positions
 				ImGui::Separator();
 				ImGui::Text("Debug - Active Systems:");
-				int debugCount = 0;
-				for (int i = 0; i < 2 && debugCount < 5; ++i) {
-					for (auto* sys : m_activeSystems[i]) {
-						if (sys && debugCount < 5) {
-							Vector3 pos = sys->GetWorldPosition();
-							ImGui::Text("  Sys[%d]: Pos(%.1f, %.1f, %.1f) R:%.1f",
-								debugCount, pos.x, pos.y, pos.z, sys->GetBoundingRadius());
-							debugCount++;
-						}
+				for (int i = 0; i < 5 && i < m_activeSystems.size(); ++i) {
+					auto sys = m_activeSystems[i];
+					if (sys) {
+						Vector3 pos = sys->GetWorldPosition();
+						ImGui::Text("  Sys[%d]: Pos(%.1f, %.1f, %.1f) R:%.1f",
+							i, pos.x, pos.y, pos.z, sys->GetBoundingRadius());
 					}
 				}
 
@@ -665,36 +636,30 @@ namespace DE {
 		// [Added] Measure Defragment Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.defrag, t); });
 
-		if (m_activeSystems[0].empty() && m_activeSystems[1].empty()) return;
+		if (m_activeSystems.empty()) return;
 
 		std::vector<PoolHandle> activeHandles;
-		// 두 배열 모두 순회
-		for (int i = 0; i < 2; ++i) {
-			for (auto* system : m_activeSystems[i]) {
-				if (system && system->GetPoolHandle().IsActive()) {
-					activeHandles.push_back(system->GetPoolHandle());
-				}
+		for (auto* system : m_activeSystems) {
+			if (system && system->GetPoolHandle().IsActive()) {
+				activeHandles.push_back(system->GetPoolHandle());
 			}
 		}
 
 		std::vector<UINT> newOffsets = m_memoryPool->Defragment(activeHandles);
 
 		size_t idx = 0;
-		// 두 배열 모두 순회
-		for (int i = 0; i < 2; ++i) {
-			for (auto* system : m_activeSystems[i]) {
-				if (!system || !system->GetPoolHandle().IsActive()) continue;
+		for (auto* system : m_activeSystems) {
+			if (!system || !system->GetPoolHandle().IsActive()) continue;
 
-				PoolHandle& handle = system->GetPoolHandle();
-				UINT newOffset = newOffsets[idx++];
+			PoolHandle& handle = system->GetPoolHandle();
+			UINT newOffset = newOffsets[idx++];
 
-				if (handle.particleOffset != newOffset) {
-					RecalculateEmitterOffsets(system, newOffset);
-				}
+			if (handle.particleOffset != newOffset) {
+				RecalculateEmitterOffsets(system, newOffset);
 			}
 		}
 
-		m_needsSyncReadOffset = true;  // ̹  Compute  ȭ
+		m_needsSyncReadOffset = true; 
 	}
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
@@ -722,14 +687,12 @@ namespace DE {
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.syncReadOffsets, t); });
 
 		// 두 배열 모두 순회
-		for (int i = 0; i < 2; ++i) {
-			for (auto* system : m_activeSystems[i]) {
-				if (!system || !system->GetPoolHandle().IsActive()) continue;
+		for (auto* system : m_activeSystems) {
+			if (!system || !system->GetPoolHandle().IsActive()) continue;
 
-				const PoolHandle& handle = system->GetPoolHandle();
-				for (UINT emitterID : handle.emitterIDs) {
-					m_memoryPool->SyncReadOffset(emitterID);
-				}
+			const PoolHandle& handle = system->GetPoolHandle();
+			for (UINT emitterID : handle.emitterIDs) {
+				m_memoryPool->SyncReadOffset(emitterID);
 			}
 		}
 	}

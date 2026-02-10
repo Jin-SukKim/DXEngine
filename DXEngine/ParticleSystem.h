@@ -31,7 +31,6 @@ namespace DE {
 		~ParticleSystem() override;
 
 		ParticleSystem(const ParticleSystem& other);
-		UINT GetEmitterCount() const { return static_cast<UINT>(m_emitters.size()); }
 
 		void Initialize() override;
 		void Initialize(ParticleInitializer& initialData);
@@ -46,6 +45,8 @@ namespace DE {
 		void Update(const float& dt);
 		void ActivateSubEmitters();
 		void Render();
+		void RenderMesh();
+		void RenderBillboard();
 
 		void AddEmitter(const std::string& path);
 		void AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter);
@@ -144,11 +145,14 @@ namespace DE {
 
 		// Main Emitters
 		std::vector<std::unique_ptr<ParticleEmitter>> m_emitters;
+		std::vector<ParticleEmitter*> m_meshEmitters;
+		std::vector<ParticleEmitter*> m_billboardEmitters;
 
 		// SubEmitters (̸ ε,  -> Emitter )
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleEmitter>> m_subEmitterPool;
 		//  Ȱȭ SubEmitter ͵
-		std::vector<ParticleEmitter*> m_activeSubEmitters;
+		std::vector<ParticleEmitter*> m_activeMeshSubEmitters;
+		std::vector<ParticleEmitter*> m_activeBillboardSubEmitters;
 		std::vector<std::pair<ParticleEmitter*, Vector3>> m_pendingSubEmitters;
 
 		std::wstring m_jsonPath;

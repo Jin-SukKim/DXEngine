@@ -141,15 +141,13 @@ namespace DE {
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
 		std::vector<std::unique_ptr<ParticleSystem>> m_instances;
 		// [0] = Mesh RenderModule, [1] = Billboard RenderModule
-		std::vector<ParticleSystem*> m_activeSystems[2];
+		std::vector<ParticleSystem*> m_activeSystems;
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
 
-		//   ߰
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
 
-		// private  ߰
 		UINT m_rebuildCount = 0;
 		float m_totalRebuildTime = 0.0f;
 		float m_avgRebuildTime = 0.0f;
