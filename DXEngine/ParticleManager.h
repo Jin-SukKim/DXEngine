@@ -19,6 +19,12 @@ namespace DE {
 		int retryCount = 0;
 	};
 
+	struct EmitterJob {
+		ParticleEmitter* emitter;
+		UINT globalEmitterID; // GPU Buffer offset 계산용
+		int materialKey;
+	};
+
 	// [Added] Runtime Profiling Data Structure
 	struct RuntimeProfile {
 		float update = 0.0f;

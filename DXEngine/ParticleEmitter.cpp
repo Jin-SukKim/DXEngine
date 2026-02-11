@@ -212,7 +212,15 @@ namespace DE {
 
 	int ParticleEmitter::GetModelIndex()
 	{
-		return GetModule<RenderModule>()->GetModelIndex();;
+		return GetModule<RenderModule>()->GetModelIndex();
+	}
+
+	int ParticleEmitter::GetMaterialIndex()
+	{
+		MaterialModule* mat = GetModule<MaterialModule>();
+		if (!mat)
+			return -1;
+		return mat->GetMaterialIndex();
 	}
 
 	void ParticleEmitter::ExecuteEvent(EmitterEvent event)

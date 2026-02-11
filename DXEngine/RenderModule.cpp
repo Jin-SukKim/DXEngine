@@ -77,8 +77,6 @@ namespace DE {
 		// Always use Material system for texture binding
 		if (ctx.materialModule)
 			ctx.materialModule->BindMaterialForMesh(0);
-		else
-			MaterialSystem::Get().BindMaterial(0); // Fallback to default material
 
 		// DrawIndexedInstancedIndirect (instanced billboard quad)
 		ctx.context->DrawIndexedInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);

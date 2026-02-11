@@ -15,9 +15,7 @@ struct SamplingPSInput {
 float4 main(SamplingPSInput input) : SV_TARGET{
     // Get full resolution depth at current pixel
     float fullDepth = fullResDepth.Sample(pointClampSampler, input.texcoord).r;
-    
-    float particleDepth = lowResDepth.Sample(pointClampSampler, input.texcoord).r;
-    
+
     // Calculate low-resolution texel size
     float2 lowResTexelSize;
     lowResTexture.GetDimensions(lowResTexelSize.x, lowResTexelSize.y);
@@ -30,7 +28,7 @@ float4 main(SamplingPSInput input) : SV_TARGET{
 
     // Depth threshold for bilateral filtering
     const float depthThreshold = 0.01;
-
+    float particleDepth = lowResDepth.Sample(pointClampSampler, input.texcoord).r;
     // Sample offsets for 2x2 bilateral filter
     const float2 offsets[4] = {
         float2(-0.25, -0.25),
@@ -75,20 +73,15 @@ float4 main(SamplingPSInput input) : SV_TARGET{
         color = lowResTexture.Sample(linearClampSampler, input.texcoord);
     }
 
-    // Soft Particles: Fade out when particle depth is close to scene depth
-    // This prevents hard edges at geometry intersections
     const float softParticleDistance = 0.05; // Adjust for softer/harder transitions
-    // 이 수치가 곧 "가시성(Visibility)"입니다.
+
     float depthDifference = fullDepth - particleDepth;
-    float visibility = saturate(depthDifference / softParticleDistance);
+    // Fade factor: 0 when depths are equal, 1 when far apart
+    float softFade = saturate(depthDifference / softParticleDistance);
 
-    // [중요] 가산 혼합(Additive)이든 알파 블렌딩이든,
-    // 색상 자체를 어둡게(0) 만들어야 안 보입니다.
-    color.rgb *= visibility;
 
-    // 알파 블렌딩을 위해 알파에도 곱해줍니다.
-    color.a *= visibility;
+    // Apply soft particle fade to alpha
+    color.a *= softFade;
 
-    // [수정] 강제로 1.0을 넣지 말고 계산된 color를 리턴하세요.
-    return color;
+    return float4(color.rgb, 1.0);
 }

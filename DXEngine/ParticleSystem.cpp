@@ -98,6 +98,11 @@ namespace DE {
 		// 1. Main Emitter 
 		for (auto& emitter : m_emitters) {
 			ProcessEmitter(emitter.get(), initialData);
+
+			if (emitter->GetModule<MeshRenderModule>() != nullptr)
+				m_meshEmitters.push_back(emitter.get());
+			else
+				m_billboardEmitters.push_back(emitter.get());
 		}
 
 		// 2. SubEmitter
@@ -149,11 +154,6 @@ namespace DE {
 		initialData.frameConsts.push_back(pfConsts);
 		initialData.initMeshArgs.push_back(pMeshArgs);
 		initialData.emitterIDs.push_back(eID);
-
-		if (emitter->GetModule<MeshRenderModule>() != nullptr)
-			m_meshEmitters.push_back(emitter);
-		else
-			m_billboardEmitters.push_back(emitter);
 	}
 
 	void ParticleSystem::LoadSubEmitters(
@@ -622,6 +622,25 @@ namespace DE {
 	{
 		// Manager
 		ParticleManager::Get().BindEmitterID(m_poolHandle.emitterIDs[emitterID]);
+	}
+
+	void ParticleSystem::GatherActiveEmitters(std::vector<EmitterJob>& meshJobs, std::vector<EmitterJob>& billboardJobs)
+	{
+		HelpGatherActiveEmitter(meshJobs, m_meshEmitters);
+		HelpGatherActiveEmitter(meshJobs, m_activeMeshSubEmitters);
+		HelpGatherActiveEmitter(billboardJobs, m_billboardEmitters);
+		HelpGatherActiveEmitter(billboardJobs, m_activeBillboardSubEmitters);
+	}
+
+	void ParticleSystem::HelpGatherActiveEmitter(std::vector<DE::EmitterJob>& jobs, const std::vector<ParticleEmitter*>& emitters)
+	{
+		for (auto& emitter : emitters) {
+			if (!emitter || emitter->IsCompleted()) continue;
+
+			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
+			int materialIdx = emitter->GetMaterialIndex();
+			jobs.push_back({ emitter, globalID, materialIdx });
+		}
 	}
 
 	void ParticleSystem::Reset()

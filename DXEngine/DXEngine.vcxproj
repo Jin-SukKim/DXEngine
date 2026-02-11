@@ -196,6 +196,8 @@
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
     <ClInclude Include="EffectActor.h" />
+    <ClInclude Include="EmitterManager.h" />
+    <ClInclude Include="FireEffect.h" />
     <ClInclude Include="Firework.h" />
     <ClInclude Include="ForceEffectsActor.h" />
     <ClInclude Include="HolySwordEffect.h" />
@@ -307,6 +309,8 @@
     <ClCompile Include="ClickEffectManager.cpp" />
     <ClCompile Include="ComputeCommon.cpp" />
     <ClCompile Include="EffectActor.cpp" />
+    <ClCompile Include="EmitterManager.cpp" />
+    <ClCompile Include="FireEffect.cpp" />
     <ClCompile Include="Firework.cpp" />
     <ClCompile Include="ForceEffectsActor.cpp" />
     <ClCompile Include="HolySwordEffect.cpp" />

@@ -36,6 +36,7 @@
 #include "ParticleManager.h"
 #include "TestActor.h"
 #include "SmokeActor.h"
+#include "FireEffect.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -59,11 +60,11 @@ namespace DE {
 		m_spanwer->SetScene(this);
 		m_spanwer->SetActorType<Firework>();
 		m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		m_spanwer->SetSpawnInterval(0.05f);
+		m_spanwer->SetSpawnInterval(0.01f);
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(500);
+		m_spanwer->SetMaxActiveParticles(3000);
 
-		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
@@ -73,7 +74,11 @@ namespace DE {
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
-		m_smoke = AddObject<SmokeActor>(L"SmokeEffect");
+		//for (int i = 0; i < 1000; ++i) {
+		//	m_fireTests.push_back(AddObject<FireEffect>(L"FireEffect" + i));
+		//}
+
+		//m_smoke = AddObject<SmokeActor>(L"SmokeEffect");
 
 	}
 
@@ -102,9 +107,26 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		m_smoke->SetPosOffset(Vector3(0.f, -2.5f, 0.f));
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		float spacing = 2.0f; // 간격 (필요에 따라 조절)
+		int width = 32;       // 한 줄에 배치할 개수 (열의 개수)
+
+		//for (int i = 0; i < 1000; ++i) {
+		//	auto tr = m_fireTests[i]->GetComponent<TransformComponent>();
+		//	if (tr) {
+		//		// x는 나머지 연산으로 0 ~ 31 반복
+		//		int x = i % width;
+
+		//		// z는 나눗셈 연산으로 32개마다 1씩 증가 (줄바꿈)
+		//		int z = i / width;
+
+		//		// Vector3(x좌표, 높이, z좌표) * 간격
+		//		tr->SetPos(Vector3(x * spacing, 0.0f, z * spacing));
+		//	}
+		//}
+
+		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)

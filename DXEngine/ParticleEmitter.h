@@ -107,6 +107,7 @@ namespace DE {
 		OverdrawControlSettings& GetOverdrawSettings() { return m_overdrawSettings; }
 		const OverdrawControlSettings& GetOverdrawSettings() const { return m_overdrawSettings; }
 		int GetModelIndex();
+		int GetMaterialIndex();
 	private:
 		void ExecuteEvent(EmitterEvent event);
 	private:

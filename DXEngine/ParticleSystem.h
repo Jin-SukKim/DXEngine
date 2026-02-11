@@ -6,7 +6,7 @@
 
 namespace DE {
 	struct Mesh;
-
+	struct EmitterJob;
 	enum class ParticleState {
 		Playing,
 		Paused,
@@ -115,6 +115,9 @@ namespace DE {
 		float GetBasePriority() const { return m_basePriority; }
 		void SetBasePriority(float priority) { m_basePriority = std::clamp(priority, 0.0f, 1.0f); }
 		void SetCreationTime(float time) { m_creationTime = time; }
+
+		void GatherActiveEmitters(std::vector<EmitterJob>& meshJobs, std::vector<EmitterJob>& billboardJobs);
+		void HelpGatherActiveEmitter(std::vector<DE::EmitterJob>& jobs, const std::vector<ParticleEmitter*>& emitters);
 	private:
 		void Reset();
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);

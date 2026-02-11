@@ -6,6 +6,7 @@
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include <DirectXCollision.h> // [Added] For Frustum Culling
+#include "MaterialSystem.h"
 
 namespace DE {
 	void ParticleManager::Initialize()
@@ -102,6 +103,11 @@ namespace DE {
 
 	void ParticleManager::Render()
 	{
+		static std::vector<EmitterJob> meshJobs;
+		static std::vector<EmitterJob> billboardJobs;
+		meshJobs.clear();
+		billboardJobs.clear();
+
 		// [Added] Measure Render Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
@@ -126,11 +132,6 @@ namespace DE {
 			}
 		}
 
-		m_memoryPool->UploadFrameConsts();
-		m_memoryPool->BindRender();
-		m_memoryPool->UpdateRenderArgs();
-
-		std::vector< ParticleSystem*> renderSystems;
 		for (auto* system : m_activeSystems) {
 			if (system) {
 				totalCount++;
@@ -142,34 +143,64 @@ namespace DE {
 
 				if (frustum.Intersects(sphere)) {
 					visibleCount++;
-					renderSystems.push_back(system);
+					system->GatherActiveEmitters(meshJobs, billboardJobs);
 				}
 			}
 		}
+		
+		std::sort(meshJobs.begin(), meshJobs.end(),
+			[](const EmitterJob& a, const EmitterJob& b) {
+				return a.materialKey < b.materialKey;
+			});
+		std::sort(billboardJobs.begin(), billboardJobs.end(),
+			[](const EmitterJob& a, const EmitterJob& b) {
+				return a.materialKey < b.materialKey;
+			});
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
+		m_memoryPool->UploadFrameConsts();
+		m_memoryPool->BindRender();
+		m_memoryPool->UpdateRenderArgs();
 		ModelManager::Get().BindBuffersForRender();
+
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
-		for (auto* system : renderSystems) {
-			if (system) {
-				system->RenderMesh();
+		if (!meshJobs.empty()) {
+			GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
+			int lastMaterialKey = -1;
+
+			for (const auto& job : meshJobs) {
+				if (job.materialKey != lastMaterialKey) {
+					lastMaterialKey = job.materialKey;
+					MaterialSystem::Get().BindMaterial(job.materialKey);
+				}
+
+				BindEmitterID(job.globalEmitterID);
+				ID3D11Buffer* meshArgs = m_memoryPool->GetMeshArgs().GetBuffer();
+				context->DrawIndexedInstancedIndirect(meshArgs, job.globalEmitterID * 20);
 			}
 		}
 
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
-		//GET_SINGLE(RenderBase)->SetLowResRender();
-		context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-		
-		for (auto* system : renderSystems) {
-			if (system) {
-				system->RenderBillboard();
+		GET_SINGLE(RenderBase)->SetLowResRender();
+		if (!billboardJobs.empty()) {
+			GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
+			context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
+
+			int lastMaterialKey = -1;
+
+			for (const auto& job : billboardJobs) {
+				if (job.materialKey != lastMaterialKey) {
+					lastMaterialKey = job.materialKey;
+					MaterialSystem::Get().BindMaterial(job.materialKey);
+				}
+				BindEmitterID(job.globalEmitterID);
+				ID3D11Buffer* billboardArgs = m_memoryPool->GetBillboardArgs().GetBuffer();
+				context->DrawIndexedInstancedIndirect(billboardArgs, job.globalEmitterID * 20);
 			}
 		}
 
 		m_memoryPool->UnbindRender();
-		//GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
+		GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
 
 		// [Added] Update Culling Stats
 		m_runtimeProfile.totalSystems = totalCount;
