@@ -25,6 +25,12 @@ namespace DE {
 		int materialKey;
 	};
 
+	struct BatchGroup {
+		int materialKey;
+		std::vector<UINT> emitterIDs;
+		UINT instanceOffset;
+	};
+
 	// [Added] Runtime Profiling Data Structure
 	struct RuntimeProfile {
 		float update = 0.0f;
@@ -89,6 +95,8 @@ namespace DE {
 		void Initialize();
 		void Update(const float& dt);
 		void Render();
+
+		void BuildBatches(const std::vector<EmitterJob>& jobs, std::vector<BatchGroup>& outBatches);
 
 		void RenderDepth();
 
@@ -166,6 +174,9 @@ namespace DE {
 
 		// [Added] Priority-based eviction time tracking
 		float m_currentTime = 0.0f;
+
+		// [Added] Batch rendering
+		std::vector<BatchGroup> m_billboardBatches;
 	};
 
 }

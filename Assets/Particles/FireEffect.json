@@ -12,6 +12,7 @@
   "State": "Play",
   "Emitters": [
     "Particles\\Emitters\\Fire.json",
-    "Particles\\Emitters\\Smoke.json"
+    "Particles\\Emitters\\Smoke.json",
+    "Particles\\Emitters\\VortexAura.json"
   ]
 }

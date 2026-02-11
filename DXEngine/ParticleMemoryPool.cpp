@@ -73,6 +73,29 @@ namespace DE {
 		// MeshConsts Pool (System)
 		m_meshConsts.InitializeDynamicSRV(device, maxSystems);
 
+		// Batch Rendering Buffers
+		m_batchEmitterList.Initialize(device, maxEmitters);
+		m_batchDescriptors.Initialize(device, maxEmitters);
+		std::vector<DrawIndexedInstancedArgs> initialBatchArgs(maxEmitters, { 6, 0, 0, 0, 0 });
+		m_batchBillboardArgs.Initialize(device, initialBatchArgs, maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
+		m_batchInfoBuffer.Initialize();
+
+		// Default Particle Material (for circle rendering without textures)
+		m_defaultParticleMaterialCB.Initialize();
+		MaterialConstants defaultMat = {};
+		defaultMat.useAlbedoMap = 0;        // Disable texture sampling
+		defaultMat.useNormalMap = 0;
+		defaultMat.useAOMap = 0;
+		defaultMat.useMetallicMap = 0;
+		defaultMat.useRoughnessMap = 0;
+		defaultMat.useEmissiveMap = 0;
+		defaultMat.albedoFactor = Vector3(1.0f, 1.0f, 1.0f);
+		defaultMat.emissionFactor = Vector3(0.0f, 0.0f, 0.0f);
+		defaultMat.metallicFactor = 0.0f;
+		defaultMat.roughnessFactor = 1.0f;
+		m_defaultParticleMaterialCB.SetCpuData(defaultMat);
+		m_defaultParticleMaterialCB.Upload();
+
 		// Quad Mesh for Billboard Instancing (GS 제거용)
 		MeshData quadMesh = GeometryGenerator::MakeSquare(1.0f);
 		m_quadVertexCount = static_cast<UINT>(quadMesh.vertices.size());
@@ -471,6 +494,56 @@ namespace DE {
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		m_meshConsts.Upload(context.Get());
+	}
+
+	void ParticleMemoryPool::UploadBatchData(const std::vector<UINT>& emitterList, const std::vector<BatchDescriptor>& descriptors)
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// Upload emitter list
+		if (!emitterList.empty()) {
+			for (size_t i = 0; i < emitterList.size(); ++i) {
+				m_batchEmitterList.Get(i) = emitterList[i];
+			}
+			m_batchEmitterList.Upload(context.Get());
+		}
+
+		// Upload descriptors
+		if (!descriptors.empty()) {
+			for (size_t i = 0; i < descriptors.size(); ++i) {
+				m_batchDescriptors.Get(i) = descriptors[i];
+			}
+			m_batchDescriptors.Upload(context.Get());
+		}
+	}
+
+	void ParticleMemoryPool::BindBatchInfo(UINT emitterCount, UINT listOffset)
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		BatchInfo info;
+		info.emitterCount = emitterCount;
+		info.emitterListOffset = listOffset;
+		info.padding[0] = 0;
+		info.padding[1] = 0;
+
+		m_batchInfoBuffer.SetCpuData(info);
+		m_batchInfoBuffer.Upload();
+
+		context->VSSetConstantBuffers(5, 1, m_batchInfoBuffer.GetAddressOf());
+		context->PSSetConstantBuffers(5, 1, m_batchInfoBuffer.GetAddressOf());
+	}
+
+	void ParticleMemoryPool::BindDefaultParticleMaterial()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// Bind to CB3 (same slot as MaterialSystem::BindMaterial)
+		context->PSSetConstantBuffers(3, 1, m_defaultParticleMaterialCB.GetAddressOf());
+
+		// Clear texture slots t0-t5 (no textures for circle rendering)
+		ID3D11ShaderResourceView* nullSRVs[6] = { nullptr };
+		context->PSSetShaderResources(0, 6, nullSRVs);
 	}
 
 	std::vector<UINT> ParticleMemoryPool::Defragment(const std::vector<PoolHandle>& activeHandles)

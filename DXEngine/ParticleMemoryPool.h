@@ -2,6 +2,7 @@
 #include "Particle.h"
 #include "StructuredBuffer.h"
 #include "IndirectArgsBuffer.h"
+#include "ConstantData.h"
 #include <map>
 
 namespace DE {
@@ -62,10 +63,15 @@ public:
 	void UpdateRenderArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 
-	// EmitterID ConstantBuffer 
+	// EmitterID ConstantBuffer
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
 	void BindEmitterID(UINT slotIndex);
 	void UploadEmitterIDs();
+
+	// Batch Rendering
+	void UploadBatchData(const std::vector<UINT>& emitterList, const std::vector<BatchDescriptor>& descriptors);
+	void BindBatchInfo(UINT emitterCount, UINT listOffset);
+	void BindDefaultParticleMaterial();
 	
 	// MeshConsts 
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
@@ -84,6 +90,11 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
+
+	// Batch buffers getters
+	StructuredBuffer<UINT>& GetBatchEmitterList() { return m_batchEmitterList; }
+	StructuredBuffer<BatchDescriptor>& GetBatchDescriptors() { return m_batchDescriptors; }
+	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBatchBillboardArgs() { return m_batchBillboardArgs; }
 
 	// Quad Mesh Getters
 	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
@@ -181,6 +192,13 @@ private:
 
 	// MeshConsts Pool (System)
 	StructuredBuffer<ParticleMeshConsts> m_meshConsts;
+
+	// Batch Rendering Buffers
+	StructuredBuffer<UINT> m_batchEmitterList;                      // Flat emitter ID list
+	StructuredBuffer<BatchDescriptor> m_batchDescriptors;           // Per-batch metadata
+	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_batchBillboardArgs;  // Merged args
+	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
+	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
 
 	// Block Allocator - Map-based (startBlock -> blockCount)
 	std::map<UINT, UINT> m_particleBlockMap;

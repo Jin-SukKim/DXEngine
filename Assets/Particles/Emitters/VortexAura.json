@@ -33,8 +33,10 @@
     "vortexFalloff": 1.0,
     "axis": [ 0.0, 1.0, 0.0 ]
   },
-  "BillboardRender": {
-    "blendMode": "Additive",
+  "Material": {
     "texture": "Textures\\glassParticle.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
   }
 }

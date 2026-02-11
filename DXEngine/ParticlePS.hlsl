@@ -16,11 +16,12 @@ struct ParticlePSInput
     float2 uv : TEXCOORD0;
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
+    uint emitterSlotID : TEXCOORD2;  // Receive from VS for sprite animation
 };
 
 // Sprite animation texture sampling - always uses albedoTex (t0)
-float4 SpriteTexture(float lifeRatio, float2 uv) {
-    RenderConsts render = consts[emitterID].render;
+float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float2 uv) {
+    RenderConsts render = consts[emitterSlotID].render;
 
     // Sprite animation processing
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
@@ -48,7 +49,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
     if (useAlbedoMap)
     {
         // Case 1: Texture exists (Sprite / Animation)
-        float4 texColor = SpriteTexture(input.lifeRatio, input.uv);
+        float4 texColor = SpriteTexture(input.emitterSlotID, input.lifeRatio, input.uv);
         finalColor *= texColor;
     }
     else

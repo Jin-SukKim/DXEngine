@@ -18,15 +18,25 @@ struct Particle
 RWStructuredBuffer<Particle> writeParticles : register(u6);
 RWStructuredBuffer<uint> writeCount : register(u7);
 
-cbuffer EmitterID : register(b5)
-{
-    uint readParticleOffset;
-    uint writeParticleOffset;
-    uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset 
-    uint systemID;
-    float3 paddingID;
-};
+#ifdef PARTICLE_RENDER_STAGE
+    // CB5 contains batch info during rendering
+    cbuffer BatchInfo : register(b5) {
+        uint batchEmitterCount;
+        uint batchEmitterListOffset;
+        uint2 batchInfoPadding;
+    };
+#else
+    // CB5 contains emitterID during spawn/update (unchanged)
+    cbuffer EmitterID : register(b5)
+    {
+        uint readParticleOffset;
+        uint writeParticleOffset;
+        uint emitterID;
+        uint spawnPosOffset;  // bakedOffset + customOffset
+        uint systemID;
+        float3 paddingID;
+    };
+#endif
 
 struct EmitterID
 {
@@ -152,6 +162,13 @@ struct ParticleMeshConsts
     uint indexCount;
     float2 padding;
 };
+
+struct BatchDescriptor {
+    uint emitterCount;
+    uint emitterListOffset;
+    uint instanceOffset;
+    uint padding;
+};
 Texture2DArray particleTex : register(t14);
 
 StructuredBuffer<Particle> readParticles : register(t16);
@@ -161,6 +178,9 @@ StructuredBuffer<ParticleConsts> consts : register(t19);
 StructuredBuffer<float3> spawnPositions : register(t20); // յ SpawnPosition 
 StructuredBuffer<EmitterID> emitterIDs : register(t21); // յ SpawnPosition 
 StructuredBuffer<ParticleMeshConsts> meshConsts : register(t22);
+
+ StructuredBuffer<uint> batchEmitterList : register(t24);
+ StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
 
 struct SortElement
 {

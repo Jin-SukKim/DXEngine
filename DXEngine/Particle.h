@@ -123,4 +123,23 @@ namespace DE {
         VortexConsts vortex;
         OrbitConsts orbit;
     };
+
+    // Batch Rendering Structures
+    struct BatchInfo {
+        UINT emitterCount;        // Number of emitters in this batch
+        UINT emitterListOffset;   // Offset into flat emitter list
+        UINT padding[2];
+    };
+
+    struct BatchDescriptor {
+        UINT emitterCount;
+        UINT emitterListOffset;
+        UINT instanceOffset;      // Global instance start for this batch
+        UINT padding;
+    };
+
+    struct BatchRenderArgsConsts {
+        UINT numBatches;
+        Vector3 padding;
+    };
 }

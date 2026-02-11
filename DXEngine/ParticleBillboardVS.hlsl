@@ -1,3 +1,4 @@
+#define PARTICLE_RENDER_STAGE
 #include "Common.hlsli"
 #include "ParticleCommon.hlsli"
 
@@ -22,6 +23,7 @@ struct ParticlePSInput
     float2 uv : TEXCOORD0;
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
+    uint emitterSlotID : TEXCOORD2;  // Pass emitter ID to PS for sprite animation
 };
 
 // 2D Rotation Matrix
@@ -32,20 +34,53 @@ float2x2 GetRotationMatrix2D(float angle)
     return float2x2(c, -s, s, c);
 }
 
+// Resolve global instanceID to (emitterSlotID, local particle index)
+void ResolveBatchInstance(uint instanceID, out uint emitterSlotID, out uint localIdx)
+{
+    uint accumulatedCount = 0;
+
+    // Linear scan through emitters in this batch
+    for (uint i = 0; i < batchEmitterCount; i++) {
+        uint eid = batchEmitterList[batchEmitterListOffset + i];
+
+        // Get actual instance count for this emitter
+        uint count = uint(float(readCount[eid]) * frameConsts[eid].spawnRatio);
+
+        if (instanceID < accumulatedCount + count) {
+            emitterSlotID = eid;
+            localIdx = instanceID - accumulatedCount;
+            return;
+        }
+        accumulatedCount += count;
+    }
+
+    // Fallback (shouldn't happen)
+    emitterSlotID = 0;
+    localIdx = 0;
+}
+
 ParticlePSInput main(VSParticleInput input)
 {
-    RenderConsts render = consts[emitterID].render;
+    // Resolve instance to emitter
+    uint emitterSlotID;
+    uint localIdx;
+    ResolveBatchInstance(input.instanceID, emitterSlotID, localIdx);
 
-    // 파티클 인덱스 (정렬 여부에 따라)
-    uint particleIdx = render.useSorting ? sortedElements[input.instanceID].value : input.instanceID;
+    // Use resolved emitter data instead of global emitterID
+    RenderConsts render = consts[emitterSlotID].render;
+    uint particleIdx = render.useSorting ? sortedElements[localIdx].value : localIdx;
 
-    // 파티클 데이터 로드
-    Particle p = readParticles[readParticleOffset + particleIdx];
+    // Get emitter data from emitterIDs buffer
+    EmitterID emitterData = emitterIDs[emitterSlotID];
+    Particle p = readParticles[emitterData.readParticleOffset + particleIdx];
 
     ParticlePSInput output;
 
+    // Pass emitterSlotID to Pixel Shader for correct sprite animation
+    output.emitterSlotID = emitterSlotID;
+
     // 파티클 중심 위치 (World/Local Space)
-    SpawnConsts spawn = consts[emitterID].spawn;
+    SpawnConsts spawn = consts[emitterSlotID].spawn;
     float4 particleCenter;
     if (spawn.simulationSpace == 1)
     {
@@ -77,7 +112,7 @@ ParticlePSInput main(VSParticleInput input)
     float halfSize = p.size * 0.5;
 
     // Per-emitter size scaling based on distance
-    VisualConsts visual = consts[emitterID].visual;
+    VisualConsts visual = consts[emitterSlotID].visual;
     if (visual.enableSizeScaling) {
         float camDist = distance(particleCenter.xyz, eyeWorld);
         float t = saturate((camDist - visual.sizeDistanceMin) /

@@ -22,6 +22,7 @@ namespace DE {
 			ComputePSO vortexCS;              // VortexCS.hlsl
 			ComputePSO orbitCS;              // OrbitCS.hlsl
 			ComputePSO renderArgsUpdateCS;              // OrbitCS.hlsl
+			ComputePSO batchRenderArgsCS;     // BatchRenderArgsCS.hlsl
 		} particle;
 
 		// BitonicSort
@@ -40,5 +41,6 @@ namespace DE {
 		ComPtr<ID3D11ComputeShader> vortexCS;
 		ComPtr<ID3D11ComputeShader> orbitCS;
 		ComPtr<ID3D11ComputeShader> renderArgsUpdateCS;
+		ComPtr<ID3D11ComputeShader> batchRenderArgsCS;
 	};
 }

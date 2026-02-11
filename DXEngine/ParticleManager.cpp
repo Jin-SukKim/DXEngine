@@ -157,11 +157,85 @@ namespace DE {
 				return a.materialKey < b.materialKey;
 			});
 
+		// Build batches for billboard rendering
+		BuildBatches(billboardJobs, m_billboardBatches);
+
+		// Prepare batch upload data
+		std::vector<UINT> batchEmitterList;
+		std::vector<BatchDescriptor> batchDescriptors;
+
+		UINT globalInstanceOffset = 0;
+		for (const auto& batch : m_billboardBatches) {
+			BatchDescriptor desc;
+			desc.emitterCount = static_cast<UINT>(batch.emitterIDs.size());
+			desc.emitterListOffset = static_cast<UINT>(batchEmitterList.size());
+			desc.instanceOffset = globalInstanceOffset;
+			desc.padding = 0;
+			batchDescriptors.push_back(desc);
+
+			// Estimate instance offset (actual computed by CS)
+			for (UINT eid : batch.emitterIDs) {
+				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
+			}
+
+			batchEmitterList.insert(batchEmitterList.end(),
+				batch.emitterIDs.begin(),
+				batch.emitterIDs.end());
+		}
+
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		m_memoryPool->UploadFrameConsts();
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
 		ModelManager::Get().BindBuffersForRender();
+
+		// Upload batch data and dispatch compute shader
+		if (!batchEmitterList.empty()) {
+			m_memoryPool->UploadBatchData(batchEmitterList, batchDescriptors);
+
+			// Setup and dispatch BatchRenderArgsCS
+			UINT numBatches = static_cast<UINT>(batchDescriptors.size());
+			BatchRenderArgsConsts batchConsts{ numBatches, Vector3(0,0,0) };
+
+			ConstantBuffer<BatchRenderArgsConsts> batchConstsBuffer;
+			batchConstsBuffer.Initialize();
+			batchConstsBuffer.SetCpuData(batchConsts);
+			batchConstsBuffer.Upload();
+
+			// Bind resources for compute shader
+			context->CSSetConstantBuffers(0, 1, batchConstsBuffer.GetAddressOf());
+
+			ID3D11ShaderResourceView* srvs[] = {
+				m_memoryPool->GetReadBuffer().GetSRV(),        // t16
+				m_memoryPool->GetReadCount().GetSRV(),         // t17
+				m_memoryPool->GetFrameConsts().GetSRV(),       // t18
+				nullptr,                                        // t19
+				nullptr,                                        // t20
+				nullptr,                                        // t21
+				nullptr,                                        // t22
+				nullptr,                                        // t23
+				m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
+				m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
+			};
+			context->CSSetShaderResources(16, 10, srvs);
+
+			ID3D11UnorderedAccessView* uavs[] = {
+				m_memoryPool->GetBatchBillboardArgs().GetUAV()
+			};
+			context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
+
+			// Dispatch compute shader
+			auto& batchArgsCS = RenderBase::computeCommon.particle.batchRenderArgsCS;
+			context->CSSetShader(batchArgsCS.computeShader.Get(), nullptr, 0);
+			context->Dispatch((numBatches + 63) / 64, 1, 1);
+
+			// Unbind shader, UAV, and SRVs
+			context->CSSetShader(nullptr, nullptr, 0);
+			ID3D11UnorderedAccessView* nullUAVs[] = { nullptr };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+			ID3D11ShaderResourceView* nullSRVs[10] = { nullptr };
+			context->CSSetShaderResources(16, 10, nullSRVs);
+		}
 
 		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
 		if (!meshJobs.empty()) {
@@ -180,23 +254,43 @@ namespace DE {
 			}
 		}
 
-		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
+		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소) - BATCHED (fixed)
 		GET_SINGLE(RenderBase)->SetLowResRender();
-		if (!billboardJobs.empty()) {
+		if (!m_billboardBatches.empty()) {
 			GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
 			context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 
-			int lastMaterialKey = -1;
+			// Bind batch resources for vertex shader
+			ID3D11ShaderResourceView* batchSRVs[] = {
+				m_memoryPool->GetBatchEmitterList().GetSRV(),
+				m_memoryPool->GetBatchDescriptors().GetSRV()
+			};
+			context->VSSetShaderResources(24, 2, batchSRVs);
 
-			for (const auto& job : billboardJobs) {
-				if (job.materialKey != lastMaterialKey) {
-					lastMaterialKey = job.materialKey;
-					MaterialSystem::Get().BindMaterial(job.materialKey);
+			for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
+				const auto& batch = m_billboardBatches[batchIdx];
+				const auto& desc = batchDescriptors[batchIdx];
+
+				// *** KEY FIX: Bind material based on materialKey ***
+				if (batch.materialKey < 0) {
+					// No material - use default circle rendering
+					m_memoryPool->BindDefaultParticleMaterial();
+				} else {
+					// Has material - bind normally
+					MaterialSystem::Get().BindMaterial(batch.materialKey);
 				}
-				BindEmitterID(job.globalEmitterID);
-				ID3D11Buffer* billboardArgs = m_memoryPool->GetBillboardArgs().GetBuffer();
-				context->DrawIndexedInstancedIndirect(billboardArgs, job.globalEmitterID * 20);
+
+				// Bind batch info to CB5 (replaces BindEmitterID)
+				m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset);
+
+				// Single draw call for entire batch
+				ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
+				context->DrawIndexedInstancedIndirect(batchArgs, batchIdx * 20);
 			}
+
+			// Unbind batch SRVs
+			ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
+			context->VSSetShaderResources(24, 2, nullSRVs);
 		}
 
 		m_memoryPool->UnbindRender();
@@ -371,6 +465,56 @@ namespace DE {
 		if (it != m_instances.end()) {
 			m_instances.erase(it);
 		}
+	}
+
+	void ParticleManager::BuildBatches(const std::vector<EmitterJob>& jobs, std::vector<BatchGroup>& outBatches)
+	{
+		outBatches.clear();
+		if (jobs.empty()) return;
+
+		// Phase 1: Collect no-material emitters into separate batch
+		BatchGroup noMaterialBatch;
+		noMaterialBatch.materialKey = -1;
+		noMaterialBatch.instanceOffset = 0;
+
+		std::vector<EmitterJob> materialJobs;  // Jobs with valid materials
+
+		for (const auto& job : jobs) {
+			if (job.materialKey < 0) {  // No material (invalid materialKey)
+				noMaterialBatch.emitterIDs.push_back(job.globalEmitterID);
+			} else {
+				materialJobs.push_back(job);  // Has material - process later
+			}
+		}
+
+		// Add no-material batch first (if any)
+		if (!noMaterialBatch.emitterIDs.empty()) {
+			outBatches.push_back(noMaterialBatch);
+		}
+
+		// Phase 2: Build material batches (existing logic)
+		if (materialJobs.empty()) return;
+
+		BatchGroup currentBatch;
+		currentBatch.materialKey = materialJobs[0].materialKey;
+		currentBatch.emitterIDs.push_back(materialJobs[0].globalEmitterID);
+		currentBatch.instanceOffset = 0;
+
+		for (size_t i = 1; i < materialJobs.size(); ++i) {
+			if (materialJobs[i].materialKey == currentBatch.materialKey) {
+				// Same material - add to current batch
+				currentBatch.emitterIDs.push_back(materialJobs[i].globalEmitterID);
+			} else {
+				// Different material - finish current batch and start new one
+				outBatches.push_back(currentBatch);
+				currentBatch.materialKey = materialJobs[i].materialKey;
+				currentBatch.emitterIDs.clear();
+				currentBatch.emitterIDs.push_back(materialJobs[i].globalEmitterID);
+			}
+		}
+
+		// Add last batch
+		outBatches.push_back(currentBatch);
 	}
 
 	void ParticleManager::BindEmitterID(UINT globalSlotIndex)
