@@ -30,10 +30,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         // Write merged draw args
         uint argsIdx = batchID * 5;
-        batchBillboardArgs[argsIdx + 0] = 6;               // Index count (quad)
-        batchBillboardArgs[argsIdx + 1] = totalInstances;  // Instance count
-        batchBillboardArgs[argsIdx + 2] = 0;
-        batchBillboardArgs[argsIdx + 3] = 0;
+        batchBillboardArgs[argsIdx + 0] = batch.indexCount;
+        batchBillboardArgs[argsIdx + 1] = totalInstances;
+        batchBillboardArgs[argsIdx + 2] = batch.startIndexLocation;
+        batchBillboardArgs[argsIdx + 3] = batch.baseVertexLocation;
         batchBillboardArgs[argsIdx + 4] = 0;
 
         globalOffset += totalInstances;

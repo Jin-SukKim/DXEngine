@@ -135,7 +135,11 @@ namespace DE {
     struct BatchDescriptor {
         UINT emitterCount;
         UINT emitterListOffset;
-        UINT instanceOffset;      // Global instance start for this batch
+        UINT instanceOffset;
+        UINT indexCount;
+        UINT startIndexLocation;
+        UINT baseVertexLocation;
+        UINT isMesh;
         UINT padding;
     };
 

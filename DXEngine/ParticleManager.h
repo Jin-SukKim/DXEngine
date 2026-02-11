@@ -23,10 +23,12 @@ namespace DE {
 		ParticleEmitter* emitter;
 		UINT globalEmitterID; // GPU Buffer offset 계산용
 		int materialKey;
+		int modelIndex;
 	};
 
 	struct BatchGroup {
 		int materialKey;
+		int modelIndex;
 		std::vector<UINT> emitterIDs;
 		UINT instanceOffset;
 	};
@@ -97,6 +99,7 @@ namespace DE {
 		void Render();
 
 		void BuildBatches(const std::vector<EmitterJob>& jobs, std::vector<BatchGroup>& outBatches);
+		void BuildMeshBatches(const std::vector<EmitterJob>& jobs, std::vector<BatchGroup>& outBatches);
 
 		void RenderDepth();
 
@@ -177,6 +180,7 @@ namespace DE {
 
 		// [Added] Batch rendering
 		std::vector<BatchGroup> m_billboardBatches;
+		std::vector<BatchGroup> m_meshBatches;
 	};
 
 }

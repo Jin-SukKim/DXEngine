@@ -78,8 +78,6 @@ public:
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
 	void UploadMeshConsts();
 
-	void BindBillboardMesh();
-
 	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
 	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
 	StructuredBuffer<uint32_t>& GetReadCount() { return m_counts[m_bufferIndex]; }

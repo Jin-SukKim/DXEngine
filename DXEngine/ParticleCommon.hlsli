@@ -168,6 +168,10 @@ struct BatchDescriptor {
     uint emitterCount;
     uint emitterListOffset;
     uint instanceOffset;
+    uint indexCount;
+    uint startIndexLocation;
+    uint baseVertexLocation;
+    uint isMesh;
     uint padding;
 };
 Texture2DArray particleTex : register(t14);

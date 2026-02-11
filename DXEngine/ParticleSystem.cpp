@@ -639,7 +639,8 @@ namespace DE {
 
 			UINT globalID = m_poolHandle.emitterIDs[emitter->GetEmitterID()];
 			int materialIdx = emitter->GetMaterialIndex();
-			jobs.push_back({ emitter, globalID, materialIdx });
+			int modelIdx = emitter->GetModelIndex();
+			jobs.push_back({ emitter, globalID, materialIdx, modelIdx });
 		}
 	}
 

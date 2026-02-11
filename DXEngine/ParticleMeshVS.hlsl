@@ -1,17 +1,20 @@
+#define PARTICLE_RENDER_STAGE
 #include "Common.hlsli"
 #include "ParticleCommon.hlsli"
 
 Texture2D g_heightTexture : register(t0); // Height Map
 StructuredBuffer<SortElement> sortedElements : register(t2);
+StructuredBuffer<uint> aliveIndices : register(t26);
+StructuredBuffer<uint> emitterWriteOffsets : register(t27);
 
-// [Ãß°¡] 3D Euler °¢µµ -> È¸Àü Çà·Ä º¯È¯ ÇÔ¼ö
+// [ì¶”ê°€] 3D Euler ê°ë„ -> íšŒì „ í–‰ë ¬ ë³€í™˜ í•¨ìˆ˜
 float3x3 GetRotationMatrix(float3 rot)
 {
     float cX = cos(rot.x), sX = sin(rot.x);
     float cY = cos(rot.y), sY = sin(rot.y);
     float cZ = cos(rot.z), sZ = sin(rot.z);
 
-    // Z * Y * X ¼ø¼­ Á÷Á¢ °è»ê (Çà·Ä °ö¼À Á¦°Å)
+    // Z * Y * X ìˆœì„œ íšŒì „ í–‰ë ¬ (ì–¸ë¦¬ì–¼ ì—”ì§„ ê¸°ì¤€)
     return float3x3(
         cY * cZ, -cY * sZ, sY,
         sX * sY * cZ + cX * sZ, -sX * sY * sZ + cX * cZ, -sX * cY,
@@ -19,81 +22,82 @@ float3x3 GetRotationMatrix(float3 rot)
     );
 }
 
-// [Áß¿ä] SV_InstanceID¸¦ ÀÎÀÚ·Î ¹Ş¾Æ¾ß ÇÕ´Ï´Ù.
+// [ì¤‘ìš”] SV_InstanceIDë¥¼ ì¸ìë¡œ ë°›ì•„ì•¼ í•©ë‹ˆë‹¤.
 PSInput main(VSInput input, uint instanceID : SV_InstanceID)
 {
-    // 1. ÇöÀç ±×¸± ÆÄÆ¼Å¬ÀÇ ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
-    uint particleIdx = consts[emitterID].render.useSorting ? sortedElements[instanceID].value : instanceID;
-
-    Particle p = readParticles[readParticleOffset + particleIdx];
+    // O(1) lookup via aliveIndices buffer (batch start offset computed on GPU)
+    uint batchStartOffset = emitterWriteOffsets[batchEmitterListOffset];
+    uint globalIdx = aliveIndices[batchStartOffset + instanceID];
+    Particle p = readParticles[globalIdx];
+    uint emitterSlotID = p.ownerID;
 
     PSInput output;
 
     // -------------------------------------------------------------------------
-    // 1. Scale: Å©±â º¯È¯
+    // 1. Scale: í¬ê¸° ë³€í™˜
     // -------------------------------------------------------------------------
     float3 scaledPos = input.posModel * p.size;
 
-    // HeightMap Àû¿ë (¿É¼Ç)
+    // HeightMap ì ìš© (ì˜µì…˜)
     if (useHeightMap) {
         float height = g_heightTexture.SampleLevel(linearClampSampler, input.texcoord, 0).r;
         height = height * 2.0 - 1.0;
 
-        // ·ÎÄÃ Normal ¹æÇâÀ¸·Î È®Àå
+        // ë¡œì»¬ Normal ë°©í–¥ìœ¼ë¡œ í™•ì¥
         scaledPos += input.normalModel * height * heightScale;
     }
 
     // -------------------------------------------------------------------------
-    // 2. Rotate: È¸Àü º¯È¯
+    // 2. Rotate: íšŒì „ ë³€í™˜
     // -------------------------------------------------------------------------
-    // È¸Àü Çà·Ä »ı¼º (p.rotationÀº ¶óµğ¾È ´ÜÀ§¶ó°í °¡Á¤)
+    // íšŒì „ í–‰ë ¬ ìƒì„± (p.rotationì€ ë¼ë””ì•ˆ ê¸°ì¤€ìœ¼ë¡œ ì €ì¥)
     float3x3 rotMatrix = GetRotationMatrix(p.rotation);
 
-    // À§Ä¡ È¸Àü Àû¿ë
+    // ìœ„ì¹˜ íšŒì „ ì ìš©
     float3 rotatedPos = mul(rotMatrix, scaledPos);
 
-    // Normal & Tangent È¸Àü (·ÎÄÃ °ø°£¿¡¼­ÀÇ È¸Àü)
+    // Normal & Tangent íšŒì „ (íŒŒí‹°í´ ìì²´íšŒì „ë§Œ íšŒì „)
     float3 rotatedNormal = mul(rotMatrix, input.normalModel);
     float3 rotatedTangent = mul(rotMatrix, input.tangentModel);
 
     // -------------------------------------------------------------------------
-    // 3. Translate: À§Ä¡ ÀÌµ¿ (ÆÄÆ¼Å¬ Áß½ÉÁ¡)
+    // 3. Translate: ìœ„ì¹˜ ì´ë™ (íŒŒí‹°í´ ì¤‘ì‹¬ì )
     // -------------------------------------------------------------------------
     float4 localPosResult = float4(rotatedPos + p.position, 1.0f);
 
-    SpawnConsts spawn = consts[emitterID].spawn;
+    SpawnConsts spawn = consts[emitterSlotID].spawn;
     // -------------------------------------------------------------------------
-    // 4. World Transformation: ½Ã¹Ä·¹ÀÌ¼Ç °ø°£¿¡ µû¸¥ Ã³¸®
+    // 4. World Transformation: ì‹œë®¬ë ˆì´ì…˜ ê³µê°„ì— ë”°ë¥¸ ì²˜ë¦¬
     // -------------------------------------------------------------------------
     if (spawn.simulationSpace == 1) // World Space Simulation
     {
         // 1. Position
-        // ÆÄÆ¼Å¬ À§Ä¡(p.position)°¡ ÀÌ¹Ì World ÁÂÇ¥ÀÌ¹Ç·Î ActorÀÇ World Çà·Ä °öÀ» »ı·«
+        // íŒŒí‹°í´ ìœ„ì¹˜(p.position)ê°€ ì´ë¯¸ World ì¢Œí‘œì´ë¯€ë¡œ Actorì˜ World í–‰ë ¬ ì ìš© ë¶ˆí•„ìš”
         output.posWorld = localPosResult.xyz;
 
         // 2. Normal & Tangent
-        // ÆÄÆ¼Å¬ÀÌ Actor¿Í ºĞ¸®µÇ¾úÀ¸¹Ç·Î, ActorÀÇ È¸Àü(worldIT)À» Àû¿ëÇÏÁö ¾ÊÀ½
-        // ´Ü, ÆÄÆ¼Å¬ ÀÚÃ¼ÀÇ È¸Àü(rotatedNormal)Àº Àû¿ëµÊ
+        // íŒŒí‹°í´ì´ Actorì—ì„œ ë¶„ë¦¬ë˜ì—ˆìœ¼ë¯€ë¡œ, Actorì˜ íšŒì „(worldIT)ì„ ì ìš©í•˜ì§€ ì•ŠìŒ
+        // ë‹¨, íŒŒí‹°í´ ìì²´ì˜ íšŒì „(rotatedNormal)ì€ ìœ ì§€ë¨
         output.normalWorld = normalize(rotatedNormal);
         output.tangentWorld = normalize(rotatedTangent);
     }
-    else // Local Space Simulation (±âÁ¸ ¹æ½Ä)
+    else // Local Space Simulation (ê¸°ë³¸ ëª¨ë“œ)
     {
         // 1. Position
-        // ÆÄÆ¼Å¬ÀÌ Actor¿¡ Á¾¼ÓÀûÀÌ¹Ç·Î ActorÀÇ World Çà·ÄÀ» °öÇÔ
+        // íŒŒí‹°í´ì´ Actorì— ì¢…ì†ì´ë¯€ë¡œ Actorì˜ World í–‰ë ¬ì„ ì ìš©
         matrix pWorld = meshConsts[p.systemID].pWorld;
         float4 worldPos = mul(localPosResult, pWorld);
         output.posWorld = worldPos.xyz;
 
         // 2. Normal & Tangent
-        // (ÆÄÆ¼Å¬ È¸Àü) -> (Actor È¸Àü) ¼ø¼­·Î Àû¿ë
-        // NormalÀº Inverse Transpose¸¦ »ç¿ëÇØ¾ß Á¤È®ÇÔ
+        // (íŒŒí‹°í´ íšŒì „) -> (Actor íšŒì „) ìˆœì„œë¡œ ì ìš©
+        // Normalì€ Inverse Transposeë¥¼ ì‚¬ìš©í•´ì•¼ ì •í™•í•¨
         output.normalWorld = normalize(mul(float4(rotatedNormal, 0.f), meshConsts[p.systemID].pWorldIT).xyz);
         output.tangentWorld = normalize(mul(float4(rotatedTangent, 0.f), pWorld).xyz);
     }
 
     // -------------------------------------------------------------------------
-    // °øÅë: View / Projection º¯È¯
+    // ìµœì¢…: View / Projection ë³€í™˜
     // -------------------------------------------------------------------------
     output.posProj = mul(float4(output.posWorld, 1.0f), viewProj);
     output.texcoord = input.texcoord;
