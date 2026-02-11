@@ -220,19 +220,70 @@ namespace DE {
 			context->CSSetShaderResources(16, 10, srvs);
 
 			ID3D11UnorderedAccessView* uavs[] = {
-				m_memoryPool->GetBatchBillboardArgs().GetUAV()
+				m_memoryPool->GetBatchBillboardArgs().GetUAV(),
+				m_memoryPool->GetEmitterWriteOffsets().GetUAV()
 			};
-			context->CSSetUnorderedAccessViews(0, 1, uavs, nullptr);
+			context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 
-			// Dispatch compute shader
+			// Pass 1: BatchRenderArgsCS (draw args + emitter write offsets)
 			auto& batchArgsCS = RenderBase::computeCommon.particle.batchRenderArgsCS;
 			context->CSSetShader(batchArgsCS.computeShader.Get(), nullptr, 0);
-			context->Dispatch((numBatches + 63) / 64, 1, 1);
+			context->Dispatch(1, 1, 1);  // Single-threaded: processes all batches sequentially
 
-			// Unbind shader, UAV, and SRVs
+			// Unbind Pass 1
 			context->CSSetShader(nullptr, nullptr, 0);
-			ID3D11UnorderedAccessView* nullUAVs[] = { nullptr };
-			context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
+			ID3D11UnorderedAccessView* nullUAVs2[] = { nullptr, nullptr };
+			context->CSSetUnorderedAccessViews(0, 2, nullUAVs2, nullptr);
+
+			// Pass 2: BuildAliveIndicesCS
+			UINT numFlatEmitters = static_cast<UINT>(batchEmitterList.size());
+			if (numFlatEmitters > 0) {
+				BuildAliveConsts aliveConsts{ numFlatEmitters, Vector3(0,0,0) };
+				ConstantBuffer<BuildAliveConsts> aliveConstsBuffer;
+				aliveConstsBuffer.Initialize();
+				aliveConstsBuffer.SetCpuData(aliveConsts);
+				aliveConstsBuffer.Upload();
+
+				context->CSSetConstantBuffers(0, 1, aliveConstsBuffer.GetAddressOf());
+
+				// SRVs: t0 = emitterWriteOffsets, t16-t25 already bound from common
+				ID3D11ShaderResourceView* aliveSRVs[] = {
+					m_memoryPool->GetEmitterWriteOffsets().GetSRV()  // t0
+				};
+				context->CSSetShaderResources(0, 1, aliveSRVs);
+
+				// Re-bind particle common SRVs for Pass 2
+				ID3D11ShaderResourceView* commonSRVs[] = {
+					m_memoryPool->GetReadBuffer().GetSRV(),        // t16
+					m_memoryPool->GetReadCount().GetSRV(),         // t17
+					m_memoryPool->GetFrameConsts().GetSRV(),       // t18
+					nullptr,                                        // t19
+					nullptr,                                        // t20
+					m_memoryPool->GetEmitterIDs().GetSRV(),        // t21
+					nullptr,                                        // t22
+					nullptr,                                        // t23
+					m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
+					m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
+				};
+				context->CSSetShaderResources(16, 10, commonSRVs);
+
+				ID3D11UnorderedAccessView* aliveUAVs[] = {
+					m_memoryPool->GetAliveIndices().GetUAV()
+				};
+				context->CSSetUnorderedAccessViews(0, 1, aliveUAVs, nullptr);
+
+				auto& buildAliveCS = RenderBase::computeCommon.particle.buildAliveIndicesCS;
+				context->CSSetShader(buildAliveCS.computeShader.Get(), nullptr, 0);
+				context->Dispatch(numFlatEmitters, 1, 1);
+
+				// Unbind Pass 2
+				context->CSSetShader(nullptr, nullptr, 0);
+				ID3D11UnorderedAccessView* nullUAV1[] = { nullptr };
+				context->CSSetUnorderedAccessViews(0, 1, nullUAV1, nullptr);
+				ID3D11ShaderResourceView* nullSRV1[] = { nullptr };
+				context->CSSetShaderResources(0, 1, nullSRV1);
+			}
+
 			ID3D11ShaderResourceView* nullSRVs[10] = { nullptr };
 			context->CSSetShaderResources(16, 10, nullSRVs);
 		}
@@ -253,6 +304,9 @@ namespace DE {
 				context->DrawIndexedInstancedIndirect(meshArgs, job.globalEmitterID * 20);
 			}
 		}
+
+		// Bind aliveIndices SRV after CS dispatches (must be after UAV is unbound)
+		m_memoryPool->BindAliveIndices();
 
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소) - BATCHED (fixed)
 		GET_SINGLE(RenderBase)->SetLowResRender();
@@ -281,7 +335,7 @@ namespace DE {
 				}
 
 				// Bind batch info to CB5 (replaces BindEmitterID)
-				m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset);
+				m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
 
 				// Single draw call for entire batch
 				ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();

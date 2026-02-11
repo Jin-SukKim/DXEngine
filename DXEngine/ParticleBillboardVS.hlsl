@@ -3,6 +3,8 @@
 #include "ParticleCommon.hlsli"
 
 StructuredBuffer<SortElement> sortedElements : register(t1);
+StructuredBuffer<uint> aliveIndices : register(t26);
+StructuredBuffer<uint> emitterWriteOffsets : register(t27);
 
 // Vertex Input (Quad Mesh)
 struct VSParticleInput
@@ -34,45 +36,13 @@ float2x2 GetRotationMatrix2D(float angle)
     return float2x2(c, -s, s, c);
 }
 
-// Resolve global instanceID to (emitterSlotID, local particle index)
-void ResolveBatchInstance(uint instanceID, out uint emitterSlotID, out uint localIdx)
-{
-    uint accumulatedCount = 0;
-
-    // Linear scan through emitters in this batch
-    for (uint i = 0; i < batchEmitterCount; i++) {
-        uint eid = batchEmitterList[batchEmitterListOffset + i];
-
-        // Get actual instance count for this emitter
-        uint count = uint(float(readCount[eid]) * frameConsts[eid].spawnRatio);
-
-        if (instanceID < accumulatedCount + count) {
-            emitterSlotID = eid;
-            localIdx = instanceID - accumulatedCount;
-            return;
-        }
-        accumulatedCount += count;
-    }
-
-    // Fallback (shouldn't happen)
-    emitterSlotID = 0;
-    localIdx = 0;
-}
-
 ParticlePSInput main(VSParticleInput input)
 {
-    // Resolve instance to emitter
-    uint emitterSlotID;
-    uint localIdx;
-    ResolveBatchInstance(input.instanceID, emitterSlotID, localIdx);
-
-    // Use resolved emitter data instead of global emitterID
-    RenderConsts render = consts[emitterSlotID].render;
-    uint particleIdx = render.useSorting ? sortedElements[localIdx].value : localIdx;
-
-    // Get emitter data from emitterIDs buffer
-    EmitterID emitterData = emitterIDs[emitterSlotID];
-    Particle p = readParticles[emitterData.readParticleOffset + particleIdx];
+    // O(1) lookup via aliveIndices buffer (batch start offset computed on GPU)
+    uint batchStartOffset = emitterWriteOffsets[batchEmitterListOffset];
+    uint globalIdx = aliveIndices[batchStartOffset + input.instanceID];
+    Particle p = readParticles[globalIdx];
+    uint emitterSlotID = p.ownerID;
 
     ParticlePSInput output;
 

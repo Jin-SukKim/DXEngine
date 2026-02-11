@@ -128,7 +128,8 @@ namespace DE {
     struct BatchInfo {
         UINT emitterCount;        // Number of emitters in this batch
         UINT emitterListOffset;   // Offset into flat emitter list
-        UINT padding[2];
+        UINT instanceOffset;      // Global instance start for this batch
+        UINT padding;
     };
 
     struct BatchDescriptor {
@@ -140,6 +141,11 @@ namespace DE {
 
     struct BatchRenderArgsConsts {
         UINT numBatches;
+        Vector3 padding;
+    };
+
+    struct BuildAliveConsts {
+        UINT numFlatEmitters;
         Vector3 padding;
     };
 }

@@ -78,6 +78,8 @@ namespace DE {
 		m_batchDescriptors.Initialize(device, maxEmitters);
 		std::vector<DrawIndexedInstancedArgs> initialBatchArgs(maxEmitters, { 6, 0, 0, 0, 0 });
 		m_batchBillboardArgs.Initialize(device, initialBatchArgs, maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
+		m_emitterWriteOffsets.Initialize(device, maxEmitters);
+		m_aliveIndices.Initialize(device, maxParticles);
 		m_batchInfoBuffer.Initialize();
 
 		// Default Particle Material (for circle rendering without textures)
@@ -331,6 +333,16 @@ namespace DE {
 		context->PSSetShaderResources(16, 7, srvs);
 	}
 
+	void ParticleMemoryPool::BindAliveIndices()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		ID3D11ShaderResourceView* srvs[] = {
+			m_aliveIndices.GetSRV(),          // t26
+			m_emitterWriteOffsets.GetSRV()    // t27
+		};
+		context->VSSetShaderResources(26, 2, srvs);
+	}
+
 	void ParticleMemoryPool::UnbindRender()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
@@ -339,6 +351,10 @@ namespace DE {
 		context->CSSetShaderResources(16, 7, srvs);
 		context->VSSetShaderResources(16, 7, srvs);
 		context->PSSetShaderResources(16, 7, srvs);
+
+		// Unbind aliveIndices + emitterWriteOffsets
+		ID3D11ShaderResourceView* nullSRVs2[2] = { nullptr, nullptr };
+		context->VSSetShaderResources(26, 2, nullSRVs2);
 	}
 
 	void ParticleMemoryPool::ClearWriteCount()
@@ -517,15 +533,15 @@ namespace DE {
 		}
 	}
 
-	void ParticleMemoryPool::BindBatchInfo(UINT emitterCount, UINT listOffset)
+	void ParticleMemoryPool::BindBatchInfo(UINT emitterCount, UINT listOffset, UINT instanceOffset)
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		BatchInfo info;
 		info.emitterCount = emitterCount;
 		info.emitterListOffset = listOffset;
-		info.padding[0] = 0;
-		info.padding[1] = 0;
+		info.instanceOffset = instanceOffset;
+		info.padding = 0;
 
 		m_batchInfoBuffer.SetCpuData(info);
 		m_batchInfoBuffer.Upload();

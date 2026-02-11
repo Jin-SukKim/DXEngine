@@ -23,7 +23,8 @@ RWStructuredBuffer<uint> writeCount : register(u7);
     cbuffer BatchInfo : register(b5) {
         uint batchEmitterCount;
         uint batchEmitterListOffset;
-        uint2 batchInfoPadding;
+        uint batchInstanceOffset;
+        uint batchInfoPadding;
     };
 #else
     // CB5 contains emitterID during spawn/update (unchanged)

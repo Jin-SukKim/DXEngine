@@ -51,6 +51,7 @@ public:
 	void BindCompute();
 	void UnbindCompute();
 	void BindRender();
+	void BindAliveIndices();
 	void UnbindRender();
 	void ClearWriteCount();
 	void ExcuteParticleLogic();
@@ -70,7 +71,7 @@ public:
 
 	// Batch Rendering
 	void UploadBatchData(const std::vector<UINT>& emitterList, const std::vector<BatchDescriptor>& descriptors);
-	void BindBatchInfo(UINT emitterCount, UINT listOffset);
+	void BindBatchInfo(UINT emitterCount, UINT listOffset, UINT instanceOffset);
 	void BindDefaultParticleMaterial();
 	
 	// MeshConsts 
@@ -95,6 +96,8 @@ public:
 	StructuredBuffer<UINT>& GetBatchEmitterList() { return m_batchEmitterList; }
 	StructuredBuffer<BatchDescriptor>& GetBatchDescriptors() { return m_batchDescriptors; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBatchBillboardArgs() { return m_batchBillboardArgs; }
+	StructuredBuffer<UINT>& GetEmitterWriteOffsets() { return m_emitterWriteOffsets; }
+	StructuredBuffer<UINT>& GetAliveIndices() { return m_aliveIndices; }
 
 	// Quad Mesh Getters
 	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
@@ -197,6 +200,8 @@ private:
 	StructuredBuffer<UINT> m_batchEmitterList;                      // Flat emitter ID list
 	StructuredBuffer<BatchDescriptor> m_batchDescriptors;           // Per-batch metadata
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_batchBillboardArgs;  // Merged args
+	StructuredBuffer<UINT> m_emitterWriteOffsets;                    // Pass1 -> Pass2
+	StructuredBuffer<UINT> m_aliveIndices;                           // Pass2 -> VS
 	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
 	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
 
