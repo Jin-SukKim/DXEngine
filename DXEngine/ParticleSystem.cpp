@@ -428,7 +428,6 @@ namespace DE {
 			ParticleEmitter* subEmitter = it->second.get();
 			Vector3 pos = sub.inheritPosition ? emitter->GetSpawnPosition() : Vector3(0.f);
 
-			// ߺ üũ  ߰
 			auto isMatch = [subEmitter](const auto& p) { return p.first == subEmitter; };
 			bool alreadyPending = std::ranges::any_of(m_pendingSubEmitters, isMatch);
 			bool alreadyActive = std::ranges::find(m_activeMeshSubEmitters, subEmitter) != m_activeMeshSubEmitters.end();

@@ -122,7 +122,7 @@ namespace DE {
 
 		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
 
-		// SubEmitter ó (ܼȭ)
+		// SubEmitter
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
 		void LoadSubEmitters(ParticleEmitter* emitter,
 			ParticleInitializer& initialData, std::set<std::wstring>& processedPaths);

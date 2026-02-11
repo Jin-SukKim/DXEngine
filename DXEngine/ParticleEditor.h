@@ -12,6 +12,7 @@ namespace DE {
 	class RoseEffect;
 	class TestActor;
 	class ParticleSystem; // 전방 선언 확인
+	class SmokeActor;
 
 	class ParticleEditor : public Scene
 	{
@@ -35,6 +36,7 @@ namespace DE {
 		ParticleSpawner* m_spanwer2 = nullptr;
 		Firework* m_firework = nullptr;
 		RoseEffect* m_rose = nullptr;
+		SmokeActor* m_smoke = nullptr;
 
 		InputAction m_Lclick;
 		InputAction m_Rclick;

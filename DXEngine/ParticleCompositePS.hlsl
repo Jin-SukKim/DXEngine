@@ -78,13 +78,17 @@ float4 main(SamplingPSInput input) : SV_TARGET{
     // Soft Particles: Fade out when particle depth is close to scene depth
     // This prevents hard edges at geometry intersections
     const float softParticleDistance = 0.05; // Adjust for softer/harder transitions
+    // 이 수치가 곧 "가시성(Visibility)"입니다.
     float depthDifference = fullDepth - particleDepth;
+    float visibility = saturate(depthDifference / softParticleDistance);
 
-    // Fade factor: 0 when depths are equal, 1 when far apart
-    float softFade = saturate(depthDifference / softParticleDistance);
+    // [중요] 가산 혼합(Additive)이든 알파 블렌딩이든,
+    // 색상 자체를 어둡게(0) 만들어야 안 보입니다.
+    color.rgb *= visibility;
 
-    // Apply soft particle fade to alpha
-    color.a *= softFade;
+    // 알파 블렌딩을 위해 알파에도 곱해줍니다.
+    color.a *= visibility;
 
-    return float4(color.rgb, 1.0);
+    // [수정] 강제로 1.0을 넣지 말고 계산된 color를 리턴하세요.
+    return color;
 }

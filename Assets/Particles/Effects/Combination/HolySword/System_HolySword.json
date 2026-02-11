@@ -1,6 +1,6 @@
 {
     "Name": "HolySword",
-    "Looping": true,
+    "Looping": false,
     "Duration": 5.0,
     "PlayRate": 1.0,
     "PreWarmTime": 0.0,

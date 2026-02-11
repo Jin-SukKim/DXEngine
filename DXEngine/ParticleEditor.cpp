@@ -35,6 +35,7 @@
 #include "RoseEffect.h"
 #include "ParticleManager.h"
 #include "TestActor.h"
+#include "SmokeActor.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -62,7 +63,7 @@ namespace DE {
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
 		m_spanwer->SetMaxActiveParticles(500);
 
-		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
+		m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		// [시나리오 시작] 1번 타자: 지속 이펙트 (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
@@ -71,6 +72,9 @@ namespace DE {
 		// m_test2는 시나리오 중간(15초)에 생성하기 위해 비워둠
 		m_test2 = nullptr;
 		m_test3 = nullptr;
+
+		m_smoke = AddObject<SmokeActor>(L"SmokeEffect");
+
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -98,6 +102,7 @@ namespace DE {
 	{
 		Scene::Initialize();
 
+		m_smoke->SetPosOffset(Vector3(0.f, -2.5f, 0.f));
 		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}

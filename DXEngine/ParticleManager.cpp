@@ -158,7 +158,7 @@ namespace DE {
 		}
 
 		// 2. Billboard RenderModule 나중에 렌더링 (overdraw 감소)
-		GET_SINGLE(RenderBase)->SetLowResRender();
+		//GET_SINGLE(RenderBase)->SetLowResRender();
 		context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
 		
@@ -169,7 +169,7 @@ namespace DE {
 		}
 
 		m_memoryPool->UnbindRender();
-		GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
+		//GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
 
 		// [Added] Update Culling Stats
 		m_runtimeProfile.totalSystems = totalCount;
