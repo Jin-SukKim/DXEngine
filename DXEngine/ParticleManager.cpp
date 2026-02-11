@@ -14,6 +14,9 @@ namespace DE {
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
 		m_memoryPool->Initialize(10000000, 20000, 20000);
 		TextureManager::Get().BindParticleTextures();
+
+		m_batchRenderArgsCB.Initialize();
+		m_buildAliveCB.Initialize();
 	}
 
 	void ParticleManager::Update(const float& dt)
@@ -103,75 +106,92 @@ namespace DE {
 
 	void ParticleManager::Render()
 	{
-		static std::vector<EmitterJob> meshJobs;
-		static std::vector<EmitterJob> billboardJobs;
-		meshJobs.clear();
-		billboardJobs.clear();
-
-		// [Added] Measure Render Time
 		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
 
 		if (m_activeSystems.empty()) return;
 
-		// [Added] CPU Frustum Culling
-		// Projection 행렬로 view space frustum 생성
+		// Frustum + spawn ratio
 		DirectX::BoundingFrustum frustum(m_proj);
-
-		// [Added] Reset Culling Stats
-		UINT totalCount = 0;
-		UINT visibleCount = 0;
-
-		// Extract camera position from view matrix (inverse translation)
 		Matrix invView = m_view.Invert();
 		Vector3 cameraPos(invView._41, invView._42, invView._43);
 
-		// Update spawn ratios for overdraw control before rendering
+		for (auto* sys : m_activeSystems)
+			if (sys) sys->UpdateSpawnRatios(cameraPos);
+
+		UINT totalCount = 0, visibleCount = 0;
+		GatherVisibleEmitters(frustum, cameraPos, totalCount, visibleCount);
+		BuildBatchDescriptors();
+
+		m_memoryPool->UploadFrameConsts();
+		m_memoryPool->BindRender();
+		m_memoryPool->UpdateRenderArgs();
+
+		if (!m_batchEmitterList.empty())
+			DispatchBatchCompute();
+
+		m_memoryPool->BindAliveIndices();
+		ModelManager::Get().BindBuffersForRender();
+
+		DrawMeshBatches();
+		DrawBillboardBatches();
+
+		m_memoryPool->UnbindRender();
+		GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
+
+		m_runtimeProfile.totalSystems = totalCount;
+		m_runtimeProfile.visibleSystems = visibleCount;
+		m_runtimeProfile.culledSystems = totalCount - visibleCount;
+	}
+
+	void ParticleManager::GatherVisibleEmitters(
+		const DirectX::BoundingFrustum& frustum,
+		const Vector3& cameraPos,
+		UINT& totalCount, UINT& visibleCount)
+	{
+		m_meshJobs.clear();
+		m_billboardJobs.clear();
+
 		for (auto* system : m_activeSystems) {
-			if (system) {
-				system->UpdateSpawnRatios(cameraPos);
+			if (!system) continue;
+			totalCount++;
+
+			Vector3 posWorld = system->GetWorldPosition();
+			Vector3 posView = Vector3::Transform(posWorld, m_view);
+			float radius = system->GetBoundingRadius();
+			DirectX::BoundingSphere sphere(posView, radius);
+
+			if (frustum.Intersects(sphere)) {
+				visibleCount++;
+				system->GatherActiveEmitters(m_meshJobs, m_billboardJobs);
 			}
 		}
 
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				totalCount++;
-				// Frustum Culling Test (view space)
-				Vector3 posWorld = system->GetWorldPosition();
-				Vector3 posView = Vector3::Transform(posWorld, m_view);  // World -> View space
-				float radius = system->GetBoundingRadius();
-				DirectX::BoundingSphere sphere(posView, radius);
-
-				if (frustum.Intersects(sphere)) {
-					visibleCount++;
-					system->GatherActiveEmitters(meshJobs, billboardJobs);
-				}
-			}
-		}
-		
-		std::sort(meshJobs.begin(), meshJobs.end(),
+		std::sort(m_meshJobs.begin(), m_meshJobs.end(),
 			[](const EmitterJob& a, const EmitterJob& b) {
 				if (a.materialKey != b.materialKey) return a.materialKey < b.materialKey;
 				return a.modelIndex < b.modelIndex;
 			});
-		std::sort(billboardJobs.begin(), billboardJobs.end(),
+		std::sort(m_billboardJobs.begin(), m_billboardJobs.end(),
 			[](const EmitterJob& a, const EmitterJob& b) {
 				return a.materialKey < b.materialKey;
 			});
 
-		// Build batches for both mesh and billboard rendering
-		BuildMeshBatches(meshJobs, m_meshBatches);
-		BuildBatches(billboardJobs, m_billboardBatches);
+		BuildMeshBatches(m_meshJobs, m_meshBatches);
+		BuildBatches(m_billboardJobs, m_billboardBatches);
+	}
 
-		// Prepare unified batch upload data (mesh batches first, then billboard batches)
-		std::vector<UINT> batchEmitterList;
-		std::vector<BatchDescriptor> batchDescriptors;
+	void ParticleManager::BuildBatchDescriptors()
+	{
+		m_batchEmitterList.clear();
+		m_batchDescriptors.clear();
+
+		UINT globalInstanceOffset = 0;
 
 		// Mesh batch descriptors
-		UINT globalInstanceOffset = 0;
 		for (const auto& batch : m_meshBatches) {
 			BatchDescriptor desc{};
 			desc.emitterCount = static_cast<UINT>(batch.emitterIDs.size());
-			desc.emitterListOffset = static_cast<UINT>(batchEmitterList.size());
+			desc.emitterListOffset = static_cast<UINT>(m_batchEmitterList.size());
 			desc.instanceOffset = globalInstanceOffset;
 			MeshRange range = ModelManager::Get().GetMeshRange(batch.modelIndex);
 			desc.indexCount = range.indexCount;
@@ -179,223 +199,199 @@ namespace DE {
 			desc.baseVertexLocation = range.baseVertexLocation;
 			desc.isMesh = 1;
 			desc.padding = 0;
-			batchDescriptors.push_back(desc);
+			m_batchDescriptors.push_back(desc);
 
-			for (UINT eid : batch.emitterIDs) {
+			for (UINT eid : batch.emitterIDs)
 				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
-			}
-			batchEmitterList.insert(batchEmitterList.end(),
+			m_batchEmitterList.insert(m_batchEmitterList.end(),
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
 		}
 
-		// Billboard batch descriptors (use QuadModel at index 0 in global VB/IB)
+		// Billboard batch descriptors
 		MeshRange quadRange = ModelManager::Get().GetMeshRange(0);
-		UINT billboardDescStartIdx = static_cast<UINT>(batchDescriptors.size());
+		m_billboardDescStartIdx = static_cast<UINT>(m_batchDescriptors.size());
+
 		for (const auto& batch : m_billboardBatches) {
 			BatchDescriptor desc{};
 			desc.emitterCount = static_cast<UINT>(batch.emitterIDs.size());
-			desc.emitterListOffset = static_cast<UINT>(batchEmitterList.size());
+			desc.emitterListOffset = static_cast<UINT>(m_batchEmitterList.size());
 			desc.instanceOffset = globalInstanceOffset;
 			desc.indexCount = quadRange.indexCount;
 			desc.startIndexLocation = quadRange.startIndexLocation;
 			desc.baseVertexLocation = quadRange.baseVertexLocation;
 			desc.isMesh = 0;
 			desc.padding = 0;
-			batchDescriptors.push_back(desc);
+			m_batchDescriptors.push_back(desc);
 
-			for (UINT eid : batch.emitterIDs) {
+			for (UINT eid : batch.emitterIDs)
 				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
-			}
-			batchEmitterList.insert(batchEmitterList.end(),
+			m_batchEmitterList.insert(m_batchEmitterList.end(),
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
 		}
+	}
 
+	void ParticleManager::DispatchBatchCompute()
+	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
-		m_memoryPool->UploadFrameConsts();
-		m_memoryPool->BindRender();
-		m_memoryPool->UpdateRenderArgs();
 
-		// Upload batch data and dispatch compute shader
-		if (!batchEmitterList.empty()) {
-			m_memoryPool->UploadBatchData(batchEmitterList, batchDescriptors);
+		m_memoryPool->UploadBatchData(m_batchEmitterList, m_batchDescriptors);
 
-			// Setup and dispatch BatchRenderArgsCS
-			UINT numBatches = static_cast<UINT>(batchDescriptors.size());
-			BatchRenderArgsConsts batchConsts{ numBatches, Vector3(0,0,0) };
+		// Pass 1: BatchRenderArgsCS
+		UINT numBatches = static_cast<UINT>(m_batchDescriptors.size());
+		m_batchRenderArgsCB.SetCpuData({ numBatches, Vector3(0,0,0) });
+		m_batchRenderArgsCB.Upload();
 
-			ConstantBuffer<BatchRenderArgsConsts> batchConstsBuffer;
-			batchConstsBuffer.Initialize();
-			batchConstsBuffer.SetCpuData(batchConsts);
-			batchConstsBuffer.Upload();
+		context->CSSetConstantBuffers(0, 1, m_batchRenderArgsCB.GetAddressOf());
 
-			// Bind resources for compute shader
-			context->CSSetConstantBuffers(0, 1, batchConstsBuffer.GetAddressOf());
+		ID3D11ShaderResourceView* srvs[] = {
+			m_memoryPool->GetReadBuffer().GetSRV(),        // t16
+			m_memoryPool->GetReadCount().GetSRV(),         // t17
+			m_memoryPool->GetFrameConsts().GetSRV(),       // t18
+			nullptr,                                        // t19
+			nullptr,                                        // t20
+			nullptr,                                        // t21
+			nullptr,                                        // t22
+			nullptr,                                        // t23
+			m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
+			m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
+		};
+		context->CSSetShaderResources(16, 10, srvs);
 
-			ID3D11ShaderResourceView* srvs[] = {
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_memoryPool->GetBatchBillboardArgs().GetUAV(),
+			m_memoryPool->GetEmitterWriteOffsets().GetUAV()
+		};
+		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+
+		auto& batchArgsCS = RenderBase::computeCommon.particle.batchRenderArgsCS;
+		context->CSSetShader(batchArgsCS.computeShader.Get(), nullptr, 0);
+		context->Dispatch(1, 1, 1);
+
+		// Unbind Pass 1
+		context->CSSetShader(nullptr, nullptr, 0);
+		ID3D11UnorderedAccessView* nullUAVs2[] = { nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(0, 2, nullUAVs2, nullptr);
+
+		// Pass 2: BuildAliveIndicesCS
+		UINT numFlatEmitters = static_cast<UINT>(m_batchEmitterList.size());
+		if (numFlatEmitters > 0) {
+			m_buildAliveCB.SetCpuData({ numFlatEmitters, Vector3(0,0,0) });
+			m_buildAliveCB.Upload();
+
+			context->CSSetConstantBuffers(0, 1, m_buildAliveCB.GetAddressOf());
+
+			ID3D11ShaderResourceView* aliveSRVs[] = {
+				m_memoryPool->GetEmitterWriteOffsets().GetSRV()
+			};
+			context->CSSetShaderResources(0, 1, aliveSRVs);
+
+			ID3D11ShaderResourceView* commonSRVs[] = {
 				m_memoryPool->GetReadBuffer().GetSRV(),        // t16
 				m_memoryPool->GetReadCount().GetSRV(),         // t17
 				m_memoryPool->GetFrameConsts().GetSRV(),       // t18
 				nullptr,                                        // t19
 				nullptr,                                        // t20
-				nullptr,                                        // t21
+				m_memoryPool->GetEmitterIDs().GetSRV(),        // t21
 				nullptr,                                        // t22
 				nullptr,                                        // t23
 				m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
 				m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
 			};
-			context->CSSetShaderResources(16, 10, srvs);
+			context->CSSetShaderResources(16, 10, commonSRVs);
 
-			ID3D11UnorderedAccessView* uavs[] = {
-				m_memoryPool->GetBatchBillboardArgs().GetUAV(),
-				m_memoryPool->GetEmitterWriteOffsets().GetUAV()
+			ID3D11UnorderedAccessView* aliveUAVs[] = {
+				m_memoryPool->GetAliveIndices().GetUAV()
 			};
-			context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+			context->CSSetUnorderedAccessViews(0, 1, aliveUAVs, nullptr);
 
-			// Pass 1: BatchRenderArgsCS (draw args + emitter write offsets)
-			auto& batchArgsCS = RenderBase::computeCommon.particle.batchRenderArgsCS;
-			context->CSSetShader(batchArgsCS.computeShader.Get(), nullptr, 0);
-			context->Dispatch(1, 1, 1);
+			auto& buildAliveCS = RenderBase::computeCommon.particle.buildAliveIndicesCS;
+			context->CSSetShader(buildAliveCS.computeShader.Get(), nullptr, 0);
+			context->Dispatch(numFlatEmitters, 1, 1);
 
-			// Unbind Pass 1
+			// Unbind Pass 2
 			context->CSSetShader(nullptr, nullptr, 0);
-			ID3D11UnorderedAccessView* nullUAVs2[] = { nullptr, nullptr };
-			context->CSSetUnorderedAccessViews(0, 2, nullUAVs2, nullptr);
-
-			// Pass 2: BuildAliveIndicesCS
-			UINT numFlatEmitters = static_cast<UINT>(batchEmitterList.size());
-			if (numFlatEmitters > 0) {
-				BuildAliveConsts aliveConsts{ numFlatEmitters, Vector3(0,0,0) };
-				ConstantBuffer<BuildAliveConsts> aliveConstsBuffer;
-				aliveConstsBuffer.Initialize();
-				aliveConstsBuffer.SetCpuData(aliveConsts);
-				aliveConstsBuffer.Upload();
-
-				context->CSSetConstantBuffers(0, 1, aliveConstsBuffer.GetAddressOf());
-
-				ID3D11ShaderResourceView* aliveSRVs[] = {
-					m_memoryPool->GetEmitterWriteOffsets().GetSRV()  // t0
-				};
-				context->CSSetShaderResources(0, 1, aliveSRVs);
-
-				ID3D11ShaderResourceView* commonSRVs[] = {
-					m_memoryPool->GetReadBuffer().GetSRV(),        // t16
-					m_memoryPool->GetReadCount().GetSRV(),         // t17
-					m_memoryPool->GetFrameConsts().GetSRV(),       // t18
-					nullptr,                                        // t19
-					nullptr,                                        // t20
-					m_memoryPool->GetEmitterIDs().GetSRV(),        // t21
-					nullptr,                                        // t22
-					nullptr,                                        // t23
-					m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
-					m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
-				};
-				context->CSSetShaderResources(16, 10, commonSRVs);
-
-				ID3D11UnorderedAccessView* aliveUAVs[] = {
-					m_memoryPool->GetAliveIndices().GetUAV()
-				};
-				context->CSSetUnorderedAccessViews(0, 1, aliveUAVs, nullptr);
-
-				auto& buildAliveCS = RenderBase::computeCommon.particle.buildAliveIndicesCS;
-				context->CSSetShader(buildAliveCS.computeShader.Get(), nullptr, 0);
-				context->Dispatch(numFlatEmitters, 1, 1);
-
-				// Unbind Pass 2
-				context->CSSetShader(nullptr, nullptr, 0);
-				ID3D11UnorderedAccessView* nullUAV1[] = { nullptr };
-				context->CSSetUnorderedAccessViews(0, 1, nullUAV1, nullptr);
-				ID3D11ShaderResourceView* nullSRV1[] = { nullptr };
-				context->CSSetShaderResources(0, 1, nullSRV1);
-			}
-
-			ID3D11ShaderResourceView* nullSRVs[10] = { nullptr };
-			context->CSSetShaderResources(16, 10, nullSRVs);
+			ID3D11UnorderedAccessView* nullUAV1[] = { nullptr };
+			context->CSSetUnorderedAccessViews(0, 1, nullUAV1, nullptr);
+			ID3D11ShaderResourceView* nullSRV1[] = { nullptr };
+			context->CSSetShaderResources(0, 1, nullSRV1);
 		}
 
-		// Bind aliveIndices SRV after CS dispatches (must be after UAV is unbound)
-		m_memoryPool->BindAliveIndices();
+		ID3D11ShaderResourceView* nullSRVs[10] = { nullptr };
+		context->CSSetShaderResources(16, 10, nullSRVs);
+	}
 
-		// Bind global VB/IB once (shared by both mesh and billboard via ModelManager)
-		ModelManager::Get().BindBuffersForRender();
+	void ParticleManager::DrawMeshBatches()
+	{
+		if (m_meshBatches.empty()) return;
 
-		// 1. Mesh batched rendering (depth buffer 채우기)
-		if (!m_meshBatches.empty()) {
-			GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.meshPSO);
 
-			// Bind batch resources for vertex shader
-			ID3D11ShaderResourceView* meshBatchSRVs[] = {
-				m_memoryPool->GetBatchEmitterList().GetSRV(),
-				m_memoryPool->GetBatchDescriptors().GetSRV()
-			};
-			context->VSSetShaderResources(24, 2, meshBatchSRVs);
+		ID3D11ShaderResourceView* meshBatchSRVs[] = {
+			m_memoryPool->GetBatchEmitterList().GetSRV(),
+			m_memoryPool->GetBatchDescriptors().GetSRV()
+		};
+		context->VSSetShaderResources(24, 2, meshBatchSRVs);
 
-			int lastMaterialKey = INT_MIN;
-			for (size_t i = 0; i < m_meshBatches.size(); i++) {
-				const auto& batch = m_meshBatches[i];
-				const auto& desc = batchDescriptors[i]; // mesh batches are first in descriptors
+		int lastMaterialKey = INT_MIN;
+		for (size_t i = 0; i < m_meshBatches.size(); i++) {
+			const auto& batch = m_meshBatches[i];
+			const auto& desc = m_batchDescriptors[i];
 
-				if (batch.materialKey != lastMaterialKey) {
-					lastMaterialKey = batch.materialKey;
-					if (batch.materialKey < 0) {
-						m_memoryPool->BindDefaultParticleMaterial();
-					} else {
-						MaterialSystem::Get().BindMaterial(batch.materialKey);
-					}
-				}
-
-				m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
-
-				ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
-				context->DrawIndexedInstancedIndirect(batchArgs, static_cast<UINT>(i) * 20);
-			}
-
-			// Unbind mesh batch SRVs
-			ID3D11ShaderResourceView* nullMeshSRVs[2] = { nullptr };
-			context->VSSetShaderResources(24, 2, nullMeshSRVs);
-		}
-
-		// 2. Billboard batched rendering (overdraw 감소)
-		GET_SINGLE(RenderBase)->SetLowResRender();
-		if (!m_billboardBatches.empty()) {
-			GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-			context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
-
-			// Bind batch resources for vertex shader
-			ID3D11ShaderResourceView* batchSRVs[] = {
-				m_memoryPool->GetBatchEmitterList().GetSRV(),
-				m_memoryPool->GetBatchDescriptors().GetSRV()
-			};
-			context->VSSetShaderResources(24, 2, batchSRVs);
-
-			for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
-				const auto& batch = m_billboardBatches[batchIdx];
-				UINT globalBatchIdx = billboardDescStartIdx + static_cast<UINT>(batchIdx);
-				const auto& desc = batchDescriptors[globalBatchIdx];
-
+			if (batch.materialKey != lastMaterialKey) {
+				lastMaterialKey = batch.materialKey;
 				if (batch.materialKey < 0) {
 					m_memoryPool->BindDefaultParticleMaterial();
 				} else {
 					MaterialSystem::Get().BindMaterial(batch.materialKey);
 				}
-
-				m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
-
-				ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
-				context->DrawIndexedInstancedIndirect(batchArgs, globalBatchIdx * 20);
 			}
 
-			// Unbind batch SRVs
-			ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
-			context->VSSetShaderResources(24, 2, nullSRVs);
+			m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
+
+			ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
+			context->DrawIndexedInstancedIndirect(batchArgs, static_cast<UINT>(i) * 20);
 		}
 
-		m_memoryPool->UnbindRender();
-		GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
+		ID3D11ShaderResourceView* nullMeshSRVs[2] = { nullptr };
+		context->VSSetShaderResources(24, 2, nullMeshSRVs);
+	}
 
-		// [Added] Update Culling Stats
-		m_runtimeProfile.totalSystems = totalCount;
-		m_runtimeProfile.visibleSystems = visibleCount;
-		m_runtimeProfile.culledSystems = totalCount - visibleCount;
+	void ParticleManager::DrawBillboardBatches()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		GET_SINGLE(RenderBase)->SetLowResRender();
+
+		if (m_billboardBatches.empty()) return;
+
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
+		context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
+
+		ID3D11ShaderResourceView* batchSRVs[] = {
+			m_memoryPool->GetBatchEmitterList().GetSRV(),
+			m_memoryPool->GetBatchDescriptors().GetSRV()
+		};
+		context->VSSetShaderResources(24, 2, batchSRVs);
+
+		for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
+			const auto& batch = m_billboardBatches[batchIdx];
+			UINT globalBatchIdx = m_billboardDescStartIdx + static_cast<UINT>(batchIdx);
+			const auto& desc = m_batchDescriptors[globalBatchIdx];
+
+			if (batch.materialKey < 0) {
+				m_memoryPool->BindDefaultParticleMaterial();
+			} else {
+				MaterialSystem::Get().BindMaterial(batch.materialKey);
+			}
+
+			m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
+
+			ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
+			context->DrawIndexedInstancedIndirect(batchArgs, globalBatchIdx * 20);
+		}
+
+		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
+		context->VSSetShaderResources(24, 2, nullSRVs);
 	}
 
 	void ParticleManager::RenderDepth()

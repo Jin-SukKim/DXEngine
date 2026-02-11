@@ -118,7 +118,7 @@ namespace DE {
 		// EmitterID ε (Manager ó)
 		void BindEmitterID(UINT globalSlotIndex);
 
-		// MeshConsts 
+		// MeshConsts
 		void UpdateMeshConsts(UINT systemIndex, const ParticleMeshConsts& data);
 
 		// Debug
@@ -132,6 +132,15 @@ namespace DE {
 		ParticleMemoryPool& GetMemoryPool() { return *m_memoryPool; }
 
 	private:
+		// Render sub-steps
+		void GatherVisibleEmitters(const DirectX::BoundingFrustum& frustum,
+		                           const Vector3& cameraPos,
+		                           UINT& totalCount, UINT& visibleCount);
+		void BuildBatchDescriptors();
+		void DispatchBatchCompute();
+		void DrawMeshBatches();
+		void DrawBillboardBatches();
+
 		PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
 		void UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData);
 		void RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset);
@@ -181,6 +190,17 @@ namespace DE {
 		// [Added] Batch rendering
 		std::vector<BatchGroup> m_billboardBatches;
 		std::vector<BatchGroup> m_meshBatches;
+
+		// CS용 ConstantBuffer (Initialize에서 1회 초기화)
+		ConstantBuffer<BatchRenderArgsConsts> m_batchRenderArgsCB;
+		ConstantBuffer<BuildAliveConsts> m_buildAliveCB;
+
+		// 매 프레임 재사용 컨테이너
+		std::vector<EmitterJob> m_meshJobs;
+		std::vector<EmitterJob> m_billboardJobs;
+		std::vector<UINT> m_batchEmitterList;
+		std::vector<BatchDescriptor> m_batchDescriptors;
+		UINT m_billboardDescStartIdx = 0;
 	};
 
 }
