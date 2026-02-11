@@ -15,13 +15,13 @@ namespace DE {
 		// All use*Map flags are explicitly 0 (no textures)
 		// This ensures particles without Material module show glow circle
 
-		static std::vector<std::string> textures = {}; // No textures for default material
+		static std::vector<std::string> textures = { "Materials\\default.png" };
 		CreateMaterial("DefaultMaterial", constant, textures);
 	}
 
 	int MaterialSystem::CreateMaterial(const std::string& name, const MeshData& meshData, bool isGLTF)
 	{
-		// name�� �̹� ��� ��� (��: "Models/Chair.obj")
+		// name은 이미 상대 경로 (예: "Models/Chair.obj")
 		if (m_materialMap.find(name) != m_materialMap.end())
 			return m_materialMap[name];
 		
@@ -31,7 +31,7 @@ namespace DE {
 		Material mat;
 		mat.name = name;
 
-		// �ؽ�ó ��ε� ��� ��η� �����
+		// 텍스처 경로도 상대 경로로 저장됨
 		if (!meshData.albedoTextureFilename.empty()) {
 			std::cout << "Loading albedo: " << meshData.albedoTextureFilename << std::endl;
 			mat.albedoTexture = TextureManager::Get().LoadTexture(meshData.albedoTextureFilename, true);
@@ -110,7 +110,6 @@ namespace DE {
 		Material mat;
 		mat.name = name;
 
-		// texturePaths�� �̹� ��� ���
 		if (texturePaths.size() > 0 && !texturePaths[0].empty()) {
 			mat.albedoTexture = TextureManager::Get().LoadTexture(texturePaths[0], true);
 			if (mat.albedoTexture >= 0) {
