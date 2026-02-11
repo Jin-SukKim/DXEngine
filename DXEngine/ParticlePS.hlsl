@@ -56,6 +56,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
         // Case 2: No texture - Default Glow Circle
         float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
+
         finalColor.a *= circleAlpha;
     }
 

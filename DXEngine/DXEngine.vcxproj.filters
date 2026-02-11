@@ -478,6 +478,7 @@
     <ClInclude Include="ScopedTimer.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleEmitterManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -754,6 +755,9 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ParticleMemoryPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitterManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

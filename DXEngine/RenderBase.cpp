@@ -484,7 +484,16 @@ namespace DE {
 		m_context->RSSetViewports(1, &m_screenViewport);
 		m_context->OMSetRenderTargets(1, m_floatBuffer.GetAddressOfRTV(), nullptr);
 
-		m_context->PSSetShaderResources(0, 1, m_lowResParticleTexture.GetAddressOfSRV());
+		// Bind textures for Off-Screen Particle rendering
+		// t0: Low-resolution particle color
+		// t1: Full-resolution scene depth
+		// t2: Low-resolution particle depth
+		ID3D11ShaderResourceView* srvs[3] = {
+			m_lowResParticleTexture.GetSRV(),
+			m_depthOnlyBuffer.GetSRV(),
+			m_lowResDepth.GetSRV()
+		};
+		m_context->PSSetShaderResources(0, 3, srvs);
 
 		m_context->IASetVertexBuffers(0, 1, m_compositeQuad->vertexBuffer.GetAddressOf(),
 			&m_compositeQuad->stride, &m_compositeQuad->offset);
@@ -492,8 +501,8 @@ namespace DE {
 		m_context->DrawIndexed(m_compositeQuad->indexCount, 0, 0);
 
 		// Unbind SRV to prevent resource hazard
-		ID3D11ShaderResourceView* nullSRV = nullptr;
-		m_context->PSSetShaderResources(0, 1, &nullSRV);
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr, nullptr, nullptr };
+		m_context->PSSetShaderResources(0, 3, nullSRVs);
 	}
 
 	void RenderBase::ClearStencilBuffer()

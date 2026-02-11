@@ -280,10 +280,18 @@ namespace DE {
 		sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 		device->CreateSamplerState(&sampDesc, shadowCompareSS.GetAddressOf());
 
+		// pointClampSS (for bilateral filtering)
+		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		device->CreateSamplerState(&sampDesc, pointClampSS.GetAddressOf());
+
 		sampleStates.emplace_back(linearWrapSS.Get()); // register(s0)
 		sampleStates.emplace_back(linearClampSS.Get()); // register(s1)
-		sampleStates.emplace_back(shadowPointSS.Get()); // register(s2)
-		sampleStates.emplace_back(shadowCompareSS.Get()); // register(s3)
+		sampleStates.emplace_back(pointClampSS.Get());
+		sampleStates.emplace_back(shadowPointSS.Get()); 
+		sampleStates.emplace_back(shadowCompareSS.Get()); 
 	}
 	
 	void GraphicsCommon::initBlendStates(ComPtr<ID3D11Device>& device)
@@ -333,11 +341,10 @@ namespace DE {
 			D3D11_COLOR_WRITE_ENABLE_ALL;
 		ThrowIfFailed(
 			device->CreateBlendState(&blendDesc, accumulateBS.GetAddressOf()));
-
 		
-		// SrcBlend ONE  (̹ ̴ ĸ ؿ ̹Ƿ)
 		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
 		ThrowIfFailed(
 			device->CreateBlendState(&blendDesc, alphaBS.GetAddressOf()));
 	}

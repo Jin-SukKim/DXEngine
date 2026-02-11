@@ -13,8 +13,9 @@
 // Sampler들은 모든 Shader에서 공통으로 사용
 SamplerState linearWrapSampler : register(s0);
 SamplerState linearClampSampler : register(s1);
-SamplerState shadowPointSampler : register(s2);
-SamplerComparisonState shadowCompare : register(s3);
+SamplerState pointClampSampler : register(s2);
+SamplerState shadowPointSampler : register(s3);
+SamplerComparisonState shadowCompare : register(s4);
 
 // 공용 Texture들 t10부터 시작 (IBL용 Texture 등)
 TextureCube envIBLTex : register(t10);

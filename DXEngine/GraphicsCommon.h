@@ -148,6 +148,7 @@ namespace DE {
 		ComPtr<ID3D11SamplerState> linearClampSS;
 		ComPtr<ID3D11SamplerState> shadowPointSS;
 		ComPtr<ID3D11SamplerState> shadowCompareSS;
+		ComPtr<ID3D11SamplerState> pointClampSS;
 
 		// Blend States (     ο     ϴ )
 		 // 2  Alpha() ִ Alpha Blending
