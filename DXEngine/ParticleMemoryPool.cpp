@@ -57,6 +57,16 @@ namespace DE {
 			initDeadIndices[i] = i;
 		m_deadIndices.SetData(initDeadIndices);
 		m_deadIndices.Upload(context);
+		// 임시로 UAV를 바인딩하면서 카운터를 설정합니다.
+		UINT initCount = maxParticles;
+		ID3D11UnorderedAccessView* uav = m_deadIndices.GetUAV();
+
+		// 슬롯 0번(혹은 아무 곳)에 바인딩하며 카운터 설정 (-1이 아닌 특정 값 전달 시 설정됨)
+		context->CSSetUnorderedAccessViews(0, 1, &uav, &initCount);
+
+		// 다시 언바인딩 (안전을 위해)
+		ID3D11UnorderedAccessView* nullUAV = nullptr;
+		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
 		m_consts.Initialize(device, maxEmitters);
 		m_frameConsts.InitializeDynamicSRV(device, maxEmitters);
@@ -341,7 +351,7 @@ namespace DE {
 
 		// t16 = particles (read), t17 = readAliveCount, t23 = readAliveIndices
 		ID3D11ShaderResourceView* srvs[] = {
-			m_particles.GetSRV(),              // t16
+			nullptr,              // t16
 			GetReadAliveCount().GetSRV(),      // t17
 			m_frameConsts.GetSRV(),            // t18
 			m_consts.GetSRV(),                 // t19

@@ -56,13 +56,13 @@ namespace DE {
 		ground = AddObject<SquareActor>(L"Ground");
 
 		// 기존 Spawner는 잠시 꺼두거나 유지해도 됨 (여기선 유지)
-		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spanwer->SetScene(this);
-		m_spanwer->SetActorType<Firework>();
-		m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		m_spanwer->SetSpawnInterval(0.01f);
-		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(3000);
+		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spanwer->SetScene(this);
+		//m_spanwer->SetActorType<Firework>();
+		//m_spanwer->SetSpawnMode(SpawnMode::Interval);
+		//m_spanwer->SetSpawnInterval(0.01f);
+		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spanwer->SetMaxActiveParticles(3000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
