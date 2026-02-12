@@ -3,6 +3,7 @@
 #include "StructuredBuffer.h"
 #include "IndirectArgsBuffer.h"
 #include "ConstantData.h"
+#include "AppendBuffer.h"
 #include <map>
 
 namespace DE {
@@ -56,8 +57,6 @@ public:
 	void BindBatchAliveIndices();
 	void UnbindRender();
 	void ClearWriteAliveCount();
-	void InitializeDeadIndices(UINT emitterSlot, UINT particleOffset, UINT maxParticles);
-	void UploadDeadData();
 	void ExcuteParticleLogic();
 
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
@@ -87,8 +86,7 @@ public:
 	StructuredBuffer<uint32_t>& GetWriteAliveIndices() { return m_aliveIndices[1 - m_aliveBufferIndex]; }
 	StructuredBuffer<uint32_t>& GetReadAliveCount() { return m_aliveCounts[m_aliveBufferIndex]; }
 	StructuredBuffer<uint32_t>& GetWriteAliveCount() { return m_aliveCounts[1 - m_aliveBufferIndex]; }
-	StructuredBuffer<uint32_t>& GetDeadIndices() { return m_deadIndices; }
-	StructuredBuffer<uint32_t>& GetDeadCount() { return m_deadCount; }
+	AppendBuffer<uint32_t>& GetDeadIndices() { return m_deadIndices; }
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConsts() { return m_frameConsts; }
 	StructuredBuffer<ParticleConsts>& GetConsts() { return m_consts; }
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
@@ -177,8 +175,7 @@ private:
 	StructuredBuffer<Particle> m_particles;                // Single particle buffer (in-place update)
 	StructuredBuffer<uint32_t> m_aliveIndices[2];          // Ping-pong alive indices (per-emitter)
 	StructuredBuffer<uint32_t> m_aliveCounts[2];           // Ping-pong alive counts (per-emitter)
-	StructuredBuffer<uint32_t> m_deadIndices;              // Dead index free list (per-emitter region)
-	StructuredBuffer<uint32_t> m_deadCount;                // Dead count per emitter
+	AppendBuffer<uint32_t> m_deadIndices;
 	UINT m_aliveBufferIndex = 0;
 
 	StructuredBuffer<ParticleConsts> m_consts;

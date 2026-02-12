@@ -15,11 +15,9 @@ struct Particle
     uint systemID;
 };
 
-RWStructuredBuffer<Particle> particles : register(u3);           // Single buffer (in-place update)
-RWStructuredBuffer<uint> writeAliveIndices : register(u4);       // Write alive indices (ping-pong)
-RWStructuredBuffer<uint> writeAliveCount : register(u5);         // Write alive count per emitter
-RWStructuredBuffer<uint> deadIndices : register(u6);             // Dead index free list
-RWStructuredBuffer<uint> deadCount : register(u7);              // Dead count per emitter
+RWStructuredBuffer<Particle> particles : register(u5);           // Single buffer (in-place update)
+RWStructuredBuffer<uint> writeAliveIndices : register(u6);       // Write alive indices (ping-pong)
+RWStructuredBuffer<uint> writeAliveCount : register(u7);         // Write alive count per emitter
 
 #ifdef PARTICLE_RENDER_STAGE
     // CB5 contains batch info during rendering

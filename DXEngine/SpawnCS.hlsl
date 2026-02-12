@@ -11,6 +11,7 @@ struct Vertex
 
 StructuredBuffer<float3> meshVertex : register(t2);
 StructuredBuffer<uint> meshIndices : register(t3);
+ConsumeStructuredBuffer<uint> deadIndices : register(u4);
 
 // --- [Robust Random Functions (Wang Hash)] ---
 // (기존 함수들 그대로 유지)
@@ -166,16 +167,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     float3 rndRotSpd = float3(rand_float(rngState), rand_float(rngState), rand_float(rngState));
     p.rotSpeed = lerp(visual.minRotSpeed, visual.maxRotSpeed, rndRotSpd);
 
-    // DeadIndices에서 1개 꺼내기
-    uint deadSlot;
-    InterlockedAdd(deadCount[emitterID], -1, deadSlot);
-    deadSlot -= 1;
-
-    // 이미 할당된 slot이었다면
-    if (deadSlot >= frameConsts[emitterID].maxParticles)
-        return;
-
-    uint particleIdx = deadIndices[readParticleOffset + deadSlot];
+    uint particleIdx = deadIndices.Consume();
 
     p.ownerID = emitterID;
     p.systemID = systemID;

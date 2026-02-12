@@ -549,15 +549,6 @@ namespace DE {
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UpdateFrameConsts(handle.emitterIDs, initialData.frameConsts);
 
-		// Initialize dead indices for each emitter (all particles start as dead)
-		for (UINT i = 0; i < emitterCount; ++i) {
-			UINT globalEmitterID = handle.emitterIDs[i];
-			UINT emitterOffset = initialData.emitterIDs[i].readParticleOffset;
-			UINT emitterMax = initialData.frameConsts[i].maxParticles;
-			m_memoryPool->InitializeDeadIndices(globalEmitterID, handle.particleOffset + emitterOffset, emitterMax);
-		}
-		m_memoryPool->UploadDeadData();
-
 		// 5. Finalize & Registration
 		clonedPtr->Initialize(initialData);
 		clonedPtr->OnSpawn();

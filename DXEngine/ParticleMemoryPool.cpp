@@ -52,12 +52,11 @@ namespace DE {
 		}
 
 		m_deadIndices.Initialize(device, maxParticles);
-		m_deadCount.Initialize(device, maxEmitters);
-		{
-			std::vector<uint32_t> initialDeadCount(maxEmitters, 0);
-			m_deadCount.SetData(initialDeadCount);
-			m_deadCount.Upload(context);
-		}
+		std::vector<uint32_t> initDeadIndices(maxParticles);
+		for (UINT i = 0; i < maxParticles; ++i)
+			initDeadIndices[i] = i;
+		m_deadIndices.SetData(initDeadIndices);
+		m_deadIndices.Upload(context);
 
 		m_consts.Initialize(device, maxEmitters);
 		m_frameConsts.InitializeDynamicSRV(device, maxEmitters);
@@ -298,13 +297,12 @@ namespace DE {
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		
 		ID3D11UnorderedAccessView* uavs[] = {
-			m_particles.GetUAV(),                           // u6
-			GetReadAliveIndices().GetUAV(),                 // u7 (spawn appends to current read)
-			GetReadAliveCount().GetUAV(),                   // u8
-			m_deadIndices.GetUAV(),                         // u9
-			m_deadCount.GetUAV()                            // u10
+			m_deadIndices.GetUAV(),
+			m_particles.GetUAV(),
+			GetWriteAliveIndices().GetUAV(),
+			GetWriteAliveCount().GetUAV(),
 		};
-		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = {
 			m_particles.GetSRV(),           // t16
@@ -322,8 +320,8 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
+		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 7, srvs);
@@ -334,13 +332,12 @@ namespace DE {
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
 		ID3D11UnorderedAccessView* uavs[] = {
-			m_particles.GetUAV(),                            // u6
-			GetWriteAliveIndices().GetUAV(),                 // u7
-			GetWriteAliveCount().GetUAV(),                   // u8
-			m_deadIndices.GetUAV(),                          // u9
-			m_deadCount.GetUAV()                             // u10
+			m_deadIndices.GetUAV(),                          
+			m_particles.GetUAV(),                            
+			GetWriteAliveIndices().GetUAV(),                 
+			GetWriteAliveCount().GetUAV(),                   
 		};
-		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
 
 		// t16 = particles (read), t17 = readAliveCount, t23 = readAliveIndices
 		ID3D11ShaderResourceView* srvs[] = {
@@ -360,8 +357,8 @@ namespace DE {
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
+		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 8, srvs);
@@ -415,26 +412,6 @@ namespace DE {
 
 		const UINT clearVal[4] = { 0, 0, 0, 0 };
 		context->ClearUnorderedAccessViewUint(GetWriteAliveCount().GetUAV(), clearVal);
-	}
-
-	void ParticleMemoryPool::InitializeDeadIndices(UINT emitterSlot, UINT particleOffset, UINT maxParticles)
-	{
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		// Set dead count for this emitter
-		m_deadCount.Get(emitterSlot) = maxParticles;
-
-		// Fill dead indices: deadIndices[particleOffset + i] = particleOffset + i
-		for (UINT i = 0; i < maxParticles; ++i) {
-			m_deadIndices.Get(particleOffset + i) = particleOffset + i;
-		}
-	}
-
-	void ParticleMemoryPool::UploadDeadData()
-	{
-		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
-		m_deadIndices.Upload(context);
-		m_deadCount.Upload(context);
 	}
 
 	void ParticleMemoryPool::ExcuteParticleLogic()

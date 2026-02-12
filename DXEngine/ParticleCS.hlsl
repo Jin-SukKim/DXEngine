@@ -2,6 +2,8 @@
 #include "OrbitCS.hlsli"
 #include "VortexCS.hlsli"
 
+AppendStructuredBuffer<uint> deadIndices : register(u4);
+
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
@@ -22,9 +24,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 
     if (p.life <= 0.f) {
         // Return to dead list
-        uint deadSlot;
-        InterlockedAdd(deadCount[p.ownerID], 1, deadSlot);
-        deadIndices[eID.readParticleOffset + deadSlot] = particleIdx;
+        deadIndices.Append(particleIdx);
         return;
     }
 
