@@ -5,17 +5,28 @@
 [numthreads(1024, 1, 1)]
 void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_DispatchThreadID)
 {
-    Particle p = readParticles[dtID.x];
+    uint aliveIdx = dtID.x;
+    uint particleIdx = readAliveIndices[aliveIdx];
+    
+    Particle p = readParticles[particleIdx];
     
     EmitterID eID = emitterIDs[p.ownerID];
-    if (dtID.x < eID.readParticleOffset || dtID.x >= eID.readParticleOffset + readCount[p.ownerID])
+
+    uint emitterAliveCount = readAliveCount[p.ownerID];
+    uint localIdx = aliveIdx - eID.readParticleOffset;
+    if (localIdx >= emitterAliveCount)
         return;
     
     float dt = frameConsts[p.ownerID].dt;
     p.life -= dt;
 
-    if (p.life <= 0.f)
+    if (p.life <= 0.f) {
+        // Return to dead list
+        uint deadSlot;
+        InterlockedAdd(deadCount[p.ownerID], 1, deadSlot);
+        deadIndices[eID.readParticleOffset + deadSlot] = particleIdx;
         return;
+    }
 
     ForceConsts force = consts[p.ownerID].force;
     // 1. 물리 연산 (Physics)
@@ -57,8 +68,11 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     //p.rotation += p.rotSpeed * dt;
     p.rotation = fmod(p.rotation + p.rotSpeed * dt, 6.28318530718f);
 
-    // 결과 저장
-    uint writeIndex;
-    InterlockedAdd(writeCount[p.ownerID], 1, writeIndex);
-    writeParticles[eID.writeParticleOffset + writeIndex] = p;
+    // Write particle in-place
+    particles[particleIdx] = p;
+
+    // Append to write alive indices (compacted)
+    uint writeSlot;
+    InterlockedAdd(writeAliveCount[p.ownerID], 1, writeSlot);
+    writeAliveIndices[eID.readParticleOffset + writeSlot] = particleIdx;
 }

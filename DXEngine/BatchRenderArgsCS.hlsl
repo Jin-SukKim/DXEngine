@@ -3,6 +3,8 @@
 RWBuffer<uint> batchBillboardArgs : register(u0);
 RWStructuredBuffer<uint> emitterWriteOffsets : register(u1);
 
+StructuredBuffer<uint> simulationAliveCount : register(t29);
+
 cbuffer BatchRenderArgsConsts : register(b0) {
     uint numBatches;
     uint3 batchArgsPadding;
@@ -23,7 +25,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         uint totalInstances = 0;
         for (uint i = 0; i < batch.emitterCount; i++) {
             uint eid = batchEmitterList[batch.emitterListOffset + i];
-            uint count = uint(float(readCount[eid]) * frameConsts[eid].spawnRatio);
+            uint count = uint(float(simulationAliveCount[eid]) * frameConsts[eid].spawnRatio);
 
             // Global write offset for each emitter (used by BuildAliveIndicesCS)
             emitterWriteOffsets[batch.emitterListOffset + i] = globalOffset + totalInstances;

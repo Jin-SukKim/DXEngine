@@ -3,7 +3,7 @@
 
 // TODO: particle pos에 world matrix 곱해주기
 
-StructuredBuffer<Particle> particles : register(t0);
+StructuredBuffer<Particle> particlesT : register(t0);
 Buffer<uint> activeCount : register(t1);
 
 RWStructuredBuffer<SortElement> sortedElements : register(u0);

@@ -47,13 +47,17 @@ public:
 	PoolHandle Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount);
 	void Free(const PoolHandle& handle);
 	
-	void SwapBuffer() { m_bufferIndex = 1 - m_bufferIndex; }
-	void BindCompute();
-	void UnbindCompute();
+	void SwapAliveIndices() { m_aliveBufferIndex = 1 - m_aliveBufferIndex; }
+	void BindSpawnCompute();
+	void UnbindSpawnCompute();
+	void BindSimulationCompute();
+	void UnbindSimulationCompute();
 	void BindRender();
-	void BindAliveIndices();
+	void BindBatchAliveIndices();
 	void UnbindRender();
-	void ClearWriteCount();
+	void ClearWriteAliveCount();
+	void InitializeDeadIndices(UINT emitterSlot, UINT particleOffset, UINT maxParticles);
+	void UploadDeadData();
 	void ExcuteParticleLogic();
 
 	void UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data);
@@ -78,10 +82,13 @@ public:
 	void UpdateMeshConsts(UINT systemSlot, const ParticleMeshConsts& data);
 	void UploadMeshConsts();
 
-	StructuredBuffer<Particle>& GetReadBuffer() { return m_particles[m_bufferIndex]; }
-	StructuredBuffer<Particle>& GetWriteBuffer() { return m_particles[1 - m_bufferIndex]; }
-	StructuredBuffer<uint32_t>& GetReadCount() { return m_counts[m_bufferIndex]; }
-	StructuredBuffer<uint32_t>& GetWriteCount() { return m_counts[1 - m_bufferIndex]; }
+	StructuredBuffer<Particle>& GetParticleBuffer() { return m_particles; }
+	StructuredBuffer<uint32_t>& GetReadAliveIndices() { return m_aliveIndices[m_aliveBufferIndex]; }
+	StructuredBuffer<uint32_t>& GetWriteAliveIndices() { return m_aliveIndices[1 - m_aliveBufferIndex]; }
+	StructuredBuffer<uint32_t>& GetReadAliveCount() { return m_aliveCounts[m_aliveBufferIndex]; }
+	StructuredBuffer<uint32_t>& GetWriteAliveCount() { return m_aliveCounts[1 - m_aliveBufferIndex]; }
+	StructuredBuffer<uint32_t>& GetDeadIndices() { return m_deadIndices; }
+	StructuredBuffer<uint32_t>& GetDeadCount() { return m_deadCount; }
 	StructuredBuffer<ParticleFrameConsts>& GetFrameConsts() { return m_frameConsts; }
 	StructuredBuffer<ParticleConsts>& GetConsts() { return m_consts; }
 	IndirectArgsBuffer<DispatchArgs>& GetDispatchArgs() { return m_dispatchArgs; }
@@ -95,7 +102,7 @@ public:
 	StructuredBuffer<BatchDescriptor>& GetBatchDescriptors() { return m_batchDescriptors; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBatchBillboardArgs() { return m_batchBillboardArgs; }
 	StructuredBuffer<UINT>& GetEmitterWriteOffsets() { return m_emitterWriteOffsets; }
-	StructuredBuffer<UINT>& GetAliveIndices() { return m_aliveIndices; }
+	StructuredBuffer<UINT>& GetBatchAliveIndices() { return m_batchAliveIndices; }
 
 	// Quad Mesh Getters
 	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
@@ -167,9 +174,12 @@ private:
 	UINT m_maxSystems = 100;
 	UINT m_blockCount = 0;
 
-	StructuredBuffer<Particle> m_particles[2];
-	StructuredBuffer<uint32_t> m_counts[2];
-	UINT m_bufferIndex = 0;
+	StructuredBuffer<Particle> m_particles;                // Single particle buffer (in-place update)
+	StructuredBuffer<uint32_t> m_aliveIndices[2];          // Ping-pong alive indices (per-emitter)
+	StructuredBuffer<uint32_t> m_aliveCounts[2];           // Ping-pong alive counts (per-emitter)
+	StructuredBuffer<uint32_t> m_deadIndices;              // Dead index free list (per-emitter region)
+	StructuredBuffer<uint32_t> m_deadCount;                // Dead count per emitter
+	UINT m_aliveBufferIndex = 0;
 
 	StructuredBuffer<ParticleConsts> m_consts;
 	StructuredBuffer<ParticleFrameConsts> m_frameConsts;
@@ -199,7 +209,7 @@ private:
 	StructuredBuffer<BatchDescriptor> m_batchDescriptors;           // Per-batch metadata
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_batchBillboardArgs;  // Merged args
 	StructuredBuffer<UINT> m_emitterWriteOffsets;                    // Pass1 -> Pass2
-	StructuredBuffer<UINT> m_aliveIndices;                           // Pass2 -> VS
+	StructuredBuffer<UINT> m_batchAliveIndices;                           // Pass2 -> VS (Batch Rendering)
 	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
 	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
 

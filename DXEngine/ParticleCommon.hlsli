@@ -15,8 +15,11 @@ struct Particle
     uint systemID;
 };
 
-RWStructuredBuffer<Particle> writeParticles : register(u6);
-RWStructuredBuffer<uint> writeCount : register(u7);
+RWStructuredBuffer<Particle> particles : register(u6);           // Single buffer (in-place update)
+RWStructuredBuffer<uint> writeAliveIndices : register(u7);       // Write alive indices (ping-pong)
+RWStructuredBuffer<uint> writeAliveCount : register(u8);         // Write alive count per emitter
+RWStructuredBuffer<uint> deadIndices : register(u9);             // Dead index free list
+RWStructuredBuffer<uint> deadCount : register(u10);              // Dead count per emitter
 
 #ifdef PARTICLE_RENDER_STAGE
     // CB5 contains batch info during rendering
@@ -177,15 +180,16 @@ struct BatchDescriptor {
 Texture2DArray particleTex : register(t14);
 
 StructuredBuffer<Particle> readParticles : register(t16);
-StructuredBuffer<uint> readCount : register(t17);
+StructuredBuffer<uint> readAliveCount : register(t17);         // Alive count per emitter (read side)
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t18);
 StructuredBuffer<ParticleConsts> consts : register(t19);
-StructuredBuffer<float3> spawnPositions : register(t20); // յ SpawnPosition 
-StructuredBuffer<EmitterID> emitterIDs : register(t21); // յ SpawnPosition 
+StructuredBuffer<float3> spawnPositions : register(t20);
+StructuredBuffer<EmitterID> emitterIDs : register(t21);
 StructuredBuffer<ParticleMeshConsts> meshConsts : register(t22);
+StructuredBuffer<uint> readAliveIndices : register(t23);       // Read alive indices (simulation input)
 
- StructuredBuffer<uint> batchEmitterList : register(t24);
- StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
+StructuredBuffer<uint> batchEmitterList : register(t24);
+StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
 
 struct SortElement
 {

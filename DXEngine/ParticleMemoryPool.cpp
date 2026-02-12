@@ -39,13 +39,24 @@ namespace DE {
 		for (UINT i = 0; i < maxEmitters; ++i) m_freeEmitterSlots.push(i);
 		for (UINT i = 0; i < maxSystems; ++i) m_freeSystemSlots.push(i);
 
+		m_particles.Initialize(device, maxParticles);
+
 		for (UINT i = 0; i < 2; ++i) {
-			m_particles[i].Initialize(device, maxParticles);
-			m_counts[i].Initialize(device, maxEmitters);
+			m_aliveIndices[i].Initialize(device, maxParticles);
+			m_aliveCounts[i].Initialize(device, maxEmitters);
 
 			std::vector<uint32_t> initialCount(maxEmitters, 0);
-			m_counts[i].SetData(initialCount);
-			m_counts[i].Upload(context);
+			m_aliveCounts[i].SetData(initialCount);
+			m_aliveCounts[i].Upload(context);
+		
+		}
+
+		m_deadIndices.Initialize(device, maxParticles);
+		m_deadCount.Initialize(device, maxEmitters);
+		{
+			std::vector<uint32_t> initialDeadCount(maxEmitters, 0);
+			m_deadCount.SetData(initialDeadCount);
+			m_deadCount.Upload(context);
 		}
 
 		m_consts.Initialize(device, maxEmitters);
@@ -79,7 +90,7 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> initialBatchArgs(maxEmitters, { 6, 0, 0, 0, 0 });
 		m_batchBillboardArgs.Initialize(device, initialBatchArgs, maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 		m_emitterWriteOffsets.Initialize(device, maxEmitters);
-		m_aliveIndices.Initialize(device, maxParticles);
+		m_batchAliveIndices.Initialize(device, maxParticles);
 		m_batchInfoBuffer.Initialize();
 
 		// Default Particle Material (for circle rendering without textures)
@@ -282,37 +293,78 @@ namespace DE {
 #endif
 	}
 
-	void ParticleMemoryPool::BindCompute()
+	void ParticleMemoryPool::BindSpawnCompute()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 		
-		ID3D11UnorderedAccessView* uavs[] = { 
-			GetWriteBuffer().GetUAV(),
-			GetWriteCount().GetUAV()
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_particles.GetUAV(),                           // u6
+			GetReadAliveIndices().GetUAV(),                 // u7 (spawn appends to current read)
+			GetReadAliveCount().GetUAV(),                   // u8
+			m_deadIndices.GetUAV(),                         // u9
+			m_deadCount.GetUAV()                            // u10
 		};
-		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
 
-		ID3D11ShaderResourceView* srvs[] = { 
-			GetReadBuffer().GetSRV(),
-			GetReadCount().GetSRV(),
-			m_frameConsts.GetSRV(),
-			m_consts.GetSRV(),
-			m_spawnPositions.GetSRV(),
-			m_emitterIDs.GetSRV(),
-			m_meshConsts.GetSRV()
+		ID3D11ShaderResourceView* srvs[] = {
+			m_particles.GetSRV(),           // t16
+			nullptr,   // t17 (read alive counts)
+			m_frameConsts.GetSRV(),         // t18
+			m_consts.GetSRV(),              // t19
+			m_spawnPositions.GetSRV(),      // t20
+			m_emitterIDs.GetSRV(),          // t21
+			m_meshConsts.GetSRV()           // t22
 		};
 		context->CSSetShaderResources(16, 7, srvs);
 	}
 
-	void ParticleMemoryPool::UnbindCompute()
+	void ParticleMemoryPool::UnbindSpawnCompute()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(6, 2, uavs, nullptr);
+		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 7, srvs);
+	}
+
+	void ParticleMemoryPool::BindSimulationCompute()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+
+		ID3D11UnorderedAccessView* uavs[] = {
+			m_particles.GetUAV(),                            // u6
+			GetWriteAliveIndices().GetUAV(),                 // u7
+			GetWriteAliveCount().GetUAV(),                   // u8
+			m_deadIndices.GetUAV(),                          // u9
+			m_deadCount.GetUAV()                             // u10
+		};
+		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
+
+		// t16 = particles (read), t17 = readAliveCount, t23 = readAliveIndices
+		ID3D11ShaderResourceView* srvs[] = {
+			m_particles.GetSRV(),              // t16
+			GetReadAliveCount().GetSRV(),      // t17
+			m_frameConsts.GetSRV(),            // t18
+			m_consts.GetSRV(),                 // t19
+			m_spawnPositions.GetSRV(),         // t20
+			m_emitterIDs.GetSRV(),             // t21
+			m_meshConsts.GetSRV(),             // t22
+			GetReadAliveIndices().GetSRV()     // t23 (read alive indices for simulation)
+		};
+		context->CSSetShaderResources(16, 8, srvs);
+	}
+
+	void ParticleMemoryPool::UnbindSimulationCompute()
+	{
+		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+
+		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
+
+		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(16, 8, srvs);
 	}
 	
 	void ParticleMemoryPool::BindRender()
@@ -320,8 +372,8 @@ namespace DE {
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		ID3D11ShaderResourceView* srvs[] = {
-			GetReadBuffer().GetSRV(),
-			GetReadCount().GetSRV(),
+			m_particles.GetSRV(),
+			GetReadAliveCount().GetSRV(),
 			m_frameConsts.GetSRV(),
 			m_consts.GetSRV(),
 			m_spawnPositions.GetSRV(),
@@ -333,11 +385,11 @@ namespace DE {
 		context->PSSetShaderResources(16, 7, srvs);
 	}
 
-	void ParticleMemoryPool::BindAliveIndices()
+	void ParticleMemoryPool::BindBatchAliveIndices()
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		ID3D11ShaderResourceView* srvs[] = {
-			m_aliveIndices.GetSRV(),          // t26
+			m_batchAliveIndices.GetSRV(),          // t26
 			m_emitterWriteOffsets.GetSRV()    // t27
 		};
 		context->VSSetShaderResources(26, 2, srvs);
@@ -352,18 +404,37 @@ namespace DE {
 		context->VSSetShaderResources(16, 7, srvs);
 		context->PSSetShaderResources(16, 7, srvs);
 
-		// Unbind aliveIndices + emitterWriteOffsets
+		// Unbind batchindices + emitterWriteOffsets
 		ID3D11ShaderResourceView* nullSRVs2[2] = { nullptr, nullptr };
 		context->VSSetShaderResources(26, 2, nullSRVs2);
 	}
 
-	void ParticleMemoryPool::ClearWriteCount()
+	void ParticleMemoryPool::ClearWriteAliveCount()
 	{
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
+		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
 
-		const UINT clearVal[1] = { 0 };
-		context->ClearUnorderedAccessViewUint(GetWriteCount().GetUAV(), clearVal);
-		context->CSSetShaderResources(8, 1, m_consts.GetAddressOfSRV());
+		const UINT clearVal[4] = { 0, 0, 0, 0 };
+		context->ClearUnorderedAccessViewUint(GetWriteAliveCount().GetUAV(), clearVal);
+	}
+
+	void ParticleMemoryPool::InitializeDeadIndices(UINT emitterSlot, UINT particleOffset, UINT maxParticles)
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// Set dead count for this emitter
+		m_deadCount.Get(emitterSlot) = maxParticles;
+
+		// Fill dead indices: deadIndices[particleOffset + i] = particleOffset + i
+		for (UINT i = 0; i < maxParticles; ++i) {
+			m_deadIndices.Get(particleOffset + i) = particleOffset + i;
+		}
+	}
+
+	void ParticleMemoryPool::UploadDeadData()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext().Get();
+		m_deadIndices.Upload(context);
+		m_deadCount.Upload(context);
 	}
 
 	void ParticleMemoryPool::ExcuteParticleLogic()
@@ -434,12 +505,25 @@ namespace DE {
 			m_dispatchArgs.GetUAV(),        // u0
 			m_batchDispatchArgs.GetUAV()    // u1
 		};
+
+		// Bind Alive Count
 		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+		ID3D11ShaderResourceView* srvs[] = {
+			nullptr,                              // t16
+			GetReadAliveCount().GetSRV(),          // t17
+			m_frameConsts.GetSRV(),                              // t18
+			nullptr,                              // t19
+			nullptr,                              // t20
+			m_emitterIDs.GetSRV()                 // t21
+		};
+		context->CSSetShaderResources(16, 6, srvs);
 
 		context->Dispatch((m_maxEmitters + 255) / 256, 1, 1);
 
 		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
+		ID3D11ShaderResourceView* nullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(16, 6, nullSRVs);
 	}
 
 	void ParticleMemoryPool::UpdateRenderArgs()

@@ -29,7 +29,7 @@ namespace DE {
 
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			//  籸 ð  (Legacy Metric - Cumulative Average)
+			//  (Legacy Metric - Cumulative Average)
 			auto start = std::chrono::high_resolution_clock::now();
 			Defragment(); // Defragment internally also measures for RuntimeProfile
 
@@ -48,8 +48,7 @@ namespace DE {
 			// (A) Setup
 			{
 				ScopedTimer tSetup([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_setup, t); });
-				m_memoryPool->ClearWriteCount();
-				m_memoryPool->BindCompute();
+				m_memoryPool->ClearWriteAliveCount();
 			}
 
 			// (B) CPU PreUpdate
@@ -75,20 +74,25 @@ namespace DE {
 		// [Added] Measure Args Update
 		{
 			ScopedTimer tArgs([&](float t) { UpdateMetric(m_runtimeProfile.update_args, t); });
+			
 			m_memoryPool->UpdateArgs();
 		}
 
 		// [Added] Measure Dispatch Logic
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
-			m_memoryPool->ExcuteParticleLogic();
+			m_memoryPool->BindSpawnCompute();
 			// Mesh와 Billboard 모두 Update
 			for (auto* system : m_activeSystems) {
 				if (system) {
 					system->Update(dt);
 				}
 			}
-			m_memoryPool->UnbindCompute();
+			m_memoryPool->UnbindSpawnCompute();
+
+			m_memoryPool->BindSimulationCompute();
+			m_memoryPool->ExcuteParticleLogic();
+			m_memoryPool->UnbindSimulationCompute();
 		}
 
 		// Compute , SwapBuffer  Read  ȭ
@@ -100,7 +104,7 @@ namespace DE {
 		// [Added] Measure Swap Buffer
 		if (m_memoryPool) {
 			ScopedTimer tSwap([&](float t) { UpdateMetric(m_runtimeProfile.update_swap, t); });
-			m_memoryPool->SwapBuffer();
+			m_memoryPool->SwapAliveIndices();
 		}
 	}
 
@@ -129,7 +133,7 @@ namespace DE {
 		if (!m_batchEmitterList.empty())
 			DispatchBatchCompute();
 
-		m_memoryPool->BindAliveIndices();
+		m_memoryPool->BindBatchAliveIndices();
 		// 전역 VB/IB Binding (Mesh와 Billboard가 공유)
 		ModelManager::Get().BindBuffersForRender();
 
@@ -205,7 +209,7 @@ namespace DE {
 			m_batchDescriptors.push_back(desc);
 
 			for (UINT eid : batch.emitterIDs)
-				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
+				globalInstanceOffset += m_memoryPool->GetReadAliveCount().GetCpu()[eid];
 
 			m_batchEmitterList.insert(m_batchEmitterList.end(),
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
@@ -232,7 +236,7 @@ namespace DE {
 			m_batchDescriptors.push_back(desc);
 
 			for (UINT eid : batch.emitterIDs)
-				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
+				globalInstanceOffset += m_memoryPool->GetReadAliveCount().GetCpu()[eid];
 
 			m_batchEmitterList.insert(m_batchEmitterList.end(),
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
@@ -253,8 +257,8 @@ namespace DE {
 		context->CSSetConstantBuffers(0, 1, m_batchRenderArgsCB.GetAddressOf());
 
 		ID3D11ShaderResourceView* srvs[] = {
-			m_memoryPool->GetReadBuffer().GetSRV(),        // t16
-			m_memoryPool->GetReadCount().GetSRV(),         // t17
+			m_memoryPool->GetParticleBuffer().GetSRV(),    // t16
+			m_memoryPool->GetReadAliveCount().GetSRV(),    // t17
 			m_memoryPool->GetFrameConsts().GetSRV(),       // t18
 			nullptr,                                        // t19
 			nullptr,                                        // t20
@@ -262,9 +266,13 @@ namespace DE {
 			nullptr,                                        // t22
 			nullptr,                                        // t23
 			m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
-			m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
+			m_memoryPool->GetBatchDescriptors().GetSRV(),  // t25
+			nullptr,                                        // t26
+			nullptr,                                        // t27
+			m_memoryPool->GetReadAliveIndices().GetSRV(),  // t28 (simulation alive indices)
+			m_memoryPool->GetReadAliveCount().GetSRV()     // t29 (simulation alive counts)
 		};
-		context->CSSetShaderResources(16, 10, srvs);
+		context->CSSetShaderResources(16, 14, srvs);
 
 		ID3D11UnorderedAccessView* uavs[] = {
 			m_memoryPool->GetBatchBillboardArgs().GetUAV(),
@@ -295,8 +303,8 @@ namespace DE {
 			context->CSSetShaderResources(0, 1, aliveSRVs);
 
 			ID3D11ShaderResourceView* commonSRVs[] = {
-				m_memoryPool->GetReadBuffer().GetSRV(),        // t16
-				m_memoryPool->GetReadCount().GetSRV(),         // t17
+				m_memoryPool->GetParticleBuffer().GetSRV(),    // t16
+				m_memoryPool->GetReadAliveCount().GetSRV(),    // t17
 				m_memoryPool->GetFrameConsts().GetSRV(),       // t18
 				nullptr,                                        // t19
 				nullptr,                                        // t20
@@ -304,12 +312,16 @@ namespace DE {
 				nullptr,                                        // t22
 				nullptr,                                        // t23
 				m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
-				m_memoryPool->GetBatchDescriptors().GetSRV()   // t25
+				m_memoryPool->GetBatchDescriptors().GetSRV(),  // t25
+				nullptr,                                        // t26
+				nullptr,                                        // t27
+				m_memoryPool->GetReadAliveIndices().GetSRV(),  // t28 (simulation alive indices)
+				m_memoryPool->GetReadAliveCount().GetSRV()     // t29 (simulation alive counts)
 			};
-			context->CSSetShaderResources(16, 10, commonSRVs);
+			context->CSSetShaderResources(16, 14, commonSRVs);
 
 			ID3D11UnorderedAccessView* aliveUAVs[] = {
-				m_memoryPool->GetAliveIndices().GetUAV()
+				m_memoryPool->GetBatchAliveIndices().GetUAV()
 			};
 			context->CSSetUnorderedAccessViews(0, 1, aliveUAVs, nullptr);
 
@@ -325,8 +337,8 @@ namespace DE {
 			context->CSSetShaderResources(0, 1, nullSRV1);
 		}
 
-		ID3D11ShaderResourceView* nullSRVs[10] = { nullptr };
-		context->CSSetShaderResources(16, 10, nullSRVs);
+		ID3D11ShaderResourceView* nullSRVs[14] = { nullptr };
+		context->CSSetShaderResources(16, 14, nullSRVs);
 	}
 
 	void ParticleManager::DrawMeshBatches()
@@ -536,6 +548,15 @@ namespace DE {
 		UploadEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);
 		m_memoryPool->UpdateFrameConsts(handle.emitterIDs, initialData.frameConsts);
+
+		// Initialize dead indices for each emitter (all particles start as dead)
+		for (UINT i = 0; i < emitterCount; ++i) {
+			UINT globalEmitterID = handle.emitterIDs[i];
+			UINT emitterOffset = initialData.emitterIDs[i].readParticleOffset;
+			UINT emitterMax = initialData.frameConsts[i].maxParticles;
+			m_memoryPool->InitializeDeadIndices(globalEmitterID, handle.particleOffset + emitterOffset, emitterMax);
+		}
+		m_memoryPool->UploadDeadData();
 
 		// 5. Finalize & Registration
 		clonedPtr->Initialize(initialData);

@@ -11,7 +11,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint myEmitterID = DTid.x;
 
     //  Emitter ƼŬ  
-    uint count = readCount[myEmitterID];
+    uint count = readAliveCount[myEmitterID];
 
     // Apply spawn ratio for distance-based overdraw control
     float ratio = frameConsts[myEmitterID].spawnRatio;
