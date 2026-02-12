@@ -27,8 +27,8 @@ namespace DE {
 	};
 
 	struct BatchGroup {
-		int materialKey;
-		int modelIndex;
+		int materialKey; // Material Key
+		int modelIndex; // 모델 Key
 		std::vector<UINT> emitterIDs;
 		UINT instanceOffset;
 	};

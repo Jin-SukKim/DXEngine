@@ -126,17 +126,18 @@ namespace DE {
 
     // Batch Rendering Structures
     struct BatchInfo {
-        UINT emitterCount;        // Number of emitters in this batch
-        UINT emitterListOffset;   // Offset into flat emitter list
+        UINT emitterCount;        // Batch 하나의 Emitter 개수
+        UINT emitterListOffset;   // batch의 시작 emitter offset
         UINT instanceOffset;      // Global instance start for this batch
         UINT padding;
     };
 
     struct BatchDescriptor {
-        UINT emitterCount;
+        UINT emitterCount;      
         UINT emitterListOffset;
         UINT instanceOffset;
-        UINT indexCount;
+        // batch당 하나의 모델을 사용
+        UINT indexCount;        // Mesh Rendering용 index 개수
         UINT startIndexLocation;
         UINT baseVertexLocation;
         UINT isMesh;
@@ -144,12 +145,12 @@ namespace DE {
     };
 
     struct BatchRenderArgsConsts {
-        UINT numBatches;
+        UINT numBatches;    // 총 batch 개수
         Vector3 padding;
     };
 
     struct BuildAliveConsts {
-        UINT numFlatEmitters;
+        UINT numFlatEmitters; // AliveIndices를 만들때 사용할 Emitter 개수
         Vector3 padding;
     };
 }

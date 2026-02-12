@@ -899,6 +899,8 @@
     <FxCompile Include="ParticleCompositePS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
+    <FxCompile Include="BatchRenderArgsCS.hlsl" />
+    <FxCompile Include="BuildAliveIndicesCS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BlinnPhong.hlsli">

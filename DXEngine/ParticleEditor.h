@@ -47,7 +47,7 @@ namespace DE {
 		ParticleSystem* m_test3 = nullptr;
 		TestActor* m_testActor = nullptr;
 		std::vector<FireEffect*> m_fireTests;
-		// [신규] 스트레스 테스트용 변수
+		// 스트레스 테스트용 변수
 		float m_stressTime = 0.0f;
 		std::vector<ParticleSystem*> m_stressSystems; // 동적으로 마구 생성된 녀석들 관리
 	};

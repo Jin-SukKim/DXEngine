@@ -130,6 +130,7 @@ namespace DE {
 			DispatchBatchCompute();
 
 		m_memoryPool->BindAliveIndices();
+		// 전역 VB/IB Binding (Mesh와 Billboard가 공유)
 		ModelManager::Get().BindBuffersForRender();
 
 		DrawMeshBatches();
@@ -182,11 +183,13 @@ namespace DE {
 
 	void ParticleManager::BuildBatchDescriptors()
 	{
+		// Mesh Batch와 Billbaord Batch를 하나의 Descriptor 배열로 합쳐서 Compute Shader로 전달
 		m_batchEmitterList.clear();
 		m_batchDescriptors.clear();
 
 		UINT globalInstanceOffset = 0;
 
+		// Descriptor 배열 앞에 Mesh Batch를 추가
 		// Mesh batch descriptors
 		for (const auto& batch : m_meshBatches) {
 			BatchDescriptor desc{};
@@ -203,17 +206,22 @@ namespace DE {
 
 			for (UINT eid : batch.emitterIDs)
 				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
+
 			m_batchEmitterList.insert(m_batchEmitterList.end(),
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
 		}
 
+		// 어디부터 billboard batch의 시작인지 저장해두고
+		// Descriptor 배열의 뒤쪽에 Billboard Batch 저장
 		// Billboard batch descriptors
 		MeshRange quadRange = ModelManager::Get().GetMeshRange(0);
 		m_billboardDescStartIdx = static_cast<UINT>(m_batchDescriptors.size());
 
 		for (const auto& batch : m_billboardBatches) {
 			BatchDescriptor desc{};
+			// Emitter 개수
 			desc.emitterCount = static_cast<UINT>(batch.emitterIDs.size());
+			// 
 			desc.emitterListOffset = static_cast<UINT>(m_batchEmitterList.size());
 			desc.instanceOffset = globalInstanceOffset;
 			desc.indexCount = quadRange.indexCount;
@@ -225,6 +233,7 @@ namespace DE {
 
 			for (UINT eid : batch.emitterIDs)
 				globalInstanceOffset += m_memoryPool->GetReadCount().GetCpu()[eid];
+
 			m_batchEmitterList.insert(m_batchEmitterList.end(),
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
 		}
@@ -333,6 +342,7 @@ namespace DE {
 		};
 		context->VSSetShaderResources(24, 2, meshBatchSRVs);
 
+		// Material이 변경될때만 Binding해서 렌더링
 		int lastMaterialKey = INT_MIN;
 		for (size_t i = 0; i < m_meshBatches.size(); i++) {
 			const auto& batch = m_meshBatches[i];
@@ -373,8 +383,10 @@ namespace DE {
 		};
 		context->VSSetShaderResources(24, 2, batchSRVs);
 
+		// Material이 변경될때만 Binding해서 렌더링
 		for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
 			const auto& batch = m_billboardBatches[batchIdx];
+			// Billboard는 Mesh Batch 뒤에 저장했으므로 Billboard Batch의 시작 위치 더해주기
 			UINT globalBatchIdx = m_billboardDescStartIdx + static_cast<UINT>(batchIdx);
 			const auto& desc = m_batchDescriptors[globalBatchIdx];
 
@@ -617,19 +629,21 @@ namespace DE {
 		outBatches.clear();
 		if (jobs.empty()) return;
 
-		// Jobs are already sorted by (materialKey, modelIndex)
-		// Group by (materialKey, modelIndex) pair
 		BatchGroup currentBatch;
 		currentBatch.materialKey = jobs[0].materialKey;
 		currentBatch.modelIndex = jobs[0].modelIndex;
 		currentBatch.emitterIDs.push_back(jobs[0].globalEmitterID);
 		currentBatch.instanceOffset = 0;
 
+		// 이미 Material과 Model 순으로 정렬된 상태
+		// 연속된 같은 Material과 Model을 가진 emitter들을 하나의 batch로 합치기
 		for (size_t i = 1; i < jobs.size(); ++i) {
+			// 같은 배치에 추가
 			if (jobs[i].materialKey == currentBatch.materialKey &&
 				jobs[i].modelIndex == currentBatch.modelIndex) {
 				currentBatch.emitterIDs.push_back(jobs[i].globalEmitterID);
 			} else {
+				// 새 배치 시작
 				outBatches.push_back(currentBatch);
 				currentBatch.materialKey = jobs[i].materialKey;
 				currentBatch.modelIndex = jobs[i].modelIndex;

@@ -38,8 +38,9 @@ float2x2 GetRotationMatrix2D(float angle)
 
 ParticlePSInput main(VSParticleInput input)
 {
-    // O(1) lookup via aliveIndices buffer (batch start offset computed on GPU)
+    // Batch에서 EmitterList의 시작 offset을 가져오기
     uint batchStartOffset = emitterWriteOffsets[batchEmitterListOffset];
+    // EmitterLIst의 시작 offset에 instanceID를 더해 particle의 index 가져오기
     uint globalIdx = aliveIndices[batchStartOffset + input.instanceID];
     Particle p = readParticles[globalIdx];
     uint emitterSlotID = p.ownerID;
