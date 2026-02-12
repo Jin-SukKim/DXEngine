@@ -8,7 +8,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     uint aliveIdx = dtID.x;
     uint particleIdx = readAliveIndices[aliveIdx];
     
-    Particle p = readParticles[particleIdx];
+    Particle p = particles[particleIdx];
     
     EmitterID eID = emitterIDs[p.ownerID];
 

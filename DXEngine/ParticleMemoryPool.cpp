@@ -304,7 +304,7 @@ namespace DE {
 			m_deadIndices.GetUAV(),                         // u9
 			m_deadCount.GetUAV()                            // u10
 		};
-		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = {
 			m_particles.GetSRV(),           // t16
@@ -323,7 +323,7 @@ namespace DE {
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 7, srvs);
@@ -340,7 +340,7 @@ namespace DE {
 			m_deadIndices.GetUAV(),                          // u9
 			m_deadCount.GetUAV()                             // u10
 		};
-		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
 
 		// t16 = particles (read), t17 = readAliveCount, t23 = readAliveIndices
 		ID3D11ShaderResourceView* srvs[] = {
@@ -361,7 +361,7 @@ namespace DE {
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
 
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-		context->CSSetUnorderedAccessViews(6, 5, uavs, nullptr);
+		context->CSSetUnorderedAccessViews(3, 5, uavs, nullptr);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 8, srvs);

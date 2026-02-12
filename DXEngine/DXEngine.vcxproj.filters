@@ -480,7 +480,6 @@
     </ClInclude>
     <ClInclude Include="SmokeActor.h" />
     <ClInclude Include="FireEffect.h" />
-    <ClInclude Include="EmitterManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -763,9 +762,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FireEffect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EmitterManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

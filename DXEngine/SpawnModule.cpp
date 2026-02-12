@@ -74,11 +74,6 @@ namespace DE {
 		UINT groupCount = (m_totalSpawnCount + 1023) >> 10;
 		ctx.context->Dispatch(groupCount, 1, 1);
 		
-		// Barrier
-		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr, nullptr, nullptr };
-		ID3D11UnorderedAccessView* nullUAVs[2] = { nullptr, nullptr };
-		ctx.context->CSSetShaderResources(0, 3, nullSRVs);
-		ctx.context->CSSetUnorderedAccessViews(0, 2, nullUAVs, nullptr);
 		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
