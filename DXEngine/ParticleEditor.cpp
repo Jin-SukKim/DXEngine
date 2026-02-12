@@ -56,13 +56,13 @@ namespace DE {
 		ground = AddObject<SquareActor>(L"Ground");
 
 		// 기존 Spawner는 잠시 꺼두거나 유지해도 됨 (여기선 유지)
-		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spanwer->SetScene(this);
-		//m_spanwer->SetActorType<Firework>();
-		//m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		//m_spanwer->SetSpawnInterval(0.01f);
-		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		//m_spanwer->SetMaxActiveParticles(3000);
+		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		m_spanwer->SetScene(this);
+		m_spanwer->SetActorType<Firework>();
+		m_spanwer->SetSpawnMode(SpawnMode::Interval);
+		m_spanwer->SetSpawnInterval(0.01f);
+		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		m_spanwer->SetMaxActiveParticles(3000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
@@ -125,8 +125,8 @@ namespace DE {
 		//}
 
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)

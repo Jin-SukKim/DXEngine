@@ -317,7 +317,7 @@ namespace DE {
 					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
 				});
 
-		// Active SubEmitter  (null üũ)
+		// Active SubEmitter
 		for (auto* emitter : m_activeMeshSubEmitters) {
 			if (emitter)
 				emitter->Render({
