@@ -44,6 +44,8 @@ namespace DE {
 		EffectActor* SpawnEffect(std::unique_ptr<EffectActor> actor); //  ߰
 		std::vector<std::unique_ptr<Actor>>& GetActorList(ActorCategory category);
 		bool ContainsEffect(EffectActor* effect) const;
+
+		void RemoveEffects(const std::vector<EffectActor*>& effectsToRemove);
 	protected:
 		// Actor Management
 		template<class T>

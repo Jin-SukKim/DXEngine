@@ -37,6 +37,8 @@
 #include "TestActor.h"
 #include "SmokeActor.h"
 #include "FireEffect.h"
+#include "IceEffect.h"
+#include "HolySwordEffect.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -63,6 +65,14 @@ namespace DE {
 		m_spanwer->SetSpawnInterval(0.01f);
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
 		m_spanwer->SetMaxActiveParticles(3000);
+
+		m_spanwer2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		m_spanwer2->SetScene(this);
+		m_spanwer2->SetActorType<IceEffect>();
+		m_spanwer2->SetSpawnMode(SpawnMode::Interval);
+		m_spanwer2->SetSpawnInterval(0.01f);
+		m_spanwer2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
+		m_spanwer2->SetMaxActiveParticles(3000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
@@ -97,8 +107,11 @@ namespace DE {
 			ParticleManager::Get().DestroyInstance(m_test3);
 			m_test3 = nullptr;
 		}
-		for (auto* sys : m_stressSystems) {
-			ParticleManager::Get().DestroyInstance(sys);
+		for (auto* effect : m_stressSystems) {
+			if (!m_stressSystems.empty()) {
+				RemoveEffects(m_stressSystems);
+				m_stressSystems.clear();
+			}
 		}
 		m_stressSystems.clear();
 	}
@@ -124,9 +137,12 @@ namespace DE {
 		//	}
 		//}
 
+		auto tr = m_spanwer2->GetComponent<TransformComponent>();
+		if (tr)
+			tr->SetPos(Vector3(25.f, 0.f, 0.f));
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
-		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -155,8 +171,15 @@ namespace DE {
 			burstTimer += dt;
 			if (burstTimer >= 0.5f) {
 				burstTimer = 0.0f;
-				auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Firework.json");
-				if (sys) m_stressSystems.push_back(sys);
+				
+				// 랜덤 위치 생성 (-50 ~ 50 범위)
+				Vector3 randomPos(
+					(rand() % 100 - 50) * 1.0f,
+					(rand() % 20) * 1.0f,
+					(rand() % 100 - 50) * 1.0f
+				);
+				auto effect = SpawnEffect<Firework>(L"StressFirework", L"", randomPos);
+				if (effect) m_stressSystems.push_back(effect);
 			}
 		}
 
@@ -165,8 +188,14 @@ namespace DE {
 			spawnTimer += dt;
 			if (spawnTimer >= 0.1f) {
 				spawnTimer = 0.0f;
-				auto sys = ParticleManager::Get().CreateSystem(L"Particles\\SmokeEffect.json");
-				if (sys) m_stressSystems.push_back(sys);
+				
+				Vector3 randomPos(
+					(rand() % 100 - 50) * 1.0f,
+					(rand() % 20) * 1.0f,
+					(rand() % 100 - 50) * 1.0f
+				);
+				auto effect = SpawnEffect<SmokeActor>(L"StressSmoke", L"", randomPos);
+				if (effect) m_stressSystems.push_back(effect);
 			}
 		}
 
@@ -179,26 +208,28 @@ namespace DE {
 
 				// 한 번에 삭제할 개수 결정 (예: 3개 ~ 8개 사이 랜덤)
 				int deleteCount = (rand() % 400) + 100;
+				deleteCount = std::min(deleteCount, static_cast<int>(m_stressSystems.size()));
 
-				for (int i = 0; i < deleteCount; ++i)
-				{
-					// 더 이상 지울 게 없으면 중단 (안전 장치)
-					if (m_stressSystems.empty()) break;
+				if (deleteCount > 0) {
+					// 삭제할 항목들을 먼저 수집 (배치 삭제로 최적화)
+					std::vector<EffectActor*> toRemove;
+					toRemove.reserve(deleteCount);
+					// Fisher-Yates shuffle의 부분 변형으로 랜덤 샘플링
+					for (int i = 0; i < deleteCount; ++i) {
+						int idx = i + (rand() % (m_stressSystems.size() - i));
+						toRemove.push_back(m_stressSystems[idx]);
 
-					// 랜덤 인덱스 선택
-					int idx = rand() % m_stressSystems.size();
-					ParticleSystem* victim = m_stressSystems[idx];
-
-					// 강제 파괴 (메모리 반환)
-					if (victim) {
-						ParticleManager::Get().DestroyInstance(victim);
+						// Swap to avoid duplicates
+						if (idx != i) {
+							std::swap(m_stressSystems[i], m_stressSystems[idx]);
+						}
 					}
 
-					// 관리 리스트에서 제거 (Swap & Pop으로 빠르게 제거)
-					if (idx != m_stressSystems.size() - 1) {
-						m_stressSystems[idx] = m_stressSystems.back();
-					}
-					m_stressSystems.pop_back();
+					// 배치 삭제 (O(N+M) - 훨씬 빠름!)
+					RemoveEffects(toRemove);
+
+					// m_stressSystems에서도 제거
+					m_stressSystems.erase(m_stressSystems.begin(), m_stressSystems.begin() + deleteCount);
 				}
 			}
 		}
@@ -221,10 +252,10 @@ namespace DE {
 		// 7. [25초] 강제 삭제 및 초기화 (Loop)
 		if (m_stressTime >= 25.0f) {
 			// 남아있는 동적 시스템 싹 정리
-			for (auto* sys : m_stressSystems) {
-				ParticleManager::Get().DestroyInstance(sys);
+			if (!m_stressSystems.empty()) {
+				RemoveEffects(m_stressSystems);
+				m_stressSystems.clear();
 			}
-			m_stressSystems.clear();
 
 			if (m_test2) {
 				ParticleManager::Get().DestroyInstance(m_test2);
@@ -272,12 +303,24 @@ namespace DE {
 		for (int i = 0; i < 100; ++i)
 		{
 			// 1. 이펙트 생성 (Smoke나 Firework 등)
-			auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
-			//auto sys = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+			Vector3 randomPos(
+				(rand() % 100 - 50) * 1.0f,
+				(rand() % 20) * 1.0f,
+				(rand() % 100 - 50) * 1.0f
+			);
 
-			if (sys) {
+			// IceEffect 또는 HolySwordEffect를 랜덤하게 선택
+			EffectActor* effect = nullptr;
+			//if (rand() % 2 == 0) {
+				effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
+			//}
+			//else {
+			//	effect = SpawnEffect<HolySwordEffect>(L"ClickHolySword", L"", randomPos);
+			//}
+
+			if (effect) {
 				// 성공 시 리스트에 추가 (나중에 정리용)
-				m_stressSystems.push_back(sys);
+				m_stressSystems.push_back(effect);
 			}
 			else {
 				// 2. [한계 도달] 생성 실패 (Nullptr 반환됨)
@@ -293,10 +336,10 @@ namespace DE {
 	}
 	void ParticleEditor::ClickDestroy()
 	{
-		for (auto* sys : m_stressSystems) {
-			ParticleManager::Get().DestroyInstance(sys);
+		if (!m_stressSystems.empty()) {
+			RemoveEffects(m_stressSystems);
+			m_stressSystems.clear();
 		}
-		m_stressSystems.clear();
 		OutputDebugStringA(">>> [RESET] All Stress Systems Destroyed. <<<\n");
 	}
 }

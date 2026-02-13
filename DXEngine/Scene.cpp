@@ -64,6 +64,24 @@ namespace DE {
 		return false;
 	}
 
+	void Scene::RemoveEffects(const std::vector<EffectActor*>& effectsToRemove)
+	{
+		if (effectsToRemove.empty()) return;
+
+		// unordered_set으로 O(1) 조회 최적화
+		std::unordered_set<EffectActor*> toRemove(effectsToRemove.begin(), effectsToRemove.end());
+
+		auto& effectList = m_actorList[static_cast<size_t>(ActorCategory::Effect)];
+
+		// 한 번의 순회로 모든 항목 제거 (O(N))
+		// 개별 삭제 O(N*M) -> 배치 삭제 O(N+M)
+		std::erase_if(effectList,
+			[&toRemove](const std::unique_ptr<Actor>& actor) {
+				EffectActor* effect = dynamic_cast<EffectActor*>(actor.get());
+				return effect && toRemove.count(effect) > 0;
+			});
+	}
+
 	void Scene::InitializeCommonResources()
 	{
 		RenderBase& renderer = *GET_SINGLE(RenderBase);
