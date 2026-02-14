@@ -162,7 +162,8 @@ struct ParticleMeshConsts
     matrix pWorldIT;
     uint vertexCount;
     uint indexCount;
-    float2 padding;
+    uint vertexOffset;
+    uint indexOffset;
 };
 
 struct BatchDescriptor {

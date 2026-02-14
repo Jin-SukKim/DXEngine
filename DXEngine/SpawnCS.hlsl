@@ -14,7 +14,7 @@ StructuredBuffer<uint> meshIndices : register(t3);
 ConsumeStructuredBuffer<uint> deadIndices : register(u4);
 
 // --- [Robust Random Functions (Wang Hash)] ---
-// (±âÁ¸ ÇÔ¼öµé ±×´ë·Î À¯Áö)
+// (ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 uint wang_hash(uint seed)
 {
     seed = (seed ^ 61) ^ (seed >> 16);
@@ -37,7 +37,7 @@ float rand_signed(inout uint state)
 }
 
 // --- [Spawn Functions] ---
-// (±âÁ¸ ½ºÆù ÇÔ¼öµé BoxSpawn, SphereSpawn µî ±×´ë·Î À¯Áö...)
+// (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ BoxSpawn, SphereSpawn ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½...)
 float3 BoxSpawn(inout uint rngState, float3 volume, float innerRatio)
 {
     float3 pos;
@@ -59,36 +59,36 @@ float3 SphereSpawn(inout uint rngState, float3 volume, float innerRatio)
     return dir * dist * volume;
 }
 
-void VertexSpawn(inout uint rngState, uint vCount, out float3 outPos)
+void VertexSpawn(inout uint rngState, uint vCount, uint vOffset, out float3 outPos)
 {
     if (vCount > 0) {
         rngState = wang_hash(rngState);
         uint vIdx = rngState % vCount;
-        outPos = meshVertex[vIdx];
+        outPos = meshVertex[vOffset + vIdx];
     }
     else {
         outPos = float3(0, 0, 0);
     }
 }
 
-void SurfaceSpawn(inout uint rngState, uint iCount, out float3 outPos)
+void SurfaceSpawn(inout uint rngState, uint iCount, uint iOffset, uint vOffset, out float3 outPos)
 {
     if (iCount > 0) {
         uint triCount = iCount / 3;
         rngState = wang_hash(rngState);
         uint triIdx = rngState % triCount;
-        uint i0 = meshIndices[triIdx * 3 + 0];
-        uint i1 = meshIndices[triIdx * 3 + 1];
-        uint i2 = meshIndices[triIdx * 3 + 2];
+        uint i0 = meshIndices[iOffset + triIdx * 3 + 0];
+        uint i1 = meshIndices[iOffset + triIdx * 3 + 1];
+        uint i2 = meshIndices[iOffset + triIdx * 3 + 2];
         float ra = rand_float(rngState);
         float rb = rand_float(rngState);
         if (ra + rb > 1.0f) {
             ra = 1.0f - ra;
             rb = 1.0f - rb;
         }
-        float3 v0 = meshVertex[i0];
-        float3 v1 = meshVertex[i1];
-        float3 v2 = meshVertex[i2];
+        float3 v0 = meshVertex[vOffset + i0];
+        float3 v1 = meshVertex[vOffset + i1];
+        float3 v2 = meshVertex[vOffset + i2];
         outPos = v0 + ra * (v1 - v0) + rb * (v2 - v0);
     }
     else {
@@ -111,7 +111,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (dtID.x >= frameConsts[emitterID].spawnCount)
         return;
     
-    // ½Ãµå ÃÊ±âÈ­
+    // ï¿½Ãµï¿½ ï¿½Ê±ï¿½È­
     uint rngState = dtID.x * 1973 + uint(frameConsts[emitterID].time * 10000.0f);
     rngState = wang_hash(rngState);
 
@@ -122,12 +122,12 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     if (spawn.spawnShape == 0) spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 1) spawnPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
-    else if (spawn.spawnShape == 2) VertexSpawn(rngState, meshConsts[systemID].vertexCount, spawnPos);
-    else if (spawn.spawnShape == 3) SurfaceSpawn(rngState, meshConsts[systemID].indexCount, spawnPos);
+    else if (spawn.spawnShape == 2) VertexSpawn(rngState, meshConsts[systemID].vertexCount, meshConsts[systemID].vertexOffset, spawnPos);
+    else if (spawn.spawnShape == 3) SurfaceSpawn(rngState, meshConsts[systemID].indexCount, meshConsts[systemID].indexOffset, meshConsts[systemID].vertexOffset, spawnPos);
     else if (spawn.spawnShape == 4) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, 0, dtID.x, false);
     else if (spawn.spawnShape == 5) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, spawn.spawnStartIndex, dtID.x, true);
 
-    // À§Ä¡ ¹× ¼Óµµ °è»ê
+    // ï¿½ï¿½Ä¡ ï¿½ï¿½ ï¿½Óµï¿½ ï¿½ï¿½ï¿½
     Particle p;
     float3 localPos = spawnPos + spawn.localPos;
 
@@ -174,7 +174,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     particles[particleIdx] = p;
 
-    // AliveIndices¿¡ Ãß°¡
+    // AliveIndicesï¿½ï¿½ ï¿½ß°ï¿½
     uint aliveSlot;
     InterlockedAdd(writeAliveCount[emitterID], 1, aliveSlot);
     writeAliveIndices[readParticleOffset + aliveSlot] = particleIdx;

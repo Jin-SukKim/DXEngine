@@ -22,6 +22,9 @@ namespace DE {
 		D3D11Utils::CreateCS(device.Get(), L"RenderArgsUpdateCS.hlsl", renderArgsUpdateCS);
 		D3D11Utils::CreateCS(device.Get(), L"BatchRenderArgsCS.hlsl", batchRenderArgsCS);
 		D3D11Utils::CreateCS(device.Get(), L"BuildAliveIndicesCS.hlsl", buildAliveIndicesCS);
+
+		// Depth shaders
+		D3D11Utils::CreateCS(device.Get(), L"DepthDownsampleCS.hlsl", depthDownsampleCS);
 	}
 
 	void ComputeCommon::initBitonicSortShaders(ComPtr<ID3D11Device>& device)
@@ -46,5 +49,8 @@ namespace DE {
 
 		// BitonicSort PSO
 		sort.bitonicSortCS.computeShader = bitonicSortCS;
+
+		// Depth PSO
+		depth.depthDownsampleCS.computeShader = depthDownsampleCS;
 	}
 }

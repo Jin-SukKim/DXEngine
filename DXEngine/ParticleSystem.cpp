@@ -38,8 +38,6 @@ namespace DE {
 		, m_state(other.m_state)
 		, m_jsonPath(other.m_jsonPath)
 		, m_watcherID(0)
-		, m_vertexCount(other.m_vertexCount)
-		, m_indexCount(other.m_indexCount)
 		, m_owner(nullptr)
 		, m_currentEmitterIndex(0)
 		, m_maxTotalParticles(0)
@@ -215,13 +213,6 @@ namespace DE {
 
 		float newDt = dt * m_playRate;
 		UpdateTransform();
-
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		if (m_vertexCount && m_indexCount) {
-			ID3D11ShaderResourceView* srvs[] = { m_meshVertex.GetSRV(), m_meshIndices.GetSRV() };
-			context->CSSetShaderResources(2, 2, srvs);
-		}
 
 		// PreUpdate (Main + Sub)
 		for (auto& emitter : m_emitters)
@@ -559,33 +550,41 @@ namespace DE {
 
 	void ParticleSystem::SetTargetMesh(const int& modelIdx)
 	{
-		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
-		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-
 		Model* target = ModelManager::Get().GetModel(modelIdx);
 		if (!target || target->meshes.empty())
 			return;
 
 		const Mesh2& meshes = target->meshes[0];
-		m_vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
-		m_indexCount = static_cast<UINT>(meshes.indexCPU.size());
-
-		m_meshVertex.Initialize(device.Get(), m_vertexCount);
-		m_meshIndices.Initialize(device.Get(), m_indexCount);
+		UINT vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
+		UINT indexCount = static_cast<UINT>(meshes.indexCPU.size());
 
 		std::vector<Vector3> vertices;
+		vertices.reserve(vertexCount);
 		for (const auto& vertex : meshes.vertexCPU)
 			vertices.push_back(vertex.position);
 
-		m_meshVertex.SetData(vertices);
-		m_meshIndices.SetData(meshes.indexCPU);
+		auto& pool = ParticleManager::Get().GetMemoryPool();
 
-		m_meshConsts.vertexCount = m_vertexCount;
-		m_meshConsts.indexCount = m_indexCount;
+		// Allocate from pool if not yet allocated
+		if (m_poolHandle.meshVertexOffset == UINT_MAX) {
+			m_poolHandle.meshVertexOffset = pool.AllocateMeshVertices(vertexCount);
+			m_poolHandle.meshIndexOffset = pool.AllocateMeshIndices(indexCount);
+		}
 
-		m_meshVertex.Upload(context.Get());
-		m_meshIndices.Upload(context.Get());
-		
+		if (m_poolHandle.meshVertexOffset == UINT_MAX || m_poolHandle.meshIndexOffset == UINT_MAX)
+			return;
+
+		pool.UploadMeshVertices(m_poolHandle.meshVertexOffset, vertices);
+		pool.UploadMeshIndices(m_poolHandle.meshIndexOffset, meshes.indexCPU);
+
+		m_poolHandle.meshVertexCount = vertexCount;
+		m_poolHandle.meshIndexCount = indexCount;
+
+		m_meshConsts.vertexCount = vertexCount;
+		m_meshConsts.indexCount = indexCount;
+		m_meshConsts.vertexOffset = m_poolHandle.meshVertexOffset;
+		m_meshConsts.indexOffset = m_poolHandle.meshIndexOffset;
+
 		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, m_meshConsts);
 	}
 

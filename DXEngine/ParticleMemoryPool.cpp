@@ -85,6 +85,10 @@ namespace DE {
 		m_meshArgsBuffer.Initialize(device, initialMeshArgs, m_maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 
 		m_spawnPositions.Initialize(device, maxParticles);
+		m_meshVertexPool.Initialize(device, m_meshVertexPoolCapacity);
+		m_meshIndexPool.Initialize(device, m_meshIndexPoolCapacity);
+		m_meshVertexNextOffset = 0;
+		m_meshIndexNextOffset = 0;
 
 		// EmitterID ConstantBuffer Pool
 		m_emitterIDs.InitializeDynamicSRV(device, maxEmitters);
@@ -305,7 +309,7 @@ namespace DE {
 	void ParticleMemoryPool::BindSpawnCompute()
 	{
 		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		
+
 		ID3D11UnorderedAccessView* uavs[] = {
 			m_deadIndices.GetUAV(),
 			m_particles.GetUAV(),
@@ -313,6 +317,13 @@ namespace DE {
 			GetWriteAliveCount().GetUAV(),
 		};
 		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
+
+		// t2, t3: mesh vertex/index pool
+		ID3D11ShaderResourceView* meshSRVs[] = {
+			m_meshVertexPool.GetSRV(),      // t2
+			m_meshIndexPool.GetSRV()        // t3
+		};
+		context->CSSetShaderResources(2, 2, meshSRVs);
 
 		ID3D11ShaderResourceView* srvs[] = {
 			m_particles.GetSRV(),           // t16
@@ -332,6 +343,9 @@ namespace DE {
 
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
+
+		ID3D11ShaderResourceView* nullMeshSRVs[] = { nullptr, nullptr };
+		context->CSSetShaderResources(2, 2, nullMeshSRVs);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 7, srvs);
@@ -541,6 +555,48 @@ namespace DE {
 		box.right = static_cast<UINT>((offset + positions.size()) * sizeof(Vector3));
 		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 		context->UpdateSubresource(m_spawnPositions.GetBuffer(), 0, &box, positions.data(), 0, 0);
+	}
+
+	void ParticleMemoryPool::UploadMeshVertices(UINT offset, const std::vector<Vector3>& vertices)
+	{
+		if (vertices.empty()) return;
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		D3D11_BOX box;
+		box.left = offset * sizeof(Vector3);
+		box.right = static_cast<UINT>((offset + vertices.size()) * sizeof(Vector3));
+		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
+		context->UpdateSubresource(m_meshVertexPool.GetBuffer(), 0, &box, vertices.data(), 0, 0);
+	}
+
+	void ParticleMemoryPool::UploadMeshIndices(UINT offset, const std::vector<uint32_t>& indices)
+	{
+		if (indices.empty()) return;
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		D3D11_BOX box;
+		box.left = offset * sizeof(uint32_t);
+		box.right = static_cast<UINT>((offset + indices.size()) * sizeof(uint32_t));
+		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
+		context->UpdateSubresource(m_meshIndexPool.GetBuffer(), 0, &box, indices.data(), 0, 0);
+	}
+
+	UINT ParticleMemoryPool::AllocateMeshVertices(UINT count)
+	{
+		if (m_meshVertexNextOffset + count > m_meshVertexPoolCapacity)
+			return UINT_MAX;
+		UINT offset = m_meshVertexNextOffset;
+		m_meshVertexNextOffset += count;
+		return offset;
+	}
+
+	UINT ParticleMemoryPool::AllocateMeshIndices(UINT count)
+	{
+		if (m_meshIndexNextOffset + count > m_meshIndexPoolCapacity)
+			return UINT_MAX;
+		UINT offset = m_meshIndexNextOffset;
+		m_meshIndexNextOffset += count;
+		return offset;
 	}
 
 	void ParticleMemoryPool::UpdateEmitterID(UINT slotIndex, const EmitterID& data)

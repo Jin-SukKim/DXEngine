@@ -31,6 +31,11 @@ namespace DE {
 			ComputePSO bitonicSortCS;         // BitonicSortCS.hlsl
 		} sort;
 
+		// Depth operations
+		struct {
+			ComputePSO depthDownsampleCS;     // DepthDownsampleCS.hlsl
+		} depth;
+
 	private:
 		// Compute Shaders
 		ComPtr<ID3D11ComputeShader> particleArgsUpdateCS;
@@ -44,5 +49,8 @@ namespace DE {
 		ComPtr<ID3D11ComputeShader> renderArgsUpdateCS;
 		ComPtr<ID3D11ComputeShader> batchRenderArgsCS;
 		ComPtr<ID3D11ComputeShader> buildAliveIndicesCS;
+
+		// Depth shaders
+		ComPtr<ID3D11ComputeShader> depthDownsampleCS;
 	};
 }

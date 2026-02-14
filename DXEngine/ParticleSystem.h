@@ -68,11 +68,6 @@ namespace DE {
 		void SetPreWarmTime(float time) { m_preWarmTime = time; }
 		void SetTargetMesh(const int& modelIdx);
 
-		// Mesh  
-		StructuredBuffer<Vector3>* GetMeshVertexBuffer() { return &m_meshVertex; }
-		StructuredBuffer<uint32_t>* GetMeshIndexBuffer() { return &m_meshIndices; }
-		UINT GetVertexCount() const { return m_vertexCount; }
-		UINT GetIndexCount() const { return m_indexCount; }
 
 		void SetTransform(const MeshConstants& transform);
 
@@ -160,11 +155,6 @@ namespace DE {
 		FileWatcher::CallbackID m_watcherID = 0;
 		ParticleMeshConsts m_meshConsts;
 
-		// Mesh 
-		StructuredBuffer<Vector3> m_meshVertex;
-		StructuredBuffer<uint32_t> m_meshIndices;
-		UINT m_vertexCount = 0;
-		UINT m_indexCount = 0;
 
 		PoolHandle m_poolHandle;
 

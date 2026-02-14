@@ -17,6 +17,10 @@ struct PoolHandle {
 	UINT spawnPosOffset = UINT_MAX;
 	UINT spawnPosBlockCount = 0;
 	UINT systemSlot = UINT_MAX;
+	UINT meshVertexOffset = UINT_MAX;
+	UINT meshVertexCount = 0;
+	UINT meshIndexOffset = UINT_MAX;
+	UINT meshIndexCount = 0;
 
 	bool IsActive() const {
 		return particleOffset != UINT_MAX && !emitterIDs.empty() && systemSlot != UINT_MAX;
@@ -37,7 +41,8 @@ struct ParticleMeshConsts {
 	Matrix worldIT;
 	UINT vertexCount;
 	UINT indexCount;
-	float padding[2];
+	UINT vertexOffset;
+	UINT indexOffset;
 };
 
 class ParticleMemoryPool
@@ -66,6 +71,10 @@ public:
 	void UpdateArgs();
 	void UpdateRenderArgs();
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
+	void UploadMeshVertices(UINT offset, const std::vector<Vector3>& vertices);
+	void UploadMeshIndices(UINT offset, const std::vector<uint32_t>& indices);
+	UINT AllocateMeshVertices(UINT count);
+	UINT AllocateMeshIndices(UINT count);
 
 	// EmitterID ConstantBuffer
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
@@ -93,6 +102,8 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBillboardArgs() { return m_billboardArgsBuffer; }
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetMeshArgs() { return m_meshArgsBuffer; }
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
+	StructuredBuffer<Vector3>& GetMeshVertexPool() { return m_meshVertexPool; }
+	StructuredBuffer<uint32_t>& GetMeshIndexPool() { return m_meshIndexPool; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 
 	// Batch buffers getters
@@ -187,6 +198,8 @@ private:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_meshArgsBuffer;
 
 	StructuredBuffer<Vector3> m_spawnPositions;
+	StructuredBuffer<Vector3> m_meshVertexPool;
+	StructuredBuffer<uint32_t> m_meshIndexPool;
 
 	// Quad Mesh for Billboard Instancing (GS 제거용)
 	ComPtr<ID3D11Buffer> m_quadVertexBuffer;
@@ -209,6 +222,11 @@ private:
 	StructuredBuffer<UINT> m_batchAliveIndices;                           // Pass2 -> VS (Batch Rendering)
 	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
 	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
+
+	UINT m_meshVertexPoolCapacity = 500000;
+	UINT m_meshIndexPoolCapacity = 1500000;
+	UINT m_meshVertexNextOffset = 0;
+	UINT m_meshIndexNextOffset = 0;
 
 	// Block Allocator - Map-based (startBlock -> blockCount)
 	std::map<UINT, UINT> m_particleBlockMap;
