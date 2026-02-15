@@ -22,7 +22,7 @@ namespace DE {
 		// Baked/Custom
 		std::vector<Vector3> spawnPositions;  // SpawnPosition
 		UINT totalSpawnPosCount = 0;          // SpawnPosition
-		std::string bakedPosKey;              // Combined baked path key for pool-level caching
+		std::wstring bakedPosKey;             // Combined baked/custom position key for pool-level caching
 		bool hasCustomPositions = false;      // True if any emitter uses custom positions
 	};
 

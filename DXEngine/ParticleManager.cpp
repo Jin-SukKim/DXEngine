@@ -517,10 +517,10 @@ namespace DE {
 		UINT particleCount = clonedPtr->GetTotalParticleCount();
 		UINT emitterCount = clonedPtr->GetMaxEmitterCount();
 
-		// Pool-level spawn pos caching for baked paths (no custom positions)
+		// Pool-level spawn pos caching for both baked and custom positions
 		bool spawnPosCacheHit = false;
 		UINT cachedSpawnPosOffset = UINT_MAX;
-		if (!initialData.bakedPosKey.empty() && !initialData.hasCustomPositions && spawnPosCount > 0) {
+		if (!initialData.bakedPosKey.empty() && spawnPosCount > 0) {
 			spawnPosCacheHit = m_memoryPool->AllocateSpawnPosForBakedPath(
 				initialData.bakedPosKey, spawnPosCount, cachedSpawnPosOffset);
 		}

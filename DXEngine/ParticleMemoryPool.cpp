@@ -666,7 +666,7 @@ namespace DE {
 		return false;  // Need upload
 	}
 
-	bool ParticleMemoryPool::AllocateSpawnPosForBakedPath(const std::string& bakedPath, UINT posCount, UINT& outOffset)
+	bool ParticleMemoryPool::AllocateSpawnPosForBakedPath(const std::wstring& bakedPath, UINT posCount, UINT& outOffset)
 	{
 		// Check cache first
 		auto it = m_spawnPosCache.find(bakedPath);

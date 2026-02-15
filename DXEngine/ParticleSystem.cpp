@@ -715,8 +715,12 @@ namespace DE {
 		if (!emitter->GetBakedPath().empty()) {
 			// Track baked path key for pool-level caching
 			if (!initialData.bakedPosKey.empty())
-				initialData.bakedPosKey += "|";
-			initialData.bakedPosKey += emitter->GetBakedPath();
+				initialData.bakedPosKey += L"|";
+
+			// Convert string to wstring
+			const auto& bakedPath = emitter->GetBakedPath();
+			std::wstring wBakedPath(bakedPath.begin(), bakedPath.end());
+			initialData.bakedPosKey += wBakedPath;
 
 			UINT bakedCount = emitter->LoadBakedSpawnData(initialData.spawnPositions);
 			pConsts.spawn.bakedCount = bakedCount;
@@ -732,6 +736,15 @@ namespace DE {
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
 
 			const auto& positions = emitter->GetCustomPositions();
+
+			// Generate key: "<jsonPath>_<emitterName>" for custom position caching
+			std::wstring customKey = m_jsonPath + L"_" + emitter->GetName();
+			if (!customKey.empty()) {
+				if (!initialData.bakedPosKey.empty())
+					initialData.bakedPosKey += L"|";
+				initialData.bakedPosKey += customKey;
+			}
+
 			for (const auto& pos : positions)
 				initialData.spawnPositions.push_back(pos);
 
