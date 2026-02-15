@@ -285,12 +285,27 @@ namespace DE {
 		for (UINT id : handle.emitterIDs)
 			m_freeEmitterSlots.push(id);
 
-		// SpawnPos blocks - Map-based O(log m) erase
+		// SpawnPos blocks - ref counted for baked paths
 		if (handle.spawnPosOffset != UINT_MAX) {
-			startBlock = handle.spawnPosOffset / m_blockSize;
-			auto spawnIt = m_spawnPosBlockMap.find(startBlock);
-			if (spawnIt != m_spawnPosBlockMap.end()) {
-				m_spawnPosBlockMap.erase(spawnIt);
+			if (!handle.bakedPosKey.empty()) {
+				// Baked path: decrement refCount, only free when 0
+				auto cacheIt = m_spawnPosCache.find(handle.bakedPosKey);
+				if (cacheIt != m_spawnPosCache.end()) {
+					cacheIt->second.refCount--;
+					if (cacheIt->second.refCount == 0) {
+						startBlock = cacheIt->second.offset / m_blockSize;
+						m_spawnPosBlockMap.erase(startBlock);
+						m_spawnPosCache.erase(cacheIt);
+					}
+				}
+			}
+			else {
+				// Custom positions: free immediately
+				startBlock = handle.spawnPosOffset / m_blockSize;
+				auto spawnIt = m_spawnPosBlockMap.find(startBlock);
+				if (spawnIt != m_spawnPosBlockMap.end()) {
+					m_spawnPosBlockMap.erase(spawnIt);
+				}
 			}
 		}
 
@@ -648,6 +663,56 @@ namespace DE {
 
 		outVertexOffset = vOffset;
 		outIndexOffset = iOffset;
+		return false;  // Need upload
+	}
+
+	bool ParticleMemoryPool::AllocateSpawnPosForBakedPath(const std::string& bakedPath, UINT posCount, UINT& outOffset)
+	{
+		// Check cache first
+		auto it = m_spawnPosCache.find(bakedPath);
+		if (it != m_spawnPosCache.end()) {
+			SpawnPosAllocation& alloc = it->second;
+			if (alloc.count == posCount) {
+				alloc.refCount++;
+				outOffset = alloc.offset;
+				return true;  // Cache HIT - skip upload
+			}
+			// Count mismatch - invalidate
+			alloc.refCount--;
+			if (alloc.refCount == 0) {
+				UINT startBlock = alloc.offset / m_blockSize;
+				m_spawnPosBlockMap.erase(startBlock);
+				m_spawnPosCache.erase(it);
+			}
+		}
+
+		// Cache MISS - allocate blocks via m_spawnPosBlockMap
+		UINT neededBlocks = (posCount + m_blockSize - 1) / m_blockSize;
+		UINT foundBlock = UINT_MAX;
+
+		UINT searchStart = 0;
+		for (const auto& [allocatedStart, allocatedCount] : m_spawnPosBlockMap) {
+			if (allocatedStart >= searchStart + neededBlocks) {
+				foundBlock = searchStart;
+				break;
+			}
+			searchStart = allocatedStart + allocatedCount;
+		}
+		if (foundBlock == UINT_MAX && searchStart + neededBlocks <= m_blockCount) {
+			foundBlock = searchStart;
+		}
+
+		if (foundBlock == UINT_MAX) {
+			outOffset = UINT_MAX;
+			return false;
+		}
+
+		m_spawnPosBlockMap[foundBlock] = neededBlocks;
+		outOffset = foundBlock * m_blockSize;
+
+		m_spawnPosCache[bakedPath] = SpawnPosAllocation(outOffset, posCount, neededBlocks);
+
+		m_visualizationDirty = true;
 		return false;  // Need upload
 	}
 

@@ -22,6 +22,7 @@ struct PoolHandle {
 	UINT meshIndexOffset = UINT_MAX;
 	UINT meshIndexCount = 0;
 	int modelIdx = -1;  // Track which model this handle uses (-1 = custom mesh)
+	std::string bakedPosKey;  // Track which spawn pos cache entry this handle uses
 
 	bool IsActive() const {
 		return particleOffset != UINT_MAX && !emitterIDs.empty() && systemSlot != UINT_MAX;
@@ -44,6 +45,19 @@ struct ParticleMeshConsts {
 	UINT indexCount;
 	UINT vertexOffset;
 	UINT indexOffset;
+};
+
+struct SpawnPosAllocation {
+	UINT offset;
+	UINT count;
+	UINT blockCount;
+	UINT refCount;
+
+	SpawnPosAllocation()
+		: offset(UINT_MAX), count(0), blockCount(0), refCount(0) {}
+
+	SpawnPosAllocation(UINT off, UINT cnt, UINT blocks)
+		: offset(off), count(cnt), blockCount(blocks), refCount(1) {}
 };
 
 struct MeshAllocation {
@@ -100,6 +114,7 @@ public:
 	UINT AllocateMeshIndices(UINT count);
 	bool AllocateMeshForModel(int modelIdx, UINT vertexCount, UINT indexCount,
 	                          UINT& outVertexOffset, UINT& outIndexOffset);
+	bool AllocateSpawnPosForBakedPath(const std::string& bakedPath, UINT posCount, UINT& outOffset);
 
 	// EmitterID ConstantBuffer
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
@@ -255,6 +270,9 @@ private:
 
 	// Model-based mesh caching (modelIdx -> allocation info)
 	std::map<int, MeshAllocation> m_meshCache;
+
+	// Baked spawn position caching (bakedPath -> allocation info)
+	std::map<std::string, SpawnPosAllocation> m_spawnPosCache;
 
 	// Block Allocator - Map-based (startBlock -> blockCount)
 	std::map<UINT, UINT> m_particleBlockMap;

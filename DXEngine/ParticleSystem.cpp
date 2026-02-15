@@ -68,7 +68,6 @@ namespace DE {
 		m_maxEmitters = 0;
 		m_currentEmitterIndex = 0;
 		m_currentSpawnPosOffset = 0;  // յ offset
-		m_spawnPosCache.clear();      // յ ĳ
 		m_subEmitterPool.clear();
 		m_meshEmitters.clear();
 		m_billboardEmitters.clear();
@@ -139,7 +138,7 @@ namespace DE {
 		});
 
 		// SpawnPosition 
-		RegisterSpawnPositions(emitter, initialData.spawnPositions, pConsts, eID);
+		RegisterSpawnPositions(emitter, initialData, pConsts, eID);
 
 		UINT capacity = pfConsts.maxParticles;
 
@@ -706,40 +705,36 @@ namespace DE {
 	}
 
 	void ParticleSystem::RegisterSpawnPositions(
-		ParticleEmitter* emitter, 
-		std::vector<Vector3>& outPositions, 
-		ParticleConsts& pConsts, 
+		ParticleEmitter* emitter,
+		ParticleInitializer& initialData,
+		ParticleConsts& pConsts,
 		EmitterID& eID)
 	{
-		eID.spawnPosOffset = UINT_MAX; 
-		
+		eID.spawnPosOffset = UINT_MAX;
+
 		if (!emitter->GetBakedPath().empty()) {
-			auto it = m_spawnPosCache.find(emitter->GetBakedPath());
-			if (it != m_spawnPosCache.end()) {
-				emitter->SetSpawnPosInfo(it->second.first);
-				eID.spawnPosOffset = it->second.first;
-				pConsts.spawn.bakedCount = it->second.second;
-				return;
-			}
+			// Track baked path key for pool-level caching
+			if (!initialData.bakedPosKey.empty())
+				initialData.bakedPosKey += "|";
+			initialData.bakedPosKey += emitter->GetBakedPath();
+
+			UINT bakedCount = emitter->LoadBakedSpawnData(initialData.spawnPositions);
+			pConsts.spawn.bakedCount = bakedCount;
+			eID.spawnPosOffset = m_currentSpawnPosOffset;
+			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
+			m_currentSpawnPosOffset += bakedCount;
+		}
+		// Custom Position
+		else if (emitter->IsUsingCustomPositions()) {
+			initialData.hasCustomPositions = true;
 
 			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
 			eID.spawnPosOffset = m_currentSpawnPosOffset;
-			
-			UINT bakedCount = emitter->LoadBakedSpawnData(outPositions);
-			pConsts.spawn.bakedCount = bakedCount;
-			
-			m_spawnPosCache[emitter->GetBakedPath()] = { m_currentSpawnPosOffset, bakedCount };
-			m_currentSpawnPosOffset += bakedCount;
-		}
-		// Custom Position ó
-		else if (emitter->IsUsingCustomPositions()) {
-			emitter->SetSpawnPosInfo(m_currentSpawnPosOffset);
-			eID.spawnPosOffset = m_currentSpawnPosOffset;
-			
+
 			const auto& positions = emitter->GetCustomPositions();
 			for (const auto& pos : positions)
-				outPositions.push_back(pos);
-			
+				initialData.spawnPositions.push_back(pos);
+
 			pConsts.spawn.bakedCount = static_cast<UINT>(positions.size());
 			m_currentSpawnPosOffset += static_cast<UINT>(positions.size());
 		}

@@ -19,9 +19,11 @@ namespace DE {
 		std::vector<DrawIndexedInstancedArgs> initMeshArgs;
 		std::vector<EmitterID> emitterIDs;
 
-		// Baked/Custom 
-		std::vector<Vector3> spawnPositions;  // յ SpawnPosition
-		UINT totalSpawnPosCount = 0;          //  SpawnPosition 
+		// Baked/Custom
+		std::vector<Vector3> spawnPositions;  // SpawnPosition
+		UINT totalSpawnPosCount = 0;          // SpawnPosition
+		std::string bakedPosKey;              // Combined baked path key for pool-level caching
+		bool hasCustomPositions = false;      // True if any emitter uses custom positions
 	};
 
 	class ParticleSystem : public Object
@@ -118,7 +120,7 @@ namespace DE {
 		void ExecutePreWarm(IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
 		void UpdateTransform();
 
-		void RegisterSpawnPositions(ParticleEmitter* emitter, std::vector<Vector3>& outPositions, ParticleConsts& pConsts, EmitterID& eID);
+		void RegisterSpawnPositions(ParticleEmitter* emitter, ParticleInitializer& initialData, ParticleConsts& pConsts, EmitterID& eID);
 
 		// SubEmitter
 		void OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter);
@@ -163,9 +165,7 @@ namespace DE {
 		UINT m_maxTotalParticles = 0;
 		UINT m_maxEmitters = 0;
 
-		// SpawnPosition 
 		UINT m_currentSpawnPosOffset = 0;
-		std::unordered_map<std::string, std::pair<UINT, UINT>> m_spawnPosCache;  // path -> (offset, count)
 
 		IndirectArgsBuffer<DispatchArgs>* m_dispatchArgs = nullptr;
 		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_billboardArgsBuffer = nullptr;

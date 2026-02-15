@@ -517,16 +517,32 @@ namespace DE {
 		UINT particleCount = clonedPtr->GetTotalParticleCount();
 		UINT emitterCount = clonedPtr->GetMaxEmitterCount();
 
-		PoolHandle handle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
+		// Pool-level spawn pos caching for baked paths (no custom positions)
+		bool spawnPosCacheHit = false;
+		UINT cachedSpawnPosOffset = UINT_MAX;
+		if (!initialData.bakedPosKey.empty() && !initialData.hasCustomPositions && spawnPosCount > 0) {
+			spawnPosCacheHit = m_memoryPool->AllocateSpawnPosForBakedPath(
+				initialData.bakedPosKey, spawnPosCount, cachedSpawnPosOffset);
+		}
+
+		// If cache hit, skip spawn pos block allocation
+		UINT allocSpawnPosCount = (cachedSpawnPosOffset != UINT_MAX) ? 0 : spawnPosCount;
+		PoolHandle handle = RequestAllocation(particleCount, emitterCount, allocSpawnPosCount);
 
 		// Try eviction if allocation failed
 		if (!handle.IsActive())
 		{
-			if (!TryEvictAndRetry(particleCount, emitterCount, spawnPosCount, handle))
+			if (!TryEvictAndRetry(particleCount, emitterCount, allocSpawnPosCount, handle))
 			{
 				// Still failed after eviction attempts
 				return nullptr;
 			}
+		}
+
+		// Apply cached spawn pos offset
+		if (cachedSpawnPosOffset != UINT_MAX) {
+			handle.spawnPosOffset = cachedSpawnPosOffset;
+			handle.bakedPosKey = initialData.bakedPosKey;
 		}
 
 		// Set creation timestamp
@@ -535,7 +551,7 @@ namespace DE {
 		clonedPtr->SetPoolHandle(handle);
 
 		// 4. GPU Resource Upload
-		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX)
+		if (!initialData.spawnPositions.empty() && handle.spawnPosOffset != UINT_MAX && !spawnPosCacheHit)
 		{
 			m_memoryPool->UploadSpawnPositions(handle.spawnPosOffset, initialData.spawnPositions);
 		}
