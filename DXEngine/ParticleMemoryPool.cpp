@@ -294,6 +294,19 @@ namespace DE {
 			}
 		}
 
+	// Decrement mesh cache reference count
+	if (handle.modelIdx >= 0) {
+		auto it = m_meshCache.find(handle.modelIdx);
+		if (it != m_meshCache.end()) {
+			it->second.refCount--;
+
+			// Immediate reclamation when no references remain
+			if (it->second.refCount == 0) {
+				m_meshCache.erase(it);
+			}
+		}
+	}
+
 		// Invalidate caches
 		m_fragmentationDirty = true;
 		m_visualizationDirty = true;
@@ -597,6 +610,45 @@ namespace DE {
 		UINT offset = m_meshIndexNextOffset;
 		m_meshIndexNextOffset += count;
 		return offset;
+	}
+
+	bool ParticleMemoryPool::AllocateMeshForModel(int modelIdx, UINT vertexCount, UINT indexCount,
+	                                               UINT& outVertexOffset, UINT& outIndexOffset)
+	{
+		// Check cache first
+		auto it = m_meshCache.find(modelIdx);
+		if (it != m_meshCache.end()) {
+			MeshAllocation& alloc = it->second;
+
+			// Validate sizes match (detect model reloads)
+			if (alloc.vertexCount == vertexCount && alloc.indexCount == indexCount) {
+				alloc.refCount++;
+				outVertexOffset = alloc.vertexOffset;
+				outIndexOffset = alloc.indexOffset;
+				return true;  // Cache HIT - skip upload
+			}
+
+			// Model size changed - invalidate cache
+			alloc.refCount--;
+			if (alloc.refCount == 0) {
+				m_meshCache.erase(it);
+			}
+		}
+
+		// Cache MISS - allocate new memory
+		UINT vOffset = AllocateMeshVertices(vertexCount);
+		UINT iOffset = AllocateMeshIndices(indexCount);
+
+		if (vOffset == UINT_MAX || iOffset == UINT_MAX) {
+			return false;  // Out of memory
+		}
+
+		// Add to cache
+		m_meshCache[modelIdx] = MeshAllocation(vOffset, iOffset, vertexCount, indexCount);
+
+		outVertexOffset = vOffset;
+		outIndexOffset = iOffset;
+		return false;  // Need upload
 	}
 
 	void ParticleMemoryPool::UpdateEmitterID(UINT slotIndex, const EmitterID& data)

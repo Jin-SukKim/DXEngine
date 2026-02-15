@@ -21,6 +21,7 @@ struct PoolHandle {
 	UINT meshVertexCount = 0;
 	UINT meshIndexOffset = UINT_MAX;
 	UINT meshIndexCount = 0;
+	int modelIdx = -1;  // Track which model this handle uses (-1 = custom mesh)
 
 	bool IsActive() const {
 		return particleOffset != UINT_MAX && !emitterIDs.empty() && systemSlot != UINT_MAX;
@@ -43,6 +44,28 @@ struct ParticleMeshConsts {
 	UINT indexCount;
 	UINT vertexOffset;
 	UINT indexOffset;
+};
+
+struct MeshAllocation {
+	UINT vertexOffset;
+	UINT indexOffset;
+	UINT vertexCount;
+	UINT indexCount;
+	UINT refCount;
+
+	MeshAllocation()
+		: vertexOffset(UINT_MAX)
+		, indexOffset(UINT_MAX)
+		, vertexCount(0)
+		, indexCount(0)
+		, refCount(0) {}
+
+	MeshAllocation(UINT vOffset, UINT iOffset, UINT vCount, UINT iCount)
+		: vertexOffset(vOffset)
+		, indexOffset(iOffset)
+		, vertexCount(vCount)
+		, indexCount(iCount)
+		, refCount(1) {}
 };
 
 class ParticleMemoryPool
@@ -75,6 +98,8 @@ public:
 	void UploadMeshIndices(UINT offset, const std::vector<uint32_t>& indices);
 	UINT AllocateMeshVertices(UINT count);
 	UINT AllocateMeshIndices(UINT count);
+	bool AllocateMeshForModel(int modelIdx, UINT vertexCount, UINT indexCount,
+	                          UINT& outVertexOffset, UINT& outIndexOffset);
 
 	// EmitterID ConstantBuffer
 	void UpdateEmitterID(UINT slotIndex, const EmitterID& data);
@@ -227,6 +252,9 @@ private:
 	UINT m_meshIndexPoolCapacity = 1500000;
 	UINT m_meshVertexNextOffset = 0;
 	UINT m_meshIndexNextOffset = 0;
+
+	// Model-based mesh caching (modelIdx -> allocation info)
+	std::map<int, MeshAllocation> m_meshCache;
 
 	// Block Allocator - Map-based (startBlock -> blockCount)
 	std::map<UINT, UINT> m_particleBlockMap;

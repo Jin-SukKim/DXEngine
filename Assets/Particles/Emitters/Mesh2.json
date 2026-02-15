@@ -1,7 +1,7 @@
 {
   "Name": "Mesh",
   "Spawn": {
-    "shape": "Surface",
+    "shape": "Vertex",
     "localPos": [ 0, 0, 0.0 ],
     "spawnVolume": [ 0.15, 0.1, 0.15 ],
     "spawnInnerRatio": 0.99,

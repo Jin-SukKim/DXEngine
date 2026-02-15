@@ -558,32 +558,37 @@ namespace DE {
 		UINT vertexCount = static_cast<UINT>(meshes.vertexCPU.size());
 		UINT indexCount = static_cast<UINT>(meshes.indexCPU.size());
 
-		std::vector<Vector3> vertices;
-		vertices.reserve(vertexCount);
-		for (const auto& vertex : meshes.vertexCPU)
-			vertices.push_back(vertex.position);
-
 		auto& pool = ParticleManager::Get().GetMemoryPool();
 
-		// Allocate from pool if not yet allocated
-		if (m_poolHandle.meshVertexOffset == UINT_MAX) {
-			m_poolHandle.meshVertexOffset = pool.AllocateMeshVertices(vertexCount);
-			m_poolHandle.meshIndexOffset = pool.AllocateMeshIndices(indexCount);
-		}
+		// Use new model-based allocation
+		UINT vertexOffset, indexOffset;
+		bool cacheHit = pool.AllocateMeshForModel(modelIdx, vertexCount, indexCount,
+		                                           vertexOffset, indexOffset);
 
-		if (m_poolHandle.meshVertexOffset == UINT_MAX || m_poolHandle.meshIndexOffset == UINT_MAX)
-			return;
+		if (vertexOffset == UINT_MAX || indexOffset == UINT_MAX)
+			return;  // Allocation failed
 
-		pool.UploadMeshVertices(m_poolHandle.meshVertexOffset, vertices);
-		pool.UploadMeshIndices(m_poolHandle.meshIndexOffset, meshes.indexCPU);
-
+		m_poolHandle.meshVertexOffset = vertexOffset;
+		m_poolHandle.meshIndexOffset = indexOffset;
 		m_poolHandle.meshVertexCount = vertexCount;
 		m_poolHandle.meshIndexCount = indexCount;
+		m_poolHandle.modelIdx = modelIdx;  // Track for cleanup
+
+		// Skip upload if cache hit (data already in GPU buffer)
+		if (!cacheHit) {
+			std::vector<Vector3> vertices;
+			vertices.reserve(vertexCount);
+			for (const auto& vertex : meshes.vertexCPU)
+				vertices.push_back(vertex.position);
+
+			pool.UploadMeshVertices(vertexOffset, vertices);
+			pool.UploadMeshIndices(indexOffset, meshes.indexCPU);
+		}
 
 		m_meshConsts.vertexCount = vertexCount;
 		m_meshConsts.indexCount = indexCount;
-		m_meshConsts.vertexOffset = m_poolHandle.meshVertexOffset;
-		m_meshConsts.indexOffset = m_poolHandle.meshIndexOffset;
+		m_meshConsts.vertexOffset = vertexOffset;
+		m_meshConsts.indexOffset = indexOffset;
 
 		ParticleManager::Get().UpdateMeshConsts(m_poolHandle.systemSlot, m_meshConsts);
 	}
