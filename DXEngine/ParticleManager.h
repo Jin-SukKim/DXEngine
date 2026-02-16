@@ -4,6 +4,7 @@
 #include <queue>
 
 namespace DE {
+	enum class BlendMode;
 
 	struct ParticlePreset {
 		std::unique_ptr<ParticleSystem> prototype;
@@ -29,6 +30,7 @@ namespace DE {
 	struct BatchGroup {
 		int materialKey; // Material Key
 		int modelIndex; // 모델 Key
+		BlendMode blendMode;
 		std::vector<UINT> emitterIDs;
 		UINT instanceOffset;
 	};

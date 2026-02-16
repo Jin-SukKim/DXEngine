@@ -7,8 +7,23 @@
 #include "TextureManager.h"
 #include <DirectXCollision.h> // [Added] For Frustum Culling
 #include "MaterialSystem.h"
+#include "RenderModule.h"
 
 namespace DE {
+	namespace {
+		ID3D11BlendState* GetBlendState(BlendMode mode) {
+			switch (mode) {
+				case BlendMode::Opaque:
+					return nullptr;
+				case BlendMode::Additive:
+					return RenderBase::graphicsCommon.accumulateBS.Get();
+				case BlendMode::AlphaBlend:
+					return RenderBase::graphicsCommon.alphaBS.Get();
+				default:
+					return RenderBase::graphicsCommon.accumulateBS.Get();
+			}
+		}
+	}
 	void ParticleManager::Initialize()
 	{
 		m_memoryPool = std::make_unique<ParticleMemoryPool>();
@@ -178,6 +193,18 @@ namespace DE {
 			});
 		std::sort(m_billboardJobs.begin(), m_billboardJobs.end(),
 			[](const EmitterJob& a, const EmitterJob& b) {
+				RenderModule* renderA = a.emitter->GetModule<RenderModule>();
+				RenderModule* renderB = b.emitter->GetModule<RenderModule>();
+
+				BlendMode blendA = renderA ? renderA->blendMode : BlendMode::Additive;
+				BlendMode blendB = renderB ? renderB->blendMode : BlendMode::Additive;
+
+				// Enum 순서가 렌더링 순서와 일치 - 직접 비교
+				if (blendA != blendB) {
+					return blendA < blendB;  // Opaque(0) < Additive(1) < AlphaBlend(2)
+				}
+
+				// 같은 BlendMode이면 materialKey로 정렬 (배칭 효율)
 				return a.materialKey < b.materialKey;
 			});
 
@@ -387,7 +414,6 @@ namespace DE {
 		if (m_billboardBatches.empty()) return;
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
-		context->OMSetBlendState(RenderBase::graphicsCommon.accumulateBS.Get(), RenderBase::graphicsCommon.particle.animPSO.blendFactor, 0xffffffff);
 
 		ID3D11ShaderResourceView* batchSRVs[] = {
 			m_memoryPool->GetBatchEmitterList().GetSRV(),
@@ -395,12 +421,22 @@ namespace DE {
 		};
 		context->VSSetShaderResources(24, 2, batchSRVs);
 
+		BlendMode lastBlendMode = static_cast<BlendMode>(-1);
+
 		// Material이 변경될때만 Binding해서 렌더링
 		for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
 			const auto& batch = m_billboardBatches[batchIdx];
 			// Billboard는 Mesh Batch 뒤에 저장했으므로 Billboard Batch의 시작 위치 더해주기
 			UINT globalBatchIdx = m_billboardDescStartIdx + static_cast<UINT>(batchIdx);
 			const auto& desc = m_batchDescriptors[globalBatchIdx];
+
+			// BlendMode 변경 시에만 BlendState 설정
+			if (batch.blendMode != lastBlendMode) {
+				lastBlendMode = batch.blendMode;
+				context->OMSetBlendState(GetBlendState(batch.blendMode),
+					RenderBase::graphicsCommon.particle.animPSO.blendFactor,
+					0xffffffff);
+			}
 
 			if (batch.materialKey < 0) {
 				m_memoryPool->BindDefaultParticleMaterial();
@@ -608,6 +644,7 @@ namespace DE {
 		BatchGroup noMaterialBatch;
 		noMaterialBatch.materialKey = -1;
 		noMaterialBatch.modelIndex = -1;
+		noMaterialBatch.blendMode = BlendMode::Additive;
 		noMaterialBatch.instanceOffset = 0;
 
 		std::vector<EmitterJob> materialJobs;  // Jobs with valid materials
@@ -625,24 +662,32 @@ namespace DE {
 			outBatches.push_back(noMaterialBatch);
 		}
 
-		// Phase 2: Build material batches (existing logic)
+		// Phase 2: Build material batches - group by materialKey AND BlendMode
 		if (materialJobs.empty()) return;
 
+		// 첫 번째 배치 초기화
+		RenderModule* firstRender = materialJobs[0].emitter->GetModule<RenderModule>();
 		BatchGroup currentBatch;
 		currentBatch.materialKey = materialJobs[0].materialKey;
 		currentBatch.modelIndex = -1;
+		currentBatch.blendMode = firstRender ? firstRender->blendMode : BlendMode::Additive;
 		currentBatch.emitterIDs.push_back(materialJobs[0].globalEmitterID);
 		currentBatch.instanceOffset = 0;
 
 		for (size_t i = 1; i < materialJobs.size(); ++i) {
-			if (materialJobs[i].materialKey == currentBatch.materialKey) {
-				// Same material - add to current batch
+			RenderModule* renderMod = materialJobs[i].emitter->GetModule<RenderModule>();
+			BlendMode jobBlendMode = renderMod ? renderMod->blendMode : BlendMode::Additive;
+
+			if (materialJobs[i].materialKey == currentBatch.materialKey &&
+				jobBlendMode == currentBatch.blendMode) {
+				// 같은 Material & BlendMode - 현재 배치에 추가
 				currentBatch.emitterIDs.push_back(materialJobs[i].globalEmitterID);
 			} else {
-				// Different material - finish current batch and start new one
+				// 다른 Material 또는 BlendMode - 새 배치 생성
 				outBatches.push_back(currentBatch);
 				currentBatch.materialKey = materialJobs[i].materialKey;
 				currentBatch.modelIndex = -1;
+				currentBatch.blendMode = jobBlendMode;
 				currentBatch.emitterIDs.clear();
 				currentBatch.emitterIDs.push_back(materialJobs[i].globalEmitterID);
 			}

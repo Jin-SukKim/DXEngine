@@ -3,9 +3,9 @@
 
 namespace DE {
 enum class BlendMode {
-	Additive,
-	AlphaBlend,
-	Opaque,
+	Opaque,      // 0 - 먼저 렌더링
+	Additive,    // 1 - 중간 렌더링
+	AlphaBlend,  // 2 - 마지막 렌더링
 };
 
 class RenderModule : public ParticleModule
