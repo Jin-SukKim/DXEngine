@@ -77,10 +77,6 @@ ParticlePSInput main(VSParticleInput input)
     // 쿼드 로컬 오프셋 (-1~1 범위)
     float2 quadOffset = input.position.xy; // MakeSquare()는 -1~1 범위
 
-    // 회전 적용
-    float2x2 rotMatrix = GetRotationMatrix2D(p.rotation.x);
-    float2 rotatedOffset = mul(rotMatrix, quadOffset);
-
     // 크기 적용 (파티클 크기의 절반)
     float halfSize = p.size * 0.5;
 
@@ -94,7 +90,35 @@ ParticlePSInput main(VSParticleInput input)
         halfSize *= sizeFactor;
     }
 
-    viewPos.xy += rotatedOffset * halfSize;
+    // Velocity Stretch Billboard
+    float stretchFactor = consts[emitterSlotID].render.velocityStretchFactor;
+    float3 worldVel = p.velocity;
+    if (spawn.simulationSpace == 0)
+    {
+        // Local Space → World Space
+        worldVel = mul(float4(worldVel, 0.0), meshConsts[p.systemID].pWorld).xyz;
+    }
+    float3 viewVel = mul(float4(worldVel, 0.0), view).xyz;
+    float speed2D = length(viewVel.xy);
+
+    if (stretchFactor > 0.0 && speed2D > 0.001)
+    {
+        // 속도 방향과 수직 방향 계산
+        float2 velDir = viewVel.xy / speed2D;
+        float2 velPerp = float2(-velDir.y, velDir.x);
+
+        // 속도 방향으로 스트레치
+        float stretchAmount = 1.0 + speed2D * stretchFactor;
+        viewPos.xy += (quadOffset.x * velDir * stretchAmount
+                     + quadOffset.y * velPerp) * halfSize;
+    }
+    else
+    {
+        // 기존 회전 빌보드
+        float2x2 rotMatrix = GetRotationMatrix2D(p.rotation.x);
+        float2 rotatedOffset = mul(rotMatrix, quadOffset);
+        viewPos.xy += rotatedOffset * halfSize;
+    }
 
     // Projection
     output.pos = mul(viewPos, proj);

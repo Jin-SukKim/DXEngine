@@ -126,6 +126,7 @@ struct RenderConsts
     float softDistance;     // Soft particle fade distance (0 = disabled)
     uint frameBlending;
     float animTime;
+    float velocityStretchFactor; // 0 = disabled
 };
 
 struct VortexConsts

@@ -43,7 +43,7 @@
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
 	{
-		// ... (±âÁ¸ ¸ðµâ µî·Ï ÄÚµå´Â À¯Áö) ...
+		// ... (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) ...
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
 		ParticleModuleFactory::Register<VisualModule>("Visual");
 		ParticleModuleFactory::Register<ForceModule>("Force");
@@ -57,14 +57,14 @@ namespace DE {
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
 
-		//// ±âÁ¸ Spawner´Â Àá½Ã ²¨µÎ°Å³ª À¯ÁöÇØµµ µÊ (¿©±â¼± À¯Áö)
-		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spanwer->SetScene(this);
-		//m_spanwer->SetActorType<Firework>();
-		//m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		//m_spanwer->SetSpawnInterval(0.01f);
-		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		//m_spanwer->SetMaxActiveParticles(3000);
+		// ï¿½ï¿½ï¿½ï¿½ Spawnerï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ ï¿½ï¿½ (ï¿½ï¿½ï¿½â¼± ï¿½ï¿½ï¿½ï¿½)
+		m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		m_spanwer->SetScene(this);
+		m_spanwer->SetActorType<Firework>();
+		m_spanwer->SetSpawnMode(SpawnMode::Interval);
+		m_spanwer->SetSpawnInterval(0.1f);
+		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		m_spanwer->SetMaxActiveParticles(1000);
 
 		//m_spanwer2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		//m_spanwer2->SetScene(this);
@@ -76,11 +76,11 @@ namespace DE {
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		// [½Ã³ª¸®¿À ½ÃÀÛ] 1¹ø Å¸ÀÚ: Áö¼Ó ÀÌÆåÆ® (HolySword)
+		// [ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½] 1ï¿½ï¿½ Å¸ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\SmokeEffect.json");
 
-		// m_test2´Â ½Ã³ª¸®¿À Áß°£(15ÃÊ)¿¡ »ý¼ºÇÏ±â À§ÇØ ºñ¿öµÒ
+		// m_test2ï¿½ï¿½ ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½(15ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
@@ -89,13 +89,18 @@ namespace DE {
 		//}
 
 		//m_smoke = AddObject<SmokeActor>(L"SmokeEffect");
+
+		m_metalSpark = SpawnEffect<EffectActor>(L"MetalSpark", L"Particles\\MetalSparkEffect.json", Vector3(0.f, 0.f, 3.f));
+		m_sparkBurst = SpawnEffect<EffectActor>(L"SparkBurst", L"Particles\\SparkBurstEffect.json", Vector3(3.f, 0.f, 0.f));
+		m_ember = SpawnEffect<EffectActor>(L"Ember", L"Particles\\EmberEffect.json", Vector3(-3.f, 0.f, 0.f));
+
 		m_sample = AddObject<SampleActor>(L"SampleActor");
 
 	}
 
 	ParticleEditor::~ParticleEditor()
 	{
-		// ¼Ò¸ê ½Ã ±ò²ûÇÏ°Ô Á¤¸®
+		// ï¿½Ò¸ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (m_test1) {
 			ParticleManager::Get().DestroyInstance(m_test1);
 			m_test1 = nullptr;
@@ -121,19 +126,19 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		float spacing = 2.0f; // °£°Ý (ÇÊ¿ä¿¡ µû¶ó Á¶Àý)
-		int width = 32;       // ÇÑ ÁÙ¿¡ ¹èÄ¡ÇÒ °³¼ö (¿­ÀÇ °³¼ö)
+		float spacing = 2.0f; // ï¿½ï¿½ï¿½ï¿½ (ï¿½Ê¿ä¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+		int width = 32;       // ï¿½ï¿½ ï¿½Ù¿ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 
 		//for (int i = 0; i < 1000; ++i) {
 		//	auto tr = m_fireTests[i]->GetComponent<TransformComponent>();
 		//	if (tr) {
-		//		// x´Â ³ª¸ÓÁö ¿¬»êÀ¸·Î 0 ~ 31 ¹Ýº¹
+		//		// xï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0 ~ 31 ï¿½Ýºï¿½
 		//		int x = i % width;
 
-		//		// z´Â ³ª´°¼À ¿¬»êÀ¸·Î 32°³¸¶´Ù 1¾¿ Áõ°¡ (ÁÙ¹Ù²Þ)
+		//		// zï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 32ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ù¹Ù²ï¿½)
 		//		int z = i / width;
 
-		//		// Vector3(xÁÂÇ¥, ³ôÀÌ, zÁÂÇ¥) * °£°Ý
+		//		// Vector3(xï¿½ï¿½Ç¥, ï¿½ï¿½ï¿½ï¿½, zï¿½ï¿½Ç¥) * ï¿½ï¿½ï¿½ï¿½
 		//		tr->SetPos(Vector3(x * spacing, 0.0f, z * spacing));
 		//	}
 		//}
@@ -163,17 +168,17 @@ namespace DE {
 
 		static float burstTimer = 0.0f;
 		static float spawnTimer = 0.0f;
-		static float randomDeleteTimer = 0.0f; // [Ãß°¡] ·£´ý »èÁ¦¿ë Å¸ÀÌ¸Ó
+		static float randomDeleteTimer = 0.0f; // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ì¸ï¿½
 
-											   // 1. [0~5ÃÊ] Æò¿ÂÇÑ »óÅÂ (HolySword¸¸ Àç»ýµÊ)
+											   // 1. [0~5ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (HolySwordï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-											   // 2. [5~10ÃÊ] ¼ø°£ÀûÀÎ ÀÌÆåÆ® (Firework) 0.5ÃÊ¸¶´Ù Æø¹ß
+											   // 2. [5~10ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (Firework) 0.5ï¿½Ê¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (m_stressTime >= 5.0f && m_stressTime < 10.0f) {
 			burstTimer += dt;
 			if (burstTimer >= 0.5f) {
 				burstTimer = 0.0f;
 				
-				// ·£´ý À§Ä¡ »ý¼º (-50 ~ 50 ¹üÀ§)
+				// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ (-50 ~ 50 ï¿½ï¿½ï¿½ï¿½)
 				Vector3 randomPos(
 					(rand() % 100 - 50) * 1.0f,
 					(rand() % 20) * 1.0f,
@@ -184,7 +189,7 @@ namespace DE {
 			}
 		}
 
-		// 3. [10~15ÃÊ] °è¼Ó ½ºÆùµÇ´Â ÀÌÆåÆ® (Smoke) 0.1ÃÊ¸¶´Ù ´ë·® »ý¼º
+		// 3. [10~15ï¿½ï¿½] ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (Smoke) 0.1ï¿½Ê¸ï¿½ï¿½ï¿½ ï¿½ë·® ï¿½ï¿½ï¿½ï¿½
 		if (m_stressTime >= 10.0f && m_stressTime < 15.0f) {
 			spawnTimer += dt;
 			if (spawnTimer >= 0.1f) {
@@ -200,22 +205,22 @@ namespace DE {
 			}
 		}
 
-		// [½Å±Ô] 4. [5~25ÃÊ Àü±¸°£] ·£´ýÇÏ°Ô ¼±ÅÃµÈ Effect ´Ù¼ö »èÁ¦ (Cluster Deletion)
-		// 0.8ÃÊ¸¶´Ù "3°³ ~ 8°³" Á¤µµÀÇ ÀÌÆåÆ®¸¦ ÇÑ²¨¹ø¿¡ Á¦°ÅÇÏ¿© Å« ±¸¸ÛÀ» ¸¸µì´Ï´Ù.
+		// [ï¿½Å±ï¿½] 4. [5~25ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ Effect ï¿½Ù¼ï¿½ ï¿½ï¿½ï¿½ï¿½ (Cluster Deletion)
+		// 0.8ï¿½Ê¸ï¿½ï¿½ï¿½ "3ï¿½ï¿½ ~ 8ï¿½ï¿½" ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ñ²ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
 		if (m_stressTime >= 5.0f && m_stressTime < 25.0f) {
 			randomDeleteTimer += dt;
 			if (randomDeleteTimer >= 0.8f) {
 				randomDeleteTimer = 0.0f;
 
-				// ÇÑ ¹ø¿¡ »èÁ¦ÇÒ °³¼ö °áÁ¤ (¿¹: 3°³ ~ 8°³ »çÀÌ ·£´ý)
+				// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: 3ï¿½ï¿½ ~ 8ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 				int deleteCount = (rand() % 400) + 100;
 				deleteCount = std::min(deleteCount, static_cast<int>(m_stressSystems.size()));
 
 				if (deleteCount > 0) {
-					// »èÁ¦ÇÒ Ç×¸ñµéÀ» ¸ÕÀú ¼öÁý (¹èÄ¡ »èÁ¦·Î ÃÖÀûÈ­)
+					// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­)
 					std::vector<EffectActor*> toRemove;
 					toRemove.reserve(deleteCount);
-					// Fisher-Yates shuffleÀÇ ºÎºÐ º¯ÇüÀ¸·Î ·£´ý »ùÇÃ¸µ
+					// Fisher-Yates shuffleï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½
 					for (int i = 0; i < deleteCount; ++i) {
 						int idx = i + (rand() % (m_stressSystems.size() - i));
 						toRemove.push_back(m_stressSystems[idx]);
@@ -226,16 +231,16 @@ namespace DE {
 						}
 					}
 
-					// ¹èÄ¡ »èÁ¦ (O(N+M) - ÈÎ¾À ºü¸§!)
+					// ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ (O(N+M) - ï¿½Î¾ï¿½ ï¿½ï¿½ï¿½ï¿½!)
 					RemoveEffects(toRemove);
 
-					// m_stressSystems¿¡¼­µµ Á¦°Å
+					// m_stressSystemsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 					m_stressSystems.erase(m_stressSystems.begin(), m_stressSystems.begin() + deleteCount);
 				}
 			}
 		}
 
-		// 5. [15ÃÊ] Áß°£¿¡ °©ÀÚ±â Ãß°¡µÇ´Â ÀÌÆåÆ® (DragonBreath)
+		// 5. [15ï¿½ï¿½] ï¿½ß°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú±ï¿½ ï¿½ß°ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (DragonBreath)
 		if (m_stressTime >= 15.0f && m_test2 == nullptr) {
 			m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\DragonBreath\\System_DragonBreath.json");
 		}
@@ -244,15 +249,15 @@ namespace DE {
 			m_test3 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
 		}
 
-		// 6. [20ÃÊ] °©ÀÚ±â »ç¶óÁö´Â ÀÌÆåÆ® (HolySword Á¦°Å)
+		// 6. [20ï¿½ï¿½] ï¿½ï¿½ï¿½Ú±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (HolySword ï¿½ï¿½ï¿½ï¿½)
 		if (m_stressTime >= 20.0f && m_test1 != nullptr) {
 			ParticleManager::Get().DestroyInstance(m_test1);
 			m_test1 = nullptr;
 		}
 
-		// 7. [25ÃÊ] °­Á¦ »èÁ¦ ¹× ÃÊ±âÈ­ (Loop)
+		// 7. [25ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­ (Loop)
 		if (m_stressTime >= 25.0f) {
-			// ³²¾ÆÀÖ´Â µ¿Àû ½Ã½ºÅÛ ½Ï Á¤¸®
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (!m_stressSystems.empty()) {
 				RemoveEffects(m_stressSystems);
 				m_stressSystems.clear();
@@ -267,18 +272,18 @@ namespace DE {
 				m_test3 = nullptr;
 			}
 
-			// ÃÊ±â »óÅÂ º¹±¸ (HolySword Àç»ý¼º)
+			// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (HolySword ï¿½ï¿½ï¿½ï¿½ï¿½)
 			if (m_test1 == nullptr) {
 				m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 			}
 
-			// Å¸ÀÌ¸Ó ¸®¼Â
+			// Å¸ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 			m_stressTime = 0.0f;
 			burstTimer = 0.0f;
 			spawnTimer = 0.0f;
 			randomDeleteTimer = 0.0f;
 
-			// 25ÃÊ ÁÖ±â ¿Ï·á ½Ã ·Î±× Ãâ·Â
+			// 25ï¿½ï¿½ ï¿½Ö±ï¿½ ï¿½Ï·ï¿½ ï¿½ï¿½ ï¿½Î±ï¿½ ï¿½ï¿½ï¿½
 			OutputDebugStringA(("=== Cycle Complete ===\n"
 				"Rebuild Count: " + std::to_string(ParticleManager::Get().GetRebuildCount()) + "\n"
 				"Avg Rebuild Time: " + std::to_string(ParticleManager::Get().GetAvgRebuildTime()) + " ms\n"
@@ -300,17 +305,17 @@ namespace DE {
 	void ParticleEditor::ClickEvent()
 	{
 		//ClickEffectManager::Get().TriggerPreset("Firework");
-		// ÇÑ ÇÁ·¹ÀÓ¿¡ 100°³¾¿ »ý¼º ½Ãµµ! (¼ø½Ä°£¿¡ ¼öÃµ °³°¡ µÊ)
+		// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿ï¿½ 100ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ãµï¿½! (ï¿½ï¿½ï¿½Ä°ï¿½ï¿½ï¿½ ï¿½ï¿½Ãµ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
 		for (int i = 0; i < 100; ++i)
 		{
-			// 1. ÀÌÆåÆ® »ý¼º (Smoke³ª Firework µî)
+			// 1. ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ (Smokeï¿½ï¿½ Firework ï¿½ï¿½)
 			Vector3 randomPos(
 				(rand() % 100 - 50) * 1.0f,
 				(rand() % 20) * 1.0f,
 				(rand() % 100 - 50) * 1.0f
 			);
 
-			// IceEffect ¶Ç´Â HolySwordEffect¸¦ ·£´ýÇÏ°Ô ¼±ÅÃ
+			// IceEffect ï¿½Ç´ï¿½ HolySwordEffectï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½
 			EffectActor* effect = nullptr;
 			//if (rand() % 2 == 0) {
 				effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
@@ -320,18 +325,18 @@ namespace DE {
 			//}
 
 			if (effect) {
-				// ¼º°ø ½Ã ¸®½ºÆ®¿¡ Ãß°¡ (³ªÁß¿¡ Á¤¸®¿ë)
+				// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ß°ï¿½ (ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 				m_stressSystems.push_back(effect);
 			}
 			else {
-				// 2. [ÇÑ°è µµ´Þ] »ý¼º ½ÇÆÐ (Nullptr ¹ÝÈ¯µÊ)
-				// ¸Þ¸ð¸® Ç®(Particle/Emitter/System Slot) Áß ÇÏ³ª°¡ ²Ë Âü
+				// 2. [ï¿½Ñ°ï¿½ ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Nullptr ï¿½ï¿½È¯ï¿½ï¿½)
+				// ï¿½Þ¸ï¿½ Ç®(Particle/Emitter/System Slot) ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½
 				static bool oomLogged = false;
 				if (!oomLogged) {
 					OutputDebugStringA(">>> [LIMIT REACHED] Memory Pool or System Slots FULL! <<<\n");
 					oomLogged = true;
 				}
-				break; // ´õ ÀÌ»ó »ý¼º ºÒ°¡
+				break; // ï¿½ï¿½ ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ò°ï¿½
 			}
 		}
 	}

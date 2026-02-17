@@ -1,6 +1,6 @@
 #pragma once
 #include "Scene.h"
-#include <vector> // Ãß°¡
+#include <vector> // ï¿½ß°ï¿½
 
 namespace DE {
 
@@ -11,7 +11,7 @@ namespace DE {
 	class Firework;
 	class RoseEffect;
 	class TestActor;
-	class ParticleSystem; // Àü¹æ ¼±¾ð È®ÀÎ
+	class ParticleSystem; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	class SmokeActor;
 	class FireEffect;
 
@@ -42,12 +42,17 @@ namespace DE {
 		InputAction m_Lclick;
 		InputAction m_Rclick;
 
-		ParticleSystem* m_test1 = nullptr; // Áö¼Ó ÀÌÆåÆ®¿ë
-		ParticleSystem* m_test2 = nullptr; // °©ÀÚ±â Ãß°¡µÇ´Â ÀÌÆåÆ®¿ë
+		ParticleSystem* m_test1 = nullptr; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½
+		ParticleSystem* m_test2 = nullptr; // ï¿½ï¿½ï¿½Ú±ï¿½ ï¿½ß°ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½
 		ParticleSystem* m_test3 = nullptr;
 		TestActor* m_testActor = nullptr;
 		std::vector<FireEffect*> m_fireTests;
-		// ½ºÆ®·¹½º Å×½ºÆ®¿ë º¯¼ö
+
+		EffectActor* m_metalSpark = nullptr;
+		EffectActor* m_sparkBurst = nullptr;
+		EffectActor* m_ember = nullptr;
+
+		// ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		float m_stressTime = 0.0f;
 		std::vector<EffectActor*> m_stressSystems;
 	};

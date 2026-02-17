@@ -1,0 +1,29 @@
+{
+  "Name": "Ember",
+  "Spawn": {
+    "shape": "Sphere",
+    "localPos": [0.0, 0.0, 0.0],
+    "spawnVolume": [0.3, 0.05, 0.3],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 15.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 500,
+    "lifeRange": [1.5, 3.0]
+  },
+  "Visual": {
+    "startColor": [1.0, 0.5, 0.0, 1.0],
+    "endColor": [0.6, 0.1, 0.0, 0.0],
+    "sizeRange": [0.15, 0.04]
+  },
+  "Force": {
+    "velocity": [0.0, 1.0, 0.0],
+    "speedRange": [0.3, 0.8],
+    "randomDir": [0.3, 0.1, 0.3],
+    "gravity": [0.0, 0.5, 0.0],
+    "drag": 0.3
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 0.3
+  }
+}

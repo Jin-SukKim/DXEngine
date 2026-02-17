@@ -116,6 +116,7 @@ namespace DE {
         float softDistance = 0.0f;  // Soft particle fade distance (0 = disabled)
         UINT frameBlending = 0;
         float animTime = 0.0f;  // Absolute time(seconds), 0 = use animDuration ratio
+        float velocityStretchFactor = 0.0f; // 0 = disabled, larger = more stretch
     };
 
     struct ParticleConsts {

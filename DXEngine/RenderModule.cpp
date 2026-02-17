@@ -69,6 +69,7 @@ namespace DE {
 		RenderModule::Initialize(ctx);
 		m_modelIdx = 0; // Billboard quad
 		ctx.consts.render.softDistance = m_softDistance;
+		ctx.consts.render.velocityStretchFactor = m_velocityStretchFactor;
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -88,6 +89,8 @@ namespace DE {
 		RenderModule::LoadFromJson(data); // Only parses blendMode
 		if (data.contains("softDistance"))
 			m_softDistance = data["softDistance"].get<float>();
+		if (data.contains("velocityStretchFactor"))
+			m_velocityStretchFactor = data["velocityStretchFactor"].get<float>();
 		// All texture loading moved to MaterialModule
 	}
 
@@ -96,6 +99,7 @@ namespace DE {
 		auto cloned = std::make_unique<BillboardRenderModule>();
 		CopyBasicSettings(cloned.get()); // Only blendMode and m_blendState
 		cloned->m_softDistance = this->m_softDistance;
+		cloned->m_velocityStretchFactor = this->m_velocityStretchFactor;
 		return cloned;
 	}
 

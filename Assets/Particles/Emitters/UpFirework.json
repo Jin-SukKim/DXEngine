@@ -25,7 +25,8 @@
     "drag": 0.0
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "Additive",
+    "velocityStretchFactor": 1.0
   },
   "SubEmitters": [
     {
