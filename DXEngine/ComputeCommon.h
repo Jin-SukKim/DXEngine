@@ -24,6 +24,9 @@ namespace DE {
 			ComputePSO renderArgsUpdateCS;              // OrbitCS.hlsl
 			ComputePSO batchRenderArgsCS;     // BatchRenderArgsCS.hlsl
 			ComputePSO buildAliveIndicesCS;   // BuildAliveIndicesCS.hlsl
+			ComputePSO initBatchAliveSortCS;  // InitBatchAliveSort.hlsl
+			ComputePSO copySortedIndicesCS;   // CopySortedIndicesCS.hlsl
+		ComputePSO generateSortKeysCS;   // GenerateSortKeysCS.hlsl
 		} particle;
 
 		// BitonicSort
@@ -49,6 +52,9 @@ namespace DE {
 		ComPtr<ID3D11ComputeShader> renderArgsUpdateCS;
 		ComPtr<ID3D11ComputeShader> batchRenderArgsCS;
 		ComPtr<ID3D11ComputeShader> buildAliveIndicesCS;
+		ComPtr<ID3D11ComputeShader> initBatchAliveSortCS;
+		ComPtr<ID3D11ComputeShader> copySortedIndicesCS;
+		ComPtr<ID3D11ComputeShader> generateSortKeysCS;
 
 		// Depth shaders
 		ComPtr<ID3D11ComputeShader> depthDownsampleCS;

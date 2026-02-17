@@ -122,6 +122,10 @@ namespace DE {
 		m_defaultParticleMaterialCB.SetCpuData(defaultMat);
 		m_defaultParticleMaterialCB.Upload();
 
+		// BitonicSort Buffers (for AlphaBlend particle sorting)
+		m_sortElements.Initialize(device, maxParticles);
+		m_bitonicSort.Initialize(device, maxParticles);
+
 		// Quad Mesh for Billboard Instancing (GS 제거용)
 		MeshData quadMesh = GeometryGenerator::MakeSquare(1.0f);
 		m_quadVertexCount = static_cast<UINT>(quadMesh.vertices.size());

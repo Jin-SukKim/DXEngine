@@ -4,6 +4,7 @@
 #include "IndirectArgsBuffer.h"
 #include "ConstantData.h"
 #include "AppendBuffer.h"
+#include "BitonicSort.h"
 #include <map>
 
 namespace DE {
@@ -159,6 +160,10 @@ public:
 	UINT GetQuadVertexCount() const { return m_quadVertexCount; }
 	UINT GetQuadIndexCount() const { return m_quadIndexCount; }
 
+	// BitonicSort Getters
+	StructuredBuffer<BitonicSort::Element>& GetSortElements() { return m_sortElements; }
+	BitonicSort& GetBitonicSort() { return m_bitonicSort; }
+
 	UINT GetBlockSize() { return m_blockSize; }
 	UINT GetBlockCount() const { return m_blockCount; }
 
@@ -262,6 +267,10 @@ private:
 	StructuredBuffer<UINT> m_batchAliveIndices;                           // Pass2 -> VS (Batch Rendering)
 	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
 	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
+
+	// BitonicSort Buffers (for AlphaBlend particle sorting)
+	StructuredBuffer<BitonicSort::Element> m_sortElements;          // Per-emitter sort keys
+	BitonicSort m_bitonicSort;                                      // Sorter instance
 
 	UINT m_meshVertexPoolCapacity = 500000;
 	UINT m_meshIndexPoolCapacity = 1500000;

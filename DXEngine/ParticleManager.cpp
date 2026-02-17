@@ -148,6 +148,8 @@ namespace DE {
 		if (!m_batchEmitterList.empty())
 			DispatchBatchCompute();
 
+		SortAlphaBlendEmitters();
+
 		m_memoryPool->BindBatchAliveIndices();
 		// 전역 VB/IB Binding (Mesh와 Billboard가 공유)
 		ModelManager::Get().BindBuffersForRender();
@@ -366,6 +368,89 @@ namespace DE {
 
 		ID3D11ShaderResourceView* nullSRVs[14] = { nullptr };
 		context->CSSetShaderResources(16, 14, nullSRVs);
+	}
+
+	void ParticleManager::SortAlphaBlendEmitters()
+	{
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		// GlobalConsts(b0)를 CS에 바인딩 (eyeWorld 접근용)
+		ID3D11Buffer* globalCB = nullptr;
+		context->VSGetConstantBuffers(0, 1, &globalCB);
+		if (globalCB) {
+			context->CSSetConstantBuffers(0, 1, &globalCB);
+			globalCB->Release();
+		}
+
+		// AlphaBlend 배치마다 개별 정렬
+		for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
+			const auto& batch = m_billboardBatches[batchIdx];
+
+			if (batch.blendMode != BlendMode::AlphaBlend)
+				continue;
+
+			UINT globalBatchIdx = m_billboardDescStartIdx + static_cast<UINT>(batchIdx);
+			const auto& desc = m_batchDescriptors[globalBatchIdx];
+
+			// 배치 파티클 수 계산
+			UINT batchParticleCount = 0;
+			for (UINT emitterID : batch.emitterIDs) {
+				batchParticleCount += m_memoryPool->GetReadAliveCount().GetCpu()[emitterID];
+			}
+
+			if (batchParticleCount == 0)
+				continue;
+
+			// 1. GenerateSortKeys 실행
+			auto& genKeysCS = RenderBase::computeCommon.particle.generateSortKeysCS;
+			context->CSSetShader(genKeysCS.computeShader.Get(), 0, 0);
+
+			// SRV: batchAliveIndices (t0만 바인딩, readParticles는 t16에 이미 바인딩됨)
+			ID3D11ShaderResourceView* batchSRV = m_memoryPool->GetBatchAliveIndices().GetSRV();
+			context->CSSetShaderResources(0, 1, &batchSRV);
+
+			// UAV: BitonicSort 내부 버퍼
+			ID3D11UnorderedAccessView* sortUAV = m_memoryPool->GetBitonicSort().GetUAV();
+			context->CSSetUnorderedAccessViews(0, 1, &sortUAV, nullptr);
+
+			// CB: SortParams (b5)
+			m_sortParamsCB.GetCpu().baseOffset = desc.instanceOffset;
+			m_sortParamsCB.GetCpu().particleCount = batchParticleCount;
+			m_sortParamsCB.Upload();
+			m_sortParamsCB.Bind(5);
+
+			// Power-of-2로 올림 (BitonicSort 요구사항)
+			UINT sortSize = 1;
+			while (sortSize < batchParticleCount) sortSize *= 2;
+			context->Dispatch((sortSize + 1023) / 1024, 1, 1);
+
+			// UAV barrier
+			ID3D11UnorderedAccessView* nullUAV = nullptr;
+			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+
+			// 2. BitonicSort 실행
+			m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, batchParticleCount);
+
+			// 3. CopySortedIndices 실행
+			auto& copyCS = RenderBase::computeCommon.particle.copySortedIndicesCS;
+			context->CSSetShader(copyCS.computeShader.Get(), 0, 0);
+
+			ID3D11ShaderResourceView* sortedSRV = m_memoryPool->GetBitonicSort().GetSRV();
+			context->CSSetShaderResources(0, 1, &sortedSRV);
+
+			ID3D11UnorderedAccessView* batchUAV = m_memoryPool->GetBatchAliveIndices().GetUAV();
+			context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
+
+			m_sortParamsCB.Bind(5);
+			context->Dispatch((batchParticleCount + 1023) / 1024, 1, 1);
+		}
+
+		// Cleanup - SRV 1개만 unbind (t0)
+		context->CSSetShader(nullptr, nullptr, 0);
+		ID3D11UnorderedAccessView* nullUAV = nullptr;
+		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+		context->CSSetShaderResources(0, 1, &nullSRV);
 	}
 
 	void ParticleManager::DrawMeshBatches()

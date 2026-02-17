@@ -24,14 +24,22 @@ namespace DE {
 
         void Sort(ID3D11DeviceContext* context);
 
+        // 외부 UAV를 받아 정렬 (elementCount개만 유효, 나머지는 패딩)
+        void Sort(ID3D11DeviceContext* context,
+                  ID3D11UnorderedAccessView* sortBufferUAV,
+                  UINT elementCount);
+
         ID3D11ShaderResourceView* GetSRV() const { return m_array.GetSRV(); }
         ID3D11UnorderedAccessView* GetUAV() const { return m_array.GetUAV(); }
     protected:
-        std::vector<Consts> m_constsCpu;
-        std::vector<ComPtr<ID3D11Buffer>> m_constsGpu;
+        // Single constant buffer (updated each pass instead of pre-allocating all)
+        ConstantBuffer<Consts> m_constBuffer;
         StructuredBuffer<Element> m_array;
 
         UINT m_numElements = 0;
+
+        // NOTE: This can be replaced with BitonicMergeSort in the future
+        // by swapping the shader and modifying the Sort() loop structure
     };
 
 }

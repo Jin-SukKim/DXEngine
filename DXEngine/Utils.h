@@ -5,12 +5,12 @@ namespace DE {
 	template <typename T_CONST>
 	class ConstantBuffer {
 	public:
-		// GPU¿¡ Constant Buffer »ý¼º
+		// GPUï¿½ï¿½ Constant Buffer ï¿½ï¿½ï¿½ï¿½
 		void Initialize() {
 			D3D11Utils::CreateConstantBuffer(GET_SINGLE(RenderBase)->GetDevice().Get(), m_cpu, m_gpu);
 		}
 
-		// CPU µ¥ÀÌÅÍ¸¦ GPU·Î º¹»ç
+		// CPU ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ GPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		void Upload() {
 			D3D11Utils::UpdateBuffer(GET_SINGLE(RenderBase)->GetContext(), m_cpu, m_gpu);
 		}
@@ -20,6 +20,11 @@ namespace DE {
 		const T_CONST& GetCpu() const { return m_cpu; }
 		const auto Get() { return m_gpu.Get(); }
 		const auto GetAddressOf() const { return m_gpu.GetAddressOf(); }
+
+		void Bind(UINT slot) {
+			auto context = GET_SINGLE(RenderBase)->GetContext();
+			context->CSSetConstantBuffers(slot, 1, m_gpu.GetAddressOf());
+		}
 	private:
 		T_CONST m_cpu;
 		ComPtr<ID3D11Buffer> m_gpu;

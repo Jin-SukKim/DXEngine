@@ -343,7 +343,7 @@ namespace DE {
 			device->CreateBlendState(&blendDesc, accumulateBS.GetAddressOf()));
 		
 		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
 		ThrowIfFailed(
 			device->CreateBlendState(&blendDesc, alphaBS.GetAddressOf()));

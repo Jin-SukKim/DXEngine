@@ -25,6 +25,7 @@ namespace DE {
 		UINT globalEmitterID; // GPU Buffer offset 계산용
 		int materialKey;
 		int modelIndex;
+		Vector3 worldPosition;  // 시스템 월드 위치 캐싱 (정렬 최적화)
 	};
 
 	struct BatchGroup {
@@ -33,6 +34,12 @@ namespace DE {
 		BlendMode blendMode;
 		std::vector<UINT> emitterIDs;
 		UINT instanceOffset;
+	};
+
+	struct SortParams {
+		UINT baseOffset;     // AlphaBlend 시작 offset
+		UINT particleCount;  // 총 AlphaBlend 파티클 수
+		UINT padding[2];
 	};
 
 	// [Added] Runtime Profiling Data Structure
@@ -140,6 +147,7 @@ namespace DE {
 		                           UINT& totalCount, UINT& visibleCount);
 		void BuildBatchDescriptors();
 		void DispatchBatchCompute();
+		void SortAlphaBlendEmitters();
 		void DrawMeshBatches();
 		void DrawBillboardBatches();
 
@@ -196,6 +204,7 @@ namespace DE {
 		// CS용 ConstantBuffer (Initialize에서 1회 초기화)
 		ConstantBuffer<BatchRenderArgsConsts> m_batchRenderArgsCB;
 		ConstantBuffer<BuildAliveConsts> m_buildAliveCB;
+		ConstantBuffer<SortParams> m_sortParamsCB;
 
 		// 매 프레임 재사용 컨테이너
 		std::vector<EmitterJob> m_meshJobs;

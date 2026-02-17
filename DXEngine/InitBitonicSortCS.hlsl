@@ -1,10 +1,9 @@
 #include "Common.hlsli"
 #include "ParticleCommon.hlsli"
 
-// TODO: particle pos¿¡ world matrix °öÇØÁÖ±â
-
-StructuredBuffer<Particle> particlesT : register(t0);
-Buffer<uint> activeCount : register(t1);
+// eyeWorldëŠ” Common.hlsliì˜ GlobalConsts (b0)ì—ì„œ ê°€ì ¸ì˜´
+// emitterIDëŠ” ParticleCommon.hlsliì˜ cbuffer EmitterID (b5)ì—ì„œ ê°€ì ¸ì˜´
+// readParticlesëŠ” ParticleCommon.hlsliì˜ t16ì—ì„œ ê°€ì ¸ì˜´
 
 RWStructuredBuffer<SortElement> sortedElements : register(u0);
 
@@ -12,21 +11,25 @@ RWStructuredBuffer<SortElement> sortedElements : register(u0);
 void main( uint3 dtID : SV_DispatchThreadID )
 {
     uint id = dtID.x;
-    uint count = activeCount[emitterID];
-    
+    uint count = readAliveCount[emitterID];
+
     SortElement elem;
-    elem.value = id; // Particle index
-    
+    elem.value = id; // Particle index in alive list
+
     if (id < count)
     {
-        float3 dist = particles[id].position - eyeWorld;
+        // Get actual particle index from alive indices
+        uint particleIdx = readAliveIndices[readParticleOffset + id];
+        Particle p = readParticles[particleIdx];
+
+        float3 dist = p.position - eyeWorld;
         float distSq = dot(dist, dist);
-        // °Å¸®°ªÀÌ °°À¸¸é Á¤·Ä ¼ø¼­°¡ ºÒ¾ÈÁ¤ÇØ ±ôºı°Å¸®´Â °ÍÃ³·³ º¸ÀÌ´Â°É
-        // ID·Î ÀÛÀº °¡ÁßÄ¡¸¦ ´õÇØ Stable Sort¸¦ À¯µµ
-        elem.key = distSq + ((float)id + 0.01f); 
-    } else
+        // ê±°ë¦¬ ë‚´ë¦¼ì°¨ìˆœ ì •ë ¬ (ë¨¼ ê²ƒë¶€í„° â†’ ê°€ê¹Œìš´ ìˆœ)
+        elem.key = distSq;
+    }
+    else
     {
-        elem.key = -1.f;
+        elem.key = 3.402823466e+38F; // FLT_MAX (íŒ¨ë”©)
     }
 
     sortedElements[id] = elem;

@@ -99,6 +99,7 @@ namespace DE {
 
 		void SetMemoryInfo(UINT index);
 		void SetOwner(ParticleSystem* system);
+		ParticleSystem* GetOwnerSystem() const { return m_ownerSystem; }
 		UINT GetEmitterID() { return m_emitterID; };
 		void SetName(std::wstring name) { m_name = name; }
 
