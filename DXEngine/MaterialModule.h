@@ -8,7 +8,7 @@ class MaterialModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 
-	// Æ¯Á¤ ¼­ºê ¸Þ½¬(SubMesh) ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â ÀçÁú ¹ÙÀÎµù
+	// Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½(SubMesh) ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½
 	void BindMaterialForMesh(int subMeshIndex);
 
 	void LoadFromJson(const json& data) override;
@@ -17,13 +17,14 @@ public:
 	std::unique_ptr<ParticleModule> Clone() const override;
 	int GetMaterialIndex() { return m_materialIndices[0]; }
 private:
-	// ¸ðµ¨ÀÇ °¢ Mesh¿¡ ´ëÀÀÇÏ´Â ÀçÁú ÀÎµ¦½ºµé
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Meshï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½
 	std::vector<int> m_materialIndices;
 
-	// JSON¿¡¼­ ·ÎµåµÈ ÀçÁú ÀÌ¸§µé (ÀúÀå/º¹¿ø¿ë)
+	// JSONï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 	bool m_isLoadedFromJson = false;
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;
+	float m_animDuration = 1.0f;  // Animation duration (0.0~1.0, default 1.0 = full lifetime)
 };
 }
 

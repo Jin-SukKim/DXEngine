@@ -122,7 +122,8 @@ struct RenderConsts
     float2 frameTiles;
     uint indexCount;
     uint useSorting;
-    float3 renderPadding;
+    float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
+    float2 renderPadding;   // MODIFIED: float3 → float2
 };
 
 struct VortexConsts

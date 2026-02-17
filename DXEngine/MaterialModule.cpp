@@ -12,6 +12,7 @@ namespace DE {
 		RenderConsts& consts = ctx.consts.render;
 		consts.frameTiles = m_frameTiles;
 		consts.frameCount = m_frameCount;
+		consts.animDuration = m_animDuration;
 		if (!m_isLoadedFromJson && ctx.renderModule) {
 			const Model* model = ModelManager::Get().GetModel(ctx.renderModule->GetModelIndex());
 			if (model)
@@ -71,6 +72,11 @@ namespace DE {
 			auto& sprite = data["sprite"];
 			if (sprite.contains("frameTiles")) m_frameTiles = JsonToVec2(sprite["frameTiles"]);
 			if (sprite.contains("frameCount")) m_frameCount = sprite["frameCount"];
+			if (sprite.contains("animDuration")) {
+				m_animDuration = sprite["animDuration"];
+				// Clamp to valid range [0.0, 1.0]
+				m_animDuration = std::max(0.0f, std::min(1.0f, m_animDuration));
+			}
 		}
 	}
 	std::unique_ptr<ParticleModule> MaterialModule::Clone() const
@@ -82,6 +88,7 @@ namespace DE {
 		cloned->m_materialIndices = this->m_materialIndices;
 		cloned->m_frameTiles = this->m_frameTiles;
 		cloned->m_frameCount = this->m_frameCount;
+		cloned->m_animDuration = this->m_animDuration;
 
 		return std::move(cloned);
 	}

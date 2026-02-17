@@ -112,7 +112,8 @@ namespace DE {
         Vector2 frameTiles;
         UINT indexCount;
         UINT useSorting;
-        Vector3 renderPadding;
+        float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
+        Vector2 renderPadding;  // MODIFIED: Vector3 â†’ Vector2
     };
 
     struct ParticleConsts {
@@ -126,8 +127,8 @@ namespace DE {
 
     // Batch Rendering Structures
     struct BatchInfo {
-        UINT emitterCount;        // Batch ÇÏ³ªÀÇ Emitter °³¼ö
-        UINT emitterListOffset;   // batchÀÇ ½ÃÀÛ emitter offset
+        UINT emitterCount;        // Batch ï¿½Ï³ï¿½ï¿½ï¿½ Emitter ï¿½ï¿½ï¿½ï¿½
+        UINT emitterListOffset;   // batchï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ emitter offset
         UINT instanceOffset;      // Global instance start for this batch
         UINT padding;
     };
@@ -136,8 +137,8 @@ namespace DE {
         UINT emitterCount;      
         UINT emitterListOffset;
         UINT instanceOffset;
-        // batch´ç ÇÏ³ªÀÇ ¸ðµ¨À» »ç¿ë
-        UINT indexCount;        // Mesh Rendering¿ë index °³¼ö
+        // batchï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+        UINT indexCount;        // Mesh Renderingï¿½ï¿½ index ï¿½ï¿½ï¿½ï¿½
         UINT startIndexLocation;
         UINT baseVertexLocation;
         UINT isMesh;
@@ -145,12 +146,12 @@ namespace DE {
     };
 
     struct BatchRenderArgsConsts {
-        UINT numBatches;    // ÃÑ batch °³¼ö
+        UINT numBatches;    // ï¿½ï¿½ batch ï¿½ï¿½ï¿½ï¿½
         Vector3 padding;
     };
 
     struct BuildAliveConsts {
-        UINT numFlatEmitters; // AliveIndices¸¦ ¸¸µé¶§ »ç¿ëÇÒ Emitter °³¼ö
+        UINT numFlatEmitters; // AliveIndicesï¿½ï¿½ ï¿½ï¿½ï¿½é¶§ ï¿½ï¿½ï¿½ï¿½ï¿½ Emitter ï¿½ï¿½ï¿½ï¿½
         Vector3 padding;
     };
 }

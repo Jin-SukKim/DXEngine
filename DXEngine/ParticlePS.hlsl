@@ -25,7 +25,9 @@ float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float2 uv) {
 
     // Sprite animation processing
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
-        uint currentFrame = floor(lifeRatio * render.frameCount);
+        // Apply animation duration (0.0~1.0) - animation plays only during this portion of particle life
+        float animLifeRatio = saturate(lifeRatio / render.animDuration);
+        uint currentFrame = floor(animLifeRatio * render.frameCount);
         currentFrame = min(currentFrame, render.frameCount - 1);
 
         // Sprite Sheet col, row calculation

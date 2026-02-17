@@ -14,7 +14,7 @@
   "Visual": {
     "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
     "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
-    "sizeRange": [ 1.0, 1.0 ]
+    "sizeRange": [ 0.1, 1.0 ]
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
@@ -27,7 +27,8 @@
     "texture": "Textures\\SmokeSprite2.png",
     "sprite": {
       "frameTiles": [ 4, 4 ],
-      "frameCount": 16
+      "frameCount": 16,
+      "animDuration": 0.2
     }
   },
   "BillboardRender": {
