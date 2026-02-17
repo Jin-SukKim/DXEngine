@@ -14,7 +14,6 @@ namespace DE {
 		// Particle System Compute Shaders
 		D3D11Utils::CreateCS(device.Get(), L"ParticleArgsUpdateCS.hlsl", particleArgsUpdateCS);
 		D3D11Utils::CreateCS(device.Get(), L"ParticleMeshArgsUpdateCS.hlsl", particleMeshArgsUpdateCS);
-		D3D11Utils::CreateCS(device.Get(), L"InitBitonicSortCS.hlsl", initBitonicSortCS);
 		D3D11Utils::CreateCS(device.Get(), L"SpawnCS.hlsl", spawnCS);
 		D3D11Utils::CreateCS(device.Get(), L"ParticleCS.hlsl", particleCS);
 		//D3D11Utils::CreateCS(device.Get(), L"VortexCS.hlsl", vortexCS);
@@ -22,7 +21,6 @@ namespace DE {
 		D3D11Utils::CreateCS(device.Get(), L"RenderArgsUpdateCS.hlsl", renderArgsUpdateCS);
 		D3D11Utils::CreateCS(device.Get(), L"BatchRenderArgsCS.hlsl", batchRenderArgsCS);
 		D3D11Utils::CreateCS(device.Get(), L"BuildAliveIndicesCS.hlsl", buildAliveIndicesCS);
-		D3D11Utils::CreateCS(device.Get(), L"InitBatchAliveSort.hlsl", initBatchAliveSortCS);
 		D3D11Utils::CreateCS(device.Get(), L"CopySortedIndicesCS.hlsl", copySortedIndicesCS);
 		D3D11Utils::CreateCS(device.Get(), L"GenerateSortKeysCS.hlsl", generateSortKeysCS);
 
@@ -40,7 +38,6 @@ namespace DE {
 	{
 		// Particle System PSOs
 		particle.argsUpdateCS.computeShader = particleArgsUpdateCS;
-		particle.initSortKeysCS.computeShader = initBitonicSortCS;
 		particle.meshArgsUpdateCS.computeShader = particleMeshArgsUpdateCS;
 		particle.spawnCS.computeShader = spawnCS;
 		particle.particleCS.computeShader = particleCS;
@@ -49,7 +46,6 @@ namespace DE {
 		particle.renderArgsUpdateCS.computeShader = renderArgsUpdateCS;
 		particle.batchRenderArgsCS.computeShader = batchRenderArgsCS;
 		particle.buildAliveIndicesCS.computeShader = buildAliveIndicesCS;
-		particle.initBatchAliveSortCS.computeShader = initBatchAliveSortCS;
 		particle.copySortedIndicesCS.computeShader = copySortedIndicesCS;
 		particle.generateSortKeysCS.computeShader = generateSortKeysCS;
 

@@ -200,8 +200,6 @@ public:
 		return m_spawnPosBlockTableCache;
 	}
 
-	std::vector<UINT> CalculateDefragmentedOffsets(const std::vector<PoolHandle>& activeHandles);
-	void UpdateBlockTable(const std::vector<PoolHandle>& activeHandles);
 	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
 	void UpdateWriteOffset(UINT slotIndex, UINT newWriteOffset);
 

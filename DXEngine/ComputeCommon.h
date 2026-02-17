@@ -15,7 +15,6 @@ namespace DE {
 		// Particle System
 		struct {
 			ComputePSO argsUpdateCS;          // ParticleArgsUpdateCS.hlsl
-			ComputePSO initSortKeysCS;        // InitBitonicSortCS.hlsl
 			ComputePSO meshArgsUpdateCS;      // ParticleMeshArgsUpdateCS.hlsl
 			ComputePSO spawnCS;               // SpawnCS.hlsl
 			ComputePSO particleCS;            // ParticleCS.hlsl (Force)
@@ -24,9 +23,8 @@ namespace DE {
 			ComputePSO renderArgsUpdateCS;              // OrbitCS.hlsl
 			ComputePSO batchRenderArgsCS;     // BatchRenderArgsCS.hlsl
 			ComputePSO buildAliveIndicesCS;   // BuildAliveIndicesCS.hlsl
-			ComputePSO initBatchAliveSortCS;  // InitBatchAliveSort.hlsl
 			ComputePSO copySortedIndicesCS;   // CopySortedIndicesCS.hlsl
-		ComputePSO generateSortKeysCS;   // GenerateSortKeysCS.hlsl
+			ComputePSO generateSortKeysCS;   // GenerateSortKeysCS.hlsl
 		} particle;
 
 		// BitonicSort
@@ -43,7 +41,6 @@ namespace DE {
 		// Compute Shaders
 		ComPtr<ID3D11ComputeShader> particleArgsUpdateCS;
 		ComPtr<ID3D11ComputeShader> particleMeshArgsUpdateCS;
-		ComPtr<ID3D11ComputeShader> initBitonicSortCS;
 		ComPtr<ID3D11ComputeShader> bitonicSortCS;
 		ComPtr<ID3D11ComputeShader> spawnCS;
 		ComPtr<ID3D11ComputeShader> particleCS;
@@ -52,7 +49,6 @@ namespace DE {
 		ComPtr<ID3D11ComputeShader> renderArgsUpdateCS;
 		ComPtr<ID3D11ComputeShader> batchRenderArgsCS;
 		ComPtr<ID3D11ComputeShader> buildAliveIndicesCS;
-		ComPtr<ID3D11ComputeShader> initBatchAliveSortCS;
 		ComPtr<ID3D11ComputeShader> copySortedIndicesCS;
 		ComPtr<ID3D11ComputeShader> generateSortKeysCS;
 
