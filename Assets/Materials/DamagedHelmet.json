@@ -8,9 +8,9 @@
     "Roughness": 0.5,
     "Metallic": 0.5,
     "Emission": [
-        0.5,
-        0.5,
-        0.5
+        0.0,
+        0.0,
+        0.0
     ],
     "Textures": {
         "albedo": "Models\\DamagedHelmet/Default_albedo.jpg",

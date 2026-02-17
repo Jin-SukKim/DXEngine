@@ -29,6 +29,31 @@ float LinearizeDepth(float ndcDepth) {
     return invProj._34 / (ndcDepth + invProj._33);
 }
 
+// Compute sprite-animated UV for a discrete (non-blended) frame
+float2 GetSpriteAnimatedUV(uint emitterSlotID, float lifeRatio, float lifeMax, float2 uv) {
+    RenderConsts render = consts[emitterSlotID].render;
+
+    if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
+        float animLifeRatio;
+        if (render.animTime > 0) {
+            float elapsed = lifeRatio * lifeMax;
+            animLifeRatio = saturate(elapsed / render.animTime);
+        } else {
+            animLifeRatio = saturate(lifeRatio / render.animDuration);
+        }
+        float2 uvSize = 1.f / render.frameTiles;
+        uint width = render.frameTiles.x;
+
+        uint currentFrame = floor(animLifeRatio * render.frameCount);
+        currentFrame = min(currentFrame, render.frameCount - 1);
+        uint col = currentFrame % width;
+        uint row = currentFrame / width;
+        uv = (uv + float2(col, row)) * uvSize;
+    }
+
+    return uv;
+}
+
 // Sprite animation texture sampling - always uses albedoTex (t0)
 float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float lifeMax, float2 uv) {
     RenderConsts render = consts[emitterSlotID].render;
@@ -63,12 +88,8 @@ float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float lifeMax, float2 
                 blend
             );
         } else {
-            // Discrete frame mode (original behavior)
-            uint currentFrame = floor(animLifeRatio * render.frameCount);
-            currentFrame = min(currentFrame, render.frameCount - 1);
-            uint col = currentFrame % width;
-            uint row = currentFrame / width;
-            uv = (uv + float2(col, row)) * uvSize;
+            // Discrete frame mode - delegate to shared UV function
+            return albedoTex.Sample(linearClampSampler, GetSpriteAnimatedUV(emitterSlotID, lifeRatio, lifeMax, uv));
         }
     }
 
@@ -95,6 +116,20 @@ float4 main(ParticlePSInput input) : SV_TARGET
 
         finalColor.a *= circleAlpha;
     }
+
+    // Apply albedoFactor
+    finalColor.rgb *= albedoFactor;
+
+    // Compute sprite-animated UV for PBR textures (discrete frame, no blending)
+    float2 spriteUV = GetSpriteAnimatedUV(input.emitterSlotID, input.lifeRatio, input.lifeMax, input.uv);
+
+    // AO: darken based on ambient occlusion
+    float ao = useAOMap ? aoTex.Sample(linearClampSampler, spriteUV).r : 1.0;
+    finalColor.rgb *= ao;
+
+    // Emissive: additive self-illumination
+    float3 emission = useEmissiveMap ? emissiveTex.Sample(linearClampSampler, spriteUV).rgb * emissionFactor : emissionFactor;
+    finalColor.rgb += emission;
 
     // Soft particle fade
     float softDist = consts[input.emitterSlotID].render.softDistance;

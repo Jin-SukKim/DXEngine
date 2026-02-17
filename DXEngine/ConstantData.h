@@ -1,8 +1,8 @@
 #pragma once
 #include "pch.h"
 
-// "Common.hlsli"¿Í µ¿ÀÏÇØ¾ß ÇÔ
-#define MAX_LIGHTS 3 // º¸Åë Á¶¸íÀÇ °³¼ö´Â °íÁ¤µÇ¾î ÀÖ°í »ç¿ëÇÏÁö ¾ÊÀ¸¸é OFF·Î ¼³Á¤ (Particle System°ú ºñ½Á)
+// "Common.hlsli"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½
+#define MAX_LIGHTS 3 // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ OFFï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Particle Systemï¿½ï¿½ ï¿½ï¿½ï¿½)
 #define MAX_SPOT 2
 #define MAX_POINT 1
 #define LIGHT_DIRECTIONAL 0x01
@@ -12,16 +12,16 @@
 #define LIGHT_SHADOW 0x10
 
 namespace DE {
-	//_declspec(align(256))´Â C++¿¡¼­ ¸Þ¸ð¸® Á¤·ÄÀ» ÁöÁ¤ÇÏ´Â Áö½Ã¾î·Î, 
-	// ÇØ´ç ±¸Á¶Ã¼³ª º¯¼öÀÇ ¸Þ¸ð¸® ÁÖ¼Ò°¡ 256¹ÙÀÌÆ® °æ°è¿¡ ¸ÂÃçÁöµµ·Ï °­Á¦·Î Á¤·ÄÇÏ´Â ¿ªÇÒ
-	// Á¤·ÄÀ» Àû¿ëÇÏ¸é, ÇØ´ç ±¸Á¶Ã¼´Â 256¹ÙÀÌÆ® ´ÜÀ§·Î ¸Þ¸ð¸®°¡ Á¤·ÄµÇ¾î ÇÒ´çµÊ
+	//_declspec(align(256))ï¿½ï¿½ C++ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ã¾ï¿½ï¿½, 
+	// ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ï¿½ ï¿½Ö¼Ò°ï¿½ 256ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½è¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½, ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ 256ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ð¸®°ï¿½ ï¿½ï¿½ï¿½ÄµÇ¾ï¿½ ï¿½Ò´ï¿½ï¿½
 	__declspec(align(256)) struct MeshConstants {
 		Matrix world;
-		Matrix worldIT; // World Inverse Transpose (Normal º¯È¯¿¡ »ç¿ë)
+		Matrix worldIT; // World Inverse Transpose (Normal ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½)
 	};
 	
 	__declspec(align(256)) struct BasicMaterialConstants {
-		Vector3 ambient = Vector3(0.0f);
+		Vector3 ambient = Vector3(1.0f);
 		float shininess = 0.01f;
 		Vector3 diffuse = Vector3(1.0f);
 		float dummy1;
@@ -33,15 +33,15 @@ namespace DE {
 	};
 
 	__declspec(align(256)) struct MaterialConstants {
-		Vector3 albedoFactor = Vector3(0.3f); // ±âº» »öÀÌ¶ó »ý°¢ÇÒ ¼ö ÀÖÀ½
-		float roughnessFactor = 0.5f; // ¹°Ã¼ Ç¥¸éÀÇ °ÅÄ¥±â
-		float metallicFactor = 0.5f; // ±Ý¼Ó¿¡ °¡±î¿îÁö ºñ±Ý¼Ó¿¡ °¡±î¿îÁö °áÁ¤ÇÏ´Â °ª
-		Vector3 emissionFactor = Vector3(0.5f);
+		Vector3 albedoFactor = Vector3(0.3f); // ï¿½âº» ï¿½ï¿½ï¿½Ì¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		float roughnessFactor = 0.5f; // ï¿½ï¿½Ã¼ Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¥ï¿½ï¿½
+		float metallicFactor = 0.5f; // ï¿½Ý¼Ó¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ý¼Ó¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½
+		Vector3 emissionFactor = Vector3(0.0f);
 
-		// ¿©·¯ ¿É¼Çµé¿¡ uint32¸¦ flag·Î ÇÏ³ª¸¸ »ç¿ëÇÒ ¼öµµ ÀÖÀ½
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½É¼Çµé¿¡ uint32ï¿½ï¿½ flagï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		int useAlbedoMap = 0;
 		int useNormalMap = 0;
-		int useAOMap = 0; // °£Á¢±¤(Ambient LIghting)À¸·Î »ç¿ë
+		int useAOMap = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Ambient LIghting)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		int invertNormalMapY = 0;
 		int useMetallicMap = 0;
 		int useRoughnessMap = 0;
@@ -52,37 +52,37 @@ namespace DE {
 	};
 
 	struct Light {
-		Vector3 radiance = Vector3(1.f); // ºûÀÇ ¼¼±â (Strength) - ºûÀÇ R, G, B °­µµ
-		float fallOffStart = 0.f; // ºûÀÇ °­µµ°¡ ¾àÇØÁö±â ½ÃÀÛÇÏ´Â °Å¸® (point/spot light only)
-		Vector3 direction = Vector3(0.0f, 0.0f, 1.0f); // ºûÀÇ ¹æÇâ (spot light only)
-		float fallOffEnd = 10.0f; // ºûÀÌ ´õÀÌ»ó ´êÁö ¾Ê¾Æ ¾îµÎ¿öÁö´Â °Å¸® (point/spot light only)
-		Vector3 position = Vector3(0.0f, 0.0f, -2.0f); // ºûÀÇ À§Ä¡ (point/spot light only)
-		float spotPower = 6.f; // ºûÀÌ ÇÑ ÁöÁ¡¿¡ ¸ðÀÌ´Â °­µµ (spot light only)
+		Vector3 radiance = Vector3(1.f); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Strength) - ï¿½ï¿½ï¿½ï¿½ R, G, B ï¿½ï¿½ï¿½ï¿½
+		float fallOffStart = 0.f; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Å¸ï¿½ (point/spot light only)
+		Vector3 direction = Vector3(0.0f, 0.0f, 1.0f); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (spot light only)
+		float fallOffEnd = 10.0f; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ (point/spot light only)
+		Vector3 position = Vector3(0.0f, 0.0f, -2.0f); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ (point/spot light only)
+		float spotPower = 6.f; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½ï¿½ (spot light only)
 
 		// Light type bitmasking
 		// ex) LIGHT_SPOT | LIGHT_SHADOW
 		uint32_t type = LIGHT_OFF;
-		float radius = 0.02f; // ¹ÝÁö¸§ (Volume Light ¿ë)
+		float radius = 0.02f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (Volume Light ï¿½ï¿½)
 		float nearPlane;
 		float frustumWidth;
 		
-		// TODO: Shader¿¡µµ ¶È°°ÀÌ Ãß°¡ (Light Å¬·¡½º¸¦ ÇÏ³ª ¸¸µé¾î¼­ »ç¿ë)
+		// TODO: Shaderï¿½ï¿½ï¿½ï¿½ ï¿½È°ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ (Light Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ ï¿½ï¿½ï¿½ï¿½î¼­ ï¿½ï¿½ï¿½)
 		float haloRadius = 0.0f;
 		float haloStrength = 0.f;
 		Vector2 dummy;
 
-		Matrix viewProj[6]; // ±×¸²ÀÚ ·»´õ¸µ¿¡ ÇÊ¿ä
-		Matrix invProj; // ±×¸²ÀÚ ·»´õ¸µ µð¹ö±ë¿ë
+		Matrix viewProj[6]; // ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
+		Matrix invProj; // ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	};
 
 	__declspec(align(256)) struct GlobalConstants {
 		Matrix view;
 		Matrix proj;
 		Matrix viewProj;
-		Matrix invProj; // Porjection -> View ÁÂÇ¥°è º¯È¯¿ë
-		Matrix invViewProj; // Proj -> World ¿ªº¯È¯
+		Matrix invProj; // Porjection -> View ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½
+		Matrix invViewProj; // Proj -> World ï¿½ï¿½ï¿½ï¿½È¯
 
-		Vector3 eyeWorld; // Camera À§Ä¡
+		Vector3 eyeWorld; // Camera ï¿½ï¿½Ä¡
 		float strengthIBL = 1.f;
 
 		Light lights[MAX_LIGHTS];
