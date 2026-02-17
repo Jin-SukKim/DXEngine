@@ -20,7 +20,7 @@ struct ParticlePSInput
     uint emitterSlotID : TEXCOORD2;  // Receive from VS for sprite animation
 };
 
-// Linearize a depth value from NDC [0,1] to view-space distance
+// Linearize a depth value from NDC [0,1] to view-space distance (ndcDepth -> viewSpaceZ)
 float LinearizeDepth(float ndcDepth) {
     // invProj from GlobalConsts b0
     // For a standard projection matrix:
