@@ -63,6 +63,7 @@ namespace DE {
 		void DownsampleDepthToLowRes();
 
 		void RenderCompositeLowResParticles();
+		ID3D11ShaderResourceView* GetLowResSceneDepthSRV() const { return m_lowResDepthUAV.GetSRV(); }
 
 		// �̸� �����ص� Setting��
 		static GraphicsCommon graphicsCommon;

@@ -113,7 +113,8 @@ namespace DE {
         UINT indexCount;
         UINT useSorting;
         float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
-        Vector2 renderPadding;  // MODIFIED: Vector3 → Vector2
+        float softDistance = 0.0f;  // Soft particle fade distance (0 = disabled)
+        float renderPadding = 0.0f;
     };
 
     struct ParticleConsts {

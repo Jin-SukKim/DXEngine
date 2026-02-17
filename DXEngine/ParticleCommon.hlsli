@@ -123,7 +123,8 @@ struct RenderConsts
     uint indexCount;
     uint useSorting;
     float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
-    float2 renderPadding;   // MODIFIED: float3 → float2
+    float softDistance;     // Soft particle fade distance (0 = disabled)
+    float renderPadding;
 };
 
 struct VortexConsts

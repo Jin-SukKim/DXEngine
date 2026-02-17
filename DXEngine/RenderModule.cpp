@@ -68,6 +68,7 @@ namespace DE {
 	{
 		RenderModule::Initialize(ctx);
 		m_modelIdx = 0; // Billboard quad
+		ctx.consts.render.softDistance = m_softDistance;
 	}
 
 	void BillboardRenderModule::OnRender(const RenderContext& ctx)
@@ -85,6 +86,8 @@ namespace DE {
 	void BillboardRenderModule::LoadFromJson(const json& data)
 	{
 		RenderModule::LoadFromJson(data); // Only parses blendMode
+		if (data.contains("softDistance"))
+			m_softDistance = data["softDistance"].get<float>();
 		// All texture loading moved to MaterialModule
 	}
 
@@ -92,6 +95,7 @@ namespace DE {
 	{
 		auto cloned = std::make_unique<BillboardRenderModule>();
 		CopyBasicSettings(cloned.get()); // Only blendMode and m_blendState
+		cloned->m_softDistance = this->m_softDistance;
 		return cloned;
 	}
 

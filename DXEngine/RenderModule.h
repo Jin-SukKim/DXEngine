@@ -37,6 +37,7 @@ public:
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
+	float m_softDistance = 0.0f;
 	// All texture handling moved to MaterialModule
 	// IndirectArgsBuffer  - ParticleEmitter
 };

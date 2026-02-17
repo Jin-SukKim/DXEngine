@@ -500,6 +500,10 @@ namespace DE {
 
 		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
 
+		// Bind scene depth for soft particles
+		ID3D11ShaderResourceView* depthSRV = GET_SINGLE(RenderBase)->GetLowResSceneDepthSRV();
+		context->PSSetShaderResources(7, 1, &depthSRV);
+
 		ID3D11ShaderResourceView* batchSRVs[] = {
 			m_memoryPool->GetBatchEmitterList().GetSRV(),
 			m_memoryPool->GetBatchDescriptors().GetSRV()
@@ -537,6 +541,10 @@ namespace DE {
 
 		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
 		context->VSSetShaderResources(24, 2, nullSRVs);
+
+		// Unbind scene depth SRV
+		ID3D11ShaderResourceView* nullDepthSRV = nullptr;
+		context->PSSetShaderResources(7, 1, &nullDepthSRV);
 	}
 
 	void ParticleManager::RenderDepth()

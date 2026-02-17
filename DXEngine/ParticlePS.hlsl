@@ -7,6 +7,7 @@ Texture2D aoTex : register(t2);
 Texture2D metallicTex : register(t3);
 Texture2D roughnessTex : register(t4);
 Texture2D emissiveTex : register(t5);
+Texture2D sceneDepthTex : register(t7);
 
 struct ParticlePSInput
 {
@@ -18,6 +19,14 @@ struct ParticlePSInput
     float lifeRatio : TEXCOORD1;
     uint emitterSlotID : TEXCOORD2;  // Receive from VS for sprite animation
 };
+
+// Linearize a depth value from NDC [0,1] to view-space distance
+float LinearizeDepth(float ndcDepth) {
+    // invProj from GlobalConsts b0
+    // For a standard projection matrix:
+    //   linearDepth = invProj._34 / (ndcDepth + invProj._33)
+    return invProj._34 / (ndcDepth + invProj._33);
+}
 
 // Sprite animation texture sampling - always uses albedoTex (t0)
 float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float2 uv) {
@@ -61,6 +70,17 @@ float4 main(ParticlePSInput input) : SV_TARGET
         float circleAlpha = saturate(1.0f - dist);
 
         finalColor.a *= circleAlpha;
+    }
+
+    // Soft particle fade
+    float softDist = consts[input.emitterSlotID].render.softDistance;
+    if (softDist > 0) {
+        float2 texSize;
+        sceneDepthTex.GetDimensions(texSize.x, texSize.y);
+        float2 screenUV = input.pos.xy / texSize;
+        float sceneDepthNDC = sceneDepthTex.SampleLevel(pointClampSampler, screenUV, 0).r;
+        float softFactor = saturate((LinearizeDepth(sceneDepthNDC) - LinearizeDepth(input.pos.z)) / softDist);
+        finalColor.a *= softFactor;
     }
 
     return finalColor;
