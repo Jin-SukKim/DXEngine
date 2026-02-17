@@ -20,7 +20,11 @@ public:
 	Vector3 gravity = { 0.f, 1.f, 0.f };
 	float drag = 0.f;
 
-	// ComputeShader Á¦°Å - ComputeCommon »ç¿ë
+	float curlNoiseFrequency = 0.1f;
+	float curlNoiseStrength = 1.0f;
+	bool curlNoiseEnabled = false;
+
+	// ComputeShader ï¿½ï¿½ï¿½ï¿½ - ComputeCommon ï¿½ï¿½ï¿½
 };
 
 }

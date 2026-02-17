@@ -13,6 +13,7 @@ namespace DE {
 
 		m_gravity = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\ForceModule\\ForceGravity.json");
 		m_gravity->SetTarget(this);
+
 	}
 
 	ForceEffectsActor::~ForceEffectsActor()

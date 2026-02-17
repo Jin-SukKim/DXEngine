@@ -8,7 +8,7 @@ namespace DE {
 	class Texture2D;
 	inline void ThrowIfFailed(HRESULT hr) {
 		if (FAILED(hr)) {
-			// µğ¹ö±ëÇÒ ¶§ ¿©±â¿¡ breakpoint¸¦ ¼³Á¤
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½â¿¡ breakpointï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			throw std::exception();
 		}
 	}
@@ -17,22 +17,22 @@ namespace DE {
 	public:
 		template<typename T_VERTEX>
 		static void CreateVertexBuffer(ComPtr<ID3D11Device>& device, const std::vector<T_VERTEX>& vertices, ComPtr<ID3D11Buffer>& vertexBuffer) {
-			// Buffer¸¦ ¾î¶»°Ô ¾µÁö ¼³Á¤
+			// Bufferï¿½ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			D3D11_BUFFER_DESC desc = {};
 			ZeroMemory(&desc, sizeof(desc));
 			desc.Usage = D3D11_USAGE_DEFAULT; // GPU read/write
-			desc.ByteWidth = UINT(sizeof(T_VERTEX) * vertices.size()); // ¹è¿­ ÀüÃ¼ Å©±â
+			desc.ByteWidth = UINT(sizeof(T_VERTEX) * vertices.size()); // ï¿½è¿­ ï¿½ï¿½Ã¼ Å©ï¿½ï¿½
 			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 			desc.CPUAccessFlags = 0; // 0 if no CPU access if necessary
-			desc.StructureByteStride = sizeof(T_VERTEX); // µ¥ÀÌÅÍ ÇÏ³ª¸¦ ÀĞÀ»¶§ÀÇ Å©±â
+			desc.StructureByteStride = sizeof(T_VERTEX); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
 
-			// CPU¿¡¼­ GPU·Î µ¥ÀÌÅÍ¸¦ º¸³¾¶§ ¾î¶² µ¥ÀÌÅÍ¸¦ ¾î¶² Çü½ÄÀ¸·Î º¸³¾Áö ¼³Á¤
+			// CPUï¿½ï¿½ï¿½ï¿½ GPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			D3D11_SUBRESOURCE_DATA bufferData = { 0 };
-			bufferData.pSysMem = vertices.data(); // µ¥ÀÌÅÍ¸¦ ¾îµğ¼­ºÎÅÍ º¸³»±â ½ÃÀÛÇÒÁö
+			bufferData.pSysMem = vertices.data(); // ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ğ¼­ºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			bufferData.SysMemPitch = 0;
 			bufferData.SysMemSlicePitch = 0;
 
-			// GPU¿¡¼­ ¸Ş¸ğ¸® »ı¼º
+			// GPUï¿½ï¿½ï¿½ï¿½ ï¿½Ş¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 			ThrowIfFailed(device->CreateBuffer(&desc, &bufferData, vertexBuffer.GetAddressOf()));
 		}
 
@@ -41,40 +41,40 @@ namespace DE {
 		template<typename T_VERTEX>
 		static void CreateVertexBufferPool(ComPtr<ID3D11Device>& device, const UINT& maxCount, ComPtr<ID3D11Buffer>& vertexBuffer) {
 			D3D11_BUFFER_DESC desc = {};
-			desc.Usage = D3D11_USAGE_DEFAULT; // Áß¿ä: UpdateSubresource »ç¿ë °¡´É
-			desc.ByteWidth = UINT(sizeof(T_VERTEX) * maxCount); // ¹Ì¸® Å©°Ô ÀâÀ½ (¿¹: 100¸¸°³)
+			desc.Usage = D3D11_USAGE_DEFAULT; // ï¿½ß¿ï¿½: UpdateSubresource ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+			desc.ByteWidth = UINT(sizeof(T_VERTEX) * maxCount); // ï¿½Ì¸ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: 100ï¿½ï¿½ï¿½ï¿½)
 			desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			desc.CPUAccessFlags = 0; // CPU Á÷Á¢ Á¢±Ù ¾È ÇÔ (UpdateSubresource ¾µ °ÍÀÓ)
+			desc.CPUAccessFlags = 0; // CPU ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ (UpdateSubresource ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 			desc.StructureByteStride = sizeof(T_VERTEX);
 
-			// ÃÊ±â µ¥ÀÌÅÍ ¾øÀÌ »ı¼º (nullptr)
+			// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (nullptr)
 			ThrowIfFailed(device->CreateBuffer(&desc, nullptr, vertexBuffer.GetAddressOf()));
 		}
 
 		static void CreateIndexBufferPool(ComPtr<ID3D11Device>& device, const UINT& maxCount, ComPtr<ID3D11Buffer>& indexBuffer)
 		{
 			D3D11_BUFFER_DESC desc = {};
-			// [Áß¿ä º¯°æ] IMMUTABLE -> DEFAULT
+			// [ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½] IMMUTABLE -> DEFAULT
 			desc.Usage = D3D11_USAGE_DEFAULT;
 			desc.ByteWidth = UINT(sizeof(uint32_t) * maxCount);
 			desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 			desc.CPUAccessFlags = 0;
 			desc.StructureByteStride = sizeof(uint32_t);
 
-			// ÃÊ±â µ¥ÀÌÅÍ ¾øÀÌ »ı¼º
+			// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			device->CreateBuffer(&desc, nullptr, indexBuffer.GetAddressOf());
 		}
 
-		// ConstantBuffer´Â º¸Åë Update¿¡¼­ °ªÀ» ¸Å ÇÁ·¹ÀÓ ¹Ù²ãÁÖ¹Ç·Î CPU¿¡¼­ ¾²±â, GPU¿¡¼­ ÀĞ±â°¡ °¡´ÉÇÑ Buffer¸¦ »ı¼º
+		// ConstantBufferï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Updateï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½Ö¹Ç·ï¿½ CPUï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, GPUï¿½ï¿½ï¿½ï¿½ ï¿½Ğ±â°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Bufferï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		template<typename T_CONSTANT>
 		static void CreateConstantBuffer(ID3D11Device* device, const T_CONSTANT& constantData, ComPtr<ID3D11Buffer>& constantBuffer) {
 			D3D11_BUFFER_DESC desc = {};
 			ZeroMemory(&desc, sizeof(desc));
-			desc.Usage = D3D11_USAGE_DYNAMIC; // CPU¿¡¼­ ¾²±â, GPU¿¡¼­ ÀĞ±â °¡´É
+			desc.Usage = D3D11_USAGE_DYNAMIC; // CPUï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, GPUï¿½ï¿½ï¿½ï¿½ ï¿½Ğ±ï¿½ ï¿½ï¿½ï¿½ï¿½
 			desc.ByteWidth = UINT(sizeof(constantData));
 			desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // CPU¿¡¼­ ¾²±â °¡´É
-			desc.StructureByteStride = 0; // ¹è¿­ÀÌ ¾Æ´Ï¹Ç·Î 0
+			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // CPUï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+			desc.StructureByteStride = 0; // ï¿½è¿­ï¿½ï¿½ ï¿½Æ´Ï¹Ç·ï¿½ 0
 
 			D3D11_SUBRESOURCE_DATA bufferData = { 0 };
 			bufferData.pSysMem = &constantData;
@@ -84,43 +84,43 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&desc, &bufferData, constantBuffer.GetAddressOf()));
 		}
 
-		// Vertex Shader¿Í InputLayout »ı¼º
+		// Vertex Shaderï¿½ï¿½ InputLayout ï¿½ï¿½ï¿½ï¿½
 		static void CreateVSAndIL(ComPtr<ID3D11Device>& device, const std::wstring& filename, const std::vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout);
-		// Pixel Shader »ı¼º
+		// Pixel Shader ï¿½ï¿½ï¿½ï¿½
 		static void CreatePS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader);
-		// Geometry Shader »ı¼º
+		// Geometry Shader ï¿½ï¿½ï¿½ï¿½
 		static void CreateGS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11GeometryShader>& geometryShader);
-		// Hull Shader »ı¼º (Control Points·Î ÀÌ·ç¾îÁø Patch¸¦ ´Ù·ç´Â Shader)
+		// Hull Shader ï¿½ï¿½ï¿½ï¿½ (Control Pointsï¿½ï¿½ ï¿½Ì·ï¿½ï¿½ï¿½ï¿½ Patchï¿½ï¿½ ï¿½Ù·ï¿½ï¿½ Shader)
 		static void CreateHS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11HullShader>& hullShader);
-		// Domain Shader »ı¼º
+		// Domain Shader ï¿½ï¿½ï¿½ï¿½
 		static void CreateDS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11DomainShader>& domainShader);
 
 
-		// Usage¸¦ DynamicÀ¸·Î ¼³Á¤ÇÑ Buffer¸¦ GPU¿¡¼­ GPU ¸Ş¸ğ¸®·Î µ¥ÀÌÅÍ º¹»ç
+		// Usageï¿½ï¿½ Dynamicï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Bufferï¿½ï¿½ GPUï¿½ï¿½ï¿½ï¿½ GPU ï¿½Ş¸ğ¸®·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		template<typename T_DATA>
 		static void UpdateBuffer(ComPtr<ID3D11DeviceContext>& context, const T_DATA& bufferData, ComPtr<ID3D11Buffer>& buffer) {
 			D3D11_MAPPED_SUBRESOURCE ms;
-			// GPU ¸Ş¸ğ¸®¿¡ Á¢±Ù
+			// GPU ï¿½Ş¸ğ¸®¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 			context->Map(buffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
-			// CPU µ¥ÀÌÅÍ¸¦ GPU ¸Ş¸ğ¸®¿¡ º¹»ç
+			// CPU ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ GPU ï¿½Ş¸ğ¸®¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 			memcpy(ms.pData, &bufferData, sizeof(bufferData));
-			// GPU ¸Ş¸ğ¸® Á¢±Ù ÇØÁ¦
+			// GPU ï¿½Ş¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			context->Unmap(buffer.Get(), NULL);
 			
 		}
 
-		// Texture2D »ı¼º
+		// Texture2D ï¿½ï¿½ï¿½ï¿½
 		static void CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, const bool usSRGB, Texture2D& texture);
-		// [½Å±Ô] ScratchImage¸¦ Á÷Á¢ ¹Ş´Â ¹öÀü (½ÇÁ¦ ±¸ÇöºÎ)
+		// [ï¿½Å±ï¿½] ScratchImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ş´ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 		static void CreateTexture(
 			ID3D11Device* device,
 			ID3D11DeviceContext* context,
-			const DirectX::ScratchImage& image, // Image2* ´ë½Å ScratchImage& »ç¿ë
+			const DirectX::ScratchImage& image, // Image2* ï¿½ï¿½ï¿½ ScratchImage& ï¿½ï¿½ï¿½
 			const DXGI_FORMAT& format,
 			Texture2D& texture
 		);
 
-		// [±âÁ¸] Image2 Æ÷ÀÎÅÍ¸¦ ¹Ş´Â ¹öÀü (Wrapper)
+		// [ï¿½ï¿½ï¿½ï¿½] Image2 ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ş´ï¿½ ï¿½ï¿½ï¿½ï¿½ (Wrapper)
 		static void CreateTexture(
 			ID3D11Device* device,
 			ID3D11DeviceContext* context,
@@ -128,21 +128,21 @@ namespace DE {
 			const DXGI_FORMAT& format,
 			Texture2D& texture
 		);
-		// Resource TextureÀÇ ¼³Á¤À» °¡Á®¿Í¼­ Texture, SRV, RTV »ı¼º
+		// Resource Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ Texture, SRV, RTV ï¿½ï¿½ï¿½ï¿½
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const ComPtr<ID3D11Texture2D>& resource, Texture2D& texture);
 		static void CreateTexture(ComPtr<ID3D11Device>& device, const D3D11_TEXTURE2D_DESC& desc, Texture2D& texture);
 		static void CreateTextureHelper(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat, DE::Texture2D& texture);
-		// Post-Process ¿ë Texture »ı¼º
+		// Post-Process ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
 		static void CreateImageFilterTexture(ComPtr<ID3D11Device>& device, int width, int height, Texture2D& texture);
-		// DDS ÆÄÀÏ·ÎºÎÅÍ Texture »ı¼º (isCubemapÀÌ true¸é Cubemap Texture, false¸é Texture2D »ı¼º)
+		// DDS ï¿½ï¿½ï¿½Ï·Îºï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½ (isCubemapï¿½ï¿½ trueï¿½ï¿½ Cubemap Texture, falseï¿½ï¿½ Texture2D ï¿½ï¿½ï¿½ï¿½)
 		static void CreateDDSTexture(ComPtr<ID3D11Device>& device, const std::wstring& filename, bool isCubeMap, ComPtr<ID3D11ShaderResourceView>& textureResourceView);
-		// GPU¿¡¼­ CPU·Î µ¥ÀÌÅÍ¸¦ º¹»çÇØ¿Ã ¿ëµµÀÎ Staging Texture »ı¼º
+		// GPUï¿½ï¿½ï¿½ï¿½ CPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¿ï¿½ ï¿½ëµµï¿½ï¿½ Staging Texture ï¿½ï¿½ï¿½ï¿½
 		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT& pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
-		// MipmapÀ» À§ÇÑ Staging Texture »ı¼º
+		// Mipmapï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Staging Texture ï¿½ï¿½ï¿½ï¿½
 		static void CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat = DXGI_FORMAT_R8G8B8A8_UNORM, const int& mipLevels = 1, const int& arraySize = 1);
-		// Texture Array »ı¼º
+		// Texture Array ï¿½ï¿½ï¿½ï¿½
 		static void CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture);
-		// Metal°ú Roughness Texture¸¦ ÇÏ³ªÀÇ Texture¿¡¼­ »ç¿ëÇÏ´Â MetallicRoughness Texture »ı¼º
+		// Metalï¿½ï¿½ Roughness Textureï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ Textureï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ MetallicRoughness Texture ï¿½ï¿½ï¿½ï¿½
 		static void CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
 		static void CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture);
 		static void CreateTexturesFromGLTFCombined(
@@ -152,26 +152,35 @@ namespace DE {
 			Texture2D& outMetallicTex,
 			Texture2D& outRoughnessTex
 		);
-		// Texture2D Array »ı¼º
+		// Texture2D Array ï¿½ï¿½ï¿½ï¿½
 		static void CreateTexture2DArray(ID3D11Device* device,
 			UINT width, UINT height, UINT arraySize,
 			bool useSRGB,
 			ComPtr<ID3D11Texture2D>& outTexture,
 			ComPtr<ID3D11ShaderResourceView>& outSRV);
-		// Texture2D Array¿¡ µ¥ÀÌÅÍ¸¦ º¹»ç
+		// Texture2D Arrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 		static void UpdateTextureArraySlice(
 			ID3D11DeviceContext* context,
 			ID3D11Texture2D* textureArray,
 			const Image2* image,
 			UINT sliceIndex);
-		// Image2¸¦ »ç¿ëÇØ MiamapÀ» À§ÇÑ Stating Texture »ı¼º
+		// Image2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Miamapï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Stating Texture ï¿½ï¿½ï¿½ï¿½
 		static void CreateStagingTexture(ID3D11Device* device,
 			ID3D11DeviceContext* context,
 			const Image2* image,
 			ComPtr<ID3D11Texture2D>& outStagingTexture);
 		static void CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest);
 
-		// Pixel Format¿¡ µû¶ó Pixel »ö»óÀÇ ¹üÀ§°¡ ´Ù¸£±â ¶§¹®¿¡ °°Àº uint8_t¸¦ ¾²Áö¸¸ ´ë½Å µ¥ÀÌÅÍ ¹üÀ§°¡ ´Ù¸§
+		// 3D Texture (Volume Texture) ìƒì„±
+		static void CreateTexture3D(
+			ID3D11Device* device,
+			UINT width, UINT height, UINT depth,
+			DXGI_FORMAT format,
+			const void* initData,
+			ComPtr<ID3D11Texture3D>& outTexture,
+			ComPtr<ID3D11ShaderResourceView>& outSRV);
+
+		// Pixel Formatï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Pixel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ uint8_tï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½
 		static size_t GetPixelSize(const DXGI_FORMAT& pixelFormat);
 
 

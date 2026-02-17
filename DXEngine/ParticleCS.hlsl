@@ -29,14 +29,20 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     }
 
     ForceConsts force = consts[p.ownerID].force;
-    // 1. ¹°¸® ¿¬»ê (Physics)
+    // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Physics)
 
-    // Áß·Â Àû¿ë
+    // ï¿½ß·ï¿½ ï¿½ï¿½ï¿½ï¿½
     p.velocity += force.gravity * dt;
 
-    // °ø±â ÀúÇ× (Drag) Àû¿ë
-    // drag °ªÀÌ Å¬¼ö·Ï ¼Óµµ°¡ 0¿¡ ºü¸£°Ô ¼ö·Å
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Drag) ï¿½ï¿½ï¿½ï¿½
+    // drag ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½Óµï¿½ï¿½ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     p.velocity *= 1.0f / (1.0f + force.drag * dt);
+
+    // Curl Noise Force
+    if (force.curlNoiseEnabled) {
+        float3 curlForce = SampleCurlNoiseTiling(p.position, force.curlNoiseFrequency);
+        p.velocity += curlForce * force.curlNoiseStrength * dt;
+    }
 
     // Vortex
     VortexConsts vortex = consts[p.ownerID].vortex;
@@ -52,17 +58,17 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
         CalculateOrbit(p, orbit, dt);
     }
 
-    // À§Ä¡ °»½Å
+    // ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
     p.position += p.velocity * dt;
 
-    // 2. ½Ã°¢ È¿°ú (Visuals)
+    // 2. ï¿½Ã°ï¿½ È¿ï¿½ï¿½ (Visuals)
     VisualConsts visual = consts[p.ownerID].visual;
     float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
-    // Å©±â º¸°£ (Start -> End)
+    // Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Start -> End)
     // sizeRange.x = Start Size, sizeRange.y = End Size
     p.size = lerp(visual.sizeRange.x, visual.sizeRange.y, ageRatio);
 
-    // »ö»ó º¸°£ (Start -> End)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Start -> End)
     p.color = lerp(visual.startColor, visual.endColor, ageRatio);
 
     //p.rotation += p.rotSpeed * dt;

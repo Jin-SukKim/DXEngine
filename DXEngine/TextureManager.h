@@ -5,7 +5,7 @@ class TextureManager
 {
 public:
 	struct TextureEntity {
-		std::string path;  // ÀÌÁ¦ »ó´ë °æ·Î¸¸ ÀúÀå
+		std::string path;  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 		int idx;
 	};
 	static TextureManager& Get() {
@@ -17,7 +17,11 @@ public:
 	TextureEntity LoadParticleTexture(const std::string& path);
 	void BindParticleTextures();
 
-	// ÀÏ¹Ý Texture
+	// Curl Noise 3D Texture
+	void GenerateCurlNoiseTexture(UINT resolution = 64, float frequency = 4.0f);
+	void BindCurlNoiseTexture(UINT slot = 15);
+
+	// ï¿½Ï¹ï¿½ Texture
 	int LoadTexture(const std::string& path, bool isSRGB);
 	int LoadMetallicRoughnessTexture(const std::string& metallicPath, const std::string& roughnessPath);
 	std::pair<int, int> LoadMetallicRoughnessTexture(const std::string& path);
@@ -29,16 +33,20 @@ private:
 	static const UINT MAX_PARTICLE_TEXTURES = 64;
 	static const bool particleSRGB = true;
 
-	std::unordered_map<std::string, int> m_pathToIndexMap;  // »ó´ë °æ·Î·Î °Ë»ö
+	std::unordered_map<std::string, int> m_pathToIndexMap;  // ï¿½ï¿½ï¿½ ï¿½ï¿½Î·ï¿½ ï¿½Ë»ï¿½
 	std::unique_ptr<Texture2D> m_particleTextureArray;
 	int m_nextFreeIndex = 0;
 
-	// ÀÏ¹Ý Texture °ü¸®
-	std::unordered_map<std::string, int> m_texturePathToIdx;  // »ó´ë °æ·Î·Î °Ë»ö
-	std::unordered_map<int, std::string> m_indexToPathMap;    // ¿ªÂüÁ¶ ½Ã »ó´ë °æ·Î ¹ÝÈ¯
+	// ï¿½Ï¹ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
+	std::unordered_map<std::string, int> m_texturePathToIdx;  // ï¿½ï¿½ï¿½ ï¿½ï¿½Î·ï¿½ ï¿½Ë»ï¿½
+	std::unordered_map<int, std::string> m_indexToPathMap;    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 	std::vector<std::unique_ptr<Texture2D>> m_textures;
 
-	std::string presetPath = "..\\Assets\\";  // ³»ºÎ Àü¿ë
+	std::string presetPath = "..\\Assets\\";  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+
+	// Curl Noise 3D Texture
+	ComPtr<ID3D11Texture3D> m_curlNoiseTexture;
+	ComPtr<ID3D11ShaderResourceView> m_curlNoiseSRV;
 };
 }
 

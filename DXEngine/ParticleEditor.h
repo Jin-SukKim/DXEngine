@@ -51,6 +51,10 @@ namespace DE {
 		EffectActor* m_metalSpark = nullptr;
 		EffectActor* m_sparkBurst = nullptr;
 		EffectActor* m_ember = nullptr;
+		EffectActor* m_curlSmoke = nullptr;
+		EffectActor* m_curlFirefly = nullptr;
+		EffectActor* m_curlMagicAura = nullptr;
+		EffectActor* m_curlSpiritWisp = nullptr;
 
 		// ��Ʈ���� �׽�Ʈ�� ����
 		float m_stressTime = 0.0f;

@@ -84,6 +84,12 @@ namespace DE {
         float drag;
         Vector3 gravity;
         float padding9;
+
+        // Curl Noise (Tiling Mode)
+        float curlNoiseFrequency = 0.1f;
+        float curlNoiseStrength = 1.0f;
+        UINT curlNoiseEnabled = 0;
+        float padding10 = 0.0f;
     };
 
     struct VortexConsts {

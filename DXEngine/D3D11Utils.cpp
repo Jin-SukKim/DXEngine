@@ -10,7 +10,7 @@ namespace DE {
 	void D3D11Utils::CreateIndexBuffer(ComPtr<ID3D11Device>& device, const std::vector<uint32_t>& indices, ComPtr<ID3D11Buffer>& indexBuffer)
 	{
 		D3D11_BUFFER_DESC desc = {};
-		// ÃÊ±âÈ­ ÈÄ º¯°æ x (Indices ¼ø¼­´Â ¹Ù²ðÀÏÀÌ ¾øÀ½)
+		// ï¿½Ê±ï¿½È­ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ x (Indices ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		desc.Usage = D3D11_USAGE_IMMUTABLE; // GPU Read
 		desc.ByteWidth = UINT(sizeof(uint32_t) * indices.size());
 		desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -27,7 +27,7 @@ namespace DE {
 
 	void D3D11Utils::CreateVSAndIL(ComPtr<ID3D11Device>& device, const std::wstring& filename, const std::vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
 	{
-		// ÀÓ½Ã·Î »ç¿ëÇÒ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Blob °ø°£
+		// ï¿½Ó½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Blob ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3DBlob> shaderBlob;
 
 		UINT compileFlags = 0;
@@ -36,9 +36,9 @@ namespace DE {
 #endif
 		ComPtr<ID3DBlob> errorBlob;
 
-		// ÄÜ¼Ö¿¡ Ãâ·Â
+		// ï¿½Ü¼Ö¿ï¿½ ï¿½ï¿½ï¿½
 		//std::cout << static_cast<const char*>(errorBlob->GetBufferPointer());
-		// D3D_COMPILE_STANDARD_FILE_INCLUDE·Î Shader¿¡¼­ include »ç¿ë
+		// D3D_COMPILE_STANDARD_FILE_INCLUDEï¿½ï¿½ Shaderï¿½ï¿½ï¿½ï¿½ include ï¿½ï¿½ï¿½
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
 		device->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &vertexShader);
@@ -46,7 +46,7 @@ namespace DE {
 	}
 	void D3D11Utils::CreatePS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader)
 	{
-		// ÀÓ½Ã·Î »ç¿ëÇÒ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Blob °ø°£
+		// ï¿½Ó½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Blob ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3DBlob> shaderBlob;
 		ComPtr<ID3DBlob> errorBlob;
 		
@@ -110,12 +110,12 @@ namespace DE {
 		std::string ext(filename.end() - 3, filename.end());
 		std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
 
-		// HDRI pipelineÀ¸·Î floatÀ» »ç¿ëÇÏ´Âµ¥ ÀÏ¹ÝÀûÀÎ ÀÌ¹ÌÁö´Â UNORMÀÌ¹Ç·Î UNORMÀ» ¾²¸é ÀÏ¹ÝÀûÀÎ Texture°¡ ³Ê¹« ¹à¾ÆÁö´Â ¹®Á¦°¡ ¹ß»ýÇÏ±â ‹š¹®¿¡ SRGB Æ÷¸ËÀ» »ç¿ë
-		// SRGB´Â ³»ºÎÀûÀ¸·Î Gamma CorrectionÀ» ÇØÁÖ±â ¶§¹®¿¡ HDRÇÏ°í °°Àº °ø°£¿¡¼­ ÀÛ¾÷ °¡´É
-		DXGI_FORMAT pixelFormat = usSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // ÀÏ¹ÝÀûÀÎ ÀÌ¹ÌÁö ÆÄÀÏÀÇ Çü½ÄÀº uint8_tÀÌ±â¿¡ R8G8B8A8_UNORM »ç¿ë
-		// imageÀÇ È®ÀåÀÚ°¡ exrÀÌ¶ó¸é HDRI¶õ ÀÇ¹Ì
+		// HDRI pipelineï¿½ï¿½ï¿½ï¿½ floatï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´Âµï¿½ ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ UNORMï¿½Ì¹Ç·ï¿½ UNORMï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ ï¿½Ê¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SRGB ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+		// SRGBï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Gamma Correctionï¿½ï¿½ ï¿½ï¿½ï¿½Ö±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HDRï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ï¿½
+		DXGI_FORMAT pixelFormat = usSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ uint8_tï¿½Ì±â¿¡ R8G8B8A8_UNORM ï¿½ï¿½ï¿½
+		// imageï¿½ï¿½ È®ï¿½ï¿½ï¿½Ú°ï¿½ exrï¿½Ì¶ï¿½ï¿½ HDRIï¿½ï¿½ ï¿½Ç¹ï¿½
 		if (ext == "exr") {
-			// HDRI´Â RGBA°¢ 16bit floatÀ» »ç¿ëÇÏ¹Ç·Î uint16_t * 4ÀÇ pixel Å©±â¸¦ °¡Áü
+			// HDRIï¿½ï¿½ RGBAï¿½ï¿½ 16bit floatï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ uint16_t * 4ï¿½ï¿½ pixel Å©ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½
 			if (!img.LoadExr(filename, pixelFormat)) throw std::exception();
 		}
 		else 
@@ -124,16 +124,16 @@ namespace DE {
 		CreateTextureHelper(device, context, img.GetWidth(), img.GetHeight(), img.GetImage(), pixelFormat, texture);
 	}
 
-	// 1. [ÇÙ½É ±¸Çö] ScratchImage¸¦ ¹Þ¾Æ ÅØ½ºÃ³¸¦ »ý¼ºÇÏ´Â ÇÔ¼ö
+	// 1. [ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½] ScratchImageï¿½ï¿½ ï¿½Þ¾ï¿½ ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	void D3D11Utils::CreateTexture(ID3D11Device* device, ID3D11DeviceContext* context, const DirectX::ScratchImage& image, const DXGI_FORMAT& format, Texture2D& texture)
 	{
 		const DirectX::Image* imgData = image.GetImages(); // Mip0, Slice0
 
-		// 1. Texture ¼³Á¤
+		// 1. Texture ï¿½ï¿½ï¿½ï¿½
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width = static_cast<UINT>(imgData->width);
 		desc.Height = static_cast<UINT>(imgData->height);
-		desc.MipLevels = 0; // ÀüÃ¼ Mipmap »ý¼º
+		desc.MipLevels = 0; // ï¿½ï¿½Ã¼ Mipmap ï¿½ï¿½ï¿½ï¿½
 		desc.ArraySize = 1;
 		desc.Format = format;
 		desc.SampleDesc.Count = 1;
@@ -142,10 +142,10 @@ namespace DE {
 		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 		desc.CPUAccessFlags = 0;
 
-		// 2. Texture »ý¼º
+		// 2. Texture ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
 
-		// 3. µ¥ÀÌÅÍ ¾÷·Îµå (UpdateSubresource »ç¿ë)
+		// 3. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ (UpdateSubresource ï¿½ï¿½ï¿½)
 		context->UpdateSubresource(
 			texture.GetTexture(),
 			0,
@@ -155,18 +155,18 @@ namespace DE {
 			static_cast<UINT>(imgData->slicePitch)
 		);
 
-		// 4. SRV »ý¼º
+		// 4. SRV ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 
-		// 5. Mipmap »ý¼º
+		// 5. Mipmap ï¿½ï¿½ï¿½ï¿½
 		context->GenerateMips(texture.GetSRV());
 	}
 
-	// 2. [Wrapper] Image2¸¦ ¹Þ¾Æ À§ ÇÔ¼ö¸¦ È£Ãâ
+	// 2. [Wrapper] Image2ï¿½ï¿½ ï¿½Þ¾ï¿½ ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ È£ï¿½ï¿½
 	void D3D11Utils::CreateTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, const DXGI_FORMAT& format, Texture2D& texture)
 	{
 		if (image == nullptr) return;
-		// Image2 ³»ºÎÀÇ ScratchImage¸¦ ²¨³»¼­ Àü´Þ
+		// Image2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ScratchImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		CreateTexture(device, context, image->GetBuffer(), format, texture);
 	}
 
@@ -176,58 +176,58 @@ namespace DE {
 		resource->GetDesc(&desc);
 		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 
-		// Resource TextureÀÇ ¼³Á¤À» °¡Á®¿Í¼­ »ý¼º
+		// Resource Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
-		// Shader Resource View »ý¼º
+		// Shader Resource View ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
-		// Render Target View »ý¼º
+		// Render Target View ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
 	}
 
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const D3D11_TEXTURE2D_DESC& desc, Texture2D& texture)
 	{
-		// Texture2D »ý¼º
+		// Texture2D ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
-		// Shader Resource View »ý¼º
+		// Shader Resource View ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
-		// Render Target View »ý¼º
+		// Render Target View ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
 	}
 
 	void D3D11Utils::CreateTextureHelper(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat, DE::Texture2D& texture)
 	{
-		// Staging Texture ¸¸µé°í CPU¿¡¼­ ÀÌ¹ÌÁö¸¦ º¹»ç
+		// Staging Texture ï¿½ï¿½ï¿½ï¿½ï¿½ CPUï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ComPtr<ID3D11Texture2D> stagingTexture;
 		CreateStagingTexture(device, context, width, height, stagingTexture, image, pixelFormat);
 
-		// Texture ¼³Á¤
+		// Texture ï¿½ï¿½ï¿½ï¿½
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = 0; // MipMap Level ÃÖ´ë
+		desc.MipLevels = 0; // MipMap Level ï¿½Ö´ï¿½
 		desc.ArraySize = 1;
 		desc.Format = pixelFormat;
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_DEFAULT;
-		// Shader Resource View·Î »ç¿ë
+		// Shader Resource Viewï¿½ï¿½ ï¿½ï¿½ï¿½
 		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap »ç¿ë
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap ï¿½ï¿½ï¿½
 		desc.CPUAccessFlags = 0; // No CPU Access
 
-		// ÃÊ±â µ¥ÀÌÅÍ ¾øÀÌ Texture »ý¼º (ÀüºÎ °ËÀº»ö)
+		// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
 
-		// ½ÇÁ¦·Î »ý¼ºµÈ MipLevels¸¦ È®ÀÎÇØº¸°í ½ÍÀ» °æ¿ì
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ MipLevelsï¿½ï¿½ È®ï¿½ï¿½ï¿½Øºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		// texture->GetDesc(&desc);
 		// std::cout << desc.MipLevels << std::endl;
 
-		// Staging Texture·ÎºÎÅÍ °¡Àå ÇØ»óµµ°¡ ³ôÀº ÀÌ¹ÌÁö º¹»ç
+		// Staging Textureï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		context->CopySubresourceRegion(texture.GetTexture(), 0, 0, 0, 0, stagingTexture.Get(), 0, nullptr);
 
-		// ResourceView ¸¸µé±â
+		// ResourceView ï¿½ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 
-		// ÇØ»óµµ¸¦ ³·Ãç°¡¸ç MipMap »ý¼º
+		// ï¿½Ø»óµµ¸ï¿½ ï¿½ï¿½ï¿½ç°¡ï¿½ï¿½ MipMap ï¿½ï¿½ï¿½ï¿½
 		context->GenerateMips(texture.GetSRV());
 	}
 
@@ -237,20 +237,20 @@ namespace DE {
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = desc.ArraySize = 1; // Post-Processing¿¡´Â MipmapÀÌ ºÒÇÊ¿ä
-		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; // ÀÌ¹ÌÁö Ã³¸® ¿ëµµ
+		desc.MipLevels = desc.ArraySize = 1; // Post-Processingï¿½ï¿½ï¿½ï¿½ Mipmapï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½
+		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; // ï¿½Ì¹ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ëµµ
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_DEFAULT; // GPU read/write
-		// SRV¿Í RTV ¿ëÀ¸·Î »ç¿ë
+		// SRVï¿½ï¿½ RTV ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 		desc.MiscFlags = 0;
 		desc.CPUAccessFlags = 0;
 
-		// µ¥ÀÌÅÍ ¾øÀÌ Texture °ø°£¸¸ ¼³Á¤ ¹× »ý¼º
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
-		// Shader Resource View »ý¼º
+		// Shader Resource View ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
-		// Render Target View »ý¼º
+		// Render Target View ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateRenderTargetView(texture.GetTexture(), nullptr, texture.GetAddressOfRTV()));
 	}
 
@@ -260,7 +260,7 @@ namespace DE {
 
 		UINT miscFlags = 0;
 		if (isCubeMap)
-			miscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE; // Cubemap¿ë Texture
+			miscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE; // Cubemapï¿½ï¿½ Texture
 
 		// https://github.com/microsoft/DirectXTK/wiki/DDSTextureLoader
 		ThrowIfFailed(DirectX::CreateDDSTextureFromFileEx(
@@ -272,24 +272,24 @@ namespace DE {
 
 	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const DXGI_FORMAT& pixelFormat)
 	{
-		// Staginge Texture »ý¼º
+		// Staginge Texture ï¿½ï¿½ï¿½ï¿½
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.BindFlags = 0;
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = desc.ArraySize = 1; // GPUÀÇ µ¥ÀÌÅÍ¸¦ °¡Á®¿Ã ¿ëµµÀÇ Staging TextureÀÌ±â¿¡ mipmap ºÒÇÊ¿ä
+		desc.MipLevels = desc.ArraySize = 1; // GPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ëµµï¿½ï¿½ Staging Textureï¿½Ì±â¿¡ mipmap ï¿½ï¿½ï¿½Ê¿ï¿½
 		desc.Format = pixelFormat;
 		desc.SampleDesc.Count = 1;
-		desc.Usage = D3D11_USAGE_STAGING; // GPU->CPU·Î µ¥ÀÌÅÍ¸¦ º¸³¾ ¿ëµµ
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE; // CPU¿¡¼­ Á¢±Ù
+		desc.Usage = D3D11_USAGE_STAGING; // GPU->CPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ëµµ
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE; // CPUï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
 	}
 
 	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat, const int& mipLevels, const int& arraySize)
 	{
-		// Staging Texture »ý¼º
+		// Staging Texture ï¿½ï¿½ï¿½ï¿½
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = width;
@@ -303,16 +303,16 @@ namespace DE {
 
 		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
 
-		// Pixel Format¿¡ ¸Â´Â ÇÑ ÇÈ¼¿ »öÀÇ Å©±â 
-		// RGBA °¢ 8bit¾¿ »ç¿ëÇÏ¸é uint8_t * 4(ÀÏ¹ÝÀûÀÎ ÀÌ¹ÌÁö), °¢ 16bit¶ó¸é uint16_t * 4(HDRI) 
+		// Pixel Formatï¿½ï¿½ ï¿½Â´ï¿½ ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ 
+		// RGBA ï¿½ï¿½ 8bitï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ uint8_t * 4(ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½), ï¿½ï¿½ 16bitï¿½ï¿½ï¿½ uint16_t * 4(HDRI) 
 		size_t pixelSize = GetPixelSize(pixelFormat);
 
-		// CPU¿¡¼­ ÀÌ¹ÌÁö µ¥ÀÌÅÍ º¹»ç
+		// CPUï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		D3D11_MAPPED_SUBRESOURCE ms;
 		context->Map(texture.Get(), NULL, D3D11_MAP_WRITE, NULL, &ms);
-		uint8_t* pData = (uint8_t*)ms.pData; // uint8_t´Â »ö±ò 1°³ °ª (ex: R°ª 1°³)
+		uint8_t* pData = (uint8_t*)ms.pData; // uint8_tï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ ï¿½ï¿½ (ex: Rï¿½ï¿½ 1ï¿½ï¿½)
 		for (UINT h = 0; h < UINT(height); ++h) { 
-			// GPU ¸Þ¸ð¸®¿Í CPU ¸Þ¸ð¸®°¡ 1´ë1·Î ´ëÀÀµÇÁö ¾Ê±â¿¡ °¡·ÎÁÙ ÇÑ ÁÙ¾¿ º¹»ç
+			// GPU ï¿½Þ¸ð¸®¿ï¿½ CPU ï¿½Þ¸ð¸®°ï¿½ 1ï¿½ï¿½1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±â¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ù¾ï¿½ ï¿½ï¿½ï¿½ï¿½
 			memcpy(&pData[h * ms.RowPitch], &image[h * width * pixelSize], width * pixelSize);
 		}
 		context->Unmap(texture.Get(), NULL);
@@ -320,69 +320,69 @@ namespace DE {
 
 	void D3D11Utils::CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture)
 	{
-		// TODO: ¸ðµç ÀÌ¹ÌÁöÀÇ width¿Í heightÀÌ °°´Ù°í °¡Á¤
+		// TODO: ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ widthï¿½ï¿½ heightï¿½ï¿½ ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½
 		std::vector<Image> imgs(filenames.size(), Image(L"Textures"));
 
-		// ÆÄÀÏ·ÎºÎÅÍ ÀÌ¹ÌÁö ¿©·¯ °³¸¦ ÀÐ¾îµéÀÓ
+		// ï¿½ï¿½ï¿½Ï·Îºï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½
 		for (size_t i = 0; i < filenames.size(); ++i)
 			if (!imgs[i].Load(filenames[i]))
 				throw std::exception();
 
 		UINT size = UINT(filenames.size());
 
-		// Texture2DArray¸¦ »ý¼º (ÀÌ¶§ µ¥ÀÌÅÍ¸¦ CPU·ÎºÎÅÍ º¹»çÇÏÁö ¾ÊÀ½)
+		// Texture2DArrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ì¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ CPUï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = UINT(imgs[0].GetWidth());
 		desc.Height = UINT(imgs[0].GetHeight());
-		desc.MipLevels = 0; // Mipmap Level ÃÖ´ë
-		desc.ArraySize = size; // Texture ArrayÀÌ¹Ç·Î »ç¿ëÇÒ Texture °³¼ö
+		desc.MipLevels = 0; // Mipmap Level ï¿½Ö´ï¿½
+		desc.ArraySize = size; // Texture Arrayï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
 		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture·ÎºÎÅÍ º¹»ç °¡´É
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Textureï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap »ç¿ë
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap ï¿½ï¿½ï¿½
 
-		// SUBRESOURCE_DATAÀÇ ¹è¿­
+		// SUBRESOURCE_DATAï¿½ï¿½ ï¿½è¿­
 		//std::vector<D3D11_SUBRESOURCE_DATA> initData(size);
 		//size_t offset = 0;
 		//size_t pixelSize = GetPixelSize(desc.Format);
 		//for (auto& i : initData) {
-		//	// °¢°¢ÀÇ ÀÌ¹ÌÁö°¡ ½ÃÀÛÇÏ´Â ½ÃÀÛÁ¡
+		//	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		//	//i.pSysMem = imageArray.data() + offset;
 		//	i.pSysMem = img[offset++].GetImage().data();
-		//	// °¡·ÎÁÙ ÇÏ³ªÀÇ µ¥ÀÌÅÍ Å©±â
+		//	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
 		//	i.SysMemPitch = desc.Width * pixelSize;
-		//	// 2D¿¡¼± »ç¿ëÇÏÁö ¾ÊÀ¸³ª 3DºÎÅÍ´Â »ç¿ëµÇ´Â ÇÑ ¸éÀÇ Å©±â
-		//	i.SysMemSlicePitch = desc.Width * desc.Height * pixelSize; // ÀÌ¹ÌÁö ÇÏ³ªÀÇ µ¥ÀÌÅÍ Å©±â
-		//	//offset += i.SysMemSlicePitch; // ´ÙÀ½ ÀÌ¹ÌÁöÀÇ ½ÃÀÛÁ¡À» ¾Ë±â À§ÇÑ offset
+		//	// 2Dï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 3Dï¿½ï¿½ï¿½Í´ï¿½ ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
+		//	i.SysMemSlicePitch = desc.Width * desc.Height * pixelSize; // ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
+		//	//offset += i.SysMemSlicePitch; // ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë±ï¿½ ï¿½ï¿½ï¿½ï¿½ offset
 		//}
 		//ThrowIfFailed(device->CreateTexture2D(&desc, initData.data(), texture.GetAddressOf()));
 
-		// ÀÏ¹ÝÀûÀÎ Texture2D´Â srv desc¸¦ ¼³Á¤ ¾ÈÇØµµ µÇ³ª Texture2D¸¦ ArrayÃ³·³ »ç¿ëÇÏ±â À§ÇØ¼± ¼³Á¤
+		// ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ Texture2Dï¿½ï¿½ srv descï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Øµï¿½ ï¿½Ç³ï¿½ Texture2Dï¿½ï¿½ ArrayÃ³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 		//D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		//ZeroMemory(&srvDesc, sizeof(srvDesc));
 		//srvDesc.Format = desc.Format;
-		//// Array·Î »ç¿ëÇÏ°Ú´Ù´Â ¼³Á¤ ÇÙ½É
+		//// Arrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Ú´Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½
 		//srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		//srvDesc.Texture2DArray.MostDetailedMip = 0;
 		//srvDesc.Texture2DArray.MipLevels = desc.MipLevels;
 		//srvDesc.Texture2DArray.FirstArraySlice = 0;
-		//// ¾ó¸¸Å­ Å« Array¸¦ »ç¿ëÇÒ°ÇÁö ¼³Á¤ÇØÁÖ´Â ÇÙ½É
+		//// ï¿½ï¿½Å­ Å« Arrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Ù½ï¿½
 		//srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
 		//ThrowIfFailed(device->CreateShaderResourceView(texture.Get(), &srvDesc, textureSRV.GetAddressOf()));
 
-		// ÃÊ±â µ¥ÀÌÅÍ ¾øÀÌ Texture »ý¼º
+		// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
 
-		// StagingTexture¸¦ ¸¸µé¾î¼­ ÇÏ³ª¾¿ º¹»ç
+		// StagingTextureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½î¼­ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		for (size_t i = 0; i < imgs.size(); ++i) {
-			// StagingTexture´Â Texture2DArray°¡ ¾Æ´Ï¶ó Texture2D
+			// StagingTextureï¿½ï¿½ Texture2DArrayï¿½ï¿½ ï¿½Æ´Ï¶ï¿½ Texture2D
 			ComPtr<ID3D11Texture2D> stagingTexture;
 			CreateStagingTexture(device, context, imgs[i].GetWidth(), imgs[i].GetHeight(), stagingTexture, imgs[i].GetImage());
 
-			// Staging Texture¸¦ Texture ¹è¿­ÀÇ ÇØ´ç À§Ä¡¿¡ º¹»ç
+			// Staging Textureï¿½ï¿½ Texture ï¿½è¿­ï¿½ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			UINT subresourceIndex = D3D11CalcSubresource(0, UINT(i), desc.MipLevels);
 			context->CopySubresourceRegion(texture.GetTexture(), subresourceIndex, 0, 0, 0, stagingTexture.Get(), 0, nullptr);
 		}
@@ -394,20 +394,20 @@ namespace DE {
 
 	void D3D11Utils::CreateMetallicRoughnessTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture)
 	{
-		// GLTF´Â Metallic°ú Roughness°¡ ÀÌ¹Ì ÇÕÃÄÁø Texture¸¦ »ç¿ë
+		// GLTFï¿½ï¿½ Metallicï¿½ï¿½ Roughnessï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½
 		if (!metallicFilename.empty() && (metallicFilename == roughnessFilename))
 			CreateTexture(device, context, metallicFilename, false, texture);
-		// ´Ù¸¥ Format(fbx µî)ÀÇ Metallic, Roughness¸¦ µû·Î °¡Áø °æ¿ì´Â ÇÕÃÄ¼­ ÇÏ³ªÀÇ Texture·Î ¸¸µé¾îÁÖ±â
+		// ï¿½Ù¸ï¿½ Format(fbx ï¿½ï¿½)ï¿½ï¿½ Metallic, Roughnessï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½
 		else {
-			// º°µµÀÇ ÆÄÀÏÀÏ °æ¿ì µû·Î ÀÐ¾î¼­ ÇÕÃÄÁÖ±â
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾î¼­ ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½
 			
-			// Image Å¬·¡½º¸¦ È°¿ëÇÏ±â À§ÇØ¼­ µÎ ÀÌ¹ÌÁöµéÀ» °¢°¢ 4Ã¤³Î·Î º¯È¯ ÈÄ 
-			// ´Ù½Ã 3Ã¤³Î·Î ÇÕÄ¡´Â ¹æ½ÄÀ¸·Î ±¸Çö
+			// Image Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 4Ã¤ï¿½Î·ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ 
+			// ï¿½Ù½ï¿½ 3Ã¤ï¿½Î·ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			Image mImage(L"metallic"); // metallic
 			Image rImage(L"roughness"); // Roughness
 
 			int width = 0, height = 0;
-			// ¸¸¾à¿¡ µÑ Áß ÇÏ³ª¸¸ ÀÖÀ» °æ¿ìµµ °í·ÁÇÏ±â À§ÇØ¼­ °¢°¢ ÆÄÀÏ¸í È®ÀÎ
+			// ï¿½ï¿½ï¿½à¿¡ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ìµµ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¸ï¿½ È®ï¿½ï¿½
 			if (!metallicFilename.empty()) {
 				if (!mImage.Load(metallicFilename)) throw std::exception();
 				width = mImage.GetWidth();
@@ -420,7 +420,7 @@ namespace DE {
 				height = mImage.GetHeight();
 			}
 
-			// µÎ ÀÌ¹ÌÁöÀÇ ÇØ»óµµ°¡ °°´Ù°í °¡Á¤
+			// ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ°ï¿½ ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (!metallicFilename.empty() && !roughnessFilename.empty()) {
 				assert(mImage.GetWidth() == rImage.GetWidth());
 				assert(mImage.GetHeight() == rImage.GetHeight());
@@ -432,13 +432,13 @@ namespace DE {
 			std::vector<uint8_t> combinedImage(mImage.GetSize());
 			std::fill(combinedImage.begin(), combinedImage.end(), 0);
 
-			// GLTF¿¡¼­ G°¡ Roughness, B°¡ MetallicÀ¸·Î »ç¿ëµÇ±â¿¡ ÅëÀÏ½ÃÄÑÁÖ±â
+			// GLTFï¿½ï¿½ï¿½ï¿½ Gï¿½ï¿½ Roughness, Bï¿½ï¿½ Metallicï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç±â¿¡ ï¿½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½
 			size_t pixelSize = size_t(width * height);
 			for (size_t i = 0; i < pixelSize; ++i) {
-				// Roughness Texture°¡ ÀÖ´Ù¸é
+				// Roughness Textureï¿½ï¿½ ï¿½Ö´Ù¸ï¿½
 				if (rImage.GetSize())
 					combinedImage[4 * i + 1] = roughness[4 * i]; // Green = Roughness
-				// metallic Texture°¡ ÀÖ´Ù¸é
+				// metallic Textureï¿½ï¿½ ï¿½Ö´Ù¸ï¿½
 				if (mImage.GetSize()) 
 					combinedImage[4 * i + 2] = metallic[4 * i]; // Blue = Metalness
 			}
@@ -449,7 +449,7 @@ namespace DE {
 
 	void D3D11Utils::CreateMetallicRoughnessTexture(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& metallicFilename, const std::string& roughnessFilename, Texture2D& texture)
 	{
-		// 1. Image2¸¦ »ç¿ëÇÏ¿© ÅØ½ºÃ³ ·Îµå ¹× Æ÷¸Ë ÅëÀÏ (R8G8B8A8_UNORM)
+		// 1. Image2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (R8G8B8A8_UNORM)
 		Image2 metalImg;
 		bool hasMetal = !metallicFilename.empty() && metalImg.Load(metallicFilename);
 		if (hasMetal) metalImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -458,10 +458,10 @@ namespace DE {
 		bool hasRough = !roughnessFilename.empty() && roughImg.Load(roughnessFilename);
 		if (hasRough) roughImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
 
-		// µÑ ´Ù ¾øÀ¸¸é »ý¼ºÇÏÁö ¾ÊÀ½
+		// ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (!hasMetal && !hasRough) return;
 
-		// 2. ÃÖÁ¾ ÅØ½ºÃ³ Å©±â °áÁ¤ (µÑ Áß Å« »çÀÌÁî ±âÁØ)
+		// 2. ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		size_t width = 1;
 		size_t height = 1;
 		if (hasMetal) {
@@ -473,7 +473,7 @@ namespace DE {
 			height = std::max(height, (size_t)roughImg.GetHeight());
 		}
 
-		// 3. Å©±â°¡ ´Ù¸£´Ù¸é ¸®»çÀÌÁî (Image2::Resize È°¿ë)
+		// 3. Å©ï¿½â°¡ ï¿½Ù¸ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (Image2::Resize È°ï¿½ï¿½)
 		if (hasMetal && (metalImg.GetWidth() != width || metalImg.GetHeight() != height)) {
 			metalImg.Resize(width, height);
 		}
@@ -481,12 +481,12 @@ namespace DE {
 			roughImg.Resize(width, height);
 		}
 
-		// 4. º´ÇÕ °á°ú¸¦ ´ãÀ» ScratchImage »ý¼º
+		// 4. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ScratchImage ï¿½ï¿½ï¿½ï¿½
 		DirectX::ScratchImage resultImg;
 		HRESULT hr = resultImg.Initialize2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1);
 		ThrowIfFailed(hr);
 
-		// µ¥ÀÌÅÍ Æ÷ÀÎÅÍ È¹µæ
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¹ï¿½ï¿½
 		const DirectX::Image* resImage = resultImg.GetImages();
 		uint8_t* destPtr = resImage->pixels;
 		size_t destPitch = resImage->rowPitch;
@@ -497,7 +497,7 @@ namespace DE {
 		const uint8_t* roughPtr = hasRough ? roughImg.GetBuffer().GetImages()->pixels : nullptr;
 		size_t roughPitch = hasRough ? roughImg.GetBuffer().GetImages()->rowPitch : 0;
 
-		// 5. ÇÈ¼¿ ¼øÈ¸ÇÏ¸ç Ã¤³Î º´ÇÕ
+		// 5. ï¿½È¼ï¿½ ï¿½ï¿½È¸ï¿½Ï¸ï¿½ Ã¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		// glTF PBR Standard: R=AO, G=Roughness, B=Metallic
 		for (size_t y = 0; y < height; ++y)
 		{
@@ -507,10 +507,10 @@ namespace DE {
 
 			for (size_t x = 0; x < width; ++x)
 			{
-				float m = 0.0f; // Default Metallic (ºñ±Ý¼Ó)
-				float r = 1.0f; // Default Roughness (°ÅÄ§)
+				float m = 0.0f; // Default Metallic (ï¿½ï¿½Ý¼ï¿½)
+				float r = 1.0f; // Default Roughness (ï¿½ï¿½Ä§)
 
-				// °¢ ÅØ½ºÃ³ÀÇ Red Ã¤³Î °ªÀ» °¡Á®¿È (Èæ¹é ÀÌ¹ÌÁö¶ó°í °¡Á¤)
+				// ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ï¿½ï¿½ Red Ã¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 				if (metalRow) {
 					uint32_t pixel = metalRow[x];
 					m = (pixel & 0xFF) / 255.0f;
@@ -520,44 +520,44 @@ namespace DE {
 					r = (pixel & 0xFF) / 255.0f;
 				}
 
-				// Ã¤³Î ¸ÅÇÎ
-				uint8_t ao = 255; // AO Á¤º¸°¡ ¾øÀ¸¹Ç·Î 1.0 (Full White)
+				// Ã¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+				uint8_t ao = 255; // AO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ 1.0 (Full White)
 				uint8_t g = static_cast<uint8_t>(r * 255.0f); // Roughness
 				uint8_t b = static_cast<uint8_t>(m * 255.0f); // Metallic
 				uint8_t a = 255;
 
-				// Little Endian Packing (A B G R ¼ø¼­)
+				// Little Endian Packing (A B G R ï¿½ï¿½ï¿½ï¿½)
 				// 0xAABBGGRR
 				uint32_t packed = (a << 24) | (b << 16) | (g << 8) | ao;
 				destRow[x] = packed;
 			}
 		}
 
-		// 6. ÅØ½ºÃ³ ¹× SRV »ý¼º (Mipmap Æ÷ÇÔ)
+		// 6. ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ SRV ï¿½ï¿½ï¿½ï¿½ (Mipmap ï¿½ï¿½ï¿½ï¿½)
 		CreateTexture(device, context, resultImg, DXGI_FORMAT_R8G8B8A8_UNORM, texture);
 	}
 
 	void D3D11Utils::CreateTexturesFromGLTFCombined(ID3D11Device* device, ID3D11DeviceContext* context, const std::string& gltfTexturePath, Texture2D& outMetallicTex, Texture2D& outRoughnessTex)
 	{
-		// 1. ¿øº»(Combined) ÀÌ¹ÌÁö ·Îµå
+		// 1. ï¿½ï¿½ï¿½ï¿½(Combined) ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½Îµï¿½
 		Image2 sourceImg;
 		if (!sourceImg.Load(gltfTexturePath))
 			return;
 
-		// µ¥ÀÌÅÍ Ã³¸®¸¦ ½±°Ô ÇÏ±â À§ÇØ RGBA Æ÷¸ËÀ¸·Î º¯È¯
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ RGBA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 		sourceImg.Convert(DXGI_FORMAT_R8G8B8A8_UNORM);
 
 		size_t width = sourceImg.GetWidth();
 		size_t height = sourceImg.GetHeight();
 
-		// 2. ºÐ¸®µÈ µ¥ÀÌÅÍ¸¦ ´ãÀ» ScratchImage 2°³ »ý¼º (1Ã¤³Î Æ÷¸Ë »ç¿ë: R8_UNORM)
+		// 2. ï¿½Ð¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ScratchImage 2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (1Ã¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½: R8_UNORM)
 		DirectX::ScratchImage metalScratch;
 		DirectX::ScratchImage roughScratch;
 
 		ThrowIfFailed(metalScratch.Initialize2D(DXGI_FORMAT_R8_UNORM, width, height, 1, 1));
 		ThrowIfFailed(roughScratch.Initialize2D(DXGI_FORMAT_R8_UNORM, width, height, 1, 1));
 
-		// 3. ÇÈ¼¿ µ¥ÀÌÅÍ Æ÷ÀÎÅÍ È¹µæ
+		// 3. ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¹ï¿½ï¿½
 		const uint8_t* srcPixels = sourceImg.GetBuffer().GetImages()->pixels;
 		size_t srcPitch = sourceImg.GetBuffer().GetImages()->rowPitch;
 
@@ -567,7 +567,7 @@ namespace DE {
 		uint8_t* roughPixels = roughScratch.GetImages()->pixels;
 		size_t roughPitch = roughScratch.GetImages()->rowPitch;
 
-		// 4. Ã¤³Î ºÐ¸® (glTF: R=Occlusion, G=Roughness, B=Metallic)
+		// 4. Ã¤ï¿½ï¿½ ï¿½Ð¸ï¿½ (glTF: R=Occlusion, G=Roughness, B=Metallic)
 		for (size_t y = 0; y < height; ++y)
 		{
 			const uint32_t* srcRow = reinterpret_cast<const uint32_t*>(srcPixels + y * srcPitch);
@@ -584,47 +584,47 @@ namespace DE {
 				// Blue Channel = Metallic
 				uint8_t b = (pixel >> 16) & 0xFF;
 
-				// °¢°¢ÀÇ ÅØ½ºÃ³¿¡ ÀúÀå (1Ã¤³ÎÀÌ¹Ç·Î °ª ±×´ë·Î ´ëÀÔ)
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (1Ã¤ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 				roughRow[x] = g;
 				metalRow[x] = b;
 			}
 		}
 
-		// 5. °¢°¢ ÅØ½ºÃ³ »ý¼º (±âÁ¸¿¡ ÀÛ¼ºÇÑ CreateTexture ¿À¹ö·Îµù È°¿ë)
+		// 5. ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û¼ï¿½ï¿½ï¿½ CreateTexture ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½ È°ï¿½ï¿½)
 		CreateTexture(device, context, metalScratch, DXGI_FORMAT_R8_UNORM, outMetallicTex);
 		CreateTexture(device, context, roughScratch, DXGI_FORMAT_R8_UNORM, outRoughnessTex);
 	}
 
 	void D3D11Utils::CreateTexture2DArray(ID3D11Device* device, UINT width, UINT height, UINT arraySize, bool useSRGB, ComPtr<ID3D11Texture2D>& outTexture, ComPtr<ID3D11ShaderResourceView>& outSRV)
 	{
-		DXGI_FORMAT pixelFormat = useSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // ÀÏ¹ÝÀûÀÎ ÀÌ¹ÌÁö ÆÄÀÏÀÇ Çü½ÄÀº uint8_tÀÌ±â¿¡ R8G8B8A8_UNORM »ç¿ë
+		DXGI_FORMAT pixelFormat = useSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM; // ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ uint8_tï¿½Ì±â¿¡ R8G8B8A8_UNORM ï¿½ï¿½ï¿½
 
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = width;
 		desc.Height = height;
-		desc.MipLevels = 0; // Mipmap Level ÃÖ´ë
-		desc.ArraySize = arraySize; // Texture ArrayÀÌ¹Ç·Î »ç¿ëÇÒ Texture °³¼ö
+		desc.MipLevels = 0; // Mipmap Level ï¿½Ö´ï¿½
+		desc.ArraySize = arraySize; // Texture Arrayï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½ï¿½ï¿½
 		desc.Format = pixelFormat;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture·ÎºÎÅÍ º¹»ç °¡´É
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Textureï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 		desc.CPUAccessFlags = 0;
-		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap »ç¿ë
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS; // MipMap ï¿½ï¿½ï¿½
 
-		// ÃÊ±â µ¥ÀÌÅÍ ¾øÀÌ »ý¼º
+		// ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outTexture.GetAddressOf()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
 		srvDesc.Format = desc.Format;
-		// Array·Î »ç¿ëÇÏ°Ú´Ù´Â ¼³Á¤ ÇÙ½É
+		// Arrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Ú´Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		srvDesc.Texture2DArray.MostDetailedMip = 0;
 		srvDesc.Texture2DArray.MipLevels = -1;
 		srvDesc.Texture2DArray.FirstArraySlice = 0;
-		// ¾ó¸¸Å­ Å« Array¸¦ »ç¿ëÇÒ°ÇÁö ¼³Á¤ÇØÁÖ´Â ÇÙ½É
+		// ï¿½ï¿½Å­ Å« Arrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Ù½ï¿½
 		srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
 		ThrowIfFailed(device->CreateShaderResourceView(outTexture.Get(), &srvDesc, outSRV.GetAddressOf()));
 	}
@@ -639,12 +639,12 @@ namespace DE {
 
 		UINT mipLevels = desc.MipLevels;
 		if (mipLevels == 0)
-			// DX11¿¡¼­ MipLevels=0À¸·Î »ý¼º½Ã ½ÇÁ¦ °³¼ö´Â Log2(max(w,h)) + 1 
+			// DX11ï¿½ï¿½ï¿½ï¿½ MipLevels=0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Log2(max(w,h)) + 1 
 			mipLevels = 1 + static_cast<UINT>(std::floor(std::log2(std::max(desc.Width, desc.Height))));
 
 		UINT subresourceIndex = D3D11CalcSubresource(0, sliceIndex, mipLevels);
 		
-		// µ¥ÀÌÅÍ °»½Å
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		context->UpdateSubresource(
 			textureArray,
 			subresourceIndex,
@@ -657,36 +657,36 @@ namespace DE {
 
 	void D3D11Utils::CreateStagingTexture(ID3D11Device* device, ID3D11DeviceContext* context, const Image2* image, ComPtr<ID3D11Texture2D>& outStagingTexture)
 	{
-		// Image2 ³»ºÎÀÇ DirectXTex µ¥ÀÌÅÍ °¡Á®¿À±â
+		// Image2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DirectXTex ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		const DirectX::ScratchImage& scratchImg = image->GetBuffer();
-		const DirectX::Image* imgData = scratchImg.GetImages(); // Ã¹ ¹øÂ° ÀÌ¹ÌÁö(Mip0, Slice0)
+		const DirectX::Image* imgData = scratchImg.GetImages(); // Ã¹ ï¿½ï¿½Â° ï¿½Ì¹ï¿½ï¿½ï¿½(Mip0, Slice0)
 
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width = static_cast<UINT>(imgData->width);
 		desc.Height = static_cast<UINT>(imgData->height);
-		desc.MipLevels = 1; // StagingÀº º¹»ç ¿ëµµÀÌ¹Ç·Î MipMap ºÒÇÊ¿ä (¿øº» 1Àå¸¸)
+		desc.MipLevels = 1; // Stagingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ëµµï¿½Ì¹Ç·ï¿½ MipMap ï¿½ï¿½ï¿½Ê¿ï¿½ (ï¿½ï¿½ï¿½ï¿½ 1ï¿½å¸¸)
 		desc.ArraySize = 1;
 		desc.Format = imgData->format;
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_STAGING;
-		desc.BindFlags = 0; // StagingÀº Bind Flag ¾øÀ½
+		desc.BindFlags = 0; // Stagingï¿½ï¿½ Bind Flag ï¿½ï¿½ï¿½ï¿½
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
 
 		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outStagingTexture.GetAddressOf()));
 
-		// µ¥ÀÌÅÍ º¹»ç (Map/Unmap)
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Map/Unmap)
 		D3D11_MAPPED_SUBRESOURCE ms;
 		ThrowIfFailed(context->Map(outStagingTexture.Get(), 0, D3D11_MAP_WRITE, 0, &ms));
 
-		// ¸Þ¸ð¸® º¹»ç (Row Pitch¸¦ °í·ÁÇÏ¿© ÇÑ ÁÙ¾¿ º¹»ç)
+		// ï¿½Þ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ (Row Pitchï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ ï¿½Ù¾ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		const uint8_t* srcPtr = imgData->pixels;
 		uint8_t* destPtr = static_cast<uint8_t*>(ms.pData);
 
-		// º¹»çÇÒ ³ôÀÌ¸¸Å­ ¹Ýº¹
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½Å­ ï¿½Ýºï¿½
 		for (size_t h = 0; h < imgData->height; ++h)
 		{
-			// min(Source Pitch, Dest Pitch) ¸¸Å­ º¹»çÇØ¾ß ¾ÈÀüÇÔ
-			// º¸Åë DirectXTex·Î ·ÎµåÇÏ¸é Æ÷¸ËÀÌ °°¾Æ Pitchµµ ºñ½ÁÇÏÁö¸¸, Dest°¡ ´õ Å¬ ¼ö ÀÖÀ½
+			// min(Source Pitch, Dest Pitch) ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ï¿½ï¿½ï¿½ï¿½ DirectXTexï¿½ï¿½ ï¿½Îµï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Pitchï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, Destï¿½ï¿½ ï¿½ï¿½ Å¬ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			size_t copySize = std::min<size_t>(imgData->rowPitch, ms.RowPitch);
 			memcpy(destPtr, srcPtr, copySize);
 
@@ -703,6 +703,50 @@ namespace DE {
 		context->Map(texture.Get(), NULL, D3D11_MAP_READ, NULL, &ms);
 		memcpy(dest, ms.pData, size);
 		context->Unmap(texture.Get(), NULL);
+	}
+
+	void D3D11Utils::CreateTexture3D(
+		ID3D11Device* device,
+		UINT width, UINT height, UINT depth,
+		DXGI_FORMAT format,
+		const void* initData,
+		ComPtr<ID3D11Texture3D>& outTexture,
+		ComPtr<ID3D11ShaderResourceView>& outSRV)
+	{
+		size_t pixelSize = GetPixelSize(format);
+
+		D3D11_TEXTURE3D_DESC desc = {};
+		desc.Width = width;
+		desc.Height = height;
+		desc.Depth = depth;
+		desc.MipLevels = 1;
+		desc.Format = format;
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA subData = {};
+		subData.pSysMem = initData;
+		subData.SysMemPitch = static_cast<UINT>(width * pixelSize);
+		subData.SysMemSlicePitch = static_cast<UINT>(width * height * pixelSize);
+
+		HRESULT hr = device->CreateTexture3D(&desc, &subData, outTexture.GetAddressOf());
+		if (FAILED(hr)) {
+			std::cout << "[D3D11Utils] Failed to create Texture3D" << std::endl;
+			return;
+		}
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
+		srvDesc.Texture3D.MostDetailedMip = 0;
+		srvDesc.Texture3D.MipLevels = 1;
+
+		hr = device->CreateShaderResourceView(outTexture.Get(), &srvDesc, outSRV.GetAddressOf());
+		if (FAILED(hr)) {
+			std::cout << "[D3D11Utils] Failed to create Texture3D SRV" << std::endl;
+			return;
+		}
 	}
 
 	size_t D3D11Utils::GetPixelSize(const DXGI_FORMAT& pixelFormat)
@@ -730,7 +774,7 @@ namespace DE {
 	}
 	void D3D11Utils::CreateStructuredBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav)
 	{
-		// Structured Buffer »ý¼º
+		// Structured Buffer ï¿½ï¿½ï¿½ï¿½
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = numElements * elementSize;
 		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -751,7 +795,7 @@ namespace DE {
 		else 
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
 		
-		// SRV »ý¼º
+		// SRV ï¿½ï¿½ï¿½ï¿½
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
@@ -759,7 +803,7 @@ namespace DE {
 		srvDesc.Buffer.NumElements = numElements;
 		ThrowIfFailed(device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf()));
 
-		// UAV »ý¼º
+		// UAV ï¿½ï¿½ï¿½ï¿½
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
 		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
@@ -771,7 +815,7 @@ namespace DE {
 
 	void D3D11Utils::CreateStructuredBufferSRV(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv)
 	{
-		// Structured Buffer »ý¼º
+		// Structured Buffer ï¿½ï¿½ï¿½ï¿½
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = numElements * elementSize;
 		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -791,7 +835,7 @@ namespace DE {
 		else
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
 
-		// SRV »ý¼º
+		// SRV ï¿½ï¿½ï¿½ï¿½
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
@@ -802,7 +846,7 @@ namespace DE {
 
 	void D3D11Utils::CreateStagingBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer)
 	{
-		// StagingBuffer »ý¼º
+		// StagingBuffer ï¿½ï¿½ï¿½ï¿½
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = numElements * elementSize;
 		bufferDesc.Usage = D3D11_USAGE_STAGING;
@@ -856,7 +900,7 @@ namespace DE {
 	}
 	void D3D11Utils::CreateAppendBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav, ComPtr<ID3D11UnorderedAccessView>& rwUav)
 	{
-		// Structured Buffer »ý¼º
+		// Structured Buffer ï¿½ï¿½ï¿½ï¿½
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = numElements * elementSize;
 		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -877,7 +921,7 @@ namespace DE {
 		else
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
 
-		// SRV »ý¼º
+		// SRV ï¿½ï¿½ï¿½ï¿½
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
@@ -885,7 +929,7 @@ namespace DE {
 		srvDesc.Buffer.NumElements = numElements;
 		ThrowIfFailed(device->CreateShaderResourceView(buffer.Get(), &srvDesc, srv.GetAddressOf()));
 
-		// UAV »ý¼º
+		// UAV ï¿½ï¿½ï¿½ï¿½
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
 		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
@@ -894,7 +938,7 @@ namespace DE {
 		uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
 
-		uavDesc.Buffer.Flags = 0; // ÇÃ·¡±× ¾øÀ½! (RWStructuredBuffer È£È¯)
+		uavDesc.Buffer.Flags = 0; // ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½! (RWStructuredBuffer È£È¯)
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, rwUav.GetAddressOf()));
 	}
 
@@ -917,12 +961,12 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
 		}
 
-		// UAV »ý¼º (R32_UINT Æ÷¸Ë »ç¿ë)
+		// UAV ï¿½ï¿½ï¿½ï¿½ (R32_UINT ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint·Î ÀÐ±â À§ÇØ R32_UINT »ç¿ë
+		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uintï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ R32_UINT ï¿½ï¿½ï¿½
 		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		uavDesc.Buffer.FirstElement = 0;
-		uavDesc.Buffer.NumElements = byteWidth / argCount; // UINT °³¼ö (Byte / 4)
+		uavDesc.Buffer.NumElements = byteWidth / argCount; // UINT ï¿½ï¿½ï¿½ï¿½ (Byte / 4)
 		uavDesc.Buffer.Flags = 0;
 
 		ThrowIfFailed(device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf()));
@@ -947,9 +991,9 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
 		}
 
-		// UAV »ý¼º (R32_UINT Æ÷¸Ë »ç¿ë)
+		// UAV ï¿½ï¿½ï¿½ï¿½ (R32_UINT ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uint·Î ÀÐ±â À§ÇØ R32_UINT »ç¿ë
+		uavDesc.Format = DXGI_FORMAT_R32_UINT; // uintï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ R32_UINT ï¿½ï¿½ï¿½
 		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 		uavDesc.Buffer.FirstElement = 0;
 		uavDesc.Buffer.NumElements = arraySize * argCount;

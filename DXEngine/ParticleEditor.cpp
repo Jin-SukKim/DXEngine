@@ -64,7 +64,7 @@ namespace DE {
 		m_spanwer->SetSpawnMode(SpawnMode::Interval);
 		m_spanwer->SetSpawnInterval(0.1f);
 		m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		m_spanwer->SetMaxActiveParticles(1000);
+		m_spanwer->SetMaxActiveParticles(100);
 
 		//m_spanwer2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		//m_spanwer2->SetScene(this);
@@ -93,6 +93,10 @@ namespace DE {
 		m_metalSpark = SpawnEffect<EffectActor>(L"MetalSpark", L"Particles\\MetalSparkEffect.json", Vector3(0.f, 0.f, 3.f));
 		m_sparkBurst = SpawnEffect<EffectActor>(L"SparkBurst", L"Particles\\SparkBurstEffect.json", Vector3(3.f, 0.f, 0.f));
 		m_ember = SpawnEffect<EffectActor>(L"Ember", L"Particles\\EmberEffect.json", Vector3(-3.f, 0.f, 0.f));
+		m_curlSmoke = SpawnEffect<EffectActor>(L"CurlSmoke", L"Particles\\Effects\\ForceModule\\ForceCurlNoise.json", Vector3(3.f, 0.f, -3.f));
+		m_curlFirefly = SpawnEffect<EffectActor>(L"CurlFirefly", L"Particles\\Effects\\ForceModule\\CurlNoise_Firefly.json", Vector3(6.f, 0.f, -3.f));
+		m_curlMagicAura = SpawnEffect<EffectActor>(L"CurlMagicAura", L"Particles\\Effects\\ForceModule\\CurlNoise_MagicAura.json", Vector3(9.f, 0.f, -3.f));
+		m_curlSpiritWisp = SpawnEffect<EffectActor>(L"CurlSpiritWisp", L"Particles\\Effects\\ForceModule\\CurlNoise_SpiritWisp.json", Vector3(12.f, 0.f, -3.f));
 
 		m_sample = AddObject<SampleActor>(L"SampleActor");
 

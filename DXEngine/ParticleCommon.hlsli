@@ -114,6 +114,12 @@ struct ForceConsts
     float drag;
     float3 gravity;
     float padding9;
+
+    // Curl Noise (Tiling Mode)
+    float curlNoiseFrequency;
+    float curlNoiseStrength;
+    uint curlNoiseEnabled;
+    float padding10;
 };
 
 struct RenderConsts
@@ -182,6 +188,10 @@ struct BatchDescriptor {
 };
 Texture2DArray particleTex : register(t14);
 
+// Curl Noise 3D Texture
+Texture3D curlNoiseTexture : register(t26);
+SamplerState curlNoiseSampler : register(s0);
+
 StructuredBuffer<Particle> readParticles : register(t16);
 StructuredBuffer<uint> readAliveCount : register(t17);         // Alive count per emitter (read side)
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t18);
@@ -193,6 +203,13 @@ StructuredBuffer<uint> readAliveIndices : register(t23);       // Read alive ind
 
 StructuredBuffer<uint> batchEmitterList : register(t24);
 StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
+
+// Curl Noise sampling (Tiling Mode)
+float3 SampleCurlNoiseTiling(float3 worldPos, float frequency) {
+    float3 uv = frac(worldPos * frequency);
+    float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uv, 0);
+    return curlData.xyz * curlData.w; // direction * magnitude
+}
 
 struct SortElement
 {

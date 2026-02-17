@@ -106,8 +106,24 @@ namespace DE {
 			m_memoryPool->UnbindSpawnCompute();
 
 			m_memoryPool->BindSimulationCompute();
+
+			// Curl Noise 3D Texture + Sampler binding for CS
+			TextureManager::Get().BindCurlNoiseTexture(26);
+			{
+				auto context = GET_SINGLE(RenderBase)->GetContext();
+				ID3D11SamplerState* sampler = RenderBase::graphicsCommon.linearWrapSS.Get();
+				context->CSSetSamplers(0, 1, &sampler);
+			}
+
 			m_memoryPool->ExcuteParticleLogic();
 			m_memoryPool->UnbindSimulationCompute();
+
+			// Unbind curl noise texture
+			{
+				auto context = GET_SINGLE(RenderBase)->GetContext();
+				ID3D11ShaderResourceView* nullSRV = nullptr;
+				context->CSSetShaderResources(26, 1, &nullSRV);
+			}
 		}
 
 		// Compute , SwapBuffer  Read  ȭ

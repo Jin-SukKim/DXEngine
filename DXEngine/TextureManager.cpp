@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "TextureManager.h"
 #include "Image2.h"
+#include "SimplexNoise.h"
+#include <DirectXPackedVector.h>
 
 namespace DE {
     namespace fs = std::filesystem;
@@ -27,11 +29,13 @@ void TextureManager::Initialize()
     m_particleTextureArray->SetResource(tex, srv);
     m_pathToIndexMap.clear();
     m_nextFreeIndex = 0;
+
+    GenerateCurlNoiseTexture(64, 4.0f);
 }
 
 TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::string& path)
 {
-    // path´Â ÀÌ¹Ì »ó´ë °æ·Î (¿¹: "Textures/particle.png")
+    // pathï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½: "Textures/particle.png")
     auto it = m_pathToIndexMap.find(path);
     if (it != m_pathToIndexMap.end())
         return { path, it->second };
@@ -41,7 +45,7 @@ TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::str
         return { path, -1 };
     }
 
-    // ½ÇÁ¦ ·Îµå´Â presetPath Ãß°¡
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ presetPath ï¿½ß°ï¿½
     std::string fullpath = presetPath + path;
     Image2 img;
     if (!img.Load(fullpath)) {
@@ -63,7 +67,7 @@ TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::str
 
     context->GenerateMips(m_particleTextureArray->GetSRV());
 
-    // »ó´ë °æ·Î·Î ÀúÀå
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½Î·ï¿½ ï¿½ï¿½ï¿½ï¿½
     m_pathToIndexMap[path] = m_nextFreeIndex;
     return { path, m_nextFreeIndex++ };
 }
@@ -81,12 +85,12 @@ int TextureManager::LoadTexture(const std::string& path, bool isSRGB)
     if (path.empty())
         return -1;
 
-    // path´Â »ó´ë °æ·Î·Î °Ë»ö
+    // pathï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Î·ï¿½ ï¿½Ë»ï¿½
     auto it = m_texturePathToIdx.find(path);
     if (it != m_texturePathToIdx.end())
         return it->second;
 
-    // ½ÇÁ¦ ·Îµå´Â presetPath Ãß°¡
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ presetPath ï¿½ß°ï¿½
     std::string fullpath = presetPath + path;
     Image2 img;
     if (!img.Load(fullpath)) {
@@ -108,7 +112,7 @@ int TextureManager::LoadTexture(const std::string& path, bool isSRGB)
     int index = static_cast<int>(m_textures.size());
     m_textures.emplace_back(std::move(texture));
     
-    // »ó´ë °æ·Î·Î ÀúÀå
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½Î·ï¿½ ï¿½ï¿½ï¿½ï¿½
     m_texturePathToIdx[path] = index;
     m_indexToPathMap[index] = path;
 
@@ -117,17 +121,17 @@ int TextureManager::LoadTexture(const std::string& path, bool isSRGB)
 
 int TextureManager::LoadMetallicRoughnessTexture(const std::string& metallicPath, const std::string& roughnessPath)
 {
-    // ¸ÕÀú metallic °æ·Î·Î °Ë»ö
+    // ï¿½ï¿½ï¿½ï¿½ metallic ï¿½ï¿½Î·ï¿½ ï¿½Ë»ï¿½
     auto it = m_texturePathToIdx.find(metallicPath);
     if (it != m_texturePathToIdx.end())
         return it->second;
 
-    // roughness °æ·Î·Î °Ë»ö
+    // roughness ï¿½ï¿½Î·ï¿½ ï¿½Ë»ï¿½
     it = m_texturePathToIdx.find(roughnessPath);
     if (it != m_texturePathToIdx.end())
         return it->second;
 
-    // GLTF´Â metallic°ú roughness°¡ ÀÌ¹Ì ÇÕÃÄÁø TextureÀÎ °æ¿ì
+    // GLTFï¿½ï¿½ metallicï¿½ï¿½ roughnessï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½
     if (!metallicPath.empty() && (metallicPath == roughnessPath)) {
         return LoadTexture(metallicPath, false);
     }
@@ -136,7 +140,7 @@ int TextureManager::LoadMetallicRoughnessTexture(const std::string& metallicPath
         auto context = GET_SINGLE(RenderBase)->GetContext();
         std::unique_ptr<Texture2D> texture = std::make_unique<Texture2D>();
 
-        // ½ÇÁ¦ ·Îµå´Â presetPath Ãß°¡
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ presetPath ï¿½ß°ï¿½
         std::string fullMetallic = presetPath + metallicPath;
         std::string fullRoughness = presetPath + roughnessPath;
         D3D11Utils::CreateMetallicRoughnessTexture(device.Get(), context.Get(), 
@@ -148,10 +152,10 @@ int TextureManager::LoadMetallicRoughnessTexture(const std::string& metallicPath
         int index = static_cast<int>(m_textures.size());
         m_textures.emplace_back(std::move(texture));
         
-        // µÎ °æ·Î ¸ðµÎ °°Àº ÀÎµ¦½º·Î ÀúÀå
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         m_texturePathToIdx[metallicPath] = index;
         m_texturePathToIdx[roughnessPath] = index;
-        m_indexToPathMap[index] = metallicPath;  // ´ëÇ¥ °æ·Î
+        m_indexToPathMap[index] = metallicPath;  // ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½
 
         return index;
     }
@@ -167,7 +171,7 @@ std::pair<int, int> TextureManager::LoadMetallicRoughnessTexture(const std::stri
     std::unique_ptr<Texture2D> metallic = std::make_unique<Texture2D>();
     std::unique_ptr<Texture2D> roughness = std::make_unique<Texture2D>();
     
-    // ½ÇÁ¦ ·Îµå´Â presetPath Ãß°¡
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ presetPath ï¿½ß°ï¿½
     std::string fullpath = presetPath + path;
     D3D11Utils::CreateTexturesFromGLTFCombined(device.Get(), context.Get(), 
         fullpath, *metallic.get(), *roughness.get());
@@ -209,4 +213,99 @@ std::string TextureManager::GetTexturePath(int index)
         return m_indexToPathMap[index];
     return "";
 }
+
+void TextureManager::GenerateCurlNoiseTexture(UINT resolution, float frequency)
+{
+    using DirectX::PackedVector::XMConvertFloatToHalf;
+
+    const UINT res = resolution;
+    const float invRes = 1.0f / static_cast<float>(res);
+    const float eps = 0.01f;
+
+    // Seed offsets for 3 independent noise fields (Fx, Fy, Fz)
+    const float ox1 = 31.4f, oy1 = 27.1f, oz1 = 19.7f;
+    const float ox2 = 57.3f, oy2 = 43.2f, oz2 = 61.8f;
+
+    // RGBA16F: 4 half per texel = 8 bytes
+    std::vector<uint16_t> pixelData(res * res * res * 4);
+
+    auto sampleNoise = [&](float x, float y, float z, float seedX, float seedY, float seedZ) {
+        return SimplexNoise::Noise3D(
+            (x + seedX) * frequency,
+            (y + seedY) * frequency,
+            (z + seedZ) * frequency);
+    };
+
+    for (UINT z = 0; z < res; z++) {
+        for (UINT y = 0; y < res; y++) {
+            for (UINT x = 0; x < res; x++) {
+                float fx = static_cast<float>(x) * invRes;
+                float fy = static_cast<float>(y) * invRes;
+                float fz = static_cast<float>(z) * invRes;
+
+                // Partial derivatives via central differences
+                // dFz/dy
+                float dFz_dy = (sampleNoise(fx, fy + eps, fz, ox2, oy2, oz2)
+                              - sampleNoise(fx, fy - eps, fz, ox2, oy2, oz2)) / (2.0f * eps);
+                // dFy/dz
+                float dFy_dz = (sampleNoise(fx, fy, fz + eps, ox1, oy1, oz1)
+                              - sampleNoise(fx, fy, fz - eps, ox1, oy1, oz1)) / (2.0f * eps);
+                // dFx/dz
+                float dFx_dz = (sampleNoise(fx, fy, fz + eps, 0, 0, 0)
+                              - sampleNoise(fx, fy, fz - eps, 0, 0, 0)) / (2.0f * eps);
+                // dFz/dx
+                float dFz_dx = (sampleNoise(fx + eps, fy, fz, ox2, oy2, oz2)
+                              - sampleNoise(fx - eps, fy, fz, ox2, oy2, oz2)) / (2.0f * eps);
+                // dFy/dx
+                float dFy_dx = (sampleNoise(fx + eps, fy, fz, ox1, oy1, oz1)
+                              - sampleNoise(fx - eps, fy, fz, ox1, oy1, oz1)) / (2.0f * eps);
+                // dFx/dy
+                float dFx_dy = (sampleNoise(fx, fy + eps, fz, 0, 0, 0)
+                              - sampleNoise(fx, fy - eps, fz, 0, 0, 0)) / (2.0f * eps);
+
+                // curl = nabla x F
+                float curlX = dFz_dy - dFy_dz;
+                float curlY = dFx_dz - dFz_dx;
+                float curlZ = dFy_dx - dFx_dy;
+
+                // Store magnitude in alpha, normalize direction in RGB
+                float mag = std::sqrt(curlX * curlX + curlY * curlY + curlZ * curlZ);
+                if (mag > 0.0001f) {
+                    float invMag = 1.0f / mag;
+                    curlX *= invMag;
+                    curlY *= invMag;
+                    curlZ *= invMag;
+                }
+
+                UINT idx = (z * res * res + y * res + x) * 4;
+                pixelData[idx + 0] = XMConvertFloatToHalf(curlX);
+                pixelData[idx + 1] = XMConvertFloatToHalf(curlY);
+                pixelData[idx + 2] = XMConvertFloatToHalf(curlZ);
+                pixelData[idx + 3] = XMConvertFloatToHalf(mag);
+            }
+        }
+    }
+
+    auto device = GET_SINGLE(RenderBase)->GetDevice();
+    D3D11Utils::CreateTexture3D(
+        device.Get(),
+        res, res, res,
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        pixelData.data(),
+        m_curlNoiseTexture,
+        m_curlNoiseSRV);
+
+    std::cout << "[TextureManager] Curl Noise 3D Texture generated ("
+              << res << "^3, " << (res * res * res * 8 / 1024) << " KB)" << std::endl;
+}
+
+void TextureManager::BindCurlNoiseTexture(UINT slot)
+{
+    if (!m_curlNoiseSRV)
+        return;
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    ID3D11ShaderResourceView* srv = m_curlNoiseSRV.Get();
+    context->CSSetShaderResources(slot, 1, &srv);
+}
+
 }
