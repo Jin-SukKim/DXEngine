@@ -5,16 +5,22 @@
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 0.0,
+    "spawnRate": 1.0,
     "burst": 1,
-    "particlesPerSpawn": 25,
+    "particlesPerSpawn": 1,
     "maxParticles": 100,
     "lifeRange": [ 10.0, 10.0 ]
   },
   "Visual": {
     "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
     "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
-    "sizeRange": [ 0.8, 1.0 ]
+    "sizeRange": [ 0.8, 1.0 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+    }
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
@@ -28,7 +34,9 @@
     "sprite": {
       "frameTiles": [ 4, 4 ],
       "frameCount": 16,
-      "animDuration": 0.2
+      "animDuration": 0.01,
+      "animTime": 0.2,
+      "frameBlending": true
     }
   },
   "BillboardRender": {

@@ -26,6 +26,7 @@ struct ParticlePSInput
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
     uint emitterSlotID : TEXCOORD2;  // Pass emitter ID to PS for sprite animation
+    float lifeMax : TEXCOORD3;
 };
 
 // 2D Rotation Matrix
@@ -67,6 +68,7 @@ ParticlePSInput main(VSParticleInput input)
     output.center = particleCenter;
     output.color = p.color;
     output.lifeRatio = 1.0 - saturate(p.life / p.lifeMax);
+    output.lifeMax = p.lifeMax;
     output.uv = input.texcoord;
 
     // View Space로 변환

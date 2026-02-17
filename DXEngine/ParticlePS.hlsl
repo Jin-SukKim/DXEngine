@@ -18,6 +18,7 @@ struct ParticlePSInput
     float4 color : COLOR;
     float lifeRatio : TEXCOORD1;
     uint emitterSlotID : TEXCOORD2;  // Receive from VS for sprite animation
+    float lifeMax : TEXCOORD3;
 };
 
 // Linearize a depth value from NDC [0,1] to view-space distance (ndcDepth -> viewSpaceZ)
@@ -29,23 +30,46 @@ float LinearizeDepth(float ndcDepth) {
 }
 
 // Sprite animation texture sampling - always uses albedoTex (t0)
-float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float2 uv) {
+float4 SpriteTexture(uint emitterSlotID, float lifeRatio, float lifeMax, float2 uv) {
     RenderConsts render = consts[emitterSlotID].render;
 
     // Sprite animation processing
     if (render.frameTiles.x > 1 || render.frameTiles.y > 1) {
-        // Apply animation duration (0.0~1.0) - animation plays only during this portion of particle life
-        float animLifeRatio = saturate(lifeRatio / render.animDuration);
-        uint currentFrame = floor(animLifeRatio * render.frameCount);
-        currentFrame = min(currentFrame, render.frameCount - 1);
-
-        // Sprite Sheet col, row calculation
-        uint width = render.frameTiles.x;
-        uint col = currentFrame % width;
-        uint row = currentFrame / width;
-
+        float animLifeRatio;
+        if (render.animTime > 0) {
+            // Absolute time mode: animation completes in animTime seconds
+            float elapsed = lifeRatio * lifeMax;
+            animLifeRatio = saturate(elapsed / render.animTime);
+        } else {
+            // Ratio mode: animation duration as ratio of particle lifetime
+            animLifeRatio = saturate(lifeRatio / render.animDuration);
+        }
         float2 uvSize = 1.f / render.frameTiles;
-        uv = (uv + float2(col, row)) * uvSize;
+        uint width = render.frameTiles.x;
+
+        if (render.frameBlending) {
+            // Smooth interpolation mode
+            float frameFloat = animLifeRatio * render.frameCount;
+            uint frame0 = min((uint)floor(frameFloat), render.frameCount - 1);
+            uint frame1 = min(frame0 + 1, render.frameCount - 1);
+            float blend = frac(frameFloat);
+
+            float2 uv0 = (uv + float2(frame0 % width, frame0 / width)) * uvSize;
+            float2 uv1 = (uv + float2(frame1 % width, frame1 / width)) * uvSize;
+
+            return lerp(
+                albedoTex.Sample(linearClampSampler, uv0),
+                albedoTex.Sample(linearClampSampler, uv1),
+                blend
+            );
+        } else {
+            // Discrete frame mode (original behavior)
+            uint currentFrame = floor(animLifeRatio * render.frameCount);
+            currentFrame = min(currentFrame, render.frameCount - 1);
+            uint col = currentFrame % width;
+            uint row = currentFrame / width;
+            uv = (uv + float2(col, row)) * uvSize;
+        }
     }
 
     // Always sample from albedoTex (t0) bound by MaterialSystem
@@ -60,7 +84,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
     if (useAlbedoMap)
     {
         // Case 1: Texture exists (Sprite / Animation)
-        float4 texColor = SpriteTexture(input.emitterSlotID, input.lifeRatio, input.uv);
+        float4 texColor = SpriteTexture(input.emitterSlotID, input.lifeRatio, input.lifeMax, input.uv);
         finalColor *= texColor;
     }
     else
