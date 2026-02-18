@@ -23,8 +23,7 @@ public:
 	virtual void OnPreUpdate(const SimulationContext& context) { if (!m_isEnabled) return; }
 	virtual void OnUpdate(const SimulationContext& context) { if (!m_isEnabled) return; }
 	virtual void LateUpdate(SimulationContext& context) { if (!m_isEnabled) return; }
-	virtual void OnRender(const RenderContext& context) { if (!m_isEnabled) return; }
-	
+
 	//virtual void LoadFromJson();
 	virtual ModulePriority GetPriority() = 0;
 	virtual void LoadFromJson(const json& data) = 0;

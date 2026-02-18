@@ -13,7 +13,6 @@ class RenderModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 	void OnSpawn(SimulationContext& ctx) override;
-	virtual void OnRender(const RenderContext& ctx) override;
 	void SetBlendState();
 	ModulePriority GetPriority() override { return ModulePriority::Render; }
 	void LoadFromJson(const json& data) override;
@@ -33,7 +32,6 @@ class BillboardRenderModule : public RenderModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
@@ -47,7 +45,6 @@ class MeshRenderModule : public RenderModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
-	void OnRender(const RenderContext& ctx) override;
 	void LoadFromJson(const json& data) override;
 	int GetModelIndex() const override { return m_modelIdx; }
 	std::unique_ptr<ParticleModule> Clone() const override;

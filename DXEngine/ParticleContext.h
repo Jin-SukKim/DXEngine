@@ -13,7 +13,7 @@ class ParticleSystem;
 struct ArgsParam;
 
 //=============================================================================
-// ParticleInitContext - ÃÊ±âÈ­ ½Ã »ç¿ë
+// ParticleInitContext - ï¿½Ê±ï¿½È­ ï¿½ï¿½ ï¿½ï¿½ï¿½
 //=============================================================================
 struct ParticleInitContext {
     ID3D11Device* device;
@@ -32,19 +32,11 @@ struct ParticleContext {
     ID3D11DeviceContext* context;
 };
 
-// SimulationContext - SpawnPos ¹öÆÛ ÅëÇÕ
+// SimulationContext - SpawnPos ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 struct SimulationContext : ParticleContext {
     float dt;
     ArgsParam* dispatchArgs;
     ParticleFrameConsts* fsConsts = nullptr;
-};
-
-struct RenderContext : ParticleContext {
-    MaterialModule* materialModule;
-    const UINT& emitterID;
-
-    ArgsParam* billboardArgs;
-    ArgsParam* meshArgs;
 };
 
 } // namespace DE

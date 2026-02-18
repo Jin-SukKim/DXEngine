@@ -53,7 +53,6 @@ namespace DE {
 		void OnSpawn();
 		void PreUpdate(const float& dt, ParticleFrameConsts& fsConsts);
 		void Update(const float& dt, ArgsParam args);
-		void Render(ArgsParam billboardArgs, ArgsParam meshArgs);
 
 		template<typename T>
 		void AddModule(std::unique_ptr<ParticleModule>&& module);

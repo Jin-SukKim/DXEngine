@@ -229,27 +229,6 @@ namespace DE {
 			m_eventCallback(event, this);
 	}
 
-	void ParticleEmitter::Render(ArgsParam billboardArgs, ArgsParam meshArgs)
-	{
-		if (m_isCompleted)
-			return;
-
-		ID3D11DeviceContext* context = GET_SINGLE(RenderBase)->GetContext().Get();
-		
-		RenderContext renderCtx = {
-			{ context },
-			this->GetModule<MaterialModule>(),
-			m_emitterID,
-			&billboardArgs,
-			&meshArgs,
-		};
-
-		m_ownerSystem->BindConstantID(m_emitterID);
-
-		for (auto& mod : m_modules)
-		 mod->OnRender(renderCtx);
-	}
-
 	void ParticleEmitter::AddModule(std::unique_ptr<ParticleModule>&& module) {
 		for (auto& mod : m_modules) {
 			if (typeid(*mod) == typeid(*module)) {

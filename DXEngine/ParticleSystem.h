@@ -38,17 +38,12 @@ namespace DE {
 		void Initialize(ParticleInitializer& initialData);
 		void InitializeCPU(ParticleInitializer& initialData);
 		void InitializeGPU(ParticleInitializer& initialData,
-			IndirectArgsBuffer<DispatchArgs>& m_dispatchArgs,
-			IndirectArgsBuffer<DrawIndexedInstancedArgs>& m_billboardArgsBuffer,
-			IndirectArgsBuffer<DrawIndexedInstancedArgs>& m_meshArgsBuffer);
+			IndirectArgsBuffer<DispatchArgs>& dispatchArgs);
 
 		void OnSpawn();
 		void PreUpdate(const float& dt, std::vector<ParticleFrameConsts>& fsConsts);
 		void Update(const float& dt);
 		void ActivateSubEmitters();
-		void Render();
-		void RenderMesh();
-		void RenderBillboard();
 
 		void AddEmitter(const std::string& path);
 		void AddEmitter(std::unique_ptr<ParticleEmitter>&& emitter);
@@ -88,8 +83,6 @@ namespace DE {
 
 
 		UINT GetDispatchArgsOffset(UINT emitterID) { return emitterID * 12; }
-		UINT GetBillboardArgsOffset(UINT emitterID) { return emitterID * 20; } // DrawIndexedInstancedArgs (5 * 4 bytes)
-		UINT GetMeshArgsOffset(UINT emitterID) { return emitterID * 20; }
 
 		void BindConstantID(UINT emitterID);
 
@@ -168,7 +161,5 @@ namespace DE {
 		UINT m_currentSpawnPosOffset = 0;
 
 		IndirectArgsBuffer<DispatchArgs>* m_dispatchArgs = nullptr;
-		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_billboardArgsBuffer = nullptr;
-		IndirectArgsBuffer<DrawIndexedInstancedArgs>* m_meshArgsBuffer = nullptr;
 	};
 }

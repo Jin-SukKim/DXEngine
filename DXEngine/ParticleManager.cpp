@@ -572,47 +572,57 @@ namespace DE {
 	{
 		if (m_activeSystems.empty()) return;
 
-		// [Added] CPU Frustum Culling
-		// Projection 행렬로 view space frustum 생성
 		DirectX::BoundingFrustum frustum(m_proj);
-
-		// Extract camera position from view matrix (inverse translation)
 		Matrix invView = m_view.Invert();
 		Vector3 cameraPos(invView._41, invView._42, invView._43);
 
-		// Update spawn ratios for overdraw control before rendering
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				system->UpdateSpawnRatios(cameraPos);
-			}
-		}
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				system->UpdateSpawnRatios(cameraPos);
-			}
-		}
+		UINT totalCount = 0, visibleCount = 0;
+		GatherVisibleEmitters(frustum, cameraPos, totalCount, visibleCount);
+
+		// Depth pass only renders mesh particles - clear billboard data
+		m_billboardJobs.clear();
+		m_billboardBatches.clear();
+
+		BuildBatchDescriptors();
 
 		m_memoryPool->UploadFrameConsts();
 		m_memoryPool->BindRender();
 		m_memoryPool->UpdateRenderArgs();
-		ModelManager::Get().BindBuffersForRender();
-		// 1. Mesh RenderModule 먼저 렌더링 (depth buffer 채우기)
-		for (auto* system : m_activeSystems) {
-			if (system) {
-				// Frustum Culling Test (view space)
-				Vector3 posWorld = system->GetWorldPosition();
-				Vector3 posView = Vector3::Transform(posWorld, m_view);  // World -> View space
-				float radius = system->GetBoundingRadius();
-				DirectX::BoundingSphere sphere(posView, radius);
 
-				if (frustum.Intersects(sphere)) {
-					system->RenderMesh();
-				}
-			}
-		}
+		if (!m_batchEmitterList.empty())
+			DispatchBatchCompute();
+
+		m_memoryPool->BindBatchAliveIndices();
+		ModelManager::Get().BindBuffersForRender();
+
+		DrawMeshBatchesDepth();
 
 		m_memoryPool->UnbindRender();
-		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.basic.solidPSO);
+	}
+
+	void ParticleManager::DrawMeshBatchesDepth()
+	{
+		if (m_meshBatches.empty()) return;
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		ID3D11ShaderResourceView* meshBatchSRVs[] = {
+			m_memoryPool->GetBatchEmitterList().GetSRV(),
+			m_memoryPool->GetBatchDescriptors().GetSRV()
+		};
+		context->VSSetShaderResources(24, 2, meshBatchSRVs);
+
+		for (size_t i = 0; i < m_meshBatches.size(); i++) {
+			const auto& desc = m_batchDescriptors[i];
+
+			m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
+
+			ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
+			context->DrawIndexedInstancedIndirect(batchArgs, static_cast<UINT>(i) * 20);
+		}
+
+		ID3D11ShaderResourceView* nullMeshSRVs[2] = { nullptr };
+		context->VSSetShaderResources(24, 2, nullMeshSRVs);
 	}
 
 	void ParticleManager::RegisterActiveSystem(ParticleSystem* system)
@@ -707,9 +717,7 @@ namespace DE {
 		}
 
 		clonedPtr->InitializeGPU(initialData,
-			m_memoryPool->GetDispatchArgs(),
-			m_memoryPool->GetBillboardArgs(),
-			m_memoryPool->GetMeshArgs());
+			m_memoryPool->GetDispatchArgs());
 
 		UploadEmitterIDs(clonedPtr, clonedPtr->GetInitialData());
 		m_memoryPool->UploadConsts(handle.emitterIDs, initialData.consts);

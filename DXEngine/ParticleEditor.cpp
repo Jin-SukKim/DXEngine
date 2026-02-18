@@ -151,8 +151,8 @@ namespace DE {
 		//if (tr)
 		//	tr->SetPos(Vector3(25.f, 0.f, 0.f));
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
-		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)

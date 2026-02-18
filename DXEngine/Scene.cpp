@@ -264,7 +264,7 @@ namespace DE {
 		RenderShadowMaps();
 
 		// Set common IBL textures
-		//m_skybox->SetCommonSRVs();
+		m_skybox->SetCommonSRVs();
 
 		// Render opaque objects
 		RenderOpaqueObjects();
@@ -307,7 +307,7 @@ namespace DE {
 		RenderActors(ActorCategory::Billboard);
 		RenderActors(ActorCategory::Effect);
 		ParticleManager::Get().RenderDepth();
-		//m_skybox->Render();
+		m_skybox->Render();
 	}
 
 	void Scene::RenderShadowMaps()
@@ -343,8 +343,8 @@ namespace DE {
 		RenderActors(ActorCategory::Billboard);
 
 		// Render skybox
-		//renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
-		//m_skybox->Render();
+		renderer.SetPipelineState(RenderBase::graphicsCommon.skybox.solidPSO);
+		m_skybox->Render();
 
 		// Render debug geometry
 		RenderDebugGeometry();

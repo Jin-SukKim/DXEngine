@@ -186,13 +186,9 @@ namespace DE {
 	}
 
 	void ParticleSystem::InitializeGPU(ParticleInitializer& initialData,
-		IndirectArgsBuffer<DispatchArgs>& dispatchArgs,
-		IndirectArgsBuffer<DrawIndexedInstancedArgs>& billboardArgsBuffer,
-		IndirectArgsBuffer<DrawIndexedInstancedArgs>& meshArgsBuffer)
+		IndirectArgsBuffer<DispatchArgs>& dispatchArgs)
 	{
 		m_dispatchArgs = &dispatchArgs;
-		m_billboardArgsBuffer = &billboardArgsBuffer;
-		m_meshArgsBuffer = &meshArgsBuffer;
 	}
 
 	void ParticleSystem::OnSpawn()
@@ -274,135 +270,6 @@ namespace DE {
 				m_activeBillboardSubEmitters.push_back(emitter);
 		}
 		m_pendingSubEmitters.clear();
-	}
-
-	void ParticleSystem::Render()
-	{
-		if (m_state == ParticleState::Stopped)
-			return;
-
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		// Main Emitter 
-		for (auto& emitter : m_meshEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		for (auto& emitter : m_billboardEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()]) 
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-
-		// Active SubEmitter
-		for (auto* emitter : m_activeMeshSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		}
-		for (auto* emitter : m_activeBillboardSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		}
-	}
-
-	void ParticleSystem::RenderMesh()
-	{
-		if (m_state == ParticleState::Stopped)
-			return;
-
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		// Main Emitter 
-		for (auto& emitter : m_meshEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-
-		// Active SubEmitter 
-		for (auto* emitter : m_activeMeshSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		}
-	}
-
-	void ParticleSystem::RenderBillboard()
-	{
-		if (m_state == ParticleState::Stopped)
-			return;
-
-		auto context = GET_SINGLE(RenderBase)->GetContext();
-
-		for (auto& emitter : m_billboardEmitters)
-			emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		for (auto* emitter : m_activeBillboardSubEmitters) {
-			if (emitter)
-				emitter->Render({
-				m_billboardArgsBuffer->GetBuffer(),
-				GetBillboardArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-					},
-				{
-				m_meshArgsBuffer->GetBuffer(),
-				GetMeshArgsOffset(
-					m_poolHandle.emitterIDs[emitter->GetEmitterID()])
-				});
-		}
 	}
 
 	void ParticleSystem::OnEmitterEvent(EmitterEvent event, ParticleEmitter* emitter)

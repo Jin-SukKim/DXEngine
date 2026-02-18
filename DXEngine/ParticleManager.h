@@ -149,6 +149,7 @@ namespace DE {
 		void DispatchBatchCompute();
 		void SortAlphaBlendEmitters();
 		void DrawMeshBatches();
+		void DrawMeshBatchesDepth();
 		void DrawBillboardBatches();
 
 		PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);

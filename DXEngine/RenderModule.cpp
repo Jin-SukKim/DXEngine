@@ -6,8 +6,6 @@
 #include "ModelManager.h"
 #include "GeometryGenerator.h"
 #include "IndirectArgsBuffer.h"
-#include "MaterialSystem.h"
-#include "MaterialModule.h"
 #include "Vertex.h"
 #include "ParticleManager.h"
 
@@ -22,11 +20,6 @@ namespace DE {
 	{
 		ParticleModule::OnSpawn(ctx);
 		SetBlendState();
-	}
-
-	void RenderModule::OnRender(const RenderContext& ctx)
-	{
-		ParticleModule::OnRender(ctx);
 	}
 
 	void RenderModule::SetBlendState()
@@ -72,18 +65,6 @@ namespace DE {
 		ctx.consts.render.velocityStretchFactor = m_velocityStretchFactor;
 	}
 
-	void BillboardRenderModule::OnRender(const RenderContext& ctx)
-	{
-		RenderModule::OnRender(ctx);
-
-		// Always use Material system for texture binding
-		if (ctx.materialModule)
-			ctx.materialModule->BindMaterialForMesh(0);
-
-		// DrawIndexedInstancedIndirect (instanced billboard quad)
-		ctx.context->DrawIndexedInstancedIndirect(ctx.billboardArgs->buffer, ctx.billboardArgs->offset);
-	}
-
 	void BillboardRenderModule::LoadFromJson(const json& data)
 	{
 		RenderModule::LoadFromJson(data); // Only parses blendMode
@@ -109,25 +90,6 @@ namespace DE {
 	{
 		RenderModule::Initialize(ctx);
 
-	}
-
-	void MeshRenderModule::OnRender(const RenderContext& ctx)
-	{
-		RenderModule::OnRender(ctx);
-
-		Model* model = ModelManager::Get().GetModel(m_modelIdx);
-		if (!model) return;
-
-		for (UINT i = 0; i < model->meshes.size(); ++i) {
-			auto& mesh = model->meshes[i];
-
-			if (ctx.materialModule)
-				ctx.materialModule->BindMaterialForMesh(i);
-			else
-				MaterialSystem::Get().BindMaterial(0);
-
-			ctx.context->DrawIndexedInstancedIndirect(ctx.meshArgs->buffer, ctx.meshArgs->offset);
-		}
 	}
 
 	void MeshRenderModule::LoadFromJson(const json& data)
