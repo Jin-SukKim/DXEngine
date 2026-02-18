@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "RenderBase.h"
 #include "GeometryGenerator.h"
 #include "D3D11Utils.h"
@@ -532,8 +532,6 @@ namespace DE {
 		ID3D11UnorderedAccessView* nullUAVs[] = { nullptr };
 		m_context->CSSetUnorderedAccessViews(0, 1, nullUAVs, nullptr);
 
-		// Copy from UAV texture to actual depth buffer
-		m_context->CopyResource(m_lowResDepth.GetTexture(), m_lowResDepthUAV.GetTexture());
 	}
 
 	void RenderBase::SetLowResRender()
@@ -548,14 +546,14 @@ namespace DE {
 
 		m_context->RSSetViewports(1, &m_lowResViewport);
 
-		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+		float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
 		m_context->ClearRenderTargetView(m_lowResParticleTexture.GetRTV(), clearColor);
 
-		// Downsample scene depth instead of clearing to 1.0
+		// Downsample scene depth into UAV for bilateral composite
 		DownsampleDepthToLowRes();
 
-		// Only clear stencil, preserve depth from downsampling
-		m_context->ClearDepthStencilView(m_lowResDSV.Get(), D3D11_CLEAR_STENCIL, 1.f, 0);
+		// Clear DSV to 1.0 so billboard particles always pass D3D11_COMPARISON_LESS; bilateral composite uses m_lowResDepthUAV
+		m_context->ClearDepthStencilView(m_lowResDSV.Get(), D3D11_CLEAR_DEPTH, 1.f, 0);
 
 		// Multiple Render Targets
 		m_context->OMSetRenderTargets(1, m_lowResParticleTexture.GetAddressOfRTV(), m_lowResDSV.Get());
@@ -575,7 +573,7 @@ namespace DE {
 		ID3D11ShaderResourceView* srvs[3] = {
 			m_lowResParticleTexture.GetSRV(),
 			m_depthOnlyBuffer.GetSRV(),
-			m_lowResDepth.GetSRV()
+			m_lowResDepthUAV.GetSRV()
 		};
 		m_context->PSSetShaderResources(0, 3, srvs);
 
