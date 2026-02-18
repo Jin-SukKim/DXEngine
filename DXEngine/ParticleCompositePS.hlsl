@@ -2,7 +2,7 @@
 
 Texture2D lowResTexture : register(t0);      // Low-res particle color (RGB) + Alpha (A)
 Texture2D fullResDepth  : register(t1);      // Full-res Scene Depth (High Res)
-Texture2D lowResSceneDepth : register(t2);   // Downsampled Scene Depth (Low Res) - Áß¿ä!
+Texture2D lowResSceneDepth : register(t2);   // Downsampled Scene Depth (Low Res) - ï¿½ß¿ï¿½!
 
 struct SamplingPSInput {
     float4 position : SV_Position;
@@ -11,28 +11,28 @@ struct SamplingPSInput {
 
 float4 main(SamplingPSInput input) : SV_TARGET
 {
-    // 1. ÇöÀç ÇÈ¼¿ÀÇ °íÇØ»óµµ ±íÀÌ (±âÁØ°ª)
+    // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø»ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ø°ï¿½)
     float fullDepth = fullResDepth.SampleLevel(pointClampSampler, input.texcoord, 0).r;
 
-    // 2. ÀúÇØ»óµµ ÅØ½ºÃ³ Á¤º¸
+    // 2. ï¿½ï¿½ï¿½Ø»ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½
     float2 lowResSize;
     lowResTexture.GetDimensions(lowResSize.x, lowResSize.y);
     float2 texelSize = 1.0 / lowResSize;
 
-    // 3. ÇöÀç UV°¡ ÀúÇØ»óµµ ±×¸®µå¿¡¼­ ¾îµð¿¡ À§Ä¡ÇÏ´ÂÁö °è»ê
-    // ¿¹: 10.4 -> 10¹ø ÇÈ¼¿°ú 11¹ø ÇÈ¼¿ »çÀÌ, 10¹ø¿¡¼­ 0.4¸¸Å­ ¶³¾îÁü
+    // 3. ï¿½ï¿½ï¿½ï¿½ UVï¿½ï¿½ ï¿½ï¿½ï¿½Ø»ï¿½ ï¿½×¸ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½Ï´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+    // ï¿½ï¿½: 10.4 -> 10ï¿½ï¿½ ï¿½È¼ï¿½ï¿½ï¿½ 11ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ï¿½, 10ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0.4ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     float2 lowResCoord = input.texcoord * lowResSize;
-    float2 centerPos = floor(lowResCoord - 0.5) + 0.5; // 2x2 ±×¸®µåÀÇ ÁÂ»ó´Ü ÇÈ¼¿ Áß½ÉÁ¡
+    float2 centerPos = floor(lowResCoord - 0.5) + 0.5; // 2x2 ï¿½×¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Â»ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ß½ï¿½ï¿½ï¿½
 
-    // 4. ÇöÀç ÇÈ¼¿ÀÌ 2x2 ±×¸®µå ³»¿¡¼­ ¾îµð¿¡ Ä¡¿ìÃÄÁ® ÀÖ´ÂÁö (0.0 ~ 1.0)
-    // ÀÌ°ÍÀÌ ¹Ù·Î Bilinear InterpolationÀÇ ÇÙ½É °¡ÁßÄ¡ÀÔ´Ï´Ù.
+    // 4. ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ï¿½ï¿½ 2x2 ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ä¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ (0.0 ~ 1.0)
+    // ï¿½Ì°ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ Bilinear Interpolationï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½Ô´Ï´ï¿½.
     float2 t = lowResCoord - centerPos;
 
     float4 totalColor = 0;
     float totalWeight = 0.0;
-    const float depthThreshold = 0.02; // ±íÀÌ ¹Î°¨µµ (»óÈ²¿¡ µû¶ó Á¶Àý)
+    const float depthThreshold = 0.02; // ï¿½ï¿½ï¿½ï¿½ ï¿½Î°ï¿½ï¿½ï¿½ (ï¿½ï¿½È²ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 
-    // 2x2 ¼öµ¿ »ùÇÃ¸µ ·çÇÁ
+    // 2x2 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½
     [unroll]
     for (int x = 0; x <= 1; x++)
     {
@@ -41,37 +41,36 @@ float4 main(SamplingPSInput input) : SV_TARGET
         {
             float2 offset = float2(x, y);
 
-            // »ùÇÃ¸µÇÒ UV ÁÂÇ¥ (Á¤È®È÷ ÅØ¼¿ÀÇ Áß½ÉÀ» Âï¾î¾ß ÇÔ)
+            // ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ UV ï¿½ï¿½Ç¥ (ï¿½ï¿½È®ï¿½ï¿½ ï¿½Ø¼ï¿½ï¿½ï¿½ ï¿½ß½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
             float2 sampleUV = (centerPos + offset) * texelSize;
 
-            // [Áß¿ä] ¼öµ¿ º¸°£À» ÇÏ¹Ç·Î ¿©±â¼­´Â Point Sampler¸¦ ½á¾ß Á¤È®ÇÕ´Ï´Ù.
+            // [ï¿½ß¿ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½â¼­ï¿½ï¿½ Point Samplerï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È®ï¿½Õ´Ï´ï¿½.
             float lowDepth = lowResSceneDepth.SampleLevel(pointClampSampler, sampleUV, 0).r;
             float4 sampleColor = lowResTexture.SampleLevel(pointClampSampler, sampleUV, 0);
 
-            // (A) Depth Weight: ±íÀÌ Â÷ÀÌ¿¡ µû¸¥ °¡ÁßÄ¡
+            // (A) Depth Weight: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡
             float depthDiff = abs(fullDepth - lowDepth);
-            float depthWeight = 1.0 / (1.0 + depthDiff / depthThreshold); // ±íÀ»¼ö·Ï °¡ÁßÄ¡ ÇÏ¶ô
+            float depthWeight = 1.0 / (1.0 + depthDiff / depthThreshold); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ ï¿½Ï¶ï¿½
 
-            // (B) Spatial Weight: °Å¸®¿¡ µû¸¥ °¡ÁßÄ¡ (ÀÌ°Ô Ãß°¡µÊ!)
-            // x=0ÀÏ ¶§´Â (1-t.x), x=1ÀÏ ¶§´Â t.x¸¦ »ç¿ë
+            // (B) Spatial Weight: ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ (ï¿½Ì°ï¿½ ï¿½ß°ï¿½ï¿½ï¿½!)
+            // x=0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (1-t.x), x=1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ t.xï¿½ï¿½ ï¿½ï¿½ï¿½
             float spatialWeightX = (x == 0) ? (1.0 - t.x) : t.x;
             float spatialWeightY = (y == 0) ? (1.0 - t.y) : t.y;
             float spatialWeight = spatialWeightX * spatialWeightY;
 
-            // (C) Alpha Weight: ÆÄÆ¼Å¬ÀÌ ¾ø´Â ºó °ø°£(0)ÀÌ »öÀ» ¿À¿°½ÃÅ°Áö ¾Êµµ·Ï ¹æÁö
-            // Premultiplied Alpha¸¦ °¡Á¤ÇÑ´Ù¸é sampleColor.a°¡ ÀÌ¹Ì rgb¿¡ °öÇØÁ® ÀÖÀ¸´Ï ÁÖÀÇ ÇÊ¿ä.
-            // º¸ÅëÀº ±×³É sampleColor.a¸¦ °¡ÁßÄ¡·Î ÇÑ ¹ø ´õ °öÇØÁÖ´Â °Ô Halo(ÈÄ±¤) Á¦°Å¿¡ ÁÁ½À´Ï´Ù.
-            float alphaWeight = sampleColor.a;
+            // (C) Alpha Weight removed: alpha=0 clear pixels must contribute to interpolation.
+            // Excluding empty pixels (alpha=0) from spatial blending causes hard pixelated edges.
+            // With alpha=0 clear, (0,0,0,0) * weight blends smoothly -> soft anti-aliased edge.
 
-            // ÃÖÁ¾ °¡ÁßÄ¡ °áÇÕ
-            float weight = depthWeight * spatialWeight * alphaWeight;
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
+            float weight = depthWeight * spatialWeight;
 
             totalColor += sampleColor * weight;
             totalWeight += weight;
         }
     }
 
-    // °á°ú Á¤±ÔÈ­
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
     float4 finalColor;
     if (totalWeight > 0.0001)
     {
@@ -79,8 +78,8 @@ float4 main(SamplingPSInput input) : SV_TARGET
     }
     else
     {
-        // Fallback: ±íÀÌ Â÷ÀÌ°¡ ³Ê¹« Ä¿¼­ ¸ÅÄªµÇ´Â°Ô ¾ø°Å³ª ¾ËÆÄ°¡ ´Ù 0ÀÎ °æ¿ì
-        // ±×³É Bilinear (ºÎµå·´°Ô ¹¶°³±â)
+        // Fallback: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½Ê¹ï¿½ Ä¿ï¿½ï¿½ ï¿½ï¿½Äªï¿½Ç´Â°ï¿½ ï¿½ï¿½ï¿½Å³ï¿½ ï¿½ï¿½ï¿½Ä°ï¿½ ï¿½ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½
+        // ï¿½×³ï¿½ Bilinear (ï¿½Îµå·´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         finalColor = lowResTexture.SampleLevel(linearClampSampler, input.texcoord, 0);
     }
 
