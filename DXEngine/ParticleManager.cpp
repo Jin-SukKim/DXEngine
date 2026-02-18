@@ -97,12 +97,17 @@ namespace DE {
 		{
 			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 			m_memoryPool->BindSpawnCompute();
-			// Mesh와 Billboard 모두 Update
+			auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
+			auto context = GET_SINGLE(RenderBase)->GetContext();
+			context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
+
 			for (auto* system : m_activeSystems) {
 				if (system) {
 					system->Update(dt);
 				}
 			}
+
+			context->CSSetShader(nullptr, 0, 0);
 			m_memoryPool->UnbindSpawnCompute();
 
 			m_memoryPool->BindSimulationCompute();

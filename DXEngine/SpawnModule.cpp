@@ -7,7 +7,7 @@ namespace DE {
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
 		
-		// »ó¼ö °ª ÃÊ±âÈ­ (OnSpawn¿¡¼­ ÀÌµ¿)
+		// ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­ (OnSpawnï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½)
 		SpawnConsts& consts = ctx.consts.spawn;
 		consts.localPos = m_localPos;
 		consts.spawnVolume = m_spawnVolume;
@@ -16,7 +16,7 @@ namespace DE {
 		consts.lifeRange = m_lifeRange;
 		consts.simulationSpace = m_simulationSpace;
 
-		// Custom(5) ¸ðµå¸¸ µ¿Àû Ã³¸® ÇÊ¿ä
+		// Custom(5) ï¿½ï¿½å¸¸ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½Ê¿ï¿½
 		if (m_spawnShape == 5) // Custom Mode
 		{
 			ctx.customPositions = m_customPositions;
@@ -31,14 +31,14 @@ namespace DE {
 	void SpawnModule::OnPreUpdate(const SimulationContext& ctx)
 	{
 		ParticleModule::OnPreUpdate(ctx);
-		// Burst ·ÎÁ÷: ¾ÆÁ÷ ¹ß»ç ¾È Çß°í, ¼³Á¤µÈ Burst °³¼ö°¡ ÀÖ´Ù¸é
+		// Burst ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½ï¿½ ï¿½ß°ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Burst ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ù¸ï¿½
 		if (m_burstCount > 0 && !m_burstFired)
 		{
 			m_spawnAccumulator += (float)m_burstCount;
-			m_burstFired = true; // ¹ß»ç ¿Ï·á Ã³¸®
+			m_burstFired = true; // ï¿½ß»ï¿½ ï¿½Ï·ï¿½ Ã³ï¿½ï¿½
 		}
 
-		// Rate ·ÎÁ÷ (Áö¼Ó »ý¼º)
+		// Rate ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		if (m_spawnRate > 0.0f)
 		{
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
@@ -59,22 +59,17 @@ namespace DE {
 	{
 		ParticleModule::LateUpdate(ctx);
 		
-		// [ÃÖÀûÈ­] Á¶±â ¹ÝÈ¯
+		// [ï¿½ï¿½ï¿½ï¿½È­] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 		if (m_totalSpawnCount == 0)
 			return;
 
-		// SpawnPosition ¹öÆÛ´Â ParticleMemoryPool::BindCompute()¿¡¼­ ÀÌ¹Ì ¹ÙÀÎµùµÊ
-		// Shape 2,3,4,5 ¸ðµÎ ÅëÇÕµÈ m_spawnPositions ¹öÆÛ »ç¿ë (t10 ½½·Ô)
-		// º°µµ ¹ÙÀÎµù ºÒÇÊ¿ä
+		// SpawnPosition ï¿½ï¿½ï¿½Û´ï¿½ ParticleMemoryPool::BindCompute()ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½ï¿½
+		// Shape 2,3,4,5 ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Õµï¿½ m_spawnPositions ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (t10 ï¿½ï¿½ï¿½ï¿½)
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½
 
-		auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
-		ctx.context->CSSetShader(spawnCS.computeShader.Get(), 0, 0);
-		
-		// [ÃÖÀûÈ­] Bit shift »ç¿ë
+		// CSSetShaderëŠ” ParticleManagerì—ì„œ ë£¨í”„ ë°–ì—ì„œ í•œ ë²ˆë§Œ í˜¸ì¶œ
 		UINT groupCount = (m_totalSpawnCount + 1023) >> 10;
 		ctx.context->Dispatch(groupCount, 1, 1);
-		
-		ctx.context->CSSetShader(nullptr, 0, 0);
 	}
 
 	void SpawnModule::LoadFromJson(const json& data)
