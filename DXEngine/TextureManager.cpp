@@ -215,6 +215,17 @@ std::string TextureManager::GetTexturePath(int index)
     return "";
 }
 
+int TextureManager::LoadCurveLUT(const std::string& path, const std::unordered_map<ParticleCurveType, CurveData>& curveData)
+{
+    // TODO: LUT 생성
+    const std::vector<float> lut;
+    for (const auto& [key, value] : curveData) {
+        const auto& bakedData = value.GetBakedData();
+    }
+
+    return 0;
+}
+
 void TextureManager::GenerateCurlNoiseTexture(UINT resolution, float frequency)
 {
     using DirectX::PackedVector::XMConvertFloatToHalf;

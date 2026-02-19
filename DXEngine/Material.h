@@ -13,5 +13,6 @@ namespace DE {
 		int aoTexture = -1;
 		int metallicTexture = -1;
 		int roughnessTexture = -1;
+		int curveTexture = -1;
 	};
 }

@@ -9,8 +9,8 @@ enum class ModulePriority : uint8_t {
 	Visual = 2,
 	Force = 3,
 	UpdateForce = 4,
-	Material = 5,
-	Render = 6
+	Render = 5,
+	Material = 6
 };
 
 class ParticleModule

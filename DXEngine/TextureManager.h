@@ -1,4 +1,5 @@
 #pragma once
+#include "CurveData.h"
 
 namespace DE {
 class TextureManager
@@ -29,6 +30,9 @@ public:
 	std::pair<int, int> LoadMetallicRoughnessTexture(const std::string& path);
 	ID3D11ShaderResourceView* GetTextureSRV(int index);
 	std::string GetTexturePath(int index);
+	
+	// Curve Data
+	int LoadCurveLUT(const std::string& path, const std::unordered_map<ParticleCurveType, CurveData>& curveData);
 
 private:
 	static const UINT PARTICLE_TEXTURE_WIDTH = 512;

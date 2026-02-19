@@ -18,8 +18,10 @@ public:
 		Roughness = 3,
 		AO = 4,
 		Emissive = 5,
-		Height = 6
+		Height = 6,
+		Curve = 7
 	};
+
 	void Initialize();
 	int CreateMaterial(const std::string& name, const MeshData& meshData, bool isGLTF = false);
 	int CreateMaterial(const std::string& name, const MaterialConstants& constants, const std::vector<std::string>& texturePaths);

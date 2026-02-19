@@ -59,6 +59,7 @@ public:
 
 	const std::vector<float>& CreateCurveData();
 
+	const std::vector<float>& GetBakedData();
 private:
 	float Evaluate(float t) const;
 	float EvaluateLinear(float t) const;
