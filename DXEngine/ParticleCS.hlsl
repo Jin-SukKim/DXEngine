@@ -40,7 +40,7 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
 
     // Curl Noise Force
     if (force.curlNoiseEnabled) {
-        float3 curlForce = SampleCurlNoiseTiling(p.position, force.curlNoiseFrequency);
+        float3 curlForce = SampleCurlNoiseTiling(p.position, force.curlNoiseFrequency, force.curlNoiseScrollSpeed, frameConsts[p.ownerID].time);
         p.velocity += curlForce * force.curlNoiseStrength * dt;
     }
 

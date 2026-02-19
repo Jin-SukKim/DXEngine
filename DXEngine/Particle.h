@@ -90,6 +90,8 @@ namespace DE {
         float curlNoiseStrength = 1.0f;
         UINT curlNoiseEnabled = 0;
         float padding10 = 0.0f;
+        Vector3 curlNoiseScrollSpeed = Vector3(0.f, 0.f, 0.f);
+        float paddingCurl;
     };
 
     struct VortexConsts {

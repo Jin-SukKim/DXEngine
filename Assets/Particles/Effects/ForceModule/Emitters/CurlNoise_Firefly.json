@@ -20,12 +20,12 @@
     "velocity": [ 0.0, 0.1, 0.0 ],
     "speedRange": [ 0.0, 0.05 ],
     "randomDir": [ 0.02, 0.02, 0.02 ],
-    "gravity": [ 0.0, 1.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
     "drag": 0.9,
     "curlNoiseEnabled": true,
     "curlNoiseFrequency": 1.0,
     "curlNoiseStrength": 0.1,
-    "curlNoiseScrollSpeed": [ 0.0, 0.0, 0.0 ]
+    "curlNoiseScrollSpeed": [ 0.0, 1.0, 0.0 ]
   },
     "BillboardRender": {
         "blendMode": "Additive"

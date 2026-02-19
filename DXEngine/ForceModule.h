@@ -23,6 +23,7 @@ public:
 	float curlNoiseFrequency = 0.1f;
 	float curlNoiseStrength = 1.0f;
 	bool curlNoiseEnabled = false;
+	Vector3 curlNoiseScrollSpeed = Vector3(0.f, 0.f, 0.f);
 
 	// ComputeShader ���� - ComputeCommon ���
 };

@@ -120,6 +120,8 @@ struct ForceConsts
     float curlNoiseStrength;
     uint curlNoiseEnabled;
     float padding10;
+    float3 curlNoiseScrollSpeed;
+    float paddingCurl;
 };
 
 struct RenderConsts
@@ -205,10 +207,12 @@ StructuredBuffer<uint> batchEmitterList : register(t24);
 StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
 
 // Curl Noise sampling (Tiling Mode)
-float3 SampleCurlNoiseTiling(float3 worldPos, float frequency) {
-    float3 uv = frac(worldPos * frequency);
-    float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uv, 0);
-    return curlData.xyz * curlData.w; // direction * magnitude
+float3 SampleCurlNoiseTiling(float3 worldPos, float frequency, float3 scrollSpeed, float time) {
+    // 범위를 [0.0, 1.0]으로 고정
+    float3 scroll = frac(scrollSpeed * time);
+    float3 uvw = (worldPos * frequency) + scroll;
+    float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uvw, 0);
+    return curlData.xyz * curlData.w; // 방향 × 세기 = Curl 벡터
 }
 
 struct SortElement

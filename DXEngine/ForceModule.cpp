@@ -15,6 +15,7 @@ namespace DE {
 		consts.curlNoiseFrequency = curlNoiseFrequency;
 		consts.curlNoiseStrength = curlNoiseStrength;
 		consts.curlNoiseEnabled = curlNoiseEnabled ? 1 : 0;
+		consts.curlNoiseScrollSpeed = curlNoiseScrollSpeed;
 	}
 
 	void ForceModule::OnUpdate(const SimulationContext& ctx)
@@ -33,6 +34,7 @@ namespace DE {
 		if (data.contains("curlNoiseFrequency")) curlNoiseFrequency = data["curlNoiseFrequency"];
 		if (data.contains("curlNoiseStrength")) curlNoiseStrength = data["curlNoiseStrength"];
 		if (data.contains("curlNoiseEnabled")) curlNoiseEnabled = data["curlNoiseEnabled"];
+		if (data.contains("curlNoiseScrollSpeed")) curlNoiseScrollSpeed = JsonToVec3(data["curlNoiseScrollSpeed"]);
 	}
 
 	std::unique_ptr<ParticleModule> ForceModule::Clone() const
