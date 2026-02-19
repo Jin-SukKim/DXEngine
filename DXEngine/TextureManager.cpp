@@ -220,7 +220,7 @@ int TextureManager::LoadCurveLUT(const std::string& path, const std::unordered_m
     // TODO: LUT 생성
     const std::vector<float> lut;
     for (const auto& [key, value] : curveData) {
-        const auto& bakedData = value.GetBakedData();
+        //const auto& bakedData = value.GetBakedData();
     }
 
     return 0;
