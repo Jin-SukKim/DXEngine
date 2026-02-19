@@ -143,11 +143,11 @@
     <Filter Include="public\ParticleSystem\Actor">
       <UniqueIdentifier>{fcf6b784-8c9d-4352-af46-8260c33f86cc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="public\ParticleSystem\Actor\Basic">
-      <UniqueIdentifier>{322d1b77-9a4a-4247-b85e-8687956ee2c0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="public\ParticleSystem\Actor\Combination">
       <UniqueIdentifier>{c7e44fcc-4ea5-4983-90ba-fdb4612dee92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="private\Basic">
+      <UniqueIdentifier>{322d1b77-9a4a-4247-b85e-8687956ee2c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -401,37 +401,37 @@
       <Filter>public\ParticleSystem\Module</Filter>
     </ClInclude>
     <ClInclude Include="SnowActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="SpawnEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="Firework.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="BillboardEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="ForceEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="MaterialEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="MeshEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="OrbitEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="SubEmitterEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="VisualEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="VortexEffectsActor.h">
-      <Filter>public\ParticleSystem\Actor\Basic</Filter>
+      <Filter>private\Basic</Filter>
     </ClInclude>
     <ClInclude Include="BasicParticleScene.h">
       <Filter>public\ParticleSystem</Filter>
@@ -478,8 +478,15 @@
     <ClInclude Include="ScopedTimer.h">
       <Filter>public\ParticleSystem\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="SmokeActor.h" />
-    <ClInclude Include="FireEffect.h" />
+    <ClInclude Include="SmokeActor.h">
+      <Filter>private\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="FireEffect.h">
+      <Filter>private\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="SimplexNoise.h">
+      <Filter>public\Resource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -755,14 +762,17 @@
     <ClCompile Include="ThunderEffect.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="FireEffect.cpp">
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
     <ClCompile Include="ParticleMemoryPool.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SimplexNoise.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="SmokeActor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FireEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -895,8 +905,18 @@
     <FxCompile Include="ParticleCompositePS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
-    <FxCompile Include="BatchRenderArgsCS.hlsl" />
-    <FxCompile Include="BuildAliveIndicesCS.hlsl" />
+    <FxCompile Include="BatchRenderArgsCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="BuildAliveIndicesCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="CopySortedIndicesCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="DepthDownsampleCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BlinnPhong.hlsli">

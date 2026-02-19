@@ -217,86 +217,59 @@ std::string TextureManager::GetTexturePath(int index)
 void TextureManager::GenerateCurlNoiseTexture(UINT resolution, float frequency)
 {
     using DirectX::PackedVector::XMConvertFloatToHalf;
-
-    const UINT res = resolution;
+    const UINT  res = resolution;
     const float invRes = 1.0f / static_cast<float>(res);
     const float eps = 0.01f;
+    const float inv2eps = 1.0f / (2.0f * eps);
 
-    // Seed offsets for 3 independent noise fields (Fx, Fy, Fz)
-    const float ox1 = 31.4f, oy1 = 27.1f, oz1 = 19.7f;
-    const float ox2 = 57.3f, oy2 = 43.2f, oz2 = 61.8f;
+    // 3개의 독립 노이즈 — seed만 다르면 됨
+    SimplexNoise noiseX(0), noiseY(1), noiseZ(2);
 
-    // RGBA16F: 4 half per texel = 8 bytes
+    // Noise3D 하나는 스칼라값(숫자 1개) 만 반환
+    auto sampleX = [&](float x, float y, float z) { return noiseX.Noise3D(x * frequency, y * frequency, z * frequency); };
+    auto sampleY = [&](float x, float y, float z) { return noiseY.Noise3D(x * frequency, y * frequency, z * frequency); };
+    auto sampleZ = [&](float x, float y, float z) { return noiseZ.Noise3D(x * frequency, y * frequency, z * frequency); };
+
     std::vector<uint16_t> pixelData(res * res * res * 4);
 
-    auto sampleNoise = [&](float x, float y, float z, float seedX, float seedY, float seedZ) {
-        return SimplexNoise::Noise3D(
-            (x + seedX) * frequency,
-            (y + seedY) * frequency,
-            (z + seedZ) * frequency);
-    };
+    for (UINT z = 0; z < res; z++)
+        for (UINT y = 0; y < res; y++)
+            for (UINT x = 0; x < res; x++)
+            {
+                float fx = x * invRes, fy = y * invRes, fz = z * invRes;
 
-    for (UINT z = 0; z < res; z++) {
-        for (UINT y = 0; y < res; y++) {
-            for (UINT x = 0; x < res; x++) {
-                float fx = static_cast<float>(x) * invRes;
-                float fy = static_cast<float>(y) * invRes;
-                float fz = static_cast<float>(z) * invRes;
+                // 편미분 (중앙 차분)
+                // curlX = dFz/dy - dFy/dz   → 편미분 2개
+                // dFz/dy ≈ (Fz(y+ε) - Fz(y-ε)) / 2ε  → 2번 샘플
+                float dFx_dy = (sampleX(fx, fy + eps, fz) - sampleX(fx, fy - eps, fz)) * inv2eps;
+                float dFx_dz = (sampleX(fx, fy, fz + eps) - sampleX(fx, fy, fz - eps)) * inv2eps;
+                float dFy_dx = (sampleY(fx + eps, fy, fz) - sampleY(fx - eps, fy, fz)) * inv2eps;
+                float dFy_dz = (sampleY(fx, fy, fz + eps) - sampleY(fx, fy, fz - eps)) * inv2eps;
+                float dFz_dx = (sampleZ(fx + eps, fy, fz) - sampleZ(fx - eps, fy, fz)) * inv2eps;
+                float dFz_dy = (sampleZ(fx, fy + eps, fz) - sampleZ(fx, fy - eps, fz)) * inv2eps;
 
-                // Partial derivatives via central differences
-                // dFz/dy
-                float dFz_dy = (sampleNoise(fx, fy + eps, fz, ox2, oy2, oz2)
-                              - sampleNoise(fx, fy - eps, fz, ox2, oy2, oz2)) / (2.0f * eps);
-                // dFy/dz
-                float dFy_dz = (sampleNoise(fx, fy, fz + eps, ox1, oy1, oz1)
-                              - sampleNoise(fx, fy, fz - eps, ox1, oy1, oz1)) / (2.0f * eps);
-                // dFx/dz
-                float dFx_dz = (sampleNoise(fx, fy, fz + eps, 0, 0, 0)
-                              - sampleNoise(fx, fy, fz - eps, 0, 0, 0)) / (2.0f * eps);
-                // dFz/dx
-                float dFz_dx = (sampleNoise(fx + eps, fy, fz, ox2, oy2, oz2)
-                              - sampleNoise(fx - eps, fy, fz, ox2, oy2, oz2)) / (2.0f * eps);
-                // dFy/dx
-                float dFy_dx = (sampleNoise(fx + eps, fy, fz, ox1, oy1, oz1)
-                              - sampleNoise(fx - eps, fy, fz, ox1, oy1, oz1)) / (2.0f * eps);
-                // dFx/dy
-                float dFx_dy = (sampleNoise(fx, fy + eps, fz, 0, 0, 0)
-                              - sampleNoise(fx, fy - eps, fz, 0, 0, 0)) / (2.0f * eps);
-
-                // curl = nabla x F
+                // curl = ∇ × F (Curl은 벡터장의 회전을 구하는 연산)
                 float curlX = dFz_dy - dFy_dz;
-                float curlY = dFx_dz - dFz_dx;
+                float curlY = dFz_dx - dFx_dz;
                 float curlZ = dFy_dx - dFx_dy;
 
-                // Store magnitude in alpha, normalize direction in RGB
                 float mag = std::sqrt(curlX * curlX + curlY * curlY + curlZ * curlZ);
-                if (mag > 0.0001f) {
-                    float invMag = 1.0f / mag;
-                    curlX *= invMag;
-                    curlY *= invMag;
-                    curlZ *= invMag;
-                }
+                float invMag = (mag > 0.0001f) ? 1.0f / mag : 0.0f;
 
                 UINT idx = (z * res * res + y * res + x) * 4;
-                pixelData[idx + 0] = XMConvertFloatToHalf(curlX);
-                pixelData[idx + 1] = XMConvertFloatToHalf(curlY);
-                pixelData[idx + 2] = XMConvertFloatToHalf(curlZ);
+                pixelData[idx + 0] = XMConvertFloatToHalf(curlX * invMag);
+                pixelData[idx + 1] = XMConvertFloatToHalf(curlY * invMag);
+                pixelData[idx + 2] = XMConvertFloatToHalf(curlZ * invMag);
                 pixelData[idx + 3] = XMConvertFloatToHalf(mag);
             }
-        }
-    }
 
     auto device = GET_SINGLE(RenderBase)->GetDevice();
-    D3D11Utils::CreateTexture3D(
-        device.Get(),
-        res, res, res,
-        DXGI_FORMAT_R16G16B16A16_FLOAT,
-        pixelData.data(),
-        m_curlNoiseTexture,
-        m_curlNoiseSRV);
+    D3D11Utils::CreateTexture3D(device.Get(), res, res, res,
+        DXGI_FORMAT_R16G16B16A16_FLOAT, pixelData.data(),
+        m_curlNoiseTexture, m_curlNoiseSRV);
 
-    std::cout << "[TextureManager] Curl Noise 3D Texture generated ("
-              << res << "^3, " << (res * res * res * 8 / 1024) << " KB)" << std::endl;
+    std::cout << "[TextureManager] Curl Noise Texture: "
+        << res << "^3, " << (res * res * res * 8 / 1024) << " KB\n";
 }
 
 void TextureManager::BindCurlNoiseTexture(UINT slot)

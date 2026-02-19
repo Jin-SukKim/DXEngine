@@ -270,8 +270,8 @@ private:
 	StructuredBuffer<BitonicSort::Element> m_sortElements;          // Per-emitter sort keys
 	BitonicSort m_bitonicSort;                                      // Sorter instance
 
-	UINT m_meshVertexPoolCapacity = 500000;
-	UINT m_meshIndexPoolCapacity = 1500000;
+	UINT m_meshVertexPoolCapacity = 10000000;
+	UINT m_meshIndexPoolCapacity = 30000000;
 	UINT m_meshVertexNextOffset = 0;
 	UINT m_meshIndexNextOffset = 0;
 
