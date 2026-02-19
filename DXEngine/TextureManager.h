@@ -29,6 +29,7 @@ public:
 	std::pair<int, int> LoadMetallicRoughnessTexture(const std::string& path);
 	ID3D11ShaderResourceView* GetTextureSRV(int index);
 	std::string GetTexturePath(int index);
+
 private:
 	static const UINT PARTICLE_TEXTURE_WIDTH = 512;
 	static const UINT PARTICLE_TEXTURE_HEIGHT = 512;
