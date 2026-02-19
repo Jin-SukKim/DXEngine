@@ -93,13 +93,13 @@ namespace DE {
 		if (m_keyFrames.size() == 1)
 			return m_keyFrames[0].value;
 
-		// t¸¦ °¨½Î´Â µÎ Å°ÇÁ·¹ÀÓ Å½»ö
+		// tï¿½ï¿½ ï¿½ï¿½ï¿½Î´ï¿½ ï¿½ï¿½ Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å½ï¿½ï¿½
 		if (t <= m_keyFrames.front().key) {
-			// Ã¹ Å°ÇÁ·¹ÀÓÀÌ t=0¿¡ ÀÖÀ¸¸é ±× °ªÀ» ¹Ù·Î ¹ÝÈ¯
+			// Ã¹ Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ t=0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½È¯
 			if (m_keyFrames.front().key <= 0.f)
 				return m_keyFrames.front().value;
 
-			// ¾Ï¹¬Àû (0, 0) -> Ã¹ Å°ÇÁ·¹ÀÓ±îÁö ¼±Çü º¸°£
+			// ï¿½Ï¹ï¿½ï¿½ï¿½ (0, 0) -> Ã¹ Å°ï¿½ï¿½ï¿½ï¿½ï¿½Ó±ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			float localT = t / m_keyFrames.front().key;
 			return localT * m_keyFrames.front().value;
 		}
@@ -114,7 +114,7 @@ namespace DE {
 		auto lo = std::prev(hi);
 
 		float dt = hi->key - lo->key;
-		if (dt <= 0.0001f) return lo->value; // °ãÃÆÀ» ¶© ÀÌÀü °ª ¹Ù·Î ¹ÝÈ¯
+		if (dt <= 0.0001f) return lo->value; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½È¯
 
 		float localT = (t - lo->key) / dt;
 		return lo->value + localT * (hi->value - lo->value);
@@ -130,8 +130,8 @@ namespace DE {
 		{
 			if (m_keyFrames.front().key <= 0.f)
 				return m_keyFrames.front().value;
-			// ¾Ï¹¬Àû (0, 0) ¡æ Ã¹ Å°ÇÁ·¹ÀÓ±îÁö Cubic Hermite º¸°£
-			// ¿øÁ¡ outTangent = 0, Ã¹ Å°ÇÁ·¹ÀÓ inTangent »ç¿ë
+			// ï¿½Ï¹ï¿½ï¿½ï¿½ (0, 0) ï¿½ï¿½ Ã¹ Å°ï¿½ï¿½ï¿½ï¿½ï¿½Ó±ï¿½ï¿½ï¿½ Cubic Hermite ï¿½ï¿½ï¿½ï¿½
+			// ï¿½ï¿½ï¿½ï¿½ outTangent = 0, Ã¹ Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ inTangent ï¿½ï¿½ï¿½
 			float dt = m_keyFrames.front().key;
 			if (dt <= 0.0001f) return m_keyFrames.front().value;
 			float localT = t / dt;
@@ -157,7 +157,7 @@ namespace DE {
 		auto lo = std::prev(hi);
 
 		float dt = hi->key - lo->key;
-		if (dt <= 0.0001f) return lo->value; // °ãÃÆÀ» ¶© ÀÌÀü °ª ¹Ù·Î ¹ÝÈ¯
+		if (dt <= 0.0001f) return lo->value; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½È¯
 
 		float localT = (t - lo->key) / dt;
 		float t2 = localT * localT;
@@ -178,7 +178,7 @@ namespace DE {
 	{
 		if (m_keyFrames.empty()) return 0.f;
 
-		// Ã¹ Å°ÇÁ·¹ÀÓ ÀÌÀü ¡æ ¾Ï¹¬Àû ¿øÁ¡(0) À¯Áö
+		// Ã¹ Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ï¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(0) ï¿½ï¿½ï¿½ï¿½
 		if (t < m_keyFrames.front().key)
 			return 0.f;
 		if (t >= m_keyFrames.back().key)
@@ -195,8 +195,8 @@ namespace DE {
 
 	float CurveData::EvaluateSin(float t) const
 	{
-		// Å°ÇÁ·¹ÀÓÀÌ ¾øÀ¸¸é amplitude¸¦ °íÁ¤ EnvelopeÀ¸·Î »ç¿ë
-		// Å°ÇÁ·¹ÀÓÀÌ ÀÖÀ¸¸é ¼±Çü º¸°£°ªÀÌ Envelope ¿ªÇÒ
+		// Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ amplitudeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Envelopeï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+		// Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Envelope ï¿½ï¿½ï¿½ï¿½
 		float envelope = m_keyFrames.empty()
 			? m_param.amplitude
 			: EvaluateLinear(t) * m_param.amplitude;
@@ -215,14 +215,14 @@ namespace DE {
 
 	float CurveData::EvaluateNoise(float t) const
 	{
-		// 1D Ä¿ºêÀÌ¹Ç·Î Noise2D(t, offset)À¸·Î »ùÇÃ¸µ
-		// offsetÀ» µÎ ¹øÂ° ÃàÀ¸·Î »ç¿ë ¡æ seedÃ³·³ ´Ù¸¥ ³ëÀÌÁî ÆÐÅÏ »ý¼º
+		// 1D Ä¿ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ Noise2D(t, offset)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½
+		// offsetï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ seedÃ³ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		float noiseVal = m_simplex.Noise2D(
 			t * m_param.frequency,
 			m_param.offset
 		);
 		
-		// Noise2D Ãâ·ÂÀº [-1, 1] ¡æ [0, 1]·Î Á¤±ÔÈ­
+		// Noise2D ï¿½ï¿½ï¿½ï¿½ï¿½ [-1, 1] ï¿½ï¿½ [0, 1]ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 		noiseVal = noiseVal * 0.5f + 0.5f;
 
 		float envelope = m_keyFrames.empty()
@@ -237,5 +237,55 @@ namespace DE {
 		std::sort(m_keyFrames.begin(), m_keyFrames.end(), [](const KeyFrame& a, const KeyFrame& b) {
 			return a.key < b.key;
 			});
+	}
+
+	CurveData CurveData::FromJson(const json& data, LUTResolution defaultRes)
+	{
+		CurveData curve(defaultRes);
+
+		// Parse curve type
+		if (data.contains("type")) {
+			std::string typeStr = data["type"];
+			if (typeStr == "LINEAR")      curve.SetCurveType(CurveType::LINEAR);
+			else if (typeStr == "BEZIER") curve.SetCurveType(CurveType::BEZIER);
+			else if (typeStr == "SIN")    curve.SetCurveType(CurveType::SIN);
+			else if (typeStr == "COS")    curve.SetCurveType(CurveType::COS);
+			else if (typeStr == "STEP")   curve.SetCurveType(CurveType::STEP);
+			else if (typeStr == "NOISE")  curve.SetCurveType(CurveType::NOISE);
+		}
+
+		// Parse resolution
+		if (data.contains("resolution")) {
+			UINT res = data["resolution"];
+			if (res <= 64)       curve.SetLURResolution(LUTResolution::Low);
+			else if (res <= 128) curve.SetLURResolution(LUTResolution::Medium);
+			else if (res <= 256) curve.SetLURResolution(LUTResolution::High);
+			else                 curve.SetLURResolution(LUTResolution::Ultra);
+		}
+
+		// Parse curve params
+		if (data.contains("params")) {
+			auto& p = data["params"];
+			CurveParams params;
+			if (p.contains("frequency"))  params.frequency = p["frequency"];
+			if (p.contains("amplitude"))  params.amplitude = p["amplitude"];
+			if (p.contains("offset"))     params.offset = p["offset"];
+			if (p.contains("seed"))       params.seed = p["seed"];
+			curve.SetCurveParam(params);
+		}
+
+		// Parse keyframes
+		if (data.contains("keyframes") && data["keyframes"].is_array()) {
+			for (auto& kf : data["keyframes"]) {
+				KeyFrame keyFrame;
+				keyFrame.key = kf.value("key", 0.f);
+				keyFrame.value = kf.value("value", 0.f);
+				keyFrame.inTangent = kf.value("inTangent", 0.f);
+				keyFrame.outTangent = kf.value("outTangent", 0.f);
+				curve.AddKeyFrame(keyFrame);
+			}
+		}
+
+		return curve;
 	}
 }

@@ -37,6 +37,8 @@ RWStructuredBuffer<uint> writeAliveCount : register(u7);         // Write alive 
         uint spawnPosOffset;  // bakedOffset + customOffset
         uint systemID;
         float3 paddingID;
+        uint curveLUTSliceCB;
+        float3 paddingID2;
     };
 #endif
 
@@ -45,11 +47,13 @@ struct EmitterID
     uint readParticleOffset;
     uint writeParticleOffset;
     uint emitterID;
-    uint spawnPosOffset;  // bakedOffset + customOffset 
+    uint spawnPosOffset;  // bakedOffset + customOffset
     uint systemID;
     uint indexCount;
     uint startIndexLocation;
     uint baseVertexLocation;
+    uint curveLUTSlice;
+    uint3 eidPadding;
 };
 
 struct ParticleFrameConsts
@@ -203,6 +207,27 @@ Texture3D curlNoiseTexture : register(t26);
 Texture2D curlNoiseTexture2D : register(t27);
 SamplerState curlNoiseSampler : register(s0);
 
+// Curve LUT Texture Array (global, bound once before simulation)
+Texture2DArray curveLUT : register(t28);
+SamplerState curveSampler : register(s1);  // linearClampSS
+
+// Curve type row indices (matches ParticleCurveType enum)
+static const uint CURVE_COLOR          = 0;
+static const uint CURVE_ALPHA          = 1;
+static const uint CURVE_SIZE           = 2;
+static const uint CURVE_VELOCITY       = 3;
+static const uint CURVE_DRAG           = 4;
+static const uint CURVE_GRAVITY        = 5;
+static const uint CURVE_NOISE_STRENGTH = 6;
+static const uint CURVE_VORTEX_STRENGTH = 7;
+static const uint CURVE_ORBIT_RATE      = 8;
+static const uint CURVE_COUNT          = 9;
+
+float SampleCurve(uint curveType, float t, uint sliceIdx) {
+    float v = ((float)curveType + 0.5) / (float)CURVE_COUNT;
+    return curveLUT.SampleLevel(curveSampler, float3(t, v, sliceIdx), 0).r;
+}
+
 StructuredBuffer<Particle> readParticles : register(t16);
 StructuredBuffer<uint> readAliveCount : register(t17);         // Alive count per emitter (read side)
 StructuredBuffer<ParticleFrameConsts> frameConsts : register(t18);
@@ -217,18 +242,18 @@ StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
 
 // Curl Noise sampling (Tiling Mode)
 float3 SampleCurlNoiseTiling(float3 worldPos, float frequency, float3 scrollSpeed, float time) {
-    // ¹üÀ§¸¦ [0.0, 1.0]À¸·Î °íÁ¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [0.0, 1.0]ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 scroll = frac(scrollSpeed * time);
     float3 uvw = (worldPos * frequency) + scroll;
     float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uvw, 0);
-    return curlData.xyz * curlData.w; // ¹æÇâ ¡¿ ¼¼±â = Curl º¤ÅÍ
+    return curlData.xyz * curlData.w; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ = Curl ï¿½ï¿½ï¿½ï¿½
 }
 
 float2 SampleCurlNoise2D(float2 uv, float frequency, float2 scrollSpeed, float time) {
     float2 scroll = frac(scrollSpeed * time);
     float2 uvCoord = (uv * frequency) + scroll;
     float4 curlData = curlNoiseTexture2D.SampleLevel(curlNoiseSampler, uvCoord, 0);
-    return curlData.rg;  // xy ¹æÇâ ¡¿ Å©±â
+    return curlData.rg;  // xy ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Å©ï¿½ï¿½
 }
 
 struct SortElement

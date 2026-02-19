@@ -7,19 +7,23 @@ namespace DE {
 	{
 	public:
 		void Initialize(ParticleInitContext& ctx) override;
+		void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) override;
 
-		// À§Ä¡¸¦ °­Á¦·Î ¼öÁ¤ÇÏ¹Ç·Î ¾÷µ¥ÀÌÆ® ¿ì¼±¼øÀ§¸¦ ³ô°Ô Àâ°Å³ª, ¹°¸® ¿¬»ê ÀÌÈÄ(Post-Update)¿¡ º¸Á¤ÇÒ ¼öµµ ÀÖ½À´Ï´Ù.
-		// ¿©±â¼­´Â ÀÏ¹Ý UpdateForce ´Ü°è¿¡¼­ Ã³¸®ÇÏµÇ, ¼ÎÀÌ´õ¿¡¼­ Á÷Á¢ À§Ä¡¸¦ º¯È¯ÇÕ´Ï´Ù.
+		// ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å³ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(Post-Update)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
+		// ï¿½ï¿½ï¿½â¼­ï¿½ï¿½ ï¿½Ï¹ï¿½ UpdateForce ï¿½Ü°è¿¡ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ïµï¿½, ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
 		ModulePriority GetPriority() override { return ModulePriority::UpdateForce; }
 
 		void LoadFromJson(const json& data) override;
 		std::unique_ptr<ParticleModule> Clone() const override;
 
 	public:
-		Vector3 m_center = Vector3(0.f);          // È¸Àü Áß½É
-		Vector3 m_axis = Vector3(0.f, 1.f, 0.f);  // È¸Àü Ãà (¿¹: YÃà)
-		float m_rotationRate = 1.0f;              // È¸Àü ¼Óµµ (Rad/s or Deg/s)
-		float m_initialOffset = 0.f;              // (¿É¼Ç) Áß½ÉÀ¸·ÎºÎÅÍÀÇ °­Á¦ °Å¸®
+		Vector3 m_center = Vector3(0.f);          // È¸ï¿½ï¿½ ï¿½ß½ï¿½
+		Vector3 m_axis = Vector3(0.f, 1.f, 0.f);  // È¸ï¿½ï¿½ ï¿½ï¿½ (ï¿½ï¿½: Yï¿½ï¿½)
+		float m_rotationRate = 1.0f;              // È¸ï¿½ï¿½ ï¿½Óµï¿½ (Rad/s or Deg/s)
+		float m_initialOffset = 0.f;              // (ï¿½É¼ï¿½) ï¿½ß½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½
+
+		CurveData m_rateCurve{CurveData::LUTResolution::Medium};
+		bool m_hasRateCurve = false;
 	};
 
 }

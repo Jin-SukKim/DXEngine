@@ -3,35 +3,37 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull, uint ownerID)
     VortexConsts vortex = consts[ownerID].vortex;
     float3 fromCenter = pos - vortex.vortexCenter;
 
-    // È¸ÀüÃà¿¡ Åõ¿µµÈ º¤ÅÍ¸¦ Á¦°Å -> È¸Àü Æò¸é º¤ÅÍ (È¸ÀüÃà¿¡ ¼öÁ÷ÀÎ º¤ÅÍ)
+    // È¸ï¿½ï¿½ï¿½à¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ -> È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (È¸ï¿½ï¿½ï¿½à¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     float3 projected = fromCenter - dot(fromCenter, axis) * axis;
-    float dist = length(projected); // Áß½É°úÀÇ °Å¸®
+    float dist = length(projected); // ï¿½ß½É°ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½
 
     if (dist < 0.0001)
         return float3(0, 0, 0);
 
     float3 dir = normalize(projected);
-    float3 tangent = cross(axis, dir); // È¸Àü ¹æÇâ
+    float3 tangent = cross(axis, dir); // È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    // °Å¸® °¨¼è: 1/(1+dist©÷) - Áß½É¿¡¼­ ¸Ö¾îÁú¼ö·Ï ÈûÀÌ ¾àÇØÁü
+    // ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½: 1/(1+distï¿½ï¿½) - ï¿½ß½É¿ï¿½ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     float falloff = 1.0f / (1.0f + dist * dist * vortex.vortexFalloff);
 
-    // Tangent Force(È¸Àü) + Radial Force(±¸½É·Â/¿ø½É·Â)
+    // Tangent Force(È¸ï¿½ï¿½) + Radial Force(ï¿½ï¿½ï¿½É·ï¿½/ï¿½ï¿½ï¿½É·ï¿½)
     return ((tangent * vortex.vortexStrength) - (dir * pull)) * falloff;
 }
 
 void CalculateVortex(inout Particle p, VortexConsts vortex, float dt)
 {
-    // »ýÁ¸ ºñÀ² (0.0: Åº»ý Á÷ÈÄ ~ 1.0: »ç¸Á Á÷Àü)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (0.0: Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ~ 1.0: ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
 
-    // ½Ã°£ Èå¸§¿¡ µû¶ó Pull ÈûÀ» º¸°£ (Start -> End)
+    // ï¿½Ã°ï¿½ ï¿½å¸§ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Pull ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Start -> End)
     float currentPull = lerp(vortex.vortexPull[0], vortex.vortexPull[1], ageRatio);
+
+    float vortexCurve = SampleCurve(CURVE_VORTEX_STRENGTH, ageRatio, emitterIDs[p.ownerID].curveLUTSlice);
 
     if (abs(vortex.vortexStrength) > 0.001 || abs(currentPull) > 0.001)
     {
         float3 normalizedAxis = normalize(vortex.vortexAxis);
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull, p.ownerID);
-        p.velocity += vForce * dt;
+        p.velocity += vForce * vortexCurve * dt;
     }
 }

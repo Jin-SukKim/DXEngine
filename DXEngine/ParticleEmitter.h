@@ -108,8 +108,10 @@ namespace DE {
 		const OverdrawControlSettings& GetOverdrawSettings() const { return m_overdrawSettings; }
 		int GetModelIndex();
 		int GetMaterialIndex();
+		UINT GetCurveLUTSlice() const { return (m_curveTextureIndex >= 0) ? static_cast<UINT>(m_curveTextureIndex) : 0; }
 	private:
 		void ExecuteEvent(EmitterEvent event);
+		void BindCurveLUT();
 	private:
 		std::wstring m_name;
 
@@ -144,6 +146,9 @@ namespace DE {
 
 		// Overdraw Control Settings
 		OverdrawControlSettings m_overdrawSettings;
+
+		// Curve LUT
+		int m_curveTextureIndex = -1;
 	};
 
 	template<typename T>

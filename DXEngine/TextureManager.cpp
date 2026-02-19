@@ -32,6 +32,7 @@ void TextureManager::Initialize()
 
     GenerateCurlNoiseTexture(64, 4.0f);
     Generate2DCurlNoiseTexture(64, 4.0f);
+    CreateDefaultCurveLUT();
 }
 
 TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::string& path)
@@ -215,15 +216,125 @@ std::string TextureManager::GetTexturePath(int index)
     return "";
 }
 
-int TextureManager::LoadCurveLUT(const std::string& path, const std::unordered_map<ParticleCurveType, CurveData>& curveData)
+void TextureManager::CreateCurveLUTArray()
 {
-    // TODO: LUT 생성
-    const std::vector<float> lut;
-    for (const auto& [key, value] : curveData) {
-        //const auto& bakedData = value.GetBakedData();
+    auto device = GET_SINGLE(RenderBase)->GetDevice();
+    const UINT width = CURVE_LUT_RESOLUTION;
+    const UINT height = static_cast<UINT>(ParticleCurveType::COUNT);
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = CURVE_LUT_MAX_SLICES;
+    desc.Format = DXGI_FORMAT_R32_FLOAT;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = 0;
+
+    ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, m_curveLUTArray.GetAddressOf()));
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+    srvDesc.Texture2DArray.MostDetailedMip = 0;
+    srvDesc.Texture2DArray.MipLevels = 1;
+    srvDesc.Texture2DArray.FirstArraySlice = 0;
+    srvDesc.Texture2DArray.ArraySize = CURVE_LUT_MAX_SLICES;
+    ThrowIfFailed(device->CreateShaderResourceView(m_curveLUTArray.Get(), &srvDesc, m_curveLUTArraySRV.GetAddressOf()));
+
+    m_nextCurveLUTSlice = 0;
+
+    std::cout << "[TextureManager] Curve LUT Array created: "
+        << width << "x" << height << "x" << CURVE_LUT_MAX_SLICES << std::endl;
+}
+
+int TextureManager::LoadCurveLUT(const std::string& key, std::unordered_map<ParticleCurveType, CurveData>& curveData)
+{
+    // Cache check
+    auto it = m_curveLUTCache.find(key);
+    if (it != m_curveLUTCache.end())
+        return it->second;
+
+    if (m_nextCurveLUTSlice >= CURVE_LUT_MAX_SLICES) {
+        std::cout << "[TextureManager] Error: Curve LUT Array is full." << std::endl;
+        return 0; // fallback to default slice
     }
 
-    return 0;
+    const UINT width = CURVE_LUT_RESOLUTION;
+    const UINT height = static_cast<UINT>(ParticleCurveType::COUNT);
+
+    std::vector<float> pixels(width * height, 0.f);
+
+    // Fill each row
+    for (UINT row = 0; row < height; ++row) {
+        ParticleCurveType curveType = static_cast<ParticleCurveType>(row);
+        auto curveIt = curveData.find(curveType);
+
+        if (curveIt != curveData.end()) {
+            // Use provided curve data
+            const auto& baked = curveIt->second.CreateCurveData();
+            UINT srcSize = static_cast<UINT>(baked.size());
+            for (UINT x = 0; x < width; ++x) {
+                // Resample to fixed resolution
+                float t = static_cast<float>(x) / static_cast<float>(width - 1);
+                UINT srcIdx = static_cast<UINT>(t * (srcSize - 1));
+                srcIdx = std::min(srcIdx, srcSize - 1);
+                pixels[row * width + x] = baked[srcIdx];
+            }
+        }
+        else {
+            // Default values
+            // COLOR(0), ALPHA(1), SIZE(2): linear 0->1 (identity remap)
+            // VELOCITY(3), DRAG(4), GRAVITY(5), NOISE_STRENGTH(6), VORTEX(7), ORBIT(8): constant 1.0
+            for (UINT x = 0; x < width; ++x) {
+                if (row <= 2) {
+                    pixels[row * width + x] = static_cast<float>(x) / static_cast<float>(width - 1);
+                }
+                else {
+                    pixels[row * width + x] = 1.0f;
+                }
+            }
+        }
+    }
+
+    // Write into array slice via UpdateSubresource
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    UINT sliceIndex = m_nextCurveLUTSlice;
+    UINT subresource = D3D11CalcSubresource(0, sliceIndex, 1);
+    context->UpdateSubresource(
+        m_curveLUTArray.Get(),
+        subresource,
+        nullptr,
+        pixels.data(),
+        width * sizeof(float),          // row pitch
+        width * height * sizeof(float)   // slice pitch
+    );
+
+    m_curveLUTCache[key] = static_cast<int>(sliceIndex);
+    ++m_nextCurveLUTSlice;
+
+    std::cout << "[TextureManager] Curve LUT created: " << key
+        << " (slice " << sliceIndex << ", " << width << "x" << height << ")" << std::endl;
+
+    return static_cast<int>(sliceIndex);
+}
+
+void TextureManager::CreateDefaultCurveLUT()
+{
+    CreateCurveLUTArray();
+    std::unordered_map<ParticleCurveType, CurveData> empty;
+    LoadCurveLUT("__default_curve_lut__", empty);
+}
+
+void TextureManager::BindCurveLUTArray(UINT slot)
+{
+    if (!m_curveLUTArraySRV)
+        return;
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    context->CSSetShaderResources(slot, 1, m_curveLUTArraySRV.GetAddressOf());
 }
 
 void TextureManager::GenerateCurlNoiseTexture(UINT resolution, float frequency)

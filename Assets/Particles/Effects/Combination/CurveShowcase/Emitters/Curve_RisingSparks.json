@@ -1,0 +1,69 @@
+{
+    "Name": "Curve_RisingSparks",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, -0.5, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [1.0, 0.1, 1.0],
+        "spawnRate": 35.0,
+        "particlesPerSpawn": 6,
+        "maxParticles": 512,
+        "lifeRange": [1.5, 3.0]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.6, 0.1, 1.0],
+        "endColor": [1.0, 0.2, 0.05, 0.0],
+        "sizeRange": [0.1, 0.02],
+        "alphaCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.0, "inTangent": 0.0, "outTangent": 0.0 },
+                { "key": 0.7,  "value": 0.0, "inTangent": 0.0, "outTangent": 3.0 },
+                { "key": 0.9,  "value": 0.7, "inTangent": 3.0, "outTangent": 2.0 },
+                { "key": 1.0,  "value": 1.0, "inTangent": 1.5, "outTangent": 0.0 }
+            ]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 2.5, 0.0],
+        "speedRange": [1.5, 2.5],
+        "randomDir": [0.3, 0.1, 0.3],
+        "gravity": [0.0, -3.0, 0.0],
+        "drag": 0.8,
+        "velocityCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0, "value": 1.0,  "inTangent": 0.0,  "outTangent": -0.5 },
+                { "key": 0.4, "value": 0.7,  "inTangent": -0.5, "outTangent": -0.3 },
+                { "key": 0.7, "value": 0.45, "inTangent": -0.4, "outTangent": -0.3 },
+                { "key": 1.0, "value": 0.3,  "inTangent": -0.2, "outTangent": 0.0 }
+            ]
+        },
+        "gravityCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.0,  "inTangent": 0.0,  "outTangent": 0.0 },
+                { "key": 0.35, "value": 0.05, "inTangent": 0.1,  "outTangent": 1.0 },
+                { "key": 0.7,  "value": 0.8,  "inTangent": 1.5,  "outTangent": 0.5 },
+                { "key": 1.0,  "value": 1.0,  "inTangent": 0.3,  "outTangent": 0.0 }
+            ]
+        },
+        "dragCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0, "value": 0.15, "inTangent": 0.0, "outTangent": 0.5 },
+                { "key": 0.4, "value": 0.4,  "inTangent": 0.5, "outTangent": 0.8 },
+                { "key": 0.7, "value": 0.75, "inTangent": 0.6, "outTangent": 0.5 },
+                { "key": 1.0, "value": 1.0,  "inTangent": 0.4, "outTangent": 0.0 }
+            ]
+        }
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

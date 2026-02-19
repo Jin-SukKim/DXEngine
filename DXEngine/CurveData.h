@@ -6,7 +6,7 @@ struct KeyFrame {
 	float key;
 	float value;
 
-	// BEZIER CURVE ¿ë
+	// BEZIER CURVE ï¿½ï¿½
 	float inTangent = 0.f;
 	float outTangent = 0.f;
 };
@@ -35,6 +35,8 @@ enum class ParticleCurveType {
 	DRAG,
 	GRAVITY,
 	NOISE_STRENTH,
+	VORTEX_STRENGTH,
+	ORBIT_RATE,
 	COUNT
 };
 
@@ -48,10 +50,12 @@ public:
 		Ultra = 512
 	};
 
-	CurveData(LUTResolution res);
+	CurveData(LUTResolution res = LUTResolution::Medium);
 	void SetCurveType(CurveType type);
 	void SetLURResolution(LUTResolution res);
 	void SetCurveParam(CurveParams param);
+
+	static CurveData FromJson(const json& data, LUTResolution defaultRes = LUTResolution::Medium);
 
 	void AddKeyFrame(KeyFrame keyFrame);
 	void UpdateKeyFrame(UINT slot, KeyFrame keyFrame);

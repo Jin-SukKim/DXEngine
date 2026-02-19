@@ -1,0 +1,61 @@
+{
+    "Name": "Curve_PulsingCore",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.3, 0.3, 0.3],
+        "spawnRate": 60.0,
+        "particlesPerSpawn": 10,
+        "maxParticles": 1024,
+        "lifeRange": [0.8, 1.5]
+    },
+    "Visual": {
+        "startColor": [1.0, 1.0, 1.0, 1.0],
+        "endColor": [1.0, 0.75, 0.2, 0.0],
+        "sizeRange": [0.25, 0.05],
+        "colorCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.0,  "inTangent": 0.0,  "outTangent": 1.5 },
+                { "key": 0.25, "value": 0.6,  "inTangent": 1.0,  "outTangent": -1.0 },
+                { "key": 0.5,  "value": 0.15, "inTangent": -1.0, "outTangent": 1.0 },
+                { "key": 0.75, "value": 0.7,  "inTangent": 1.0,  "outTangent": 0.8 },
+                { "key": 1.0,  "value": 1.0,  "inTangent": 0.5,  "outTangent": 0.0 }
+            ]
+        },
+        "alphaCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.0, "inTangent": 0.0, "outTangent": 0.0 },
+                { "key": 0.8,  "value": 0.0, "inTangent": 0.0, "outTangent": 3.0 },
+                { "key": 0.95, "value": 0.8, "inTangent": 3.0, "outTangent": 2.0 },
+                { "key": 1.0,  "value": 1.0, "inTangent": 2.0, "outTangent": 0.0 }
+            ]
+        },
+        "sizeCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.4, "inTangent": 0.0,  "outTangent": 1.5 },
+                { "key": 0.2,  "value": 0.8, "inTangent": 0.8,  "outTangent": -0.5 },
+                { "key": 0.5,  "value": 0.3, "inTangent": -0.8, "outTangent": 1.0 },
+                { "key": 0.75, "value": 0.7, "inTangent": 0.8,  "outTangent": 0.5 },
+                { "key": 1.0,  "value": 1.0, "inTangent": 0.5,  "outTangent": 0.0 }
+            ]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.0, 0.0],
+        "speedRange": [0.0, 0.1],
+        "randomDir": [0.05, 0.05, 0.05],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

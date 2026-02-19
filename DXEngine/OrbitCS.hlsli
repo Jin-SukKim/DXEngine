@@ -1,4 +1,4 @@
-// ·Îµå¸®°Ô½º È¸Àü °ø½Ä (Axis-Angle Rotation)
+// ï¿½Îµå¸®ï¿½Ô½ï¿½ È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Axis-Angle Rotation)
 float3 RotateVector(float3 v, float3 axis, float angle)
 {
     float s, c;
@@ -8,19 +8,21 @@ float3 RotateVector(float3 v, float3 axis, float angle)
 
 void CalculateOrbit(inout Particle p, OrbitConsts orbit, float dt)
 {
-    // 1. È¸ÀüÇÒ °¢µµ °è»ê (Rate * DeltaTime)
-    float rotationAngle = orbit.rotationRate * dt;
+    // 1. È¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (Rate * DeltaTime)
+    float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
+    float orbitCurve = SampleCurve(CURVE_ORBIT_RATE, ageRatio, emitterIDs[p.ownerID].curveLUTSlice);
+    float rotationAngle = orbit.rotationRate * orbitCurve * dt;
 
-    // 2. Áß½É ±âÁØ »ó´ë ÁÂÇ¥ ±¸ÇÏ±â
+    // 2. ï¿½ß½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½Ï±ï¿½
     float3 relativePos = p.position - orbit.center;
 
-    // 3. Á¤±ÔÈ­µÈ ÃàÀ» ±âÁØÀ¸·Î À§Ä¡ º¤ÅÍ È¸Àü
+    // 3. ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½
     float3 axis = normalize(orbit.axis);
     float3 newRelativePos = RotateVector(relativePos, axis, rotationAngle);
 
-    // 4. »õ·Î¿î À§Ä¡ Àû¿ë
+    // 4. ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
     p.position = orbit.center + newRelativePos;
 
-    // 5. ¼Óµµ º¤ÅÍµµ ÇÔ²² È¸Àü (Áß¿ä!)
+    // 5. ï¿½Óµï¿½ ï¿½ï¿½ï¿½Íµï¿½ ï¿½Ô²ï¿½ È¸ï¿½ï¿½ (ï¿½ß¿ï¿½!)
     p.velocity = RotateVector(p.velocity, axis, rotationAngle);
 }

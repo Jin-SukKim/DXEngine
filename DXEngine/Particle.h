@@ -19,12 +19,16 @@ namespace DE {
         UINT readParticleOffset;
         UINT writeParticleOffset;
         UINT emitterID;
-        UINT spawnPosOffset;  // bakedOffset + customOffset 
+        UINT spawnPosOffset;  // bakedOffset + customOffset
         UINT systemID;
         UINT indexCount;
         UINT startIndexLocation;
         UINT baseVertexLocation;
-    };
+        UINT curveLUTSlice = 0;     // Curve LUT array slice index (0 = default)
+        UINT eidPad1 = 0;
+        UINT eidPad2 = 0;
+        UINT eidPad3 = 0;
+    };  // 48 bytes
 
     struct ParticleFrameConsts {
         float dt;

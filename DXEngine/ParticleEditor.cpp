@@ -97,6 +97,9 @@ namespace DE {
 		//m_curlMagicAura = SpawnEffect<EffectActor>(L"CurlMagicAura", L"Particles\\Effects\\ForceModule\\CurlNoise_MagicAura.json", Vector3(9.f, 0.f, -3.f));
 		//m_curlSpiritWisp = SpawnEffect<EffectActor>(L"CurlSpiritWisp", L"Particles\\Effects\\ForceModule\\CurlNoise_SpiritWisp.json", Vector3(12.f, 0.f, -3.f));
 
+		m_curveBasic = SpawnEffect<EffectActor>(L"CurveBasic", L"Particles\\Effects\\CurveModule\\CurveBasic.json", Vector3(-3.f, 0.f, -3.f));
+		m_curveShowcase = SpawnEffect<EffectActor>(L"CurveShowcase", L"Particles\\Effects\\Combination\\CurveShowcase\\System_CurveShowcase.json", Vector3(0.f, 0.f, -6.f));
+
 		m_sample = AddObject<SampleActor>(L"SampleActor");
 
 	}

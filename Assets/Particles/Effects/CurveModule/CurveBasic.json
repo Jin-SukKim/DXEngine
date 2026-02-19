@@ -1,0 +1,12 @@
+{
+    "Name": "CurveBasic",
+    "Looping": true,
+    "Duration": 0,
+    "PlayRate": 1.0,
+    "PreWarmTime": 1.5,
+    "State": "Play",
+    "Emitters": [
+        "Particles\\Effects\\CurveModule\\Emitters\\CurveBasic_NoCurve.json",
+        "Particles\\Effects\\CurveModule\\Emitters\\CurveBasic_WithCurve.json"
+    ]
+}

@@ -31,8 +31,12 @@ public:
 	ID3D11ShaderResourceView* GetTextureSRV(int index);
 	std::string GetTexturePath(int index);
 	
-	// Curve Data
-	int LoadCurveLUT(const std::string& path, const std::unordered_map<ParticleCurveType, CurveData>& curveData);
+	// Curve Data (Texture2DArray)
+	int LoadCurveLUT(const std::string& key, std::unordered_map<ParticleCurveType, CurveData>& curveData);
+	void CreateCurveLUTArray();
+	void CreateDefaultCurveLUT();
+	void BindCurveLUTArray(UINT slot = 28);
+	int GetDefaultCurveLUTIndex() const { return 0; }
 
 private:
 	static const UINT PARTICLE_TEXTURE_WIDTH = 512;
@@ -56,6 +60,14 @@ private:
 	ComPtr<ID3D11ShaderResourceView> m_curlNoiseSRV;
 
 	Texture2D m_curlNoise2D;
+
+	// Curve LUT (Texture2DArray)
+	static const UINT CURVE_LUT_RESOLUTION = 256;
+	static const UINT CURVE_LUT_MAX_SLICES = 128;
+	ComPtr<ID3D11Texture2D> m_curveLUTArray;
+	ComPtr<ID3D11ShaderResourceView> m_curveLUTArraySRV;
+	UINT m_nextCurveLUTSlice = 0;  // 0 = default, 1+ = user curves
+	std::unordered_map<std::string, int> m_curveLUTCache;
 };
 }
 

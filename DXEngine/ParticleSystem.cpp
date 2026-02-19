@@ -127,6 +127,7 @@ namespace DE {
 		emitter->SetOwner(this);
 		emitter->SetMemoryInfo(m_currentEmitterIndex);
 		emitter->Initialize(pConsts, pfConsts, pMeshArgs);
+		eID.curveLUTSlice = emitter->GetCurveLUTSlice();
 
 		MeshRange range = ModelManager::Get().GetMeshRange(emitter->GetModelIndex()); // TODO: modelIdx
 		eID.indexCount = range.indexCount;

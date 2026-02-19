@@ -1,5 +1,6 @@
 #pragma once
 #include "ParticleContext.h"
+#include "CurveData.h"
 
 namespace DE {
 class ParticleEmitter;
@@ -23,6 +24,8 @@ public:
 	virtual void OnPreUpdate(const SimulationContext& context) { if (!m_isEnabled) return; }
 	virtual void OnUpdate(const SimulationContext& context) { if (!m_isEnabled) return; }
 	virtual void LateUpdate(SimulationContext& context) { if (!m_isEnabled) return; }
+
+	virtual void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) {}
 
 	//virtual void LoadFromJson();
 	virtual ModulePriority GetPriority() = 0;

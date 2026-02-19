@@ -1,0 +1,63 @@
+{
+    "Name": "Curve_NoiseHaze",
+    "Duration": 0,
+    "Spawn": {
+        "space": "Local",
+        "localPos": [0.0, 0.3, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [1.5, 1.0, 1.5],
+        "spawnRate": 20.0,
+        "particlesPerSpawn": 5,
+        "maxParticles": 512,
+        "lifeRange": [3.0, 5.0]
+    },
+    "Visual": {
+        "startColor": [0.1, 0.7, 0.6, 0.5],
+        "endColor": [0.5, 0.2, 0.8, 0.0],
+        "sizeRange": [0.3, 0.08],
+        "colorCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.0, "inTangent": 0.0,  "outTangent": 0.3 },
+                { "key": 0.3,  "value": 0.2, "inTangent": 0.5,  "outTangent": 1.2 },
+                { "key": 0.65, "value": 0.8, "inTangent": 1.2,  "outTangent": 0.4 },
+                { "key": 1.0,  "value": 1.0, "inTangent": 0.3,  "outTangent": 0.0 }
+            ]
+        },
+        "sizeCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0,  "value": 0.0, "inTangent": 0.0,  "outTangent": 0.0 },
+                { "key": 0.2,  "value": 0.05,"inTangent": 0.1,  "outTangent": 0.2 },
+                { "key": 0.6,  "value": 0.3, "inTangent": 0.4,  "outTangent": 1.0 },
+                { "key": 1.0,  "value": 1.0, "inTangent": 1.2,  "outTangent": 0.0 }
+            ]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.15, 0.0],
+        "speedRange": [0.0, 0.1],
+        "randomDir": [0.05, 0.05, 0.05],
+        "gravity": [0.0, 0.0, 0.0],
+        "drag": 0.05,
+        "curlNoiseEnabled": true,
+        "curlNoiseFrequency": 0.15,
+        "curlNoiseStrength": 2.0,
+        "curlNoiseScrollSpeed": [0.1, 0.05, 0.1],
+        "noiseStrengthCurve": {
+            "type": "BEZIER",
+            "resolution": 256,
+            "keyframes": [
+                { "key": 0.0, "value": 0.3, "inTangent": 0.0,  "outTangent": 1.0 },
+                { "key": 0.4, "value": 0.8, "inTangent": 0.8,  "outTangent": 0.5 },
+                { "key": 0.6, "value": 1.0, "inTangent": 0.3,  "outTangent": -0.5 },
+                { "key": 1.0, "value": 0.5, "inTangent": -0.5, "outTangent": 0.0 }
+            ]
+        }
+    },
+    "BillboardRender": {
+        "blendMode": "Additive"
+    }
+}

@@ -7,12 +7,13 @@
 #include "VisualModule.h"
 #include "ForceModule.h"
 #include "VortexModule.h"
-#include "RenderModule.h"	
-#include "MaterialModule.h"	
+#include "RenderModule.h"
+#include "MaterialModule.h"
 #include "ParticleContext.h"
 #include "Mesh.h"
 #include "TextureSpawnBake.h"
 #include "ParticleSystem.h"
+#include "TextureManager.h"
 
 namespace DE {
 
@@ -52,6 +53,7 @@ namespace DE {
 		, m_ownerSystem(nullptr)
 		, m_emitterID(0)
 		, m_overdrawSettings(other.m_overdrawSettings)
+		, m_curveTextureIndex(other.m_curveTextureIndex)
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
@@ -66,9 +68,23 @@ namespace DE {
 	{
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
-		
-		ParticleInitContext initCtx = { 
-			device.Get(), 
+
+		// Collect curves from all modules
+		std::unordered_map<ParticleCurveType, CurveData> curveMap;
+		for (auto& mod : m_modules)
+			mod->CollectCurves(curveMap);
+
+		// Create LUT texture if any curves are defined
+		if (!curveMap.empty()) {
+			std::string curveKey = std::string(m_name.begin(), m_name.end()) + "_curves";
+			m_curveTextureIndex = TextureManager::Get().LoadCurveLUT(curveKey, curveMap);
+		}
+		else {
+			m_curveTextureIndex = -1;
+		}
+
+		ParticleInitContext initCtx = {
+			device.Get(),
 			pConsts,
 			pfConsts,
 			pMeshArgs,
@@ -281,6 +297,11 @@ namespace DE {
 	void ParticleEmitter::SetOwner(ParticleSystem* system)
 	{
 		m_ownerSystem = system;
+	}
+
+	void ParticleEmitter::BindCurveLUT()
+	{
+		// No-op: Curve LUT is now a global Texture2DArray bound once before simulation
 	}
 
 	void ParticleEmitter::LoadOverdrawSettings(const json& j)

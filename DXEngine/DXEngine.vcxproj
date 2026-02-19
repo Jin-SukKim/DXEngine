@@ -220,6 +220,7 @@
     <ClInclude Include="RoseEffect.h" />
     <ClInclude Include="ScopedTimer.h" />
     <ClInclude Include="SimplexNoise.h" />
+    <ClInclude Include="CurveData.h" />
     <ClInclude Include="SmokeActor.h" />
     <ClInclude Include="SnowActor.h" />
     <ClInclude Include="SpawnEffectsActor.h" />
@@ -331,6 +332,7 @@
     <ClCompile Include="PortalEffect.cpp" />
     <ClCompile Include="RoseEffect.cpp" />
     <ClCompile Include="SimplexNoise.cpp" />
+    <ClCompile Include="CurveData.cpp" />
     <ClCompile Include="SmokeActor.cpp" />
     <ClCompile Include="SnowActor.cpp" />
     <ClCompile Include="SpawnEffectsActor.cpp" />

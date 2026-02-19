@@ -8,6 +8,7 @@ class ForceModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 	void OnUpdate(const SimulationContext& context) override;
+	void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) override;
 
 	ModulePriority GetPriority() override { return ModulePriority::Force; }
 
@@ -25,7 +26,14 @@ public:
 	bool curlNoiseEnabled = false;
 	Vector3 curlNoiseScrollSpeed = Vector3(0.f, 0.f, 0.f);
 
-	// ComputeShader ���� - ComputeCommon ���
+	CurveData m_velocityCurve{CurveData::LUTResolution::Medium};
+	CurveData m_dragCurve{CurveData::LUTResolution::Medium};
+	CurveData m_gravityCurve{CurveData::LUTResolution::Medium};
+	CurveData m_noiseStrengthCurve{CurveData::LUTResolution::Medium};
+	bool m_hasVelocityCurve = false;
+	bool m_hasDragCurve = false;
+	bool m_hasGravityCurve = false;
+	bool m_hasNoiseStrengthCurve = false;
 };
 
 }

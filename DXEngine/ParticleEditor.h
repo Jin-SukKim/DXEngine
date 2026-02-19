@@ -55,6 +55,8 @@ namespace DE {
 		EffectActor* m_curlFirefly = nullptr;
 		EffectActor* m_curlMagicAura = nullptr;
 		EffectActor* m_curlSpiritWisp = nullptr;
+		EffectActor* m_curveBasic = nullptr;
+		EffectActor* m_curveShowcase = nullptr;
 
 		// ��Ʈ���� �׽�Ʈ�� ����
 		float m_stressTime = 0.0f;

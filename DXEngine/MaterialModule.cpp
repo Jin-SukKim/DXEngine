@@ -3,6 +3,7 @@
 #include "MaterialSystem.h"
 #include "RenderModule.h"
 #include "ModelManager.h"
+#include "TextureManager.h"
 
 namespace DE {
 	void MaterialModule::Initialize(ParticleInitContext& ctx)

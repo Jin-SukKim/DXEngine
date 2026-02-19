@@ -5,11 +5,11 @@
 namespace DE {
 	void OrbitModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ConstantBuffer ±¸Á¶Ã¼¿¡ Orbit °ü·Ã ÇÊµå°¡ Ãß°¡µÇ¾î¾ß ÇÕ´Ï´Ù.
+		// ConstantBuffer ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ Orbit ï¿½ï¿½ï¿½ï¿½ ï¿½Êµå°¡ ï¿½ß°ï¿½ï¿½Ç¾ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.
 		auto& consts = ctx.consts.orbit;
 		consts.center = m_center;
 		consts.axis = m_axis;
-		consts.rotationRate = m_rotationRate; // ¼ÎÀÌ´õ¿¡¼­ dt¿Í °öÇØ »ç¿ë
+		consts.rotationRate = m_rotationRate; // ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ï¿½ï¿½ dtï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		consts.initialOffset = m_initialOffset;
 		consts.active = 1;
 	}
@@ -20,6 +20,15 @@ namespace DE {
 		if (data.contains("axis")) m_axis = JsonToVec3(data["axis"]);
 		if (data.contains("rotationRate")) m_rotationRate = data["rotationRate"];
 		if (data.contains("offset")) m_initialOffset = data["offset"];
+		if (data.contains("rateCurve")) {
+			m_rateCurve = CurveData::FromJson(data["rateCurve"]);
+			m_hasRateCurve = true;
+		}
+	}
+
+	void OrbitModule::CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves)
+	{
+		if (m_hasRateCurve) curves.emplace(ParticleCurveType::ORBIT_RATE, m_rateCurve);
 	}
 
 	std::unique_ptr<ParticleModule> OrbitModule::Clone() const
@@ -30,6 +39,8 @@ namespace DE {
 		cloned->m_rotationRate = this->m_rotationRate;
 		cloned->m_initialOffset = this->m_initialOffset;
 		cloned->m_isEnabled = this->m_isEnabled;
+		cloned->m_rateCurve = this->m_rateCurve;
+		cloned->m_hasRateCurve = this->m_hasRateCurve;
 		return cloned;
 	}
 }

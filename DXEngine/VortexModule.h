@@ -7,6 +7,7 @@ class VortexModule : public ParticleModule
 {
 public:
 	void Initialize(ParticleInitContext& ctx) override;
+	void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) override;
 
 	ModulePriority GetPriority() override { return ModulePriority::UpdateForce; }
 
@@ -19,7 +20,10 @@ private:
 	Vector3 m_vortexAxis = Vector3(0.f, 1.f, 0.f);
 	Vector2 m_vortexPull = Vector2(0.f);
 
-	// ComputeShader Á¦°Å - ComputeCommon »ç¿ë
+	CurveData m_strengthCurve{CurveData::LUTResolution::Medium};
+	bool m_hasStrengthCurve = false;
+
+	// ComputeShader ï¿½ï¿½ï¿½ï¿½ - ComputeCommon ï¿½ï¿½ï¿½
 };
 
 }
