@@ -119,12 +119,20 @@ namespace DE {
         UINT frameCount;
         Vector2 frameTiles;
         UINT indexCount;
+
         UINT useSorting;
         float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
         float softDistance = 0.0f;  // Soft particle fade distance (0 = disabled)
         UINT frameBlending = 0;
+       
         float animTime = 0.0f;  // Absolute time(seconds), 0 = use animDuration ratio
         float velocityStretchFactor = 0.0f; // 0 = disabled, larger = more stretch
+        UINT uvDistortEnabled = false;
+        float uvDistortFrequency = 0.f;
+
+        float uvDistortStrength = 0.f;
+        Vector2 uvDistortScroll = Vector2(0.f, 0.f);
+        float renderPadding;
     };
 
     struct ParticleConsts {

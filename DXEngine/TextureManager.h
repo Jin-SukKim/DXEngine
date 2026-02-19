@@ -19,7 +19,9 @@ public:
 
 	// Curl Noise 3D Texture
 	void GenerateCurlNoiseTexture(UINT resolution = 64, float frequency = 4.0f);
-	void BindCurlNoiseTexture(UINT slot = 15);
+	void BindCurlNoiseTexture(UINT slot = 26);
+	void Generate2DCurlNoiseTexture(UINT resolution = 64, float frequency = 4.f);
+	void Bind2DCurlNoiseTexture(UINT slot = 27);
 
 	// �Ϲ� Texture
 	int LoadTexture(const std::string& path, bool isSRGB);
@@ -47,6 +49,8 @@ private:
 	// Curl Noise 3D Texture
 	ComPtr<ID3D11Texture3D> m_curlNoiseTexture;
 	ComPtr<ID3D11ShaderResourceView> m_curlNoiseSRV;
+
+	Texture2D m_curlNoise2D;
 };
 }
 

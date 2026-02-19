@@ -63,16 +63,29 @@ namespace DE {
 		m_modelIdx = 0; // Billboard quad
 		ctx.consts.render.softDistance = m_softDistance;
 		ctx.consts.render.velocityStretchFactor = m_velocityStretchFactor;
+
+		ctx.consts.render.uvDistortEnabled = m_uvDistortEnabled;
+		ctx.consts.render.uvDistortFrequency = m_uvDistortFrequency;
+		ctx.consts.render.uvDistortStrength = m_uvDistortStrength;
+		ctx.consts.render.uvDistortScroll = m_uvDistortScroll;
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
 	{
-		RenderModule::LoadFromJson(data); // Only parses blendMode
+		RenderModule::LoadFromJson(data);
+
 		if (data.contains("softDistance"))
 			m_softDistance = data["softDistance"].get<float>();
 		if (data.contains("velocityStretchFactor"))
 			m_velocityStretchFactor = data["velocityStretchFactor"].get<float>();
-		// All texture loading moved to MaterialModule
+
+		if (data.contains("noiseUVDistort")) {
+			const auto& n = data["noiseUVDistort"];
+			m_uvDistortEnabled = n.value("enabled", false);
+			m_uvDistortFrequency = n.value("frequency", 1.0f);
+			m_uvDistortStrength = n.value("strength", 0.05f);
+			if (n.contains("scrollSpeed")) m_uvDistortScroll = JsonToVec2(n["scrollSpeed"]);
+		}
 	}
 
 	std::unique_ptr<ParticleModule> BillboardRenderModule::Clone() const

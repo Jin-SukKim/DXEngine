@@ -129,12 +129,20 @@ struct RenderConsts
     uint frameCount;
     float2 frameTiles;
     uint indexCount;
+    
     uint useSorting;
     float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
     float softDistance;     // Soft particle fade distance (0 = disabled)
     uint frameBlending;
+    
     float animTime;
     float velocityStretchFactor; // 0 = disabled
+    uint uvDistortEnabled;
+    float uvDistortFrequency;
+    
+    float uvDistortStrength;
+    float2 uvDistortScroll;
+    float renderPadding;
 };
 
 struct VortexConsts
@@ -192,6 +200,7 @@ Texture2DArray particleTex : register(t14);
 
 // Curl Noise 3D Texture
 Texture3D curlNoiseTexture : register(t26);
+Texture2D curlNoiseTexture2D : register(t27);
 SamplerState curlNoiseSampler : register(s0);
 
 StructuredBuffer<Particle> readParticles : register(t16);
@@ -213,6 +222,13 @@ float3 SampleCurlNoiseTiling(float3 worldPos, float frequency, float3 scrollSpee
     float3 uvw = (worldPos * frequency) + scroll;
     float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uvw, 0);
     return curlData.xyz * curlData.w; // 방향 × 세기 = Curl 벡터
+}
+
+float2 SampleCurlNoise2D(float2 uv, float frequency, float2 scrollSpeed, float time) {
+    float2 scroll = frac(scrollSpeed * time);
+    float2 uvCoord = (uv * frequency) + scroll;
+    float4 curlData = curlNoiseTexture2D.SampleLevel(curlNoiseSampler, uvCoord, 0);
+    return curlData.rg;  // xy 방향 × 크기
 }
 
 struct SortElement

@@ -39,6 +39,11 @@ private:
 	float m_velocityStretchFactor = 0.0f;
 	// All texture handling moved to MaterialModule
 	// IndirectArgsBuffer  - ParticleEmitter
+
+	UINT m_uvDistortEnabled = true;
+	float m_uvDistortFrequency = 1.0f;
+	float m_uvDistortStrength = 0.01f;
+	Vector2 m_uvDistortScroll = Vector2(0.f, 0.5f);
 };
 
 class MeshRenderModule : public RenderModule

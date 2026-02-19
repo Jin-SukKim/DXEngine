@@ -31,6 +31,7 @@ void TextureManager::Initialize()
     m_nextFreeIndex = 0;
 
     GenerateCurlNoiseTexture(64, 4.0f);
+    Generate2DCurlNoiseTexture(64, 4.0f);
 }
 
 TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::string& path)
@@ -281,4 +282,60 @@ void TextureManager::BindCurlNoiseTexture(UINT slot)
     context->CSSetShaderResources(slot, 1, &srv);
 }
 
+void TextureManager::Generate2DCurlNoiseTexture(UINT resolution, float frequency)
+{
+    using DirectX::PackedVector::XMConvertFloatToHalf;
+    const UINT  res = resolution;
+    const float invRes = 1.0f / static_cast<float>(res);
+    const float eps = 0.01f;
+    const float inv2eps = 1.0f / (2.0f * eps);
+
+    // 2D Curl은 스칼라 노이즈 1개로 충분
+    SimplexNoise noise(0);
+    auto sample = [&](float x, float y) {
+        return noise.Noise2D(x * frequency, y * frequency);
+    };
+
+    // 2D 텍스처: res * res
+    std::vector<uint16_t> pixelData(res * res * 4);
+
+    for (UINT y = 0; y < res; y++)
+        for (UINT x = 0; x < res; x++)
+        {
+            float fx = x * invRes, fy = y * invRes;
+
+            // 2D Curl: 스칼라 포텐셜 ψ의 편미분
+            // curlX =  dψ/dy
+            // curlY = -dψ/dx
+            float dPsi_dx = (sample(fx + eps, fy) - sample(fx - eps, fy)) * inv2eps;
+            float dPsi_dy = (sample(fx, fy + eps) - sample(fx, fy - eps)) * inv2eps;
+
+            float curlX = dPsi_dy;
+            float curlY = -dPsi_dx;
+
+            float mag = std::sqrt(curlX * curlX + curlY * curlY);
+            float invMag = (mag > 0.0001f) ? 1.0f / mag : 0.0f;
+
+            UINT idx = (y * res + x) * 4;
+            pixelData[idx + 0] = XMConvertFloatToHalf(curlX * invMag);  // R: X 방향
+            pixelData[idx + 1] = XMConvertFloatToHalf(curlY * invMag);  // G: Y 방향
+            pixelData[idx + 2] = XMConvertFloatToHalf(0.0f);            // B: 미사용
+            pixelData[idx + 3] = XMConvertFloatToHalf(mag);             // A: 크기
+        }
+
+    auto device = GET_SINGLE(RenderBase)->GetDevice();
+    D3D11Utils::CreateTexture(
+        device.Get(), res, res,
+        DXGI_FORMAT_R16G16B16A16_FLOAT, pixelData.data(),
+        m_curlNoise2D);
+
+    std::cout << "[TextureManager] 2D Curl Noise Texture: "
+        << res << "^2, " << (res * res * 8 / 1024) << " KB\n";
+}
+
+void TextureManager::Bind2DCurlNoiseTexture(UINT slot)
+{
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    context->PSSetShaderResources(slot, 1, m_curlNoise2D.GetAddressOfSRV());
+}
 }

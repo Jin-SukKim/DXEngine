@@ -749,6 +749,46 @@ namespace DE {
 		}
 	}
 
+	void D3D11Utils::CreateTexture(ID3D11Device* device, UINT width, UINT height, DXGI_FORMAT format, const void* initData, Texture2D& outTexture)
+	{
+		size_t pixelSize = GetPixelSize(format);
+
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = 1;
+		desc.ArraySize = 1;          
+		desc.Format = format;
+		desc.SampleDesc.Count = 1; 
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA subData = {};
+		subData.pSysMem = initData;
+		subData.SysMemPitch = static_cast<UINT>(width * pixelSize);
+		subData.SysMemSlicePitch = static_cast<UINT>(width * height * pixelSize);
+
+		HRESULT hr = device->CreateTexture2D(&desc, &subData, outTexture.GetAddressOfTexture());
+		if (FAILED(hr)) {
+			std::cout << "[D3D11Utils] Failed to create Texture3D" << std::endl;
+			return;
+		}
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		hr = device->CreateShaderResourceView(outTexture.GetTexture(), &srvDesc, outTexture.GetAddressOfSRV());
+		if (FAILED(hr)) {
+			std::cout << "[D3D11Utils] Failed to create Texture3D SRV" << std::endl;
+			return;
+		}
+	}
+
 	size_t D3D11Utils::GetPixelSize(const DXGI_FORMAT& pixelFormat)
 	{
 		switch (pixelFormat) {

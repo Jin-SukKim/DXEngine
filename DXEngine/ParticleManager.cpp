@@ -525,6 +525,8 @@ namespace DE {
 		ID3D11ShaderResourceView* depthSRV = GET_SINGLE(RenderBase)->GetLowResSceneDepthSRV();
 		context->PSSetShaderResources(7, 1, &depthSRV);
 
+		TextureManager::Get().Bind2DCurlNoiseTexture(27);
+
 		ID3D11ShaderResourceView* batchSRVs[] = {
 			m_memoryPool->GetBatchEmitterList().GetSRV(),
 			m_memoryPool->GetBatchDescriptors().GetSRV()

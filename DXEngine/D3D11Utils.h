@@ -180,6 +180,14 @@ namespace DE {
 			ComPtr<ID3D11Texture3D>& outTexture,
 			ComPtr<ID3D11ShaderResourceView>& outSRV);
 
+		static void CreateTexture(
+			ID3D11Device* device,
+			UINT width, UINT height,
+			DXGI_FORMAT format,
+			const void* initData,
+			Texture2D& outTexture
+			);
+
 		// Pixel Format�� ���� Pixel ������ ������ �ٸ��� ������ ���� uint8_t�� ������ ��� ������ ������ �ٸ�
 		static size_t GetPixelSize(const DXGI_FORMAT& pixelFormat);
 

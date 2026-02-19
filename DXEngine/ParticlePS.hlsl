@@ -9,6 +9,8 @@ Texture2D roughnessTex : register(t4);
 Texture2D emissiveTex : register(t5);
 Texture2D sceneDepthTex : register(t7);
 
+
+
 struct ParticlePSInput
 {
     float4 pos : SV_POSITION;
@@ -101,17 +103,26 @@ float4 main(ParticlePSInput input) : SV_TARGET
 {
     float4 finalColor = input.color;
 
+    float2 uv = input.uv;
+    
+    // UV Distortion
+    RenderConsts render = consts[input.emitterSlotID].render;
+    if (render.uvDistortEnabled) {
+        float2 noise = SampleCurlNoise2D(uv, render.uvDistortFrequency, render.uvDistortScroll, frameConsts[input.emitterSlotID].time);
+        uv += noise * render.uvDistortStrength;
+    }
+
     // Use MaterialConstants.useAlbedoMap to determine if texture exists
     if (useAlbedoMap)
     {
         // Case 1: Texture exists (Sprite / Animation)
-        float4 texColor = SpriteTexture(input.emitterSlotID, input.lifeRatio, input.lifeMax, input.uv);
+        float4 texColor = SpriteTexture(input.emitterSlotID, input.lifeRatio, input.lifeMax, uv);
         finalColor *= texColor;
     }
     else
     {
         // Case 2: No texture - Default Glow Circle
-        float dist = length(float2(0.5f, 0.5f) - input.uv) * 2.0f;
+        float dist = length(float2(0.5f, 0.5f) - uv) * 2.0f;
         float circleAlpha = saturate(1.0f - dist);
 
         finalColor.a *= circleAlpha;
@@ -121,7 +132,7 @@ float4 main(ParticlePSInput input) : SV_TARGET
     finalColor.rgb *= albedoFactor;
 
     // Compute sprite-animated UV for PBR textures (discrete frame, no blending)
-    float2 spriteUV = GetSpriteAnimatedUV(input.emitterSlotID, input.lifeRatio, input.lifeMax, input.uv);
+    float2 spriteUV = GetSpriteAnimatedUV(input.emitterSlotID, input.lifeRatio, input.lifeMax, uv);
 
     // AO: darken based on ambient occlusion
     float ao = useAOMap ? aoTex.Sample(linearClampSampler, spriteUV).r : 1.0;

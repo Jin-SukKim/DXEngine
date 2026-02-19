@@ -5,24 +5,39 @@
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 0.05, 0.15, 0.05 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 30.0,
-    "particlesPerSpawn": 200,
+    "spawnRate": 1,
+    "particlesPerSpawn": 1,
     "maxParticles": 1024,
-    "lifeRange": [ 0.5, 1.0 ]
+    "lifeRange": [ 0.5, 1.5 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
     "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
-    "sizeRange": [ 0.25, 0.05 ]
+    "sizeRange": [ 0.5, 0.1 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+    }
   },
   "Force": {
     "velocity": [ 0.0, 0.1, 0.0 ],
     "speedRange": [ 0.01, 0.02 ],
     "randomDir": [ 0.2, 0.5, 0.2 ],
-    "gravity": [ 0.0, 1.0, 0.0 ],
+    "gravity": [ 0.0, 0.5, 0.0 ],
     "drag": 0.0
   },
+  "Material": {
+    "texture": "Textures\\flame.png"
+  },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "Additive",
+    "noiseUVDistort": {
+      "enabled": true,
+      "frequency": 2.0,
+      "strength": 1.0,
+      "scrollSpeed": [ 0.0, 1.0 ]
+    }
   }
 }
