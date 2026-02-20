@@ -16,9 +16,9 @@ namespace DE {
 		m_sky->SetModel("Cubemap", cubeMap);
 
 		// 기본으로 적용할 Cubemap
-		SetCubeMaps(L"../Assets/Textures/Cubemaps/HDRI/", 
-			L"SampleEnvHDR.dds",	L"SampleSpecularHDR.dds", 
-			L"SampleDiffuseHDR.dds",	L"SampleBrdf.dds");
+		SetCubeMaps(L"../Assets/Textures/Cubemaps/HDRI/sky/", 
+			L"skyEnvHDR.dds",	L"skySpecularHDR.dds", 
+			L"skyDiffuseHDR.dds",	L"skyBrdf.dds");
 		//SetCubeMaps(L"../Assets/Textures/Cubemaps/HDRI/", 
 		//	L"clear_pureskyEnvHDR.dds",	L"clear_pureskySpecularHDR.dds", 
 		//	L"clear_pureskyDiffuseHDR.dds",	L"clear_pureskyBrdf.dds");

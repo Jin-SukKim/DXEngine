@@ -5,15 +5,16 @@
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 0.05, 0.15, 0.05 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 1,
+    "spawnRate": 0.0,
+    "burst": 1,
     "particlesPerSpawn": 1,
     "maxParticles": 1024,
-    "lifeRange": [ 0.5, 1.5 ]
+    "lifeRange": [ 10.0, 10.0 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
     "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
-    "sizeRange": [ 0.5, 0.1 ],
+    "sizeRange": [ 1.0, 1.0 ],
     "rotation": {
       "minRotation": [ 0.0, 0.0, 0.0 ],
       "maxRotation": [ 0.0, 0.0, 0.0 ],
@@ -25,7 +26,7 @@
     "velocity": [ 0.0, 0.1, 0.0 ],
     "speedRange": [ 0.01, 0.02 ],
     "randomDir": [ 0.2, 0.5, 0.2 ],
-    "gravity": [ 0.0, 0.5, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
     "drag": 0.0
   },
   "Material": {

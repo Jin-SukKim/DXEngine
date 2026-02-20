@@ -42,7 +42,7 @@ private:
 
 	UINT m_uvDistortEnabled = true;
 	float m_uvDistortFrequency = 1.0f;
-	float m_uvDistortStrength = 0.01f;
+	float m_uvDistortStrength = 0.015f;
 	Vector2 m_uvDistortScroll = Vector2(0.f, 0.5f);
 };
 
