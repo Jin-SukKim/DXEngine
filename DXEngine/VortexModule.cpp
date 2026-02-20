@@ -17,11 +17,27 @@ namespace DE {
 
 	void VortexModule::LoadFromJson(const json& data)
 	{
-		if (data.contains("center")) m_vortexCenter = JsonToVec3(data["center"]);
-		if (data.contains("strength")) m_vortexStrength = data["strength"];
-		if (data.contains("axis")) m_vortexAxis = JsonToVec3(data["axis"]);
-		if (data.contains("vortexFalloff")) m_vortexFalloff = data["vortexFalloff"];
-		if (data.contains("pull")) m_vortexPull = JsonToVec2(data["pull"]);
+		if (data.contains("center")) 
+			m_vortexCenter = JsonToVec3(data["center"]);
+		if (data.contains("strength")) 
+			m_vortexStrength = data["strength"];
+		if (data.contains("axis")) 
+			m_vortexAxis = JsonToVec3(data["axis"]);
+		if (data.contains("vortexFalloff")) 
+			m_vortexFalloff = data["vortexFalloff"];
+		if (data.contains("pull"))
+			m_vortexPull = JsonToVec2(data["pull"]);
+
+		if (data.contains("strengthCurve")) {
+			m_strengthCurve = CurveData::FromJson(data["strengthCurve"]);
+			m_hasStrengthCurve = true;
+		}
+	}
+
+	void VortexModule::CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves)
+	{
+		if (m_hasStrengthCurve) 
+			curves.emplace(ParticleCurveType::VORTEX_STRENGTH, m_strengthCurve);
 	}
 
 	std::unique_ptr<ParticleModule> VortexModule::Clone() const
@@ -35,6 +51,8 @@ namespace DE {
 		cloned->m_vortexPull = this->m_vortexPull;
 		cloned->m_isEnabled = this->m_isEnabled;
 
+		cloned->m_strengthCurve = this->m_strengthCurve;
+		cloned->m_hasStrengthCurve = this->m_hasStrengthCurve;
 		return cloned;
 	}
 }

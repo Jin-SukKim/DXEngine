@@ -6,10 +6,11 @@ float3 RotateVector(float3 v, float3 axis, float angle)
     return v * c + cross(axis, v) * s + axis * dot(axis, v) * (1 - c);
 }
 
-void CalculateOrbit(inout Particle p, OrbitConsts orbit, float dt)
+void CalculateOrbit(inout Particle p, OrbitConsts orbit, float dt, float ageRatio)
 {
     // 1. 회전할 각도 계산 (Rate * DeltaTime)
-    float rotationAngle = orbit.rotationRate * dt;
+    float orbitCurve = SampleCurve(CURVE_ORBIT_RATE, ageRatio, emitterIDs[p.ownerID].curveLUTSlice);
+    float rotationAngle = orbit.rotationRate * orbitCurve * dt;
 
     // 2. 중심 기준 상대 좌표 구하기
     float3 relativePos = p.position - orbit.center;

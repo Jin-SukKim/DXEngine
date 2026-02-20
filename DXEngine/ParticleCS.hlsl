@@ -29,47 +29,58 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     }
 
     ForceConsts force = consts[p.ownerID].force;
-    // 1. ���� ���� (Physics)
+    VisualConsts visual = consts[p.ownerID].visual;
+    float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
 
-    // �߷� ����
-    p.velocity += force.gravity * dt;
+    // Curve sampling
+    uint curveSlice = emitterIDs[p.ownerID].curveLUTSlice;
+    float sizeCurve = SampleCurve(CURVE_SIZE, ageRatio, curveSlice);
+    float colorCurve = SampleCurve(CURVE_COLOR, ageRatio, curveSlice);
+    float alphaCurve = SampleCurve(CURVE_ALPHA, ageRatio, curveSlice);
+    float dragCurve = SampleCurve(CURVE_DRAG, ageRatio, curveSlice);
+    float gravCurve = SampleCurve(CURVE_GRAVITY, ageRatio, curveSlice);
+    float velCurve = SampleCurve(CURVE_VELOCITY, ageRatio, curveSlice);
 
-    // ���� ���� (Drag) ����
-    // drag ���� Ŭ���� �ӵ��� 0�� ������ ����
-    p.velocity *= 1.0f / (1.0f + force.drag * dt);
+    // Force (Physics)
+    // 
+    // Gravity (curve multiplier, default 1.0 = unchanged)
+    p.velocity += force.gravity * gravCurve * dt;
+
+    // Drag (curve multiplier, default 1.0 = unchanged)
+    p.velocity *= 1.0f / (1.0f + force.drag * dragCurve * dt);
 
     // Curl Noise Force
     if (force.curlNoiseEnabled) {
+        float noiseCurve = SampleCurve(CURVE_NOISE_STRENGTH, ageRatio, curveSlice);
         float3 curlForce = SampleCurlNoiseTiling(p.position, force.curlNoiseFrequency, force.curlNoiseScrollSpeed, frameConsts[p.ownerID].time);
-        p.velocity += curlForce * force.curlNoiseStrength * dt;
+        p.velocity += curlForce * force.curlNoiseStrength * noiseCurve * dt;
     }
 
     // Vortex
     VortexConsts vortex = consts[p.ownerID].vortex;
     if (vortex.active)
     {
-        CalculateVortex(p, vortex, dt);
+        CalculateVortex(p, vortex, dt, ageRatio);
     }
 
     // Orbit
     OrbitConsts orbit = consts[p.ownerID].orbit;
     if (orbit.active)
     {
-        CalculateOrbit(p, orbit, dt);
+        CalculateOrbit(p, orbit, dt, ageRatio);
     }
 
-    // ��ġ ����
-    p.position += p.velocity * dt;
+    // 위치 이동
+    // Position update (velocity curve multiplier, default 1.0 = unchanged)
+    p.position += p.velocity * velCurve * dt;
 
-    // 2. �ð� ȿ�� (Visuals)
-    VisualConsts visual = consts[p.ownerID].visual;
-    float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
-    // ũ�� ���� (Start -> End)
-    // sizeRange.x = Start Size, sizeRange.y = End Size
-    p.size = lerp(visual.sizeRange.x, visual.sizeRange.y, ageRatio);
+    // Visuals
+    // Size: remap via curve (default linear 0->1 = existing behavior)
+    p.size = lerp(visual.sizeRange.x, visual.sizeRange.y, sizeCurve);
 
-    // ���� ���� (Start -> End)
-    p.color = lerp(visual.startColor, visual.endColor, ageRatio);
+    // Color: RGB remap + Alpha separate (default linear 0->1 = existing behavior)
+    p.color.rgb = lerp(visual.startColor.rgb, visual.endColor.rgb, colorCurve);
+    p.color.a = lerp(visual.startColor.a, visual.endColor.a, alphaCurve);
 
     //p.rotation += p.rotSpeed * dt;
     p.rotation = fmod(p.rotation + p.rotSpeed * dt, 6.28318530718f);

@@ -8,7 +8,7 @@ class MaterialModule : public ParticleModule
 public:
 	void Initialize(ParticleInitContext& ctx) override;
 
-	// Ư�� ���� �޽�(SubMesh) �ε����� �ش��ϴ� ���� ���ε�
+	// Model은 SubMesh로 이루어져 있음 (TODO: 현재는 1개의 mesh만 있는 static mesh만 가능)
 	void BindMaterialForMesh(int subMeshIndex);
 
 	void LoadFromJson(const json& data) override;
@@ -17,10 +17,10 @@ public:
 	std::unique_ptr<ParticleModule> Clone() const override;
 	int GetMaterialIndex() { return m_materialIndices[0]; }
 private:
-	// ���� �� Mesh�� �����ϴ� ���� �ε�����
+	// 각 Mesh의 Material Index
 	std::vector<int> m_materialIndices;
 
-	// JSON���� �ε�� ���� �̸��� (����/������)
+	// Json에서 Load해오는 data
 	bool m_isLoadedFromJson = false;
 	Vector2 m_frameTiles = { 1, 1 };
 	UINT m_frameCount = 1;

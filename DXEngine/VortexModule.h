@@ -11,6 +11,7 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::UpdateForce; }
 
 	void LoadFromJson(const json& data) override;
+	void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	Vector3 m_vortexCenter = Vector3(0.f);
@@ -19,7 +20,8 @@ private:
 	Vector3 m_vortexAxis = Vector3(0.f, 1.f, 0.f);
 	Vector2 m_vortexPull = Vector2(0.f);
 
-	// ComputeShader 제거 - ComputeCommon 사용
+	CurveData m_strengthCurve{ CurveData::LUTResolution::Medium };
+	bool m_hasStrengthCurve = false;
 };
 
 }

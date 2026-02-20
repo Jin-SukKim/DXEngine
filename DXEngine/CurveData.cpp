@@ -62,6 +62,7 @@ namespace DE {
 		m_bakedData.resize(res);
 
 		for (UINT i = 0; i < res; ++i) {
+			// [0.0, 1.0]
 			float t = (float)i / (res - 1);
 			float val = Evaluate(t);
 			m_bakedData[i] = std::clamp(val, m_minVal, m_maxVal);
@@ -69,6 +70,56 @@ namespace DE {
 
 		m_changed = false;
 		return m_bakedData;
+	}
+
+	CurveData CurveData::FromJson(const json& data, LUTResolution defaultRes)
+	{
+		CurveData curve(defaultRes);
+
+		// Parse curve type
+		if (data.contains("type")) {
+			std::string typeStr = data["type"];
+			if (typeStr == "LINEAR")      curve.SetCurveType(CurveType::LINEAR);
+			else if (typeStr == "BEZIER") curve.SetCurveType(CurveType::BEZIER);
+			else if (typeStr == "SIN")    curve.SetCurveType(CurveType::SIN);
+			else if (typeStr == "COS")    curve.SetCurveType(CurveType::COS);
+			else if (typeStr == "STEP")   curve.SetCurveType(CurveType::STEP);
+			else if (typeStr == "NOISE")  curve.SetCurveType(CurveType::NOISE);
+		}
+
+		// Parse resolution
+		if (data.contains("resolution")) {
+			UINT res = data["resolution"];
+			if (res <= 64)       curve.SetLURResolution(LUTResolution::Low);
+			else if (res <= 128) curve.SetLURResolution(LUTResolution::Medium);
+			else if (res <= 256) curve.SetLURResolution(LUTResolution::High);
+			else                 curve.SetLURResolution(LUTResolution::Ultra);
+		}
+
+		// Parse curve params
+		if (data.contains("params")) {
+			auto& p = data["params"];
+			CurveParams params;
+			if (p.contains("frequency"))  params.frequency = p["frequency"];
+			if (p.contains("amplitude"))  params.amplitude = p["amplitude"];
+			if (p.contains("offset"))     params.offset = p["offset"];
+			if (p.contains("seed"))       params.seed = p["seed"];
+			curve.SetCurveParam(params);
+		}
+
+		// Parse keyframes
+		if (data.contains("keyframes") && data["keyframes"].is_array()) {
+			for (auto& kf : data["keyframes"]) {
+				KeyFrame keyFrame;
+				keyFrame.key = kf.value("key", 0.f);
+				keyFrame.value = kf.value("value", 0.f);
+				keyFrame.inTangent = kf.value("inTangent", 0.f);
+				keyFrame.outTangent = kf.value("outTangent", 0.f);
+				curve.AddKeyFrame(keyFrame);
+			}
+		}
+
+		return curve;
 	}
 
 	float CurveData::Evaluate(float t) const
@@ -238,4 +289,6 @@ namespace DE {
 			return a.key < b.key;
 			});
 	}
+
+
 }

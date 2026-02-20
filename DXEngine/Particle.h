@@ -24,6 +24,8 @@ namespace DE {
         UINT indexCount;
         UINT startIndexLocation;
         UINT baseVertexLocation;
+        UINT curveLUTSlice = 0;
+        Vector3 eIDPad;
     };
 
     struct ParticleFrameConsts {

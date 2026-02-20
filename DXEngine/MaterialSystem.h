@@ -18,8 +18,7 @@ public:
 		Roughness = 3,
 		AO = 4,
 		Emissive = 5,
-		Height = 6,
-		Curve = 7
+		Height = 6
 	};
 
 	void Initialize();

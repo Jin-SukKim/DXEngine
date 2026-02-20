@@ -35,6 +35,8 @@ enum class ParticleCurveType {
 	DRAG,
 	GRAVITY,
 	NOISE_STRENTH,
+	VORTEX_STRENGTH,
+	ORBIT_RATE,
 	COUNT
 };
 
@@ -48,7 +50,7 @@ public:
 		Ultra = 512
 	};
 
-	CurveData(LUTResolution res);
+	CurveData(LUTResolution res = LUTResolution::Medium);
 	void SetCurveType(CurveType type);
 	void SetLURResolution(LUTResolution res);
 	void SetCurveParam(CurveParams param);
@@ -58,8 +60,7 @@ public:
 	void RemoveKeyFrame(UINT slot);
 
 	const std::vector<float>& CreateCurveData();
-
-	const std::vector<float>& GetBakedData();
+	static CurveData FromJson(const json& data, LUTResolution defaultRes = LUTResolution::Medium);
 private:
 	float Evaluate(float t) const;
 	float EvaluateLinear(float t) const;

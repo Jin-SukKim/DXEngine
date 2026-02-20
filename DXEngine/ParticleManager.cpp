@@ -114,10 +114,15 @@ namespace DE {
 
 			// Curl Noise 3D Texture + Sampler binding for CS
 			TextureManager::Get().BindCurlNoiseTexture(26);
+			// Curve LUT
+			TextureManager::Get().BindCurveLUTArray(28);
 			{
 				auto context = GET_SINGLE(RenderBase)->GetContext();
-				ID3D11SamplerState* sampler = RenderBase::graphicsCommon.linearWrapSS.Get();
-				context->CSSetSamplers(0, 1, &sampler);
+				ID3D11SamplerState* samplers[] = {
+					RenderBase::graphicsCommon.linearWrapSS.Get(),   // s0 (curl noise)
+					RenderBase::graphicsCommon.linearClampSS.Get()   // s1 (curve LUT)
+				};
+				context->CSSetSamplers(0, 2, samplers);
 			}
 
 			m_memoryPool->ExcuteParticleLogic();
@@ -128,6 +133,7 @@ namespace DE {
 				auto context = GET_SINGLE(RenderBase)->GetContext();
 				ID3D11ShaderResourceView* nullSRV = nullptr;
 				context->CSSetShaderResources(26, 1, &nullSRV);
+				context->CSSetShaderResources(28, 1, &nullSRV);
 			}
 		}
 

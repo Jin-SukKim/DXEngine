@@ -20,18 +20,16 @@ float3 CalculateVortexForce(float3 pos, float3 axis, float pull, uint ownerID)
     return ((tangent * vortex.vortexStrength) - (dir * pull)) * falloff;
 }
 
-void CalculateVortex(inout Particle p, VortexConsts vortex, float dt)
+void CalculateVortex(inout Particle p, VortexConsts vortex, float dt, float ageRatio)
 {
-    // 생존 비율 (0.0: 탄생 직후 ~ 1.0: 사망 직전)
-    float ageRatio = 1.0f - (p.life / max(p.lifeMax, 0.0001f));
-
     // 시간 흐름에 따라 Pull 힘을 보간 (Start -> End)
     float currentPull = lerp(vortex.vortexPull[0], vortex.vortexPull[1], ageRatio);
+    float vortexCurve = SampleCurve(CURVE_VORTEX_STRENGTH, ageRatio, emitterIDs[p.ownerID].curveLUTSlice);
 
     if (abs(vortex.vortexStrength) > 0.001 || abs(currentPull) > 0.001)
     {
         float3 normalizedAxis = normalize(vortex.vortexAxis);
         float3 vForce = CalculateVortexForce(p.position, normalizedAxis, currentPull, p.ownerID);
-        p.velocity += vForce * dt;
+        p.velocity += vForce * vortexCurve * dt;
     }
 }

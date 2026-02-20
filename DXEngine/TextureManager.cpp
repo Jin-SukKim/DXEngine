@@ -32,6 +32,7 @@ void TextureManager::Initialize()
 
     GenerateCurlNoiseTexture(64, 4.0f);
     Generate2DCurlNoiseTexture(64, 4.0f);
+    CreateDefaultCurveLUT();
 }
 
 TextureManager::TextureEntity TextureManager::LoadParticleTexture(const std::string& path)
@@ -215,15 +216,109 @@ std::string TextureManager::GetTexturePath(int index)
     return "";
 }
 
-int TextureManager::LoadCurveLUT(const std::string& path, const std::unordered_map<ParticleCurveType, CurveData>& curveData)
+int TextureManager::LoadCurveLUT(const std::string& key, std::unordered_map<ParticleCurveType, CurveData>& curveData)
 {
-    // TODO: LUT 생성
-    const std::vector<float> lut;
-    for (const auto& [key, value] : curveData) {
-        const auto& bakedData = value.GetBakedData();
+    auto it = m_curveLUTCache.find(key);
+    if (it != m_curveLUTCache.end())
+        return it->second;
+
+    if (m_nextCurveLUTSlice >= CURVE_LUT_MAX_SLICES) {
+        std::cout << "[TextureManager] Error: Curve LUT Array is full." << std::endl;
+        return 0;
     }
 
-    return 0;
+    const UINT width = CURVE_LUT_RESOLUTION;
+    const UINT height = static_cast<UINT>(ParticleCurveType::COUNT);
+
+    // R 채널값만 사용
+    std::vector<float> pixels(width * height, 0.f);
+
+    for (UINT row = 0; row < height; ++row) {
+        ParticleCurveType curveType = static_cast<ParticleCurveType>(row);
+        auto curveIt = curveData.find(curveType);
+        
+        // 제공된 curveData 사용
+        if (curveIt != curveData.end()) {
+            const auto& baked = curveIt->second.CreateCurveData();
+            UINT srcSize = static_cast<UINT>(baked.size());
+
+            for (UINT x = 0; x < width; ++x) {
+                // TODO: 같은 resolution을 사용하므로 굳이 srcIdx를 구할 필요 없을 것 같은데?
+                //      (만약 필요하다면 각 resolution 별로 array를 만들어 사용)
+                float t = static_cast<float>(x) / static_cast<float>(width - 1);
+                UINT srcIdx = static_cast<UINT>(t * (srcSize - 1));
+                srcIdx = std::min(srcIdx, srcSize - 1);
+                pixels[row * width + x] = baked[srcIdx];
+            }
+        }
+        // 아무런 값이 없는 empty data로 default 값으로 주로 사용
+        else {
+            // Default values
+            // COLOR(0), ALPHA(1), SIZE(2): linear 0->1 (identity remap)
+            // VELOCITY(3), DRAG(4), GRAVITY(5), NOISE_STRENGTH(6), VORTEX(7), ORBIT(8): constant 1.0
+            for (UINT x = 0; x < width; ++x) {
+                if (row <= 2) {
+                    pixels[row * width + x] = static_cast<float>(x) / static_cast<float>(width - 1);
+                }
+                else {
+                    pixels[row * width + x] = 1.0f;
+                }
+            }
+        }
+    }
+
+    // Texture Array에 데이터 삽입
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    UINT sliceIndex = m_nextCurveLUTSlice;
+    UINT subresource = D3D11CalcSubresource(0, sliceIndex, 1);
+    context->UpdateSubresource(
+        m_curveLUTArray->GetTexture(),
+        subresource,
+        nullptr,
+        pixels.data(),
+        width * sizeof(float),          // row pitch
+        width * height * sizeof(float)   // slice pitch
+    );
+
+    m_curveLUTCache[key] = static_cast<int>(sliceIndex);
+    ++m_nextCurveLUTSlice;
+
+    std::cout << "[TextureManager] Curve LUT created: " << key
+        << " (slice " << sliceIndex << ", " << width << "x" << height << ")" << std::endl;
+
+    return static_cast<int>(sliceIndex);
+}
+
+void TextureManager::CreateCurveLUTArray()
+{
+    m_curveLUTArray = std::make_unique<Texture2D>();
+
+    ComPtr<ID3D11Texture2D> tex;
+    ComPtr<ID3D11ShaderResourceView> srv;
+
+    auto device = GET_SINGLE(RenderBase)->GetDevice().Get();
+    const UINT width = CURVE_LUT_RESOLUTION;
+    const UINT height = static_cast<UINT>(ParticleCurveType::COUNT);
+
+    D3D11Utils::CreateLUTArray(device, width, height, CURVE_LUT_MAX_SLICES, tex, srv);
+
+    m_curveLUTArray->SetResource(tex, srv);
+    m_nextCurveLUTSlice = 0;
+}
+
+void TextureManager::CreateDefaultCurveLUT()
+{
+    CreateCurveLUTArray();
+    std::unordered_map<ParticleCurveType, CurveData> empty;
+    LoadCurveLUT("default_curve_lut", empty);
+}
+
+void TextureManager::BindCurveLUTArray(UINT slot)
+{
+    if (!m_curveLUTArray)
+        return;
+    auto context = GET_SINGLE(RenderBase)->GetContext();
+    context->CSSetShaderResources(slot, 1, m_curveLUTArray->GetAddressOfSRV());
 }
 
 void TextureManager::GenerateCurlNoiseTexture(UINT resolution, float frequency)

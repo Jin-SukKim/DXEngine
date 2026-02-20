@@ -1078,4 +1078,29 @@ namespace DE {
 
 		device->CreateUnorderedAccessView(buffer.Get(), &uavDesc, uav.GetAddressOf());*/
 	}
+	void D3D11Utils::CreateLUTArray(ID3D11Device* device, UINT width, UINT height, UINT arraySize, ComPtr<ID3D11Texture2D>& outTexture, ComPtr<ID3D11ShaderResourceView>& outSRV)
+	{
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = 1;
+		desc.ArraySize = arraySize;
+		desc.Format = DXGI_FORMAT_R32_FLOAT;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, outTexture.GetAddressOf()));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.MostDetailedMip = 0;
+		srvDesc.Texture2DArray.MipLevels = 1;
+		srvDesc.Texture2DArray.FirstArraySlice = 0;
+		srvDesc.Texture2DArray.ArraySize = desc.ArraySize;
+		ThrowIfFailed(device->CreateShaderResourceView(outTexture.Get(), &srvDesc, outSRV.GetAddressOf()));
+	}
 }

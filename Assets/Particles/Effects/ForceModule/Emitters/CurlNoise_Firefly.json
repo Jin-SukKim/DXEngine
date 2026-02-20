@@ -12,9 +12,41 @@
         "lifeRange": [2.0, 5.0]
     },
     "Visual": {
-        "startColor": [0.8, 1.0, 0.3, 0.9],
-        "endColor": [0.4, 0.7, 0.1, 0.0],
-        "sizeRange": [0.1, 0.2]
+      "startColor": [ 0.4, 0.7, 0.1, 0.0 ],
+        "endColor": [ 0.8, 1.0, 0.3, 0.9 ],
+        "colorCurve": {
+                "type": "BEZIER",
+                "resolution": 256,
+                "keyframes": [
+                    { "key": 0.00, "value": 0.15 },
+                    { "key": 0.12, "value": 1.0,  "inTangent": 3.0, "outTangent": -3.0 },
+                    { "key": 0.22, "value": 0.1,  "inTangent": -2.0, "outTangent": 2.0 },
+                    { "key": 0.32, "value": 0.65, "inTangent": 2.0, "outTangent": -1.5 },
+                    { "key": 0.45, "value": 0.15, "inTangent": -1.0, "outTangent": 0.0 },
+                    { "key": 0.57, "value": 1.0,  "inTangent": 3.0, "outTangent": -3.0 },
+                    { "key": 0.67, "value": 0.1,  "inTangent": -2.0, "outTangent": 2.0 },
+                    { "key": 0.77, "value": 0.65, "inTangent": 2.0, "outTangent": -1.5 },
+                    { "key": 0.90, "value": 0.15, "inTangent": -1.0, "outTangent": -0.5 },
+                    { "key": 1.00, "value": 0.0 }
+                ]
+          },
+          "sizeRange": [ 0.05, 0.3 ],
+          "sizeCurve": {
+                "type": "BEZIER",
+                "resolution": 256,
+                "keyframes": [
+                    { "key": 0.00, "value": 0.15 },
+                    { "key": 0.12, "value": 1.0,  "inTangent": 3.0, "outTangent": -3.0 },
+                    { "key": 0.22, "value": 0.1,  "inTangent": -2.0, "outTangent": 2.0 },
+                    { "key": 0.32, "value": 0.65, "inTangent": 2.0, "outTangent": -1.5 },
+                    { "key": 0.45, "value": 0.15, "inTangent": -1.0, "outTangent": 0.0 },
+                    { "key": 0.57, "value": 1.0,  "inTangent": 3.0, "outTangent": -3.0 },
+                    { "key": 0.67, "value": 0.1,  "inTangent": -2.0, "outTangent": 2.0 },
+                    { "key": 0.77, "value": 0.65, "inTangent": 2.0, "outTangent": -1.5 },
+                    { "key": 0.90, "value": 0.15, "inTangent": -1.0, "outTangent": -0.5 },
+                    { "key": 1.00, "value": 0.0 }
+                ]
+          }
     },
   "Force": {
     "velocity": [ 0.0, 0.1, 0.0 ],

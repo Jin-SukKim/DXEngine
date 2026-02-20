@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "TextureSpawnBake.h"
 #include "ParticleSystem.h"
+#include "TextureManager.h"
 
 namespace DE {
 
@@ -52,6 +53,7 @@ namespace DE {
 		, m_ownerSystem(nullptr)
 		, m_emitterID(0)
 		, m_overdrawSettings(other.m_overdrawSettings)
+		, m_curveTextureIdx(other.m_curveTextureIdx)
 	{
 		for (const auto& mod : other.m_modules) {
 			if (mod) {
@@ -67,6 +69,20 @@ namespace DE {
 		ComPtr<ID3D11Device>& device = GET_SINGLE(RenderBase)->GetDevice();
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 		
+		// Json에서 Data를 Load하며 미리 저장해둔 Curve Data 가져오기
+		std::unordered_map<ParticleCurveType, CurveData> curveMap;
+		for (auto& mod : m_modules)
+			mod->CollectCurves(curveMap);
+
+		// Curve가 있다면 LUT 생성 (없다면 default LUT 사용)
+		if (!curveMap.empty()) {
+			std::string curveKey = std::string(m_name.begin(), m_name.end()) + "_curves";
+			m_curveTextureIdx = TextureManager::Get().LoadCurveLUT(curveKey, curveMap);
+		}
+		else {
+			m_curveTextureIdx = -1;
+		}
+
 		ParticleInitContext initCtx = { 
 			device.Get(), 
 			pConsts,
@@ -221,6 +237,11 @@ namespace DE {
 		if (!mat)
 			return -1;
 		return mat->GetMaterialIndex();
+	}
+
+	UINT ParticleEmitter::GetCurveLUTSlice() const
+	{
+		return m_curveTextureIdx < 0 ? 0 : static_cast<UINT>(m_curveTextureIdx);
 	}
 
 	void ParticleEmitter::ExecuteEvent(EmitterEvent event)

@@ -12,6 +12,7 @@ public:
 	ModulePriority GetPriority() override { return ModulePriority::Force; }
 
 	void LoadFromJson(const json& data) override;
+	void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) override;
 	std::unique_ptr<ParticleModule> Clone() const override;
 public:
 	Vector3 velocity = { 0.0f, 0.1f, 0.0f };
@@ -24,8 +25,16 @@ public:
 	float curlNoiseStrength = 1.0f;
 	bool curlNoiseEnabled = false;
 	Vector3 curlNoiseScrollSpeed = Vector3(0.f, 0.f, 0.f);
-
-	// ComputeShader ���� - ComputeCommon ���
+	
+	// CurveData
+	CurveData m_velocityCurve{ CurveData::LUTResolution::Medium };
+	CurveData m_dragCurve{ CurveData::LUTResolution::Medium };
+	CurveData m_gravityCurve{ CurveData::LUTResolution::Medium };
+	CurveData m_noiseStrengthCurve{ CurveData::LUTResolution::Medium };
+	bool m_hasVelocityCurve = false;
+	bool m_hasDragCurve = false;
+	bool m_hasGravityCurve = false;
+	bool m_hasNoiseStrengthCurve = false;
 };
 
 }

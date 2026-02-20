@@ -195,6 +195,7 @@
     <ClInclude Include="BreathEffect.h" />
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
+    <ClInclude Include="CurveData.h" />
     <ClInclude Include="EffectActor.h" />
     <ClInclude Include="FireEffect.h" />
     <ClInclude Include="Firework.h" />
@@ -308,6 +309,7 @@
     <ClCompile Include="BreathEffect.cpp" />
     <ClCompile Include="ClickEffectManager.cpp" />
     <ClCompile Include="ComputeCommon.cpp" />
+    <ClCompile Include="CurveData.cpp" />
     <ClCompile Include="EffectActor.cpp" />
     <ClCompile Include="FireEffect.cpp" />
     <ClCompile Include="Firework.cpp" />

@@ -552,8 +552,8 @@ namespace DE {
 		// Downsample scene depth into UAV for bilateral composite
 		DownsampleDepthToLowRes();
 
-		// Clear DSV to 1.0 so billboard particles always pass D3D11_COMPARISON_LESS; bilateral composite uses m_lowResDepthUAV
-		m_context->ClearDepthStencilView(m_lowResDSV.Get(), D3D11_CLEAR_DEPTH, 1.f, 0);
+		// Copy downsampled scene depth into DSV backing texture for hardware depth occlusion
+		m_context->CopyResource(m_lowResDepth.GetTexture(), m_lowResDepthUAV.GetTexture());
 
 		// Multiple Render Targets
 		m_context->OMSetRenderTargets(1, m_lowResParticleTexture.GetAddressOfRTV(), m_lowResDSV.Get());

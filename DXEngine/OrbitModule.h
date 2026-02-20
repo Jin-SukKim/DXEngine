@@ -13,6 +13,7 @@ namespace DE {
 		ModulePriority GetPriority() override { return ModulePriority::UpdateForce; }
 
 		void LoadFromJson(const json& data) override;
+		void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) override;
 		std::unique_ptr<ParticleModule> Clone() const override;
 
 	public:
@@ -20,6 +21,9 @@ namespace DE {
 		Vector3 m_axis = Vector3(0.f, 1.f, 0.f);  // 회전 축 (예: Y축)
 		float m_rotationRate = 1.0f;              // 회전 속도 (Rad/s or Deg/s)
 		float m_initialOffset = 0.f;              // (옵션) 중심으로부터의 강제 거리
+
+		CurveData m_rateCurve{ CurveData::LUTResolution::Medium };
+		bool m_hasRateCurve = false;
 	};
 
 }

@@ -484,8 +484,9 @@
     <ClInclude Include="FireEffect.h">
       <Filter>private\Basic</Filter>
     </ClInclude>
+    <ClInclude Include="CurveData.h" />
     <ClInclude Include="SimplexNoise.h">
-      <Filter>public\Resource</Filter>
+      <Filter>public\ParticleSystem\Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -773,6 +774,9 @@
     </ClCompile>
     <ClCompile Include="SmokeActor.cpp">
       <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CurveData.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

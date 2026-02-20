@@ -35,6 +35,36 @@ namespace DE {
 		if (data.contains("curlNoiseStrength")) curlNoiseStrength = data["curlNoiseStrength"];
 		if (data.contains("curlNoiseEnabled")) curlNoiseEnabled = data["curlNoiseEnabled"];
 		if (data.contains("curlNoiseScrollSpeed")) curlNoiseScrollSpeed = JsonToVec3(data["curlNoiseScrollSpeed"]);
+
+		// Json Load할때 data 모아두기
+		if (data.contains("velocityCurve")) {
+			m_velocityCurve = CurveData::FromJson(data["velocityCurve"]);
+			m_hasVelocityCurve = true;
+		}
+		if (data.contains("dragCurve")) {
+			m_dragCurve = CurveData::FromJson(data["dragCurve"]);
+			m_hasDragCurve = true;
+		}
+		if (data.contains("gravityCurve")) {
+			m_gravityCurve = CurveData::FromJson(data["gravityCurve"]);
+			m_hasGravityCurve = true;
+		}
+		if (data.contains("noiseStrengthCurve")) {
+			m_noiseStrengthCurve = CurveData::FromJson(data["noiseStrengthCurve"]);
+			m_hasNoiseStrengthCurve = true;
+		}
+	}
+
+	void ForceModule::CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves)
+	{
+		if (m_hasVelocityCurve)      
+			curves.emplace(ParticleCurveType::VELOCITY, m_velocityCurve);
+		if (m_hasDragCurve)          
+			curves.emplace(ParticleCurveType::DRAG, m_dragCurve);
+		if (m_hasGravityCurve)       
+			curves.emplace(ParticleCurveType::GRAVITY, m_gravityCurve);
+		if (m_hasNoiseStrengthCurve) 
+			curves.emplace(ParticleCurveType::NOISE_STRENTH, m_noiseStrengthCurve);
 	}
 
 	std::unique_ptr<ParticleModule> ForceModule::Clone() const
@@ -50,6 +80,15 @@ namespace DE {
 		cloned->curlNoiseStrength = this->curlNoiseStrength;
 		cloned->curlNoiseEnabled = this->curlNoiseEnabled;
 		cloned->m_isEnabled = this->m_isEnabled;
+
+		cloned->m_velocityCurve = this->m_velocityCurve;
+		cloned->m_dragCurve = this->m_dragCurve;
+		cloned->m_gravityCurve = this->m_gravityCurve;
+		cloned->m_noiseStrengthCurve = this->m_noiseStrengthCurve;
+		cloned->m_hasVelocityCurve = this->m_hasVelocityCurve;
+		cloned->m_hasDragCurve = this->m_hasDragCurve;
+		cloned->m_hasGravityCurve = this->m_hasGravityCurve;
+		cloned->m_hasNoiseStrengthCurve = this->m_hasNoiseStrengthCurve;
 
 		return cloned;
 	}

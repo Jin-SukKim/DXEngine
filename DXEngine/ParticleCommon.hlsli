@@ -37,6 +37,8 @@ RWStructuredBuffer<uint> writeAliveCount : register(u7);         // Write alive 
         uint spawnPosOffset;  // bakedOffset + customOffset
         uint systemID;
         float3 paddingID;
+        uint curveLUTSlice;
+        float3 paddingID2;
     };
 #endif
 
@@ -50,6 +52,8 @@ struct EmitterID
     uint indexCount;
     uint startIndexLocation;
     uint baseVertexLocation;
+    uint curveLUTSlice;
+    float3 paddingID2;
 };
 
 struct ParticleFrameConsts
@@ -202,6 +206,28 @@ Texture2DArray particleTex : register(t14);
 Texture3D curlNoiseTexture : register(t26);
 Texture2D curlNoiseTexture2D : register(t27);
 SamplerState curlNoiseSampler : register(s0);
+
+// Curve LUT Texture Array 
+Texture2DArray curveLUT : register(t28);
+SamplerState curveSampler : register(s1);  // linearClampSS
+
+// Curve type row indices (matches ParticleCurveType enum)
+static const uint CURVE_COLOR = 0;
+static const uint CURVE_ALPHA = 1;
+static const uint CURVE_SIZE = 2;
+static const uint CURVE_VELOCITY = 3;
+static const uint CURVE_DRAG = 4;
+static const uint CURVE_GRAVITY = 5;
+static const uint CURVE_NOISE_STRENGTH = 6;
+static const uint CURVE_VORTEX_STRENGTH = 7;
+static const uint CURVE_ORBIT_RATE = 8;
+static const uint CURVE_COUNT = 9;
+
+float SampleCurve(uint curveType, float t, uint sliceIdx) {
+    // TODO: 굳이 0.5를 더해줄 필요가 있나?
+    float v = ((float)curveType + 0.5) / (float)CURVE_COUNT;
+    return curveLUT.SampleLevel(curveSampler, float3(t, v, sliceIdx), 0).r;
+}
 
 StructuredBuffer<Particle> readParticles : register(t16);
 StructuredBuffer<uint> readAliveCount : register(t17);         // Alive count per emitter (read side)

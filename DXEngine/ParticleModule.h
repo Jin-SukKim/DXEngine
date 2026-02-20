@@ -1,5 +1,6 @@
 #pragma once
 #include "ParticleContext.h"
+#include "CurveData.h"
 
 namespace DE {
 class ParticleEmitter;
@@ -9,8 +10,8 @@ enum class ModulePriority : uint8_t {
 	Visual = 2,
 	Force = 3,
 	UpdateForce = 4,
-	Render = 5,
-	Material = 6
+	Material = 5,
+	Render = 6
 };
 
 class ParticleModule
@@ -28,6 +29,8 @@ public:
 	virtual ModulePriority GetPriority() = 0;
 	virtual void LoadFromJson(const json& data) = 0;
 	void SetEnable(const bool& enable) { m_isEnabled = enable; }
+	// Emitter에서 데이터를 한 번에 모아줄때 사용
+	virtual void CollectCurves(std::unordered_map<ParticleCurveType, CurveData>& curves) {}
 
 	virtual std::unique_ptr<ParticleModule> Clone() const = 0;
 protected:
