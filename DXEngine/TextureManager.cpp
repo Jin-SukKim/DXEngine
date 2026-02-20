@@ -243,12 +243,8 @@ int TextureManager::LoadCurveLUT(const std::string& key, std::unordered_map<Part
             UINT srcSize = static_cast<UINT>(baked.size());
 
             for (UINT x = 0; x < width; ++x) {
-                // TODO: 같은 resolution을 사용하므로 굳이 srcIdx를 구할 필요 없을 것 같은데?
-                //      (만약 필요하다면 각 resolution 별로 array를 만들어 사용)
-                float t = static_cast<float>(x) / static_cast<float>(width - 1);
-                UINT srcIdx = static_cast<UINT>(t * (srcSize - 1));
-                srcIdx = std::min(srcIdx, srcSize - 1);
-                pixels[row * width + x] = baked[srcIdx];
+                // TODO: 각 resolution 별로 array를 만들어 사용
+                pixels[row * width + x] = baked[x];
             }
         }
         // 아무런 값이 없는 empty data로 default 값으로 주로 사용
