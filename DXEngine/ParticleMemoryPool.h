@@ -153,6 +153,7 @@ public:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs>& GetBatchBillboardArgs() { return m_batchBillboardArgs; }
 	StructuredBuffer<UINT>& GetEmitterWriteOffsets() { return m_emitterWriteOffsets; }
 	StructuredBuffer<UINT>& GetBatchAliveIndices() { return m_batchAliveIndices; }
+	StructuredBuffer<BatchSortParam>& GetBatchSortParams() { return m_batchSortParams; }
 
 	// Quad Mesh Getters
 	ID3D11Buffer* GetQuadVertexBuffer() { return m_quadVertexBuffer.Get(); }
@@ -263,6 +264,7 @@ private:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_batchBillboardArgs;  // Merged args
 	StructuredBuffer<UINT> m_emitterWriteOffsets;                    // Pass1 -> Pass2
 	StructuredBuffer<UINT> m_batchAliveIndices;                           // Pass2 -> VS (Batch Rendering)
+	StructuredBuffer<BatchSortParam> m_batchSortParams;                   // Per-batch sort params (GPU-only)
 	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
 	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
 

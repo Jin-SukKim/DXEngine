@@ -5,8 +5,8 @@ StructuredBuffer<uint> batchAliveIndices : register(t0);
 RWStructuredBuffer<SortElement> sortBuffer : register(u0);
 
 cbuffer SortParams : register(b5) {
-    uint baseOffset;     // batchAliveIndices 내 시작 위치
-    uint particleCount;  // 정렬할 파티클 수
+    uint baseOffset;
+    uint particleCount;
     uint2 padding;
     float3 cameraForward;
     float pad1;

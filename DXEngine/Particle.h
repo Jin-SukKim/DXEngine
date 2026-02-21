@@ -166,6 +166,11 @@ namespace DE {
         UINT padding;
     };
 
+    struct BatchSortParam {
+        UINT baseOffset;
+        UINT particleCount;
+    };
+
     struct BatchRenderArgsConsts {
         UINT numBatches;    // �� batch ����
         Vector3 padding;

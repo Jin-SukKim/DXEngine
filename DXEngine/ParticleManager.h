@@ -37,8 +37,8 @@ namespace DE {
 	};
 
 	struct SortParams {
-		UINT baseOffset;     // AlphaBlend 시작 offset
-		UINT particleCount;  // 총 AlphaBlend 파티클 수
+		UINT baseOffset;
+		UINT particleCount;
 		UINT padding[2];
 		Vector3 cameraForward;
 		float padding2;

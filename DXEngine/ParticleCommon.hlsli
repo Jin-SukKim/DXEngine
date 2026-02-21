@@ -224,7 +224,7 @@ static const uint CURVE_ORBIT_RATE = 8;
 static const uint CURVE_COUNT = 9;
 
 float SampleCurve(uint curveType, float t, uint sliceIdx) {
-    // TODO: ±»ÀÌ 0.5¸¦ ´õÇØÁÙ ÇÊ¿ä°¡ ÀÖ³ª?
+    // TODO: ï¿½ï¿½ï¿½ï¿½ 0.5ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ä°¡ ï¿½Ö³ï¿½?
     float v = ((float)curveType + 0.5) / (float)CURVE_COUNT;
     return curveLUT.SampleLevel(curveSampler, float3(t, v, sliceIdx), 0).r;
 }
@@ -243,24 +243,29 @@ StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
 
 // Curl Noise sampling (Tiling Mode)
 float3 SampleCurlNoiseTiling(float3 worldPos, float frequency, float3 scrollSpeed, float time) {
-    // ¹üÀ§¸¦ [0.0, 1.0]À¸·Î °íÁ¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [0.0, 1.0]ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 scroll = frac(scrollSpeed * time);
     float3 uvw = (worldPos * frequency) + scroll;
     float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uvw, 0);
-    return curlData.xyz * curlData.w; // ¹æÇâ ¡¿ ¼¼±â = Curl º¤ÅÍ
+    return curlData.xyz * curlData.w; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ = Curl ï¿½ï¿½ï¿½ï¿½
 }
 
 float2 SampleCurlNoise2D(float2 uv, float frequency, float2 scrollSpeed, float time) {
     float2 scroll = frac(scrollSpeed * time);
     float2 uvCoord = (uv * frequency) + scroll;
     float4 curlData = curlNoiseTexture2D.SampleLevel(curlNoiseSampler, uvCoord, 0);
-    return curlData.rg;  // xy ¹æÇâ ¡¿ Å©±â
+    return curlData.rg;  // xy ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Å©ï¿½ï¿½
 }
 
 struct SortElement
 {
     float key;
     uint value;
+};
+
+struct BatchSortParam {
+    uint baseOffset;
+    uint particleCount;
 };
 
 #endif // __PARTICLE_COMMON_HLSLI__

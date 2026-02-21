@@ -2,6 +2,7 @@
 
 RWBuffer<uint> batchBillboardArgs : register(u0);
 RWStructuredBuffer<uint> emitterWriteOffsets : register(u1);
+RWStructuredBuffer<BatchSortParam> batchSortParams : register(u2);
 
 StructuredBuffer<uint> simulationAliveCount : register(t29);
 
@@ -10,8 +11,8 @@ cbuffer BatchRenderArgsConsts : register(b0) {
     uint3 batchArgsPadding;
 };
 
-// ÇöÀç´Â ¸ðµç BatchÀÇ drawArgs¸¦ °è»ê (Single Thread)
-// TODO: Multi-Thread·Î °íÄ¥ ¼ö ÀÖÀ»Áö °í¹Î
+// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Batchï¿½ï¿½ drawArgsï¿½ï¿½ ï¿½ï¿½ï¿½ (Single Thread)
+// TODO: Multi-Threadï¿½ï¿½ ï¿½ï¿½Ä¥ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -21,7 +22,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // Batch
         BatchDescriptor batch = batchDescriptors[batchID];
 
-        // Batch ´ÜÀ§·Î EmitterÀÇ id¸¦ ¸ðÀ¸±â (ÀÌ°É »ç¿ëÇØ AliveIndices¸¦ Ã¤¿ò)
+        // Batch ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Emitterï¿½ï¿½ idï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ AliveIndicesï¿½ï¿½ Ã¤ï¿½ï¿½)
         uint totalInstances = 0;
         for (uint i = 0; i < batch.emitterCount; i++) {
             uint eid = batchEmitterList[batch.emitterListOffset + i];
@@ -33,13 +34,18 @@ void main(uint3 DTid : SV_DispatchThreadID)
             totalInstances += count;
         }
         
-        // drawArgs ³»¿ë Ã¤¿ì±â
+        // drawArgs ï¿½ï¿½ï¿½ï¿½ Ã¤ï¿½ï¿½ï¿½
         uint argsIdx = batchID * 5;
         batchBillboardArgs[argsIdx + 0] = batch.indexCount;
         batchBillboardArgs[argsIdx + 1] = totalInstances;
         batchBillboardArgs[argsIdx + 2] = batch.startIndexLocation;
         batchBillboardArgs[argsIdx + 3] = batch.baseVertexLocation;
         batchBillboardArgs[argsIdx + 4] = 0;
+
+        BatchSortParam sp;
+        sp.baseOffset = globalOffset;
+        sp.particleCount = totalInstances;
+        batchSortParams[batchID] = sp;
 
         globalOffset += totalInstances;
     }

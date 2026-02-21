@@ -104,6 +104,7 @@ namespace DE {
 		m_batchBillboardArgs.Initialize(device, initialBatchArgs, maxEmitters, sizeof(DrawIndexedInstancedArgs), 5);
 		m_emitterWriteOffsets.Initialize(device, maxEmitters);
 		m_batchAliveIndices.Initialize(device, maxParticles);
+		m_batchSortParams.Initialize(device, maxEmitters);
 		m_batchInfoBuffer.Initialize();
 
 		// Default Particle Material (for circle rendering without textures)

@@ -4,9 +4,9 @@ StructuredBuffer<SortElement> sortedElements : register(t0);
 RWStructuredBuffer<uint> batchAliveIndices : register(u0);
 
 cbuffer SortParams : register(b5) {
-    uint baseOffset;     // AlphaBlend 시작 offset
-    uint particleCount;  // 총 AlphaBlend 파티클 수
-    uint padding[2];
+    uint baseOffset;
+    uint particleCount;
+    uint2 padding;
 };
 
 [numthreads(1024, 1, 1)]
