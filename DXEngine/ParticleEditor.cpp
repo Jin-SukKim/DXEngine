@@ -78,7 +78,7 @@ namespace DE {
 
 		// [�ó����� ����] 1�� Ÿ��: ���� ����Ʈ (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\TempEffect.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\SmokeEffect.json");
 
 		// m_test2�� �ó����� �߰�(15��)�� �����ϱ� ���� �����
 		m_test2 = nullptr;

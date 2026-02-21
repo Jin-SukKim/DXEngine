@@ -8,6 +8,8 @@ cbuffer SortParams : register(b5) {
     uint baseOffset;     // batchAliveIndices 내 시작 위치
     uint particleCount;  // 정렬할 파티클 수
     uint2 padding;
+    float3 cameraForward;
+    float pad1;
 };
 
 [numthreads(1024, 1, 1)]
@@ -22,18 +24,18 @@ void main(uint3 dtID : SV_DispatchThreadID)
         uint particleIdx = batchAliveIndices[baseOffset + id];
         Particle p = readParticles[particleIdx];
 
-        float3 toCamera = p.position - eyeWorld;
-        float distSq = dot(toCamera, toCamera);
+        // Planar depth: dot product with camera forward
+        float3 toParticle = p.position - eyeWorld;
+        float viewZ = dot(toParticle, cameraForward);
 
-        // BitonicSort는 내림차순 → distSq 큰 값(먼 파티클)이 앞으로 → Back-to-Front
-        elem.key = distSq;
+        elem.key = viewZ;
         elem.value = particleIdx;
     }
     else
     {
-        // 패딩: 0은 가장 작은 값 → 내림차순에서 뒤로 밀림
-        elem.key = asfloat(0);
-        elem.value = 0;
+        // 내림차순 정렬에서 확실히 뒤로 밀리도록 -FLT_MAX
+        elem.key = -3.402823466e+38f;
+        elem.value = 0xFFFFFFFF;
     }
 
     sortBuffer[id] = elem;

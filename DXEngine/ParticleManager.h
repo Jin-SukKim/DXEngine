@@ -40,6 +40,8 @@ namespace DE {
 		UINT baseOffset;     // AlphaBlend 시작 offset
 		UINT particleCount;  // 총 AlphaBlend 파티클 수
 		UINT padding[2];
+		Vector3 cameraForward;
+		float padding2;
 	};
 
 	// [Added] Runtime Profiling Data Structure

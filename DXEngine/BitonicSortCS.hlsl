@@ -17,7 +17,7 @@ RWStructuredBuffer<Element> arr : register(u0);
 void main(int3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID,
           uint3 dtID : SV_DispatchThreadID)
 {
-    // (value ¸»°í) key·Î Á¤·Ä
+    // (value ï¿½ï¿½ï¿½ï¿½) keyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     uint i = dtID.x;
     
     uint l = i ^ j;
@@ -27,8 +27,13 @@ void main(int3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID,
         Element iElem = arr[i];
         Element lElem = arr[l];
         
-        if (((i & k) == 0) && (iElem.key < lElem.key) ||
-            ((i & k) != 0) && (iElem.key > lElem.key))
+        bool isLess = (iElem.key < lElem.key) ||
+                      ((iElem.key == lElem.key) && (iElem.value < lElem.value));
+        bool isGreater = (iElem.key > lElem.key) ||
+                         ((iElem.key == lElem.key) && (iElem.value > lElem.value));
+
+        if (((i & k) == 0) && isLess ||
+            ((i & k) != 0) && isGreater)
         {
             arr[i] = lElem;
             arr[l] = iElem;
