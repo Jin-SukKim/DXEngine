@@ -94,6 +94,10 @@ namespace DE {
 		CopyBasicSettings(cloned.get()); // Only blendMode and m_blendState
 		cloned->m_softDistance = this->m_softDistance;
 		cloned->m_velocityStretchFactor = this->m_velocityStretchFactor;
+		cloned->m_uvDistortEnabled = this->m_uvDistortEnabled;
+		cloned->m_uvDistortFrequency = this->m_uvDistortFrequency;
+		cloned->m_uvDistortStrength = this->m_uvDistortStrength;
+		cloned->m_uvDistortScroll = this->m_uvDistortScroll;
 		return cloned;
 	}
 

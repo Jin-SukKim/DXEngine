@@ -40,7 +40,7 @@ private:
 	// All texture handling moved to MaterialModule
 	// IndirectArgsBuffer  - ParticleEmitter
 
-	UINT m_uvDistortEnabled = true;
+	UINT m_uvDistortEnabled = false;
 	float m_uvDistortFrequency = 1.0f;
 	float m_uvDistortStrength = 0.015f;
 	Vector2 m_uvDistortScroll = Vector2(0.f, 0.5f);

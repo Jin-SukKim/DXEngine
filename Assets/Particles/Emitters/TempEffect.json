@@ -36,8 +36,8 @@
     "blendMode": "Additive",
     "noiseUVDistort": {
       "enabled": true,
-      "frequency": 2.0,
-      "strength": 1.0,
+      "frequency": 1.0,
+      "strength": 0.015,
       "scrollSpeed": [ 0.0, 1.0 ]
     }
   }
