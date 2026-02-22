@@ -9,7 +9,7 @@
 #include "InputManager.h"
 #include "RenderBase.h"
 
-#include "CopyFilter.h"
+#include "BloomEffect.h"
 #include "FogEffect.h"
 
 #include "SpotLight.h"
@@ -101,8 +101,9 @@ namespace DE {
 		m_skybox = std::make_unique<SkyboxActor>(L"Skybox");
 
 		// Setup post-processing
-		m_copyPostProcess = std::make_unique<CopyFilter>();
-		renderer.SetPostProcess(*m_copyPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
+		m_bloomPostProcess = std::make_unique<BloomEffect>();
+		m_bloomPostProcess->SetFilterLevel(5);
+		renderer.SetPostProcess(*m_bloomPostProcess.get(), RenderBase::graphicsCommon.postProcess.basicPSO);
 	}
 
 	void Scene::Initialize()

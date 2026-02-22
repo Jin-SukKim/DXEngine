@@ -2,12 +2,12 @@ Texture2D g_texture0 : register(t0);
 SamplerState g_sampler : register(s0);
 
 cbuffer SamplingPSConstantData : register(b4) {
-    // TextureÀÇ Pixel °£°Ý (¼³Á¤ÇÑ ÇØ»óµµ¿¡ µû¶ó dx, dy°ªÀº ´Ù¸§)
+    // Textureï¿½ï¿½ Pixel ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ¿ï¿½ ï¿½ï¿½ï¿½ï¿½ dx, dyï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½)
     float dx; 
     float dy;
     float threadhold;
     float strength;
-    float4 options; // ¿©±â¼­ OptionÀº »ç¿ëÇÏÁö ¾ÊÀ½
+    float4 options; // ï¿½ï¿½ï¿½â¼­ Optionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 struct SamplingPSInput {
@@ -41,6 +41,9 @@ float4 main(SamplingPSInput input) : SV_TARGET
     color += (a + c + g + i) * 0.03125;
     color += (b + d + f + h) * 0.0625;
     color += (j + k + l + m) * 0.125;
-  
+
+    float brightness = dot(color, float3(0.2126, 0.7152, 0.0722));
+    color *= saturate((brightness - threadhold) / max(brightness, 0.001));
+
     return float4(color, 1.0);
 }

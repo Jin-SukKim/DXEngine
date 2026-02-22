@@ -10,7 +10,7 @@ namespace DE {
 	class CameraActor;
 	class SkyboxActor;
 	class RenderBase;
-	class CopyFilter;
+	class BloomEffect;
 	class TreeBillboard;
 	class Actor;
 	class MirrorActor;
@@ -99,7 +99,7 @@ namespace DE {
 		// Core Scene Elements
 		std::unique_ptr<CameraActor> m_mainCamera;
 		std::unique_ptr<SkyboxActor> m_skybox;
-		std::unique_ptr<CopyFilter> m_copyPostProcess;
+		std::unique_ptr<BloomEffect> m_bloomPostProcess;
 
 		// Actors organized by category
 		std::vector<std::unique_ptr<Actor>> m_actorList[static_cast<size_t>(ActorCategory::Count)];

@@ -8,28 +8,28 @@ Texture2D metallicTex : register(t3);
 Texture2D roughnessTex : register(t4);
 Texture2D emissiveTex : register(t5);
 
-// ¹°Ã¼ÀÇ ÀçÁú¿¡ µû¶ó F0À» °áÁ¤ÇÏ´Âµ¥ metallic °ª¿¡ µû¶ó Fdielectric¿Í albedoÀÇ lerp ¹üÀ§·Î Á¶Á¤
-static const float3 Fdielectric = 0.04; // ºñ±Ý¼Ó ÀçÁúÀÇ F0ÀÌ ÃÖ¼Ò°¡ 0ÀÌ ¾Æ´Ñ 0.04
+// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ F0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´Âµï¿½ metallic ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Fdielectricï¿½ï¿½ albedoï¿½ï¿½ lerp ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+static const float3 Fdielectric = 0.04; // ï¿½ï¿½Ý¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ F0ï¿½ï¿½ ï¿½Ö¼Ò°ï¿½ 0ï¿½ï¿½ ï¿½Æ´ï¿½ 0.04
 
 float3 GetNormal(PSInput input) {
     float3 normalWorld = input.normalWorld;
 
     if (useNormalMap) {
-        // Texture ÁÂÇ¥°èÀÇ Noraml Vector
+        // Texture ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ Noraml Vector
         float3 normal = normalTex.SampleLevel(linearWrapSampler, input.texcoord, 0).rgb;
-        normal = 2.0 * normal - 1.0; // ¸ðµç ¹æÇâ¿¡ ´ëÀÀÇÏ±â À§ÇØ [-1.0, 1.0]À¸·Î º¯È¯
+        normal = 2.0 * normal - 1.0; // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ [-1.0, 1.0]ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 
-        // OpenGL ¿ë Normal MapÀÏ °æ¿ì¿¡´Â y ¹æÇâÀ» µÚÁý¾îÁÖ±â
+        // OpenGL ï¿½ï¿½ Normal Mapï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ y ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½
         normal.y = invertNormalMapY ? -normal.y : normal.y;
 
-        // Texture ÁÂÇ¥°è¿¡ Á¤ÀÇµÈ Normal Vector¸¦ World ÁÂÇ¥°è·Î º¯È¯
+        // Texture ï¿½ï¿½Ç¥ï¿½è¿¡ ï¿½ï¿½ï¿½Çµï¿½ Normal Vectorï¿½ï¿½ World ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
         float3 N = normalWorld;
         float3 T = normalize(input.tangentWorld - dot(input.tangentWorld, N) * N); // Tangent
         float3 B = cross(N, T); // Bitangent
 
-        // Texture ÁÂÇ¥°èÀÇ ÁÂÇ¥Ãà ¹æÇâÀ» World ÁÂÇ¥°è·Î º¯È¯ÇÑ 3°³ÀÇ º¤ÅÐ¸£ °¡Áö°í º¯È¯Çà·Ä »ý¼º
+        // Texture ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ World ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ 3ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ð¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         float3x3 TBN = float3x3(T, B, N);
-        // Texture ÁÂÇ¥°èÀÇ Normal Vector¸¦ World ÁÂÇ¥°è·Î º¯È¯Çà·Ä·Î º¯È¯
+        // Texture ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ Normal Vectorï¿½ï¿½ World ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½Ä·ï¿½ ï¿½ï¿½È¯
         normalWorld = normalize(mul(normal, TBN));
     }
 
@@ -39,15 +39,15 @@ float3 GetNormal(PSInput input) {
 float3 SchlickFresnel(float3 F0, float NdotH) {
     return F0 + (1.0 - F0) * pow(2.0, (-5.55473 * NdotH - 6.98316) * NdotH);
 
-    // ¿äÁòÀº GPU ¼Óµµ°¡ ºü¸£±â ¶§¹®¿¡ 5Á¦°ö ÇØÁàµµ ¹®Á¦°¡  ¾øÀ½
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GPU ï¿½Óµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 5ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½àµµ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
     //return F0 + (1.0 - F0) * po   w(1.0 - cosTheta, 5.0);
 }
 
 float3 DiffuseIBL(float3 albedo, float3 normalWorld, float3 pixelToEye, float metallic) {
-    // metallicÀ» ÀÌ¿ëÇØ Diffuse »öÀ» °áÁ¤ (diffuse¿¡¼­ metallic ¼ººÐÀÌ ´Ã¾î³ª¸é Specular¿¡¼­ ÁÙ¾îµå´Â ¿¡³ÊÁö º¸Á¸ ¹ýÄ¢)
-    float3 F0 = lerp(Fdielectric, albedo, metallic); // ¹°Ã¼ÀÇ ÀçÁú¿¡ µû¶ó F0À» °áÁ¡
+    // metallicï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ Diffuse ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (diffuseï¿½ï¿½ï¿½ï¿½ metallic ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¾î³ªï¿½ï¿½ Specularï¿½ï¿½ï¿½ï¿½ ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¢)
+    float3 F0 = lerp(Fdielectric, albedo, metallic); // ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ F0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 F = SchlickFresnel(F0, max(0.0, dot(normalWorld, pixelToEye)));
-    // metallicÀÌ 1.0¿¡ °¡±î¿öÁú¼ö·Ï kd °ªÀº 0¿¡ °¡±î¿öÁ® metalÀÌ¸é diffuse°¡ ÁÙ¾îµéµµ·Ï ±¸Çö
+    // metallicï¿½ï¿½ 1.0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ kd ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ metalï¿½Ì¸ï¿½ diffuseï¿½ï¿½ ï¿½Ù¾ï¿½éµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 kd = lerp(1.0 - F, 0.0, metallic);
 
     float3 irradiance = irradianceIBLTex.SampleLevel(linearWrapSampler, normalWorld, 0.0).rgb;
@@ -56,28 +56,28 @@ float3 DiffuseIBL(float3 albedo, float3 normalWorld, float3 pixelToEye, float me
 }
 
 float3 SpecularIBL(float3 albedo, float3 normalWorld, float3 pixelToEye, float metallic, float roughness) {
-    // Environement BRDF (Clamp Sampler »ç¿ë) - r = cos(theta), g = roughness
-    // (IBLBaker¸¦ »ç¿ëÇØ ¸¸µç LUTÀÇ °æ¿ì roughness¸¦ ±×´ë·Î »ç¿ëÇÏ¸é ¾ÈµÇ°í 1 - roughness·Î ³Ö¾îÁà¾ß ÇÔ)
+    // Environement BRDF (Clamp Sampler ï¿½ï¿½ï¿½) - r = cos(theta), g = roughness
+    // (IBLBakerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ LUTï¿½ï¿½ ï¿½ï¿½ï¿½ roughnessï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ÈµÇ°ï¿½ 1 - roughnessï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
     float2 specularBRDF = brdfTex.SampleLevel(linearClampSampler, float2(dot(normalWorld, pixelToEye), 1.0 - roughness), 0.0f).rg;
 
-    // Roughness°¡ ¿Ã¶ó°¡¸é ³·Àº ÇØ»óµµÀÇ MipmapÀ» »ç¿ëÇØ Non-Metal ´À³¦ Ç¥Çö 
-    // (lod level·Î µé¾î°¡´Â °ªÀº roughness¿¡ mipmapÀÇ ÃÖ°í ·¹º§ÀÌ³ª ÀÓÀÇÀÇ ÃÖ°í ·¹º§À» °öÇØÁÖ±â)
+    // Roughnessï¿½ï¿½ ï¿½Ã¶ó°¡¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»ï¿½ï¿½ï¿½ Mipmapï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Non-Metal ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ 
+    // (lod levelï¿½ï¿½ ï¿½ï¿½î°¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ roughnessï¿½ï¿½ mipmapï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½)
     float3 specularIrradiance = specularIBLTex.SampleLevel(linearWrapSampler, reflect(-pixelToEye, normalWorld), roughness * 5.0f).rgb;
-    // ¹°Ã¼ÀÇ ÀçÁú¿¡ µû¶ó F0À» °áÁ¡
+    // ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ F0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 F0 = lerp(Fdielectric, albedo, metallic);
 
     return (F0 * specularBRDF.x + specularBRDF.y) * specularIrradiance;
 
 }
 
-// °£Á¢±¤ (Ambient Light) - ÁÖº¯ È¯°æÀ¸·ÎºÎÅÍ ¹Þ´Â ºû
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (Ambient Light) - ï¿½Öºï¿½ È¯ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½ï¿½
 float3 AmbientLightingByIBL(float3 albedo, float3 normalWorld, float3 pixelToEye, float ao, float metallic, float roughness) {
-    // metallicÀ» ÀÌ¿ëÇØ diffuse »öÀ» °áÁ¤
+    // metallicï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ diffuse ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 diffuseIBL = DiffuseIBL(albedo, normalWorld, pixelToEye, metallic);
-    // ¿¡³ÊÁö º¸Á¸ ¹ýÄ¢À¸·Î ÀÎÇØ diffuse°¡ ´Ã¾î³ª¸é specular°¡ ÁÙ¾îµé°í ±× ¹Ý´ë »óÈ²µµ °¡´É
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¢ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ diffuseï¿½ï¿½ ï¿½Ã¾î³ªï¿½ï¿½ specularï¿½ï¿½ ï¿½Ù¾ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ý´ï¿½ ï¿½ï¿½È²ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 specularIBL = SpecularIBL(albedo, normalWorld, pixelToEye, metallic, roughness);
 
-    // ao´Â ¹°Ã¼ÀÇ ºûÀÌ Á¦´ë·Î µé¾î°¡Áö ¾Ê´Â ºÎºÐ
+    // aoï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½î°¡ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½Îºï¿½
     return (diffuseIBL + specularIBL) * ao;
 }
 
@@ -86,9 +86,10 @@ float3 AmbientLightingByIBL(float3 albedo, float3 normalWorld, float3 pixelToEye
 float NdfGGX(float NdotH, float roughness, float alphaPrime) {
     float alpha = roughness * roughness;
     float alphaSq = alpha * alpha;
-    float denom = (NdotH * NdotH) * (alphaSq - 1.0) + 1.0;
+    float alphaPrimeSq = alphaPrime * alphaPrime;
+    float denom = (NdotH * NdotH) * (alphaPrimeSq - 1.0) + 1.0;
 
-    return alphaPrime * alphaPrime / (3.141592 * denom * denom);
+    return alphaSq / (3.141592 * denom * denom);
 }
 
 // Single term for separable Schlick-GGX below.
@@ -103,67 +104,67 @@ float SchlickGGX(float NdotI, float NdotO, float roughness) {
     return SchlickG1(NdotI, k) * SchlickG1(NdotO, k);
 }
 
-// Light Typeº°·Î ºûÀÇ ¼¼±â - Shadow Map±îÁö °í·ÁÇÑ Á¶¸íÀÇ ¹à±â
+// Light Typeï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ - Shadow Mapï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 float3 LightRadiance(Light light, float3 representativePoint, float3 posWorld, float3 normalWorld, uint shadowIdx) {
     // Directional Light
     float3 lightVec = light.type & LIGHT_DIRECTIONAL ?
-        // Directional Light¶ó¸é ºûÀÇ ¹æÇâÀ» ±×´ë·Î »ç¿ë (ex: ÅÂ¾ç)
+        // Directional Lightï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ (ex: ï¿½Â¾ï¿½)
         -light.direction :
-        representativePoint - posWorld; // (Area Light¸¦ »ç¿ë ¾ÈÇÑ´Ù¸é : light.position - posWorld;)
+        representativePoint - posWorld; // (Area Lightï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ´Ù¸ï¿½ : light.position - posWorld;)
 
-    float lightDist = length(lightVec); // Dirctional LightÀº 1.0ÀÌ µÇ¾î¾ßÇÔ
+    float lightDist = length(lightVec); // Dirctional Lightï¿½ï¿½ 1.0ï¿½ï¿½ ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½
     lightVec /= lightDist; // Normalize
 
     // Spot Light
     float spotFactor = light.type & LIGHT_SPOT ?
-        // ºûÀÌ ÇâÇÏ´Â ¹æÇâÀ¸·Î ºûÀ» ¸ð¾ÆÁÖ´Â °­µµ
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
         pow(max(-dot(lightVec, light.direction), 0.0), light.spotPower) :
-        1.0; // Directional LightÀÌ³ª Point LightÀÎ °æ¿ì
+        1.0; // Directional Lightï¿½Ì³ï¿½ Point Lightï¿½ï¿½ ï¿½ï¿½ï¿½
 
-// Distance attenuation (°Å¸®¿¡ µû¸¥ ºûÀÇ °­µµ °¡ÁßÄ¡)
+// Distance attenuation (ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡)
     float att = saturate((light.fallOffEnd - lightDist) / (light.fallOffEnd - light.fallOffStart));
 
     // Shadow Map
-    float shadowFactor = 1.0; // ±×¸²ÀÚ°¡ ¾ø´Ù¸é ShadowFactor°¡ 1.0
+    float shadowFactor = 1.0; // ï¿½×¸ï¿½ï¿½Ú°ï¿½ ï¿½ï¿½ï¿½Ù¸ï¿½ ShadowFactorï¿½ï¿½ 1.0
 
     if (light.type & LIGHT_SHADOW) {
         uint faceIndex;
         GetCubeFace(light.type, posWorld - light.position, faceIndex);
         // Project posWorld to light screen
-        // Á¶¸íÀ» ½ÃÁ¡Ã³·³ »ý°¢ÇØ¼­ Projection
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ Projection
         float4 lightScreen = mul(float4(posWorld, 1.0), light.viewProj[faceIndex]);
-        // NDC ÁÂÇ¥°è
+        // NDC ï¿½ï¿½Ç¥ï¿½ï¿½
         lightScreen.xyz /= lightScreen.w; // Homogenization
 
-        // ±¤¿ø¿¡¼­ º¼ ¶§ÀÇ Texture ÁÂÇ¥ °è»ê (Shadow MapÀº TextureÀÌ±â ¶§¹®¿¡ º¯È¯)
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Texture ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ (Shadow Mapï¿½ï¿½ Textureï¿½Ì±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯)
         // [-1.0, 1.0] x [-1.0, 1.0] -> [0.0, 1.0] x [0.0, 1.0]
-        // ÁÖÀÇ: Texture ÁÂÇ¥¿Í NDC´Â y°¡ ¹Ý´ë (Áß¿ä)
+        // ï¿½ï¿½ï¿½ï¿½: Texture ï¿½ï¿½Ç¥ï¿½ï¿½ NDCï¿½ï¿½ yï¿½ï¿½ ï¿½Ý´ï¿½ (ï¿½ß¿ï¿½)
         float2 lightTexcoord = float2(lightScreen.x, -lightScreen.y);
         lightTexcoord = (lightTexcoord + 1.0) * 0.5;
 
-        // ¹æ½Ä PCSS
+        // ï¿½ï¿½ï¿½ PCSS
         shadowFactor = PCSS(lightTexcoord, lightScreen.z - 0.01, shadowIdx + faceIndex, light.invProj, light.radius, light.nearPlane, light.frustumWidth);
     }
 
-    // ºûÀÇ °­µµ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 radiance = light.radiance * spotFactor * att * shadowFactor;
 
     return radiance;
 }
 
-// Á÷Á¢±¤ (point light, spot light µîÀ¸·Î Á÷Á¢ ºûÀ» ºñÃß´Â ±¤¿ø)
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (point light, spot light ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß´ï¿½ ï¿½ï¿½ï¿½ï¿½)
 float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 normalWorld, float3 albedo, float metallic, float roughness, uint shadowIdx) {
-    // Sphere Light ±¸Çö
+    // Sphere Light ï¿½ï¿½ï¿½ï¿½
     float3 L = light.position - posWorld;
     float3 r = normalize(reflect(-pixelToEye, normalWorld));
-    float3 centerToRay = dot(L, r) * r - L; // Sphere Light Áß½É¿¡¼­ r±îÁö ¼öÁ÷ÀÎ º¤ÅÍ
-    // RepresentativePoint´Â World ÁÂÇ¥°è¿¡¼­ ShadingÇÒ Pixel ÁöÁ¡ÀÌ ¿øÁ¡À¸·Î °è»êÇØ¼­ Ã£À½
-    float3 representativePoint = L + centerToRay * saturate(light.radius / length(centerToRay)); // Area Light¸¦ ´ëÇ¥ÇÏ´Â Á¶¸í ÁöÁ¡
-    // posWorld¸¦ ´õÇØ¼­ World ÁÂÇ¥°èÀÇ (0, 0, 0)ÀÌ ¿øÁ¡ÀÌ µÇµµ·Ï º¯È¯
+    float3 centerToRay = dot(L, r) * r - L; // Sphere Light ï¿½ß½É¿ï¿½ï¿½ï¿½ rï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // RepresentativePointï¿½ï¿½ World ï¿½ï¿½Ç¥ï¿½è¿¡ï¿½ï¿½ Shadingï¿½ï¿½ Pixel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ Ã£ï¿½ï¿½
+    float3 representativePoint = L + centerToRay * saturate(light.radius / length(centerToRay)); // Area Lightï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // posWorldï¿½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ World ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ (0, 0, 0)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Çµï¿½ï¿½ï¿½ ï¿½ï¿½È¯
     representativePoint += posWorld;
 
-    float3 lightVec = representativePoint - posWorld; // Area Light »ç¿ë
-    //float3 lightVec = light.position - posWorld; // ÀÏ¹Ý Light¸¦ »ç¿ëÇÑ °æ¿ì
+    float3 lightVec = representativePoint - posWorld; // Area Light ï¿½ï¿½ï¿½
+    //float3 lightVec = light.position - posWorld; // ï¿½Ï¹ï¿½ Lightï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
     float lightDist = length(lightVec);
     lightVec /= lightDist;
@@ -173,30 +174,30 @@ float3 DirectLighting(Light light, float3 posWorld, float3 pixelToEye, float3 no
     float NdotH = max(0.0, dot(normalWorld, halfway));
     float NdotO = max(0.0, dot(normalWorld, pixelToEye));
 
-    float3 F0 = lerp(Fdielectric, albedo, metallic); // ¹°Ã¼ÀÇ ÀçÁú¿¡ µû¶ó F0À» °áÁ¤
+    float3 F0 = lerp(Fdielectric, albedo, metallic); // ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ F0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 F = SchlickFresnel(F0, max(0.0, dot(halfway, pixelToEye)));
 
-    // ¿¡³ÊÁö º¸Á¸ ¹ýÄ¢¿¡ µû¶ó ±Ý¼ÓÀÎÁö ºñ±Ý¼ÓÀÎÁö¿¡ µû¶ó Specular¿Í DiffuseÀÇ ºñÀ²À» °è»ê
-    // ¿ÏÀü ±Ý¼ÓÀÌ¸é kd = 0À¸·Î diffuse ¾øÀÌ Specular¸¸ °è»ê, ¿ÏÀü ºñ±Ý¼ÓÀÌ¸é kd = 1·Î diffuse¸¸ °è»ê
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ý¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Specularï¿½ï¿½ Diffuseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¼ï¿½ï¿½Ì¸ï¿½ kd = 0ï¿½ï¿½ï¿½ï¿½ diffuse ï¿½ï¿½ï¿½ï¿½ Specularï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ý¼ï¿½ï¿½Ì¸ï¿½ kd = 1ï¿½ï¿½ diffuseï¿½ï¿½ ï¿½ï¿½ï¿½
     float3 kd = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metallic);
 
     float3 diffuseBRDF = kd * albedo;
 
-    // Sphere Normalization (Sphere Light) - Area Light´Â Specular ¹üÀ§°¡ ³Ð¾îÁö¹Ç·Î SphereNormalizationÀ¸·Î º¸Á¤
+    // Sphere Normalization (Sphere Light) - Area Lightï¿½ï¿½ Specular ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ SphereNormalizationï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float alpha = roughness * roughness;
     float alphaPrime = saturate(alpha + light.radius / (2.0 * lightDist));
 
     float D = NdfGGX(NdotH, roughness, alphaPrime);
     float3 G = SchlickGGX(NdotI, NdotO, roughness);
 
-    // 0À¸·Î ³ª´©±â ¹æÁö
+    // 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 specularBRDF = (F * D * G) / max(1e-5, 4.0 * NdotI * NdotO);
 
-    // ºûÀÇ °­µµ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float3 radiance = float3(0.0, 0.0, 0.0);
     radiance = LightRadiance(light, representativePoint, posWorld, normalWorld, shadowIdx);
 
-    // ¸¶Áö¸·À¸·Î ºûÀÇ °­µµ¿Í Á¶¸íÀ» ÇâÇÏ´Â ¹æÇâ°ú ½ÃÁ¡ ¹æÇâÀÇ °¢µµ¸¦ °öÇØ Ç¥¸é°ú ¼öÆòÇÏ¸é ºûÀÌ ¾Èµé¾î¿Àµµ·Ï °è»ê
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Èµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     return (diffuseBRDF + specularBRDF) * radiance * NdotI;
 }
 
@@ -218,7 +219,7 @@ PSOutput main(PSInput input)
 
     float ao = useAOMap ? aoTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r : 1.0;
 
-    // Metal Texture¿Í Roughness Texture´Â ÇÑ Texture·Î ÅëÇÕÇØ¼­ °¢°¢ b¿Í g°ªÀ» °¡Á®¿Í »ç¿ë
+    // Metal Textureï¿½ï¿½ Roughness Textureï¿½ï¿½ ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ bï¿½ï¿½ gï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     float metallic = useMetallicMap ? metallicTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r * metallicFactor
         : metallicFactor;
     float roughness = useRoughnessMap ? roughnessTex.SampleLevel(linearWrapSampler, input.texcoord, lod).r * roughnessFactor
@@ -228,23 +229,23 @@ PSOutput main(PSInput input)
     float3 emission = useEmissiveMap ? emissiveTex.SampleLevel(linearWrapSampler, input.texcoord, lod).rgb * emissionFactor
         : emissionFactor;
 
-    // °£Á¢±¤ (È¯°æ¸ÊÀ¸·ÎºÎÅÍ ¹Þ´Â ºû)
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (È¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½ï¿½)
     float3 ambientLighting = AmbientLightingByIBL(albedo.rgb, normalWorld, pixelToEye, ao, metallic, roughness) * strengthIBL;
 
-    // Á÷Á¢±¤ (Direct Light) - Directional, Point, Spot Light, Sphere Light µî
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (Direct Light) - Directional, Point, Spot Light, Sphere Light ï¿½ï¿½
     float3 directLighting = float3(0.0, 0.0, 0.0);
 
     uint shadowIdx = 0;
-    // ÀÓ½Ã·Î unroll »ç¿ë
+    // ï¿½Ó½Ã·ï¿½ unroll ï¿½ï¿½ï¿½
     [unroll] // warning X3557: loop only executes for 1 iteration(s), forcing loop to unroll
     for (int i = 0; i < MAX_LIGHTS; ++i) {
         if (!(lights[i].type & LIGHT_OFF)) {
             float3 radiance = DirectLighting(lights[i], input.posWorld, pixelToEye, normalWorld, albedo.rgb, metallic, roughness, shadowIdx);
-            // TODO: radiance°¡ (0, 0, 0)ÀÎ °æ¿ì DirectLighting += ... ÀÎµ¥µµ direfctLightÀÌ (0, 0, 0)ÀÌ µÇ¾î ¹ö¸®´Â ¿À·ù ÀÓ½Ã ¼öÁ¤
-            if (abs(dot(float3(1, 1, 1), radiance)) > 1e-5) // radiance°¡ (0, 0, 0)ÀÏ °æ¿ì ´õÇÏÁö ¾ÊÀ½
-                // DirectX 11¿¡¼± ¹è¿­ÀÇ IndexingÀ» ¸¶À½´ë·Î ÇÒ ¼ö ¾øÀ½
-                // ±×·¡¼­ Loop¿¡ ÀÓ½Ã·Î unrollÀ» »ç¿ëÇÔ (³»ºÎÀûÀ¸·Î For loop¸¦ Ç®¾î¼­ 3¹ø ¹Ýº¹ÇÏ´Â °ÍÀ¸·Î ¸¸µé¾îÁÜ)
-                // TODO: Texture2D°¡ ¾Æ´Ñ Texture2DArray·Î ¸¸µé¾î¼­ ±¸ÇöÇÏ´Â ¹æ¹ýÀÌ Á¦ÀÏ ±ò²û
+            // TODO: radianceï¿½ï¿½ (0, 0, 0)ï¿½ï¿½ ï¿½ï¿½ï¿½ DirectLighting += ... ï¿½Îµï¿½ï¿½ï¿½ direfctLightï¿½ï¿½ (0, 0, 0)ï¿½ï¿½ ï¿½Ç¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            if (abs(dot(float3(1, 1, 1), radiance)) > 1e-5) // radianceï¿½ï¿½ (0, 0, 0)ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+                // DirectX 11ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­ï¿½ï¿½ Indexingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+                // ï¿½×·ï¿½ï¿½ï¿½ Loopï¿½ï¿½ ï¿½Ó½Ã·ï¿½ unrollï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ For loopï¿½ï¿½ Ç®ï¿½î¼­ 3ï¿½ï¿½ ï¿½Ýºï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+                // TODO: Texture2Dï¿½ï¿½ ï¿½Æ´ï¿½ Texture2DArrayï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½î¼­ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
                 directLighting += radiance;
 
             if (lights[i].type & LIGHT_SHADOW)
@@ -258,7 +259,7 @@ PSOutput main(PSInput input)
     }
 
     PSOutput output;
-    // emissionÀº ¹°Ã¼ ÀÚÃ¼°¡ ºûÀ» ³»´Â ºÎºÐÀÌ¶ó »ý°¢ÇÒ ¼ö ÀÖ´Âµ¥ µ¡¼À, °ö¼ÀµîÀ¸·Î º¯È­¸¦ ÁÙ ¼ö ÀÖÀ½
+    // emissionï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ï¿½Ì¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´Âµï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     output.pixelColor = float4(ambientLighting + directLighting + emission, 1.0);
     output.pixelColor = clamp(output.pixelColor, 0.0, 1000.0);
     output.indexColor = HashIdToColor(hashID);

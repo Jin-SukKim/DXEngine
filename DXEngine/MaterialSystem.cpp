@@ -85,7 +85,15 @@ namespace DE {
 		
 		if (mat.metallicTexture > -1) constants.GetCpu().useMetallicMap = true;
 		if (mat.roughnessTexture > -1) constants.GetCpu().useRoughnessMap = true;
-		
+
+		// 텍스처가 있으면 factor를 1.0으로 (텍스처 원본값 유지)
+		if (constants.GetCpu().useAlbedoMap)
+			constants.GetCpu().albedoFactor = Vector3(1.0f);
+		if (constants.GetCpu().useRoughnessMap)
+			constants.GetCpu().roughnessFactor = 1.0f;
+		if (constants.GetCpu().useMetallicMap)
+			constants.GetCpu().metallicFactor = 1.0f;
+
 		int index = static_cast<int>(m_materials.size());
 		m_materials.emplace_back(mat);
 		m_materialMap[name] = index;
@@ -363,10 +371,17 @@ namespace DE {
 		std::vector<std::string> texPaths(7); // Albedo, Normal, Metallic, Roughness, AO, Emissive, Height
 
 		// �� �ε�
-		if (data.contains("AlbedoFactor")) constants.albedoFactor = JsonToVec3(data["AlbedoFactor"]);
-		if (data.contains("RoughnessFactor")) constants.roughnessFactor = data["RoughnessFactor"];
-		if (data.contains("MetallicFactor")) constants.metallicFactor = data["MetallicFactor"];
-		if (data.contains("EmissionFactor")) constants.emissionFactor = JsonToVec3(data["EmissionFactor"]);
+		if (data.contains("Albedo")) constants.albedoFactor = JsonToVec3(data["Albedo"]);
+		else if (data.contains("AlbedoFactor")) constants.albedoFactor = JsonToVec3(data["AlbedoFactor"]);
+
+		if (data.contains("Roughness")) constants.roughnessFactor = data["Roughness"];
+		else if (data.contains("RoughnessFactor")) constants.roughnessFactor = data["RoughnessFactor"];
+
+		if (data.contains("Metallic")) constants.metallicFactor = data["Metallic"];
+		else if (data.contains("MetallicFactor")) constants.metallicFactor = data["MetallicFactor"];
+
+		if (data.contains("Emission")) constants.emissionFactor = JsonToVec3(data["Emission"]);
+		else if (data.contains("EmissionFactor")) constants.emissionFactor = JsonToVec3(data["EmissionFactor"]);
 
 		// �ؽ�ó ��� �ε�
 		if (data.contains("Textures")) {

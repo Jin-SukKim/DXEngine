@@ -10,18 +10,18 @@ void DE::BloomEffect::Initialize(const std::vector<ComPtr<ID3D11ShaderResourceVi
 	// Bloom Down/Up
 	m_bloomTextures.resize(m_bloomLevels);
 	for (int i = 0; i < m_bloomLevels; ++i) {
-		// ¿øº» Å©±âºÎÅÍ ½ÃÀÛÇØ¼­ 2¹è¾¿ ÃÖ´ë 2^bloomLevels±îÁö Down/Up SamplingÇÏ±â À§ÇØ div·Î ³ª´©±â
+		// ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ 2ï¿½è¾¿ ï¿½Ö´ï¿½ 2^bloomLevelsï¿½ï¿½ï¿½ï¿½ Down/Up Samplingï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ divï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		int div = int(pow(2, i));
 		this->CreateBuffer(width / div, height / div, m_bloomTextures[i]);
 	}
 
-	// Down-Sampling - ÇØ»óµµ¸¦ ³·Ãç¼­(Down Sampling) Blur È¿°ú Àû¿ëÇÒ ¶§ ÈÎ¾À ºÎµå·¯¿î °á°ú¸¦ ³¾ ¼ö ÀÖ°Ô ÇÔ
+	// Down-Sampling - ï¿½Ø»óµµ¸ï¿½ ï¿½ï¿½ï¿½ç¼­(Down Sampling) Blur È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Î¾ï¿½ ï¿½Îµå·¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½
 	m_bloomDownFilters.resize(m_bloomLevels - 1);
 	for (int i = 0; i < m_bloomLevels - 1; ++i) {
 		int div = int(pow(2, i + 1));
 		m_bloomDownFilters[i].Initialize(RenderBase::graphicsCommon.bloomDownPS, width / div, height / div);
 
-		// i ¹øÂ° TextureÀÇ µ¥ÀÌÅÍ¸¦ °¡Áö°í i + 1¹øÂ° Texture¿¡ Rendering (Áï, 0¹ø Index¿¡ °¡±î¿ï¼ö·Ï ÇØ»óµµ°¡ ³ôÀº TextureÀÌ±â¿¡ Á¡Á¡ ³·Àº ÇØ»óµµ·Î Down-Sampling)
+		// i ï¿½ï¿½Â° Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ i + 1ï¿½ï¿½Â° Textureï¿½ï¿½ Rendering (ï¿½ï¿½, 0ï¿½ï¿½ Indexï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ°ï¿½ ï¿½ï¿½ï¿½ï¿½ Textureï¿½Ì±â¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ·ï¿½ Down-Sampling)
 		if (i == 0)
 			m_bloomDownFilters[i].SetShaderResources({ resources[0] });
 		else
@@ -32,14 +32,18 @@ void DE::BloomEffect::Initialize(const std::vector<ComPtr<ID3D11ShaderResourceVi
 		m_bloomDownFilters[i].UpdateConstantBuffer();
 	}
 
-	// Up-Sampling - Gaussian Blur¸¦ 2¹è¾¿ Up SamplingÇØ ¿ø·¡ ÇØ»óµµ±îÁö ¼øÂ÷ÀûÀ¸·Î Àû¿ë
+	// Brightness threshold: HDR > 1.0 only blooms
+	m_bloomDownFilters[0].GetConstData().threshold = 0.8f;
+	m_bloomDownFilters[0].UpdateConstantBuffer();
+
+	// Up-Sampling - Gaussian Blurï¿½ï¿½ 2ï¿½è¾¿ Up Samplingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø»óµµ±ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	m_bloomUpFilters.resize(m_bloomLevels - 1);
 	for (int i = 0; i < m_bloomLevels - 1; ++i) {
 		int level = m_bloomLevels - 2 - i;
 		int div = int(pow(2, level));
 		m_bloomUpFilters[i].Initialize(RenderBase::graphicsCommon.bloomUpPS, width / div, height / div);
 
-		// i + 1¹øÂ° Texture¸¦ ÀÐ¾î¼­ i ¹øÂ° Texture¿¡ Rendering (0¹ø Index¿¡¼­ ¸Ö¼ö·Ï ÇØ»óµµ°¡ ³·Àº TextureÀÌ±â¿¡ ³·Àº Texture¿¡¼­ ³ôÀº Texture·Î Up-Sampling)
+		// i + 1ï¿½ï¿½Â° Textureï¿½ï¿½ ï¿½Ð¾î¼­ i ï¿½ï¿½Â° Textureï¿½ï¿½ Rendering (0ï¿½ï¿½ Indexï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼ï¿½ï¿½ï¿½ ï¿½Ø»óµµ°ï¿½ ï¿½ï¿½ï¿½ï¿½ Textureï¿½Ì±â¿¡ ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Textureï¿½ï¿½ Up-Sampling)
 		m_bloomUpFilters[i].SetShaderResources({ m_bloomTextures[level + 1].GetSRV() });
 		m_bloomUpFilters[i].SetRenderTargets({ m_bloomTextures[level].GetRTV() });
 
@@ -48,15 +52,15 @@ void DE::BloomEffect::Initialize(const std::vector<ComPtr<ID3D11ShaderResourceVi
 
 	// Combine + ToneMapping
 	m_combineFilter.Initialize(RenderBase::graphicsCommon.combinePS, width, height);
-	// resource[1]Àº ¸ð¼Ç ºí·¯¸¦ À§ÇÑ ÀÌÀü ÇÁ·¹ÀÓ °á°ú
+	// resource[1]ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	m_combineFilter.SetShaderResources({ resources[0], m_bloomTextures[0].GetSRV(), resources[1] });
 	m_combineFilter.SetRenderTargets(targets);
-	m_combineFilter.GetConstData().strength = 0.3f; // Bloom Strength;
-	m_combineFilter.GetConstData().option1 = 1.0f;  // Exposure·Î »ç¿ë;
-	m_combineFilter.GetConstData().option2 = 2.2f; // Gamma·Î »ç¿ë;
-	m_combineFilter.GetConstData().option3 = 0.0f; // Motion Blur °è¼ö·Î »ç¿ë;
+	m_combineFilter.GetConstData().strength = 0.5f; // Bloom Strength;
+	m_combineFilter.GetConstData().option1 = 1.0f;  // Exposureï¿½ï¿½ ï¿½ï¿½ï¿½;
+	m_combineFilter.GetConstData().option2 = 2.2f; // Gammaï¿½ï¿½ ï¿½ï¿½ï¿½;
+	m_combineFilter.GetConstData().option3 = 0.0f; // Motion Blur ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½;
 
-	// ÁÖÀÇ: float render target¿¡¼­´Â Gamma correction ÇÏÁö ¾ÊÀ½ (gamma = 1.0)
+	// ï¿½ï¿½ï¿½ï¿½: float render targetï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Gamma correction ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (gamma = 1.0)
 	m_combineFilter.UpdateConstantBuffer();
 }
 
@@ -64,7 +68,7 @@ void DE::BloomEffect::Render()
 {
 	Super::Render();
 
-	// ºí·ëÀÌ ÇÊ¿äÇÑ °æ¿ì¿¡¸¸ °è»ê
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½
 	if (m_combineFilter.GetConstData().strength > 0.f) {
 		for (int i = 0; i < m_bloomDownFilters.size(); ++i)
 			RenderImageFilter(m_bloomDownFilters[i]);
@@ -72,7 +76,7 @@ void DE::BloomEffect::Render()
 			RenderImageFilter(m_bloomUpFilters[i]);
 	}
 
-	// È­¸é ·»´õ¸µ
+	// È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	RenderImageFilter(m_combineFilter);
 }
 
