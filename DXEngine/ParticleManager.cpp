@@ -147,6 +147,7 @@ namespace DE {
 		ModelManager::Get().BindBuffersForRender();
 
 		DrawMeshBatches();
+		DrawFullResBillboardBatches();
 		DrawBillboardBatches();
 
 		m_memoryPool->UnbindRender();
@@ -161,6 +162,7 @@ namespace DE {
 	{
 		m_meshJobs.clear();
 		m_billboardJobs.clear();
+		m_fullResBillboardJobs.clear();
 
 		for (auto* system : m_activeSystems) {
 			if (!system) continue;
@@ -182,24 +184,37 @@ namespace DE {
 				if (a.materialKey != b.materialKey) return a.materialKey < b.materialKey;
 				return a.modelIndex < b.modelIndex;
 			});
-		std::sort(m_billboardJobs.begin(), m_billboardJobs.end(),
-			[](const EmitterJob& a, const EmitterJob& b) {
-				RenderModule* renderA = a.emitter->GetModule<RenderModule>();
-				RenderModule* renderB = b.emitter->GetModule<RenderModule>();
 
-				BlendMode blendA = renderA ? renderA->blendMode : BlendMode::Additive;
-				BlendMode blendB = renderB ? renderB->blendMode : BlendMode::Additive;
-
-				// Enum 순서가 렌더링 순서와 일치 - 직접 비교
-				if (blendA != blendB) {
-					return blendA < blendB;  // Opaque(0) < Additive(1) < AlphaBlend(2)
-				}
-
-				// 같은 BlendMode이면 materialKey로 정렬 (배칭 효율)
-				return a.materialKey < b.materialKey;
+		// Partition billboard jobs into lowRes and fullRes
+		auto partitionIt = std::stable_partition(m_billboardJobs.begin(), m_billboardJobs.end(),
+			[](const EmitterJob& job) {
+				RenderModule* render = job.emitter->GetModule<RenderModule>();
+				return render ? !render->lowResolution : false; // fullRes first
 			});
 
+		// Move fullRes jobs to separate list
+		m_fullResBillboardJobs.assign(m_billboardJobs.begin(), partitionIt);
+		m_billboardJobs.erase(m_billboardJobs.begin(), partitionIt);
+
+		// Sort helper: by blendMode then materialKey
+		auto billboardSortFunc = [](const EmitterJob& a, const EmitterJob& b) {
+			RenderModule* renderA = a.emitter->GetModule<RenderModule>();
+			RenderModule* renderB = b.emitter->GetModule<RenderModule>();
+
+			BlendMode blendA = renderA ? renderA->blendMode : BlendMode::Additive;
+			BlendMode blendB = renderB ? renderB->blendMode : BlendMode::Additive;
+
+			if (blendA != blendB) {
+				return blendA < blendB;  // Opaque(0) < Additive(1) < AlphaBlend(2)
+			}
+			return a.materialKey < b.materialKey;
+		};
+
+		std::sort(m_fullResBillboardJobs.begin(), m_fullResBillboardJobs.end(), billboardSortFunc);
+		std::sort(m_billboardJobs.begin(), m_billboardJobs.end(), billboardSortFunc);
+
 		BuildMeshBatches(m_meshJobs, m_meshBatches);
+		BuildBatches(m_fullResBillboardJobs, m_fullResBillboardBatches);
 		BuildBatches(m_billboardJobs, m_billboardBatches);
 	}
 
@@ -233,17 +248,35 @@ namespace DE {
 				batch.emitterIDs.begin(), batch.emitterIDs.end());
 		}
 
-		// 어디부터 billboard batch의 시작인지 저장해두고
-		// Descriptor 배열의 뒤쪽에 Billboard Batch 저장
-		// Billboard batch descriptors
+		// Full-res billboard batch descriptors (mesh 뒤, low-res billboard 앞)
 		MeshRange quadRange = ModelManager::Get().GetMeshRange(0);
+		m_fullResBillboardDescStartIdx = static_cast<UINT>(m_batchDescriptors.size());
+
+		for (const auto& batch : m_fullResBillboardBatches) {
+			BatchDescriptor desc{};
+			desc.emitterCount = static_cast<UINT>(batch.emitterIDs.size());
+			desc.emitterListOffset = static_cast<UINT>(m_batchEmitterList.size());
+			desc.instanceOffset = globalInstanceOffset;
+			desc.indexCount = quadRange.indexCount;
+			desc.startIndexLocation = quadRange.startIndexLocation;
+			desc.baseVertexLocation = quadRange.baseVertexLocation;
+			desc.isMesh = 0;
+			desc.padding = 0;
+			m_batchDescriptors.push_back(desc);
+
+			for (UINT eid : batch.emitterIDs)
+				globalInstanceOffset += m_memoryPool->GetReadAliveCount().GetCpu()[eid];
+
+			m_batchEmitterList.insert(m_batchEmitterList.end(),
+				batch.emitterIDs.begin(), batch.emitterIDs.end());
+		}
+
+		// Low-res billboard batch descriptors (full-res billboard 뒤)
 		m_billboardDescStartIdx = static_cast<UINT>(m_batchDescriptors.size());
 
 		for (const auto& batch : m_billboardBatches) {
 			BatchDescriptor desc{};
-			// Emitter 개수
 			desc.emitterCount = static_cast<UINT>(batch.emitterIDs.size());
-			// 
 			desc.emitterListOffset = static_cast<UINT>(m_batchEmitterList.size());
 			desc.instanceOffset = globalInstanceOffset;
 			desc.indexCount = quadRange.indexCount;
@@ -366,73 +399,79 @@ namespace DE {
 		Vector3 cameraForward(m_view._13, m_view._23, m_view._33);
 		cameraForward.Normalize();
 
-		for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
-			const auto& batch = m_billboardBatches[batchIdx];
-			if (batch.blendMode != BlendMode::AlphaBlend) continue;
+		// Lambda for sorting a batch group
+		auto sortBatchGroup = [&](const std::vector<BatchGroup>& batches, UINT descStartIdx) {
+			for (size_t batchIdx = 0; batchIdx < batches.size(); batchIdx++) {
+				const auto& batch = batches[batchIdx];
+				if (batch.blendMode != BlendMode::AlphaBlend) continue;
 
-			// GlobalConsts b0 재바인딩 (BitonicSort가 b0 사용)
-			ID3D11Buffer* globalCB = nullptr;
-			context->VSGetConstantBuffers(0, 1, &globalCB);
-			if (globalCB) {
-				context->CSSetConstantBuffers(0, 1, &globalCB);
-				globalCB->Release();
+				// GlobalConsts b0 재바인딩 (BitonicSort가 b0 사용)
+				ID3D11Buffer* globalCB = nullptr;
+				context->VSGetConstantBuffers(0, 1, &globalCB);
+				if (globalCB) {
+					context->CSSetConstantBuffers(0, 1, &globalCB);
+					globalCB->Release();
+				}
+
+				UINT globalBatchIdx = descStartIdx + static_cast<UINT>(batchIdx);
+
+				// Downloaded sort params에서 baseOffset/particleCount 읽기
+				const auto& sortParamsData = m_memoryPool->GetBatchSortParams().GetCpu();
+				UINT baseOffset = sortParamsData[globalBatchIdx].baseOffset;
+				UINT particleCount = sortParamsData[globalBatchIdx].particleCount;
+
+				if (particleCount == 0) continue;
+
+				UINT sortSize = 1;
+				while (sortSize < particleCount) sortSize *= 2;
+
+				// SortParams CB (b5): baseOffset + particleCount + cameraForward
+				m_sortParamsCB.GetCpu().sortBaseOffset = baseOffset;
+				m_sortParamsCB.GetCpu().sortParticleCount = particleCount;
+				m_sortParamsCB.GetCpu().cameraForward = cameraForward;
+				m_sortParamsCB.Upload();
+				m_sortParamsCB.Bind(5);
+
+				// 1. GenerateSortKeys
+				auto& genKeysCS = RenderBase::computeCommon.particle.generateSortKeysCS;
+				context->CSSetShader(genKeysCS.computeShader.Get(), 0, 0);
+
+				ID3D11ShaderResourceView* batchSRV = m_memoryPool->GetBatchAliveIndices().GetSRV();
+				context->CSSetShaderResources(0, 1, &batchSRV);
+				ID3D11ShaderResourceView* particleSRV = m_memoryPool->GetParticleBuffer().GetSRV();
+				context->CSSetShaderResources(16, 1, &particleSRV);
+
+				ID3D11UnorderedAccessView* sortUAV = m_memoryPool->GetBitonicSort().GetUAV();
+				context->CSSetUnorderedAccessViews(0, 1, &sortUAV, nullptr);
+
+				context->Dispatch((sortSize + 1023) / 1024, 1, 1);
+
+				// UAV barrier
+				ID3D11UnorderedAccessView* nullUAV = nullptr;
+				context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+
+				// 2. BitonicSort
+				m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, particleCount);
+
+				// BitonicSort 후 b5 재바인딩 (BitonicSort가 b0, SRV 상태를 변경할 수 있음)
+				m_sortParamsCB.Bind(5);
+
+				// 3. CopySortedIndices
+				auto& copyCS = RenderBase::computeCommon.particle.copySortedIndicesCS;
+				context->CSSetShader(copyCS.computeShader.Get(), 0, 0);
+
+				ID3D11ShaderResourceView* sortedSRV = m_memoryPool->GetBitonicSort().GetSRV();
+				context->CSSetShaderResources(0, 1, &sortedSRV);
+
+				ID3D11UnorderedAccessView* batchUAV = m_memoryPool->GetBatchAliveIndices().GetUAV();
+				context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
+
+				context->Dispatch((particleCount + 1023) / 1024, 1, 1);
 			}
+		};
 
-			UINT globalBatchIdx = m_billboardDescStartIdx + static_cast<UINT>(batchIdx);
-
-			// Downloaded sort params에서 baseOffset/particleCount 읽기
-			const auto& sortParamsData = m_memoryPool->GetBatchSortParams().GetCpu();
-			UINT baseOffset = sortParamsData[globalBatchIdx].baseOffset;
-			UINT particleCount = sortParamsData[globalBatchIdx].particleCount;
-
-			if (particleCount == 0) continue;
-
-			UINT sortSize = 1;
-			while (sortSize < particleCount) sortSize *= 2;
-
-			// SortParams CB (b5): baseOffset + particleCount + cameraForward
-			m_sortParamsCB.GetCpu().sortBaseOffset = baseOffset;
-			m_sortParamsCB.GetCpu().sortParticleCount = particleCount;
-			m_sortParamsCB.GetCpu().cameraForward = cameraForward;
-			m_sortParamsCB.Upload();
-			m_sortParamsCB.Bind(5);
-
-			// 1. GenerateSortKeys
-			auto& genKeysCS = RenderBase::computeCommon.particle.generateSortKeysCS;
-			context->CSSetShader(genKeysCS.computeShader.Get(), 0, 0);
-
-			ID3D11ShaderResourceView* batchSRV = m_memoryPool->GetBatchAliveIndices().GetSRV();
-			context->CSSetShaderResources(0, 1, &batchSRV);
-			ID3D11ShaderResourceView* particleSRV = m_memoryPool->GetParticleBuffer().GetSRV();
-			context->CSSetShaderResources(16, 1, &particleSRV);
-
-			ID3D11UnorderedAccessView* sortUAV = m_memoryPool->GetBitonicSort().GetUAV();
-			context->CSSetUnorderedAccessViews(0, 1, &sortUAV, nullptr);
-
-			context->Dispatch((sortSize + 1023) / 1024, 1, 1);
-
-			// UAV barrier
-			ID3D11UnorderedAccessView* nullUAV = nullptr;
-			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
-
-			// 2. BitonicSort
-			m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, particleCount);
-
-			// BitonicSort 후 b5 재바인딩 (BitonicSort가 b0, SRV 상태를 변경할 수 있음)
-			m_sortParamsCB.Bind(5);
-
-			// 3. CopySortedIndices
-			auto& copyCS = RenderBase::computeCommon.particle.copySortedIndicesCS;
-			context->CSSetShader(copyCS.computeShader.Get(), 0, 0);
-
-			ID3D11ShaderResourceView* sortedSRV = m_memoryPool->GetBitonicSort().GetSRV();
-			context->CSSetShaderResources(0, 1, &sortedSRV);
-
-			ID3D11UnorderedAccessView* batchUAV = m_memoryPool->GetBatchAliveIndices().GetUAV();
-			context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
-
-			context->Dispatch((particleCount + 1023) / 1024, 1, 1);
-		}
+		sortBatchGroup(m_fullResBillboardBatches, m_fullResBillboardDescStartIdx);
+		sortBatchGroup(m_billboardBatches, m_billboardDescStartIdx);
 
 		// Cleanup
 		context->CSSetShader(nullptr, nullptr, 0);
@@ -479,6 +518,59 @@ namespace DE {
 
 		ID3D11ShaderResourceView* nullMeshSRVs[2] = { nullptr };
 		context->VSSetShaderResources(24, 2, nullMeshSRVs);
+	}
+
+	void ParticleManager::DrawFullResBillboardBatches()
+	{
+		if (m_fullResBillboardBatches.empty()) return;
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+
+		GET_SINGLE(RenderBase)->SetPipelineState(RenderBase::graphicsCommon.particle.billboardInstancedPSO);
+
+		// Bind full-res scene depth for soft particles
+		ID3D11ShaderResourceView* depthSRV = GET_SINGLE(RenderBase)->GetFullResSceneDepthSRV();
+		context->PSSetShaderResources(7, 1, &depthSRV);
+
+		TextureManager::Get().Bind2DCurlNoiseTexture(27);
+
+		ID3D11ShaderResourceView* batchSRVs[] = {
+			m_memoryPool->GetBatchEmitterList().GetSRV(),
+			m_memoryPool->GetBatchDescriptors().GetSRV()
+		};
+		context->VSSetShaderResources(24, 2, batchSRVs);
+
+		BlendMode lastBlendMode = static_cast<BlendMode>(-1);
+
+		for (size_t batchIdx = 0; batchIdx < m_fullResBillboardBatches.size(); batchIdx++) {
+			const auto& batch = m_fullResBillboardBatches[batchIdx];
+			UINT globalBatchIdx = m_fullResBillboardDescStartIdx + static_cast<UINT>(batchIdx);
+			const auto& desc = m_batchDescriptors[globalBatchIdx];
+
+			if (batch.blendMode != lastBlendMode) {
+				lastBlendMode = batch.blendMode;
+				context->OMSetBlendState(GetBlendState(batch.blendMode),
+					RenderBase::graphicsCommon.particle.animPSO.blendFactor,
+					0xffffffff);
+			}
+
+			if (batch.materialKey < 0) {
+				m_memoryPool->BindDefaultParticleMaterial();
+			} else {
+				MaterialSystem::Get().BindMaterial(batch.materialKey);
+			}
+
+			m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
+
+			ID3D11Buffer* batchArgs = m_memoryPool->GetBatchBillboardArgs().GetBuffer();
+			context->DrawIndexedInstancedIndirect(batchArgs, globalBatchIdx * 20);
+		}
+
+		ID3D11ShaderResourceView* nullSRVs[2] = { nullptr };
+		context->VSSetShaderResources(24, 2, nullSRVs);
+
+		ID3D11ShaderResourceView* nullDepthSRV = nullptr;
+		context->PSSetShaderResources(7, 1, &nullDepthSRV);
 	}
 
 	void ParticleManager::DrawBillboardBatches()
@@ -553,6 +645,8 @@ namespace DE {
 		// Depth pass only renders mesh particles - clear billboard data
 		m_billboardJobs.clear();
 		m_billboardBatches.clear();
+		m_fullResBillboardJobs.clear();
+		m_fullResBillboardBatches.clear();
 
 		BuildBatchDescriptors();
 

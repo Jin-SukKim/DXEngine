@@ -64,6 +64,7 @@ namespace DE {
 
 		void RenderCompositeLowResParticles();
 		ID3D11ShaderResourceView* GetLowResSceneDepthSRV() const { return m_lowResDepthUAV.GetSRV(); }
+		ID3D11ShaderResourceView* GetFullResSceneDepthSRV() const { return m_depthOnlyBuffer.GetSRV(); }
 
 		// �̸� �����ص� Setting��
 		static GraphicsCommon graphicsCommon;

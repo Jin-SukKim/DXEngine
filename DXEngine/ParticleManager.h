@@ -94,6 +94,7 @@ namespace DE {
 		void SortAlphaBlendEmitters();
 		void DrawMeshBatches();
 		void DrawMeshBatchesDepth();
+		void DrawFullResBillboardBatches();
 		void DrawBillboardBatches();
 
 		PoolHandle RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount);
@@ -139,8 +140,11 @@ namespace DE {
 		// 매 프레임 재사용 컨테이너
 		std::vector<EmitterJob> m_meshJobs;
 		std::vector<EmitterJob> m_billboardJobs;
+		std::vector<EmitterJob> m_fullResBillboardJobs;
 		std::vector<UINT> m_batchEmitterList;
 		std::vector<BatchDescriptor> m_batchDescriptors;
+		std::vector<BatchGroup> m_fullResBillboardBatches;
+		UINT m_fullResBillboardDescStartIdx = 0;
 		UINT m_billboardDescStartIdx = 0;
 	};
 

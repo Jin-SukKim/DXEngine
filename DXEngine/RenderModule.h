@@ -22,6 +22,7 @@ public:
 	int GetModelIndex() { return m_modelIdx; }
 public:
 	BlendMode blendMode = BlendMode::Additive;
+	bool lowResolution = false;
 protected:
 	int m_modelIdx = -1;
 	ID3D11BlendState* m_blendState = NULL;

@@ -46,11 +46,15 @@ namespace DE {
 			if (mode == "AlphaBlend") blendMode = BlendMode::AlphaBlend;
 			if (mode == "Opaque") blendMode = BlendMode::Opaque;
 		}
+		if (data.contains("lowResolution")) {
+			lowResolution = data["lowResolution"].get<bool>();
+		}
 	}
 
 	void RenderModule::CopyBasicSettings(RenderModule* cloned) const
 	{
 		cloned->blendMode = this->blendMode;
+		cloned->lowResolution = this->lowResolution;
 		cloned->m_blendState = this->m_blendState;
 		cloned->m_isEnabled = this->m_isEnabled;
 	}
