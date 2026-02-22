@@ -131,6 +131,15 @@ float4 main(ParticlePSInput input) : SV_TARGET
             float circleAlpha = saturate(1.0f - dist);
             finalColor.a *= circleAlpha;
         }
+
+        // Center White: lerp towards white, intensity controls spread
+        // intensity 0 -> exponent 8 (tiny white dot), intensity 1 -> exponent 0.5 (wide spread)
+        if (render.centerWhiteIntensity > 0.0f) {
+            float gradient = saturate(1.0f - dist);
+            float exponent = lerp(8.0f, 0.5f, render.centerWhiteIntensity);
+            gradient = pow(gradient, exponent);
+            finalColor.rgb = lerp(finalColor.rgb, float3(1,1,1), gradient);
+        }
     }
 
     // Apply albedoFactor

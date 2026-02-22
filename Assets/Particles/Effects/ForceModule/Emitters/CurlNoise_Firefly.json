@@ -12,8 +12,8 @@
         "lifeRange": [2.0, 5.0]
     },
     "Visual": {
-      "startColor": [ 0.4, 0.7, 0.1, 0.9 ],
-        "endColor": [ 0.8, 0.2, 0.9, 0.9 ],
+      "startColor": [ 0.4, 0.7, 0.1, 1.0 ],
+        "endColor": [ 0.8, 0.2, 0.9, 1.0 ],
         "colorCurve": {
                 "type": "BEZIER",
                 "resolution": 256,

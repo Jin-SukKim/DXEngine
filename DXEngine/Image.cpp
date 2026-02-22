@@ -9,20 +9,20 @@
 
 #include <filesystem>
 namespace fs = std::filesystem;
-#include <DirectXTexEXR.h> // EXR Çü½Ä HDRI ÀÐ±â
+#include <DirectXTexEXR.h> // EXR ï¿½ï¿½ï¿½ï¿½ HDRI ï¿½Ð±ï¿½
 #include <fp16.h>
 
 namespace DE {
 	bool Image::Load(const std::string& filename)
 	{
 		fs::path filePath = filename;
-		if (!fs::exists(filePath)) // ÆÄÀÏ Á¸Àç ¿©ºÎ È®ÀÎ
+		if (!fs::exists(filePath)) // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 			return false;
 
-		// ÆÄÀÏ·ÎºÎÅÍ ÀÌ¹ÌÁö¸¦ ÀÐ¾î¿À±â
+		// ï¿½ï¿½ï¿½Ï·Îºï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½
 		unsigned char* img = stbi_load(filename.c_str(), &m_width, &m_height, &m_channels, 0);
 		//std::cout << "ReadImage() " << filename << " " << m_width << " " << m_height << " " << m_channels << std::endl;
-			// ·Îµå ½ÇÆÐ ½Ã ¿À·ù È®ÀÎ
+			// ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 		if (!img) {
 			std::cerr << "Failed to load image: " << filename << std::endl;
 			std::cerr << "STB Error: " << stbi_failure_reason() << std::endl;
@@ -32,7 +32,7 @@ namespace DE {
 		std::cout << "Image loaded: " << filename << " (" << m_width << "x" << m_height
 			<< ", " << m_channels << " channels)" << std::endl;
 
-		// ¹«Á¶°Ç 4Ã¤³Î·Î ¸¸µé¾î¼­ º¹»ç
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 4Ã¤ï¿½Î·ï¿½ ï¿½ï¿½ï¿½ï¿½î¼­ ï¿½ï¿½ï¿½ï¿½
 		m_image.resize(m_width * m_height * 4);
 
 		if (m_channels == 0) {
@@ -89,6 +89,32 @@ namespace DE {
 		return true;
 	}
 
+	bool Image::GenerateRadialGradientPNG(
+		const std::string& outputPath, int size,
+		const Vector3& centerColor, const Vector3& edgeColor, float falloff)
+	{
+		std::vector<uint8_t> pixels(size * size * 4);
+		float center = size / 2.0f;
+
+		for (int y = 0; y < size; ++y) {
+			for (int x = 0; x < size; ++x) {
+				float dx = (x + 0.5f - center) / center;
+				float dy = (y + 0.5f - center) / center;
+				float dist = sqrtf(dx * dx + dy * dy);
+				float t = std::clamp(1.0f - powf(std::clamp(dist, 0.f, 1.f), falloff), 0.f, 1.f);
+
+				Vector3 color = Vector3::Lerp(edgeColor, centerColor, t);
+				int idx = (y * size + x) * 4;
+				pixels[idx + 0] = (uint8_t)(std::clamp(color.x, 0.f, 1.f) * 255);
+				pixels[idx + 1] = (uint8_t)(std::clamp(color.y, 0.f, 1.f) * 255);
+				pixels[idx + 2] = (uint8_t)(std::clamp(color.z, 0.f, 1.f) * 255);
+				pixels[idx + 3] = (uint8_t)(t * 255);
+			}
+		}
+
+		return stbi_write_png(outputPath.c_str(), size, size, 4, pixels.data(), size * 4) != 0;
+	}
+
 	void Image::readImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat)
 	{
 		const std::wstring wFilename(filename.begin(), filename.end());
@@ -97,23 +123,23 @@ namespace DE {
 		ThrowIfFailed(DirectX::GetMetadataFromEXRFile(wFilename.c_str(), metadata));
 
 		DirectX::ScratchImage scratchImage;
-		// ½ÇÁ¦ ÀÌ¹ÌÁö µ¥ÀÌÅÍ¸¦ ÀÐ¾î¿À±â (exr µ¥ÀÌÅÍÀÇ float FormatÀ» »ç¿ëÇÏ°í r, g, b, a °¢°¢ 16-bit floatÀ» »ç¿ë)
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ (exr ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ float Formatï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ r, g, b, a ï¿½ï¿½ï¿½ï¿½ 16-bit floatï¿½ï¿½ ï¿½ï¿½ï¿½)
 		ThrowIfFailed(DirectX::LoadFromEXRFile(wFilename.c_str(), NULL, scratchImage));
 
 		width = static_cast<int>(metadata.width);
 		height = static_cast<int>(metadata.height);
-		pixelFormat = metadata.format; // DirectX¿Í È£È¯µÇ´Â LibraryÀÌ±â ¶§¹®·¹ °°Àº FOrmatÀ» »ç¿ë
+		pixelFormat = metadata.format; // DirectXï¿½ï¿½ È£È¯ï¿½Ç´ï¿½ Libraryï¿½Ì±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ FOrmatï¿½ï¿½ ï¿½ï¿½ï¿½
 
 		std::cout << filename << " " << metadata.width << " " << metadata.height << " " << metadata.format << std::endl;
 
-		// image´Â uint8_t·Î 8bitÂ¥¸® uint »ö±ò ¹è¿­·Î ÀÏ´Ü ÀÐ¾îµéÀÎ ¸Þ¸ð¸®¸¦ º¹»ç
+		// imageï¿½ï¿½ uint8_tï¿½ï¿½ 8bitÂ¥ï¿½ï¿½ uint ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ð¸®¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 		image.resize(scratchImage.GetPixelsSize());
 		memcpy(image.data(), scratchImage.GetPixels(), image.size());
 
-		// µ¥ÀÌÅÍ ¹üÀ§ È®ÀÎ
-		// exr µ¥ÀÌÅÍ´Â rgba °¢°¢ 16-bit floatÀ» »ç¿ëÇÏÁö¸¸ C++ÀÇ floatÀº 32bit Å©±â¸¦ »ç¿ë
-		// floatÀ¸·Î Ç¥Çö½Ã 16bit¸¸ »ç¿ëÇØ¼­ ·»´õ¸µÀÌ ÀßµÇ±â¿¡ GPU°¡ 16bitÂ¥¸®¿¡ ´ëÇØ ÃÖÀûÈ­°¡ ÀßµÇ¾î ÀÖÀ½
-		// ´Ü, C++¿£ half-float(16bit)°¡ ¾ø±â¿¡ ¿ÜºÎ library »ç¿ë (debugging½Ã 16bits floatÀ» 32bits·Î º¯È¯)
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
+		// exr ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½ rgba ï¿½ï¿½ï¿½ï¿½ 16-bit floatï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ C++ï¿½ï¿½ floatï¿½ï¿½ 32bit Å©ï¿½â¸¦ ï¿½ï¿½ï¿½
+		// floatï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½ï¿½ 16bitï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ßµÇ±â¿¡ GPUï¿½ï¿½ 16bitÂ¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ ï¿½ßµÇ¾ï¿½ ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½, C++ï¿½ï¿½ half-float(16bit)ï¿½ï¿½ ï¿½ï¿½ï¿½â¿¡ ï¿½Üºï¿½ library ï¿½ï¿½ï¿½ (debuggingï¿½ï¿½ 16bits floatï¿½ï¿½ 32bitsï¿½ï¿½ ï¿½ï¿½È¯)
 		std::vector<float> f32(image.size() / 2);
 		uint16_t* f16 = (uint16_t*)image.data();
 		for (int i = 0; i < image.size() / 2; ++i)

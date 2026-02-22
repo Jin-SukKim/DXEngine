@@ -13,5 +13,6 @@ namespace DE {
 	private:
 		ParticleSystem* m_sprite;
 		ParticleSystem* m_textures;
+		ParticleSystem* m_centerWhite;
 	};
 }

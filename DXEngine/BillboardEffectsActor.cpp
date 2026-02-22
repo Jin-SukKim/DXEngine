@@ -13,11 +13,15 @@ namespace DE {
 
 		m_textures = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\BillboardRenderModule\\TextureArray.json");
 		m_textures->SetTarget(this);
+
+		m_centerWhite = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\BillboardRenderModule\\CenterWhite.json");
+		m_centerWhite->SetTarget(this);
 	}
 
 	BillboardEffectsActor::~BillboardEffectsActor()
 	{
 		ParticleManager::Get().DestroyInstance(m_sprite);
 		ParticleManager::Get().DestroyInstance(m_textures);
+		ParticleManager::Get().DestroyInstance(m_centerWhite);
 	}
 }

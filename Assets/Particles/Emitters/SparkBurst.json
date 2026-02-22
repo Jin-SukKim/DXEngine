@@ -13,9 +13,9 @@
     "lifeRange": [0.2, 0.5]
   },
   "Visual": {
-    "startColor": [1.0, 0.6, 0.1, 1.0],
-    "endColor": [0.8, 0.1, 0.0, 0.1],
-    "sizeRange": [0.04, 0.01]
+    "startColor": [1.0, 0.8, 0.1, 1.0],
+    "endColor": [1.0, 0.2, 0.0, 0.0],
+    "sizeRange": [0.05, 0.01]
   },
   "Force": {
     "velocity": [0.0, 0.0, 0.0],
@@ -26,6 +26,8 @@
   },
   "BillboardRender": {
     "blendMode": "Additive",
-    "velocityStretchFactor": 0.8
+    "velocityStretchFactor": 0.8,
+    "solidCircle": true,
+    "centerWhiteIntensity": 0.5
   }
 }

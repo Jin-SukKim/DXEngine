@@ -82,6 +82,7 @@ namespace DE {
 		ctx.consts.render.uvDistortScroll = m_uvDistortScroll;
 		ctx.consts.render.alphaClipThreshold = m_alphaClipThreshold;
 		ctx.consts.render.solidCircle = m_solidCircle;
+		ctx.consts.render.centerWhiteIntensity = m_centerWhiteIntensity;
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
@@ -104,6 +105,8 @@ namespace DE {
 			m_alphaClipThreshold = data["alphaClipThreshold"].get<float>();
 		if (data.contains("solidCircle"))
 			m_solidCircle = data["solidCircle"].get<bool>() ? 1 : 0;
+		if (data.contains("centerWhiteIntensity"))
+			m_centerWhiteIntensity = data["centerWhiteIntensity"].get<float>();
 	}
 
 	std::unique_ptr<ParticleModule> BillboardRenderModule::Clone() const
@@ -118,6 +121,7 @@ namespace DE {
 		cloned->m_uvDistortScroll = this->m_uvDistortScroll;
 		cloned->m_alphaClipThreshold = this->m_alphaClipThreshold;
 		cloned->m_solidCircle = this->m_solidCircle;
+		cloned->m_centerWhiteIntensity = this->m_centerWhiteIntensity;
 		return cloned;
 	}
 

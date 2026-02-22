@@ -11,19 +11,28 @@ namespace DE {
 
 		bool Load(const std::string& filename) override;
 		bool LoadExr(const std::string& filename, DXGI_FORMAT& pixelFormat);
-		// HDRI ÀÌ¹ÌÁö ÀÐ¾î¿À±â (HDRI´Â º¸Åë IBLÇÒ¶§ ÁÖ·Î »ç¿ë)
+		// HDRI ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ (HDRIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ IBLï¿½Ò¶ï¿½ ï¿½Ö·ï¿½ ï¿½ï¿½ï¿½)
 
 		const std::vector<uint8_t>& GetImage() { return m_image; }
 		const int& GetWidth() { return m_width; }
 		const int& GetHeight() { return m_height; }
 		const int& GetChannels() { return m_channels; }
 		const size_t GetSize() { return m_image.size(); }
+
+		// Generate radial gradient PNG (for emissive textures)
+		static bool GenerateRadialGradientPNG(
+			const std::string& outputPath,
+			int size,                           // square resolution (e.g. 128)
+			const Vector3& centerColor,         // center color (e.g. {1,1,1} white)
+			const Vector3& edgeColor,           // edge color (e.g. {1,0.8,0} yellow)
+			float falloff = 1.0f                // falloff curve (1.0=linear, >1=sharp, <1=soft)
+		);
 	private:
 		void readImageExr(const std::string& filename, std::vector<uint8_t>& image, int& width, int& height, DXGI_FORMAT& pixelFormat);
 	private:
 		int m_width = 0;
 		int m_height = 0;
 		int m_channels = 0;
-		std::vector<uint8_t> m_image; // ElementÇÏ³ª ´ç colorÀÇ r, g, b, a·Î ÃÑ 4°³ÀÇ Index°¡ 1°³ÀÇ Color°ªÀ» °¡Áü (4 Ã¤³ÎÀÎ °æ¿ì)
+		std::vector<uint8_t> m_image; // Elementï¿½Ï³ï¿½ ï¿½ï¿½ colorï¿½ï¿½ r, g, b, aï¿½ï¿½ ï¿½ï¿½ 4ï¿½ï¿½ï¿½ï¿½ Indexï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ Colorï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (4 Ã¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 	};
 }

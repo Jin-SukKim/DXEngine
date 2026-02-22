@@ -148,7 +148,8 @@ struct RenderConsts
     float2 uvDistortScroll;
     float alphaClipThreshold;
     uint solidCircle;
-    float3 renderPadding;
+    float centerWhiteIntensity;
+    float2 renderPadding;
 };
 
 struct VortexConsts

@@ -82,7 +82,7 @@ namespace DE {
 
 		// m_test2�� �ó����� �߰�(15��)�� �����ϱ� ���� �����
 		m_test2 = nullptr;
-		m_test3 = nullptr;
+		m_test3 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\BillboardRenderModule\\CenterWhite.json");
 
 		//for (int i = 0; i < 1000; ++i) {
 		//	m_fireTests.push_back(AddObject<FireEffect>(L"FireEffect" + i));

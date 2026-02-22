@@ -48,6 +48,7 @@ private:
 	Vector2 m_uvDistortScroll = Vector2(0.f, 0.5f);
 	float m_alphaClipThreshold = 0.0f;
 	UINT m_solidCircle = 0;
+	float m_centerWhiteIntensity = 0.f;
 };
 
 class MeshRenderModule : public RenderModule
