@@ -30,8 +30,10 @@ namespace DE {
 
 	void ComputeCommon::initBitonicSortShaders(ComPtr<ID3D11Device>& device)
 	{
-		// BitonicSort Compute Shader
+		// BitonicSort Compute Shaders
 		D3D11Utils::CreateCS(device.Get(), L"BitonicSortCS.hlsl", bitonicSortCS);
+		D3D11Utils::CreateCS(device.Get(), L"BitonicBlockSortCS.hlsl", bitonicBlockSortCS);
+		D3D11Utils::CreateCS(device.Get(), L"BitonicInnerSortCS.hlsl", bitonicInnerSortCS);
 	}
 
 	void ComputeCommon::initComputePSOs(ComPtr<ID3D11Device>& device)
@@ -49,8 +51,10 @@ namespace DE {
 		particle.copySortedIndicesCS.computeShader = copySortedIndicesCS;
 		particle.generateSortKeysCS.computeShader = generateSortKeysCS;
 
-		// BitonicSort PSO
+		// BitonicSort PSOs
 		sort.bitonicSortCS.computeShader = bitonicSortCS;
+		sort.bitonicBlockSortCS.computeShader = bitonicBlockSortCS;
+		sort.bitonicInnerSortCS.computeShader = bitonicInnerSortCS;
 
 		// Depth PSO
 		depth.depthDownsampleCS.computeShader = depthDownsampleCS;

@@ -31,26 +31,42 @@ namespace DE {
         if (m_numElements == 0)
             return;
 
-        auto& bitonicSortCS = RenderBase::computeCommon.sort.bitonicSortCS;
+        auto& sortPSOs = RenderBase::computeCommon.sort;
 
-        // Set shader and UAV once (stays bound for all passes)
-        context->CSSetShader(bitonicSortCS.computeShader.Get(), 0, 0);
         context->CSSetUnorderedAccessViews(0, 1, m_array.GetAddressOfUAV(), NULL);
 
-        // Bitonic sort: O(log^2 n) passes
-        // NOTE: Can be replaced with BitonicMergeSort for better performance
-        //       (local shared memory sort + global merge passes)
-        for (uint32_t k = 2; k <= m_numElements; k *= 2)
-        {
-            for (uint32_t j = k / 2; j > 0; j /= 2)
-            {
-                // Update constant buffer for this pass
-                m_constBuffer.SetCpuData({ k, j });
+        if (m_numElements >= BLOCK_SIZE) {
+            // Phase 1: LDS block sort (1 dispatch)
+            context->CSSetShader(sortPSOs.bitonicBlockSortCS.computeShader.Get(), 0, 0);
+            context->Dispatch(m_numElements / BLOCK_SIZE, 1, 1);
+
+            // Phase 2+3: Global merge
+            for (uint32_t k = BLOCK_SIZE * 2; k <= m_numElements; k *= 2) {
+                // Phase 2: outer j passes (global memory)
+                context->CSSetShader(sortPSOs.bitonicSortCS.computeShader.Get(), 0, 0);
+                for (uint32_t j = k / 2; j >= BLOCK_SIZE; j /= 2) {
+                    m_constBuffer.SetCpuData({ k, j });
+                    m_constBuffer.Upload();
+                    context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
+                    context->Dispatch((m_numElements + 1023) / 1024, 1, 1);
+                }
+                // Phase 3: inner j passes (LDS, 1 dispatch)
+                m_constBuffer.SetCpuData({ k, 0 });
                 m_constBuffer.Upload();
                 context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
-
-                // Dispatch compute shader
-                context->Dispatch((m_numElements + 1023) / 1024, 1, 1);
+                context->CSSetShader(sortPSOs.bitonicInnerSortCS.computeShader.Get(), 0, 0);
+                context->Dispatch(m_numElements / BLOCK_SIZE, 1, 1);
+            }
+        } else {
+            // Fallback: standard bitonic sort for small arrays (< 2048)
+            context->CSSetShader(sortPSOs.bitonicSortCS.computeShader.Get(), 0, 0);
+            for (uint32_t k = 2; k <= m_numElements; k *= 2) {
+                for (uint32_t j = k / 2; j > 0; j /= 2) {
+                    m_constBuffer.SetCpuData({ k, j });
+                    m_constBuffer.Upload();
+                    context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
+                    context->Dispatch((m_numElements + 1023) / 1024, 1, 1);
+                }
             }
         }
 
@@ -72,16 +88,41 @@ namespace DE {
         UINT sortSize = 1;
         while (sortSize < elementCount) sortSize *= 2;
 
-        auto& bitonicSortCS = RenderBase::computeCommon.sort.bitonicSortCS;
-        context->CSSetShader(bitonicSortCS.computeShader.Get(), 0, 0);
+        auto& sortPSOs = RenderBase::computeCommon.sort;
         context->CSSetUnorderedAccessViews(0, 1, &sortBufferUAV, NULL);
 
-        for (uint32_t k = 2; k <= sortSize; k *= 2) {
-            for (uint32_t j = k / 2; j > 0; j /= 2) {
-                m_constBuffer.SetCpuData({ k, j });
+        if (sortSize >= BLOCK_SIZE) {
+            // Phase 1: LDS block sort (1 dispatch)
+            context->CSSetShader(sortPSOs.bitonicBlockSortCS.computeShader.Get(), 0, 0);
+            context->Dispatch(sortSize / BLOCK_SIZE, 1, 1);
+
+            // Phase 2+3: Global merge
+            for (uint32_t k = BLOCK_SIZE * 2; k <= sortSize; k *= 2) {
+                // Phase 2: outer j passes (global memory)
+                context->CSSetShader(sortPSOs.bitonicSortCS.computeShader.Get(), 0, 0);
+                for (uint32_t j = k / 2; j >= BLOCK_SIZE; j /= 2) {
+                    m_constBuffer.SetCpuData({ k, j });
+                    m_constBuffer.Upload();
+                    context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
+                    context->Dispatch((sortSize + 1023) / 1024, 1, 1);
+                }
+                // Phase 3: inner j passes (LDS, 1 dispatch)
+                m_constBuffer.SetCpuData({ k, 0 });
                 m_constBuffer.Upload();
                 context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
-                context->Dispatch((sortSize + 1023) / 1024, 1, 1);
+                context->CSSetShader(sortPSOs.bitonicInnerSortCS.computeShader.Get(), 0, 0);
+                context->Dispatch(sortSize / BLOCK_SIZE, 1, 1);
+            }
+        } else {
+            // Fallback: standard bitonic sort for small arrays (< 2048)
+            context->CSSetShader(sortPSOs.bitonicSortCS.computeShader.Get(), 0, 0);
+            for (uint32_t k = 2; k <= sortSize; k *= 2) {
+                for (uint32_t j = k / 2; j > 0; j /= 2) {
+                    m_constBuffer.SetCpuData({ k, j });
+                    m_constBuffer.Upload();
+                    context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
+                    context->Dispatch((sortSize + 1023) / 1024, 1, 1);
+                }
             }
         }
 

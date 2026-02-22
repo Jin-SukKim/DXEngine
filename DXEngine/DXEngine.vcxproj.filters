@@ -882,6 +882,12 @@
     <FxCompile Include="BitonicSortCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
+    <FxCompile Include="BitonicBlockSortCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="BitonicInnerSortCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
     <FxCompile Include="GenerateSortKeysCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>

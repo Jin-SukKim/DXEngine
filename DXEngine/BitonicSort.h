@@ -32,14 +32,13 @@ namespace DE {
         ID3D11ShaderResourceView* GetSRV() const { return m_array.GetSRV(); }
         ID3D11UnorderedAccessView* GetUAV() const { return m_array.GetUAV(); }
     protected:
+        static constexpr UINT BLOCK_SIZE = 2048;
+
         // Single constant buffer (updated each pass instead of pre-allocating all)
         ConstantBuffer<Consts> m_constBuffer;
         StructuredBuffer<Element> m_array;
 
         UINT m_numElements = 0;
-
-        // NOTE: This can be replaced with BitonicMergeSort in the future
-        // by swapping the shader and modifying the Sort() loop structure
     };
 
 }
