@@ -169,7 +169,8 @@ float4 main(ParticlePSInput input) : SV_TARGET
         float softMaxDist = consts[input.emitterSlotID].render.softMaxDist;
         if (softMaxDist > 0.0f) {
             float particleDist = length(input.posWorld.xyz - eyeWorld);
-            float fadeStart = softMaxDist * 0.8f;
+            float softNearDist = consts[input.emitterSlotID].render.softNearDist;
+            float fadeStart = (softNearDist > 0.0f) ? softNearDist : softMaxDist * 0.8f;
             float distBlend = 1.0f - smoothstep(fadeStart, softMaxDist, particleDist);
             softFactor = lerp(1.0f, softFactor, distBlend);
         }

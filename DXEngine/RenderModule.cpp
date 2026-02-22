@@ -79,6 +79,7 @@ namespace DE {
 		m_modelIdx = 0; // Billboard quad
 		ctx.consts.render.softDistance = m_softDistance;
 		ctx.consts.render.softMaxDist = m_softMaxDist;
+		ctx.consts.render.softNearDist = m_softNearDist;
 		ctx.consts.render.velocityStretchFactor = m_velocityStretchFactor;
 
 		ctx.consts.render.uvDistortEnabled = m_uvDistortEnabled;
@@ -98,6 +99,8 @@ namespace DE {
 			m_softDistance = data["softDistance"].get<float>();
 		if (data.contains("softMaxDist"))
 			m_softMaxDist = data["softMaxDist"].get<float>();
+		if (data.contains("softNearDist"))
+			m_softNearDist = data["softNearDist"].get<float>();
 		if (data.contains("velocityStretchFactor"))
 			m_velocityStretchFactor = data["velocityStretchFactor"].get<float>();
 
@@ -122,6 +125,7 @@ namespace DE {
 		CopyBasicSettings(cloned.get()); // Only blendMode and m_blendState
 		cloned->m_softDistance = this->m_softDistance;
 		cloned->m_softMaxDist = this->m_softMaxDist;
+		cloned->m_softNearDist = this->m_softNearDist;
 		cloned->m_velocityStretchFactor = this->m_velocityStretchFactor;
 		cloned->m_uvDistortEnabled = this->m_uvDistortEnabled;
 		cloned->m_uvDistortFrequency = this->m_uvDistortFrequency;

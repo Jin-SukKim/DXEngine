@@ -139,7 +139,7 @@ namespace DE {
         UINT solidCircle = 0;
         float centerWhiteIntensity = 0.f;
         float softMaxDist = 0.0f;  // 0 = disabled (always apply soft particle)
-        float renderPadding = 0.f;
+        float softNearDist = 0.0f;  // Near boundary for soft particle fade (0 = use 0.8×softMaxDist)
     };
 
     struct ParticleConsts {

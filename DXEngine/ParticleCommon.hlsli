@@ -151,7 +151,7 @@ struct RenderConsts
     uint solidCircle;
     float centerWhiteIntensity;
     float softMaxDist;    // Camera distance beyond which soft particle is disabled (0 = always on)
-    float renderPadding;
+    float softNearDist;   // Near boundary for soft particle fade (0 = use 0.8×softMaxDist)
 };
 
 struct VortexConsts
