@@ -34,6 +34,10 @@ namespace DE {
     protected:
         static constexpr UINT BLOCK_SIZE = 2048;
 
+        // 공통 정렬 로직 헬퍼
+        void SortInternal(ID3D11DeviceContext* context,
+                          ID3D11UnorderedAccessView* uav, UINT sortSize);
+
         // Single constant buffer (updated each pass instead of pre-allocating all)
         ConstantBuffer<Consts> m_constBuffer;
         StructuredBuffer<Element> m_array;

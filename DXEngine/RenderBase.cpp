@@ -161,7 +161,7 @@ namespace DE {
 		// BackBuffer�� ȭ������ ���� ��� (SRV�� ���ʿ�)
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
-		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), NULL, m_backBufferRTV.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_backBufferRTV.GetAddressOf()));
 
 		// FLOAT MSAA RenderTargetView/ShaderResourceView
 		//ThrowIfFailed(m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R16G16B16A16_FLOAT, 4, &m_numQualityLevels));
@@ -189,7 +189,7 @@ namespace DE {
 		// Mouse Picking�� ����� Index ���� �������� Texture�� RenderTargetVeiw ����
 		backBuffer->GetDesc(&desc);
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTexture.GetAddressOf())); 
-		ThrowIfFailed(m_device->CreateRenderTargetView(m_indexTexture.Get(), NULL, m_indexRTV.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateRenderTargetView(m_indexTexture.Get(), nullptr, m_indexRTV.GetAddressOf()));
 		
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Index-Buffer ����� �����ؼ� �ӽ� ����
@@ -237,14 +237,14 @@ namespace DE {
 
 		ComPtr<ID3D11Texture2D> depthStencilBuffer;
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, 0, depthStencilBuffer.GetAddressOf()));
-		ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilBuffer.Get(), NULL, m_defaultDSV.GetAddressOf()));
+		ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, m_defaultDSV.GetAddressOf()));
 	
 		// Depth Only (Stencil�� �ʿ䰡 ���⿡ Depth�� 32bit ���� ���)
 		// Typeless�� ������ DepthStencilView������ D32 Format�� ���, ShaderResourceView������ R32 Format�� ���
 		// �� Format�� ���� �ٸ��� ������ Typeless�� ���
 		dsDesc.Format = DXGI_FORMAT_R32_TYPELESS; 
 		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_depthOnlyBuffer.GetAddressOfTexture()));
+		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, nullptr, m_depthOnlyBuffer.GetAddressOfTexture()));
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
@@ -262,7 +262,7 @@ namespace DE {
 		// Particle Overdraw ��
 		dsDesc.Width = m_lowResWidth;
 		dsDesc.Height = m_lowResHeight;
-		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, NULL, m_lowResDepth.GetAddressOfTexture()));
+		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, nullptr, m_lowResDepth.GetAddressOfTexture()));
 		ThrowIfFailed(m_device->CreateDepthStencilView(m_lowResDepth.GetTexture(), &dsvDesc, m_lowResDSV.GetAddressOf()));
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_lowResDepth.GetTexture(), &srvDesc, m_lowResDepth.GetAddressOfSRV()));
 
@@ -280,7 +280,7 @@ namespace DE {
 		uavTexDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 		uavTexDesc.CPUAccessFlags = 0;
 		uavTexDesc.MiscFlags = 0;
-		ThrowIfFailed(m_device->CreateTexture2D(&uavTexDesc, NULL, m_lowResDepthUAV.GetAddressOfTexture()));
+		ThrowIfFailed(m_device->CreateTexture2D(&uavTexDesc, nullptr, m_lowResDepthUAV.GetAddressOfTexture()));
 
 		// Create UAV for the temporary texture
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
@@ -318,7 +318,7 @@ namespace DE {
 	{
 		m_context->ClearDepthStencilView(m_depthOnlyDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 		// DepthOnly�� RTV ���ʿ�
-		m_context->OMSetRenderTargets(0, NULL, m_depthOnlyDSV.Get());
+		m_context->OMSetRenderTargets(0, nullptr, m_depthOnlyDSV.Get());
 	}
 
 	void RenderBase::CreateShadowArrayBuffer(const std::vector<LightActor*>& lights)
@@ -383,20 +383,29 @@ namespace DE {
 		m_screenHeight = window.height;
 
 		m_backBufferRTV.Reset();
-		// Swap Chain�� �ػ󵵸� �����ϰ� ���� ������ ����/����, Pixel Format ����/����, Flag �������� ���� �� ����
+		// 이전 tone map 리소스 해제 후 재생성
+		m_toneMapTexture = Texture2D();
+
 		m_swapChain->ResizeBuffers(
-			0, // ���� ���� ����
-			// �ػ� ����
+			0,
 			UINT(m_screenWidth),
 			UINT(m_screenHeight),
-			DXGI_FORMAT_UNKNOWN, // ���� ���� ����
+			DXGI_FORMAT_UNKNOWN,
 			0);
-		// �ػ󵵰� �ٲ�� SwapChain�� �ٽ� ������� ������ �ٽ� RTV�� DepthStencilBuffer ����
-		// �������� ȭ���� �ػ󵵰� �ٲ��  Pixel�� ���� ��ü�� �ٲ�� ���̱� ����
+
 		CreateBuffers();
 		CreateDepthStencilBuffer();
-		// �ػ󵵿� �´� Viewport ����
 		SetViewport();
+
+		// Tone map 텍스처 및 필터 재생성
+		D3D11Utils::CreateImageFilterTexture(m_device, m_screenWidth, m_screenHeight, m_toneMapTexture);
+		m_toneMapping->Initialize({ m_toneMapTexture.GetSRV() }, { m_backBufferRTV }, m_screenWidth, m_screenHeight);
+
+		// PostProcess도 새 해상도로 재초기화
+		if (m_postProcess) {
+			m_postProcess->Initialize({ m_floatBuffer.GetSRV(), m_prevFrame.GetSRV() },
+				{ m_toneMapTexture.GetRTV() }, m_screenWidth, m_screenHeight);
+		}
 	}
 
 	void RenderBase::SetPipelineState(const GraphicsPSO& pso)
@@ -406,7 +415,7 @@ namespace DE {
 		m_context->HSSetShader(pso.hullShader.Get(), 0, 0);
 		m_context->DSSetShader(pso.domainShader.Get(), 0, 0);
 		m_context->GSSetShader(pso.geometryShader.Get(), 0, 0);
-		m_context->CSSetShader(NULL, 0, 0);
+		m_context->CSSetShader(nullptr, 0, 0);
 		m_context->IASetInputLayout(pso.inputLayout.Get());
 		m_context->RSSetState(pso.rasterizerState.Get());
 		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // ������ parameter�� multi-sample�� ����Ҷ� ���
@@ -416,11 +425,11 @@ namespace DE {
 
 	void RenderBase::SetPipelineState(const ComputePSO& pso)
 	{
-		m_context->VSSetShader(NULL, 0, 0);
-		m_context->PSSetShader(NULL, 0, 0);
-		m_context->HSSetShader(NULL, 0, 0);
-		m_context->DSSetShader(NULL, 0, 0);
-		m_context->GSSetShader(NULL, 0, 0);
+		m_context->VSSetShader(nullptr, 0, 0);
+		m_context->PSSetShader(nullptr, 0, 0);
+		m_context->HSSetShader(nullptr, 0, 0);
+		m_context->DSSetShader(nullptr, 0, 0);
+		m_context->GSSetShader(nullptr, 0, 0);
 		m_context->CSSetShader(pso.computeShader.Get(), 0, 0);
 	}
 
@@ -451,11 +460,11 @@ namespace DE {
 
 			// GPU���� CPU�� ������ ����
 			D3D11_MAPPED_SUBRESOURCE ms;
-			m_context->Map(m_indexStagingTexture.Get(), NULL, D3D11_MAP_READ, NULL,
+			m_context->Map(m_indexStagingTexture.Get(), 0, D3D11_MAP_READ, 0,
 				&ms);
 			// �ȼ� �ϳ��� ���� ����
 			memcpy(dest, ms.pData, sizeof(uint8_t) * 4);
-			m_context->Unmap(m_indexStagingTexture.Get(), NULL);
+			m_context->Unmap(m_indexStagingTexture.Get(), 0);
 
 			//D3D11Utils::CopyFromStagingTexture(m_context, m_indexStagingTexture, sizeof(uint8_t) * 4, dest);
 		}
@@ -498,7 +507,7 @@ namespace DE {
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
 		// RTS ���� ����
-		context->OMSetRenderTargets(0, NULL, m_shadowDSVs[idx].Get());
+		context->OMSetRenderTargets(0, nullptr, m_shadowDSVs[idx].Get());
 		context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
 			D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}

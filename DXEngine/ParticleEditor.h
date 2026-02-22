@@ -32,8 +32,8 @@ namespace DE {
 		SquareActor* ground = nullptr;
 
 		SampleActor* m_sample = nullptr;
-		ParticleSpawner* m_spanwer = nullptr;
-		ParticleSpawner* m_spanwer2 = nullptr;
+		ParticleSpawner* m_spawner = nullptr;
+		ParticleSpawner* m_spawner2 = nullptr;
 		Firework* m_firework = nullptr;
 		RoseEffect* m_rose = nullptr;
 		SmokeActor* m_smoke = nullptr;

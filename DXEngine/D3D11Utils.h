@@ -101,11 +101,11 @@ namespace DE {
 		static void UpdateBuffer(ComPtr<ID3D11DeviceContext>& context, const T_DATA& bufferData, ComPtr<ID3D11Buffer>& buffer) {
 			D3D11_MAPPED_SUBRESOURCE ms;
 			// GPU �޸𸮿� ����
-			context->Map(buffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
+			context->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
 			// CPU �����͸� GPU �޸𸮿� ����
 			memcpy(ms.pData, &bufferData, sizeof(bufferData));
 			// GPU �޸� ���� ����
-			context->Unmap(buffer.Get(), NULL);
+			context->Unmap(buffer.Get(), 0);
 			
 		}
 

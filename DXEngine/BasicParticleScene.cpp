@@ -52,36 +52,36 @@ namespace DE {
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
 
-		m_spanwer.reserve(9);
+		m_spawner.reserve(9);
 
-		ParticleSpawner* spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		spanwer->SetScene(this);
-		spanwer->SetActorType<Firework>();
-		spanwer->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
-		spanwer->SetSpawnInterval(0.2f);
-		spanwer->SetSpawnBox(Vector3(30.0f, 0.5f, 1.f));
-		spanwer->SetMaxActiveParticles(100);
+		ParticleSpawner* spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		spawner->SetScene(this);
+		spawner->SetActorType<Firework>();
+		spawner->SetSpawnMode(SpawnMode::Interval); // or SpawnMode::Continuous
+		spawner->SetSpawnInterval(0.2f);
+		spawner->SetSpawnBox(Vector3(30.0f, 0.5f, 1.f));
+		spawner->SetMaxActiveParticles(100);
 
-		m_spanwer.push_back(spanwer);
+		m_spawner.push_back(spawner);
 		for (int i = 0; i < 3; ++i) {
-			spanwer = AddObject<ParticleSpawner>(L"MagicEffect");
-			spanwer->SetScene(this);
+			spawner = AddObject<ParticleSpawner>(L"MagicEffect");
+			spawner->SetScene(this);
 			switch (i) {
-				case 0: spanwer->SetActorType<MagicEffect>(); break;
-				case 1: spanwer->SetActorType<BreathEffect>(); break;
-				case 2: spanwer->SetActorType<HolySwordEffect>(); break;
-				case 3: spanwer->SetActorType<IceEffect>(); break;
-				case 4: spanwer->SetActorType<NecroEffect>(); break;
-				case 5: spanwer->SetActorType<PhoenixEffect>(); break;
-				case 6: spanwer->SetActorType<StarEffect>(); break;
-				case 7: spanwer->SetActorType<TsunamiEffect>(); break;
+				case 0: spawner->SetActorType<MagicEffect>(); break;
+				case 1: spawner->SetActorType<BreathEffect>(); break;
+				case 2: spawner->SetActorType<HolySwordEffect>(); break;
+				case 3: spawner->SetActorType<IceEffect>(); break;
+				case 4: spawner->SetActorType<NecroEffect>(); break;
+				case 5: spawner->SetActorType<PhoenixEffect>(); break;
+				case 6: spawner->SetActorType<StarEffect>(); break;
+				case 7: spawner->SetActorType<TsunamiEffect>(); break;
 			}
-			spanwer->SetSpawnMode(SpawnMode::Interval);
-			spanwer->SetSpawnInterval(0.5f);
-			spanwer->SetSpawnBox(Vector3(1.f, 1.f, 1.f));
-			spanwer->SetMaxActiveParticles(1);
+			spawner->SetSpawnMode(SpawnMode::Interval);
+			spawner->SetSpawnInterval(0.5f);
+			spawner->SetSpawnBox(Vector3(1.f, 1.f, 1.f));
+			spawner->SetMaxActiveParticles(1);
 
-			m_spanwer.push_back(spanwer);
+			m_spawner.push_back(spawner);
 		}
 
 		//m_magic = AddObject<MagicEffect>(L"MagicEffect");
@@ -115,7 +115,7 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		auto* tr = m_spanwer[0]->GetComponent<TransformComponent>();
+		auto* tr = m_spawner[0]->GetComponent<TransformComponent>();
 		if (tr) {
 			Vector3 pos = tr->GetPos();
 			pos.z += 30;
@@ -123,7 +123,7 @@ namespace DE {
 		}
 
 		for (int i = 1; i < 3; ++i) {
-			tr = m_spanwer[i]->GetComponent<TransformComponent>();
+			tr = m_spawner[i]->GetComponent<TransformComponent>();
 			if (tr) {
 				Vector3 pos = tr->GetPos();
 

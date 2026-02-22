@@ -58,21 +58,21 @@ namespace DE {
 		ground = AddObject<SquareActor>(L"Ground");
 
 		// ���� Spawner�� ��� ���ΰų� �����ص� �� (���⼱ ����)
-		//m_spanwer = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spanwer->SetScene(this);
-		//m_spanwer->SetActorType<Firework>();
-		//m_spanwer->SetSpawnMode(SpawnMode::Interval);
-		//m_spanwer->SetSpawnInterval(0.1f);
-		//m_spanwer->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		//m_spanwer->SetMaxActiveParticles(100);
+		//m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spawner->SetScene(this);
+		//m_spawner->SetActorType<Firework>();
+		//m_spawner->SetSpawnMode(SpawnMode::Interval);
+		//m_spawner->SetSpawnInterval(0.1f);
+		//m_spawner->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
+		//m_spawner->SetMaxActiveParticles(100);
 
-		//m_spanwer2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spanwer2->SetScene(this);
-		//m_spanwer2->SetActorType<IceEffect>();
-		//m_spanwer2->SetSpawnMode(SpawnMode::Interval);
-		//m_spanwer2->SetSpawnInterval(0.01f);
-		//m_spanwer2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
-		//m_spanwer2->SetMaxActiveParticles(3000);
+		//m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spawner2->SetScene(this);
+		//m_spawner2->SetActorType<IceEffect>();
+		//m_spawner2->SetSpawnMode(SpawnMode::Interval);
+		//m_spawner2->SetSpawnInterval(0.01f);
+		//m_spawner2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
+		//m_spawner2->SetMaxActiveParticles(3000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
@@ -139,7 +139,7 @@ namespace DE {
 		//	}
 		//}
 
-		//auto tr = m_spanwer2->GetComponent<TransformComponent>();
+		//auto tr = m_spawner2->GetComponent<TransformComponent>();
 		//if (tr)
 		//	tr->SetPos(Vector3(25.f, 0.f, 0.f));
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));

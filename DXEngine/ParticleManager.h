@@ -1,6 +1,7 @@
 #pragma once
 #include "ParticleSystem.h"
 #include "ParticleMemoryPool.h"
+#include <DirectXCollision.h>
 #include <queue>
 
 namespace DE {
@@ -61,10 +62,14 @@ namespace DE {
 
 		void RenderDepth();
 
-		// Frustum Culling용
+		// Frustum Culling용 — 프레임 시작 시 1회 호출, frustum/cameraPos 캐싱
 		void SetViewAndProj(const Matrix& view, const Matrix& proj) {
 			m_view = view;
 			m_proj = proj;
+			// 캐싱: frustum + cameraPos를 프레임 내 재사용
+			m_cachedFrustum = DirectX::BoundingFrustum(proj);
+			Matrix invView = view.Invert();
+			m_cachedCameraPos = Vector3(invView._41, invView._42, invView._43);
 		}
 
 		void RegisterActiveSystem(ParticleSystem* system);
@@ -124,6 +129,8 @@ namespace DE {
 		// [Added] Frustum Culling
 		Matrix m_view;
 		Matrix m_proj;
+		DirectX::BoundingFrustum m_cachedFrustum;
+		Vector3 m_cachedCameraPos;
 
 		// [Added] Priority-based eviction time tracking
 		float m_currentTime = 0.0f;

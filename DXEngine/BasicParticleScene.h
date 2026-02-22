@@ -40,7 +40,7 @@ namespace DE {
 		SquareActor* ground;
 		InputAction m_click;
 
-		std::vector<ParticleSpawner*> m_spanwer;
+		std::vector<ParticleSpawner*> m_spawner;
 
 		SpawnEffectsActor* m_spawnModule;
 		SnowActor* m_snow;

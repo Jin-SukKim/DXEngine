@@ -41,7 +41,7 @@ namespace DE {
 		// D3D_COMPILE_STANDARD_FILE_INCLUDE�� Shader���� include ���
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
-		device->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &vertexShader);
+		device->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &vertexShader);
 		device->CreateInputLayout(inputElements.data(), UINT(inputElements.size()), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), &inputLayout);
 	}
 	void D3D11Utils::CreatePS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader)
@@ -58,7 +58,7 @@ namespace DE {
 
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
-		device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &pixelShader);
+		device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &pixelShader);
 	}
 
 	void D3D11Utils::CreateGS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11GeometryShader>& geometryShader)
@@ -72,7 +72,7 @@ namespace DE {
 #endif
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "gs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
-		device->CreateGeometryShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &geometryShader);
+		device->CreateGeometryShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &geometryShader);
 	}
 
 	void D3D11Utils::CreateHS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11HullShader>& hullShader)
@@ -86,7 +86,7 @@ namespace DE {
 #endif
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "hs_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
-		device->CreateHullShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &hullShader);
+		device->CreateHullShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &hullShader);
 	}
 
 	void D3D11Utils::CreateDS(ComPtr<ID3D11Device>& device, const std::wstring& filename, ComPtr<ID3D11DomainShader>& domainShader)
@@ -100,7 +100,7 @@ namespace DE {
 #endif
 		ThrowIfFailed(D3DCompileFromFile(filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ds_5_0", compileFlags, 0, &shaderBlob, &errorBlob));
 
-		device->CreateDomainShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &domainShader);
+		device->CreateDomainShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &domainShader);
 	}
 
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filename, const bool usSRGB, Texture2D& texture)
@@ -177,7 +177,7 @@ namespace DE {
 		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 
 		// Resource Texture�� ������ �����ͼ� ����
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
 		// Shader Resource View ����
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 		// Render Target View ����
@@ -187,7 +187,7 @@ namespace DE {
 	void D3D11Utils::CreateTexture(ComPtr<ID3D11Device>& device, const D3D11_TEXTURE2D_DESC& desc, Texture2D& texture)
 	{
 		// Texture2D ����
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
 		// Shader Resource View ����
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 		// Render Target View ����
@@ -215,7 +215,7 @@ namespace DE {
 		desc.CPUAccessFlags = 0; // No CPU Access
 
 		// �ʱ� ������ ���� Texture ���� (���� ������)
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
 
 		// ������ ������ MipLevels�� Ȯ���غ��� ���� ���
 		// texture->GetDesc(&desc);
@@ -247,7 +247,7 @@ namespace DE {
 		desc.CPUAccessFlags = 0;
 
 		// ������ ���� Texture ������ ���� �� ����
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOfTexture()));
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOfTexture()));
 		// Shader Resource View ����
 		ThrowIfFailed(device->CreateShaderResourceView(texture.GetTexture(), nullptr, texture.GetAddressOfSRV()));
 		// Render Target View ����
@@ -284,7 +284,7 @@ namespace DE {
 		desc.Usage = D3D11_USAGE_STAGING; // GPU->CPU�� �����͸� ���� �뵵
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE; // CPU���� ����
 
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf()));
 	}
 
 	void D3D11Utils::CreateStagingTexture(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const int& width, const int& height, ComPtr<ID3D11Texture2D>& texture, const std::vector<uint8_t>& image, const DXGI_FORMAT& pixelFormat, const int& mipLevels, const int& arraySize)
@@ -301,7 +301,7 @@ namespace DE {
 		desc.Usage = D3D11_USAGE_STAGING;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 
-		ThrowIfFailed(device->CreateTexture2D(&desc, NULL, texture.GetAddressOf()));
+		ThrowIfFailed(device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf()));
 
 		// Pixel Format�� �´� �� �ȼ� ���� ũ�� 
 		// RGBA �� 8bit�� ����ϸ� uint8_t * 4(�Ϲ����� �̹���), �� 16bit��� uint16_t * 4(HDRI) 
@@ -309,13 +309,13 @@ namespace DE {
 
 		// CPU���� �̹��� ������ ����
 		D3D11_MAPPED_SUBRESOURCE ms;
-		context->Map(texture.Get(), NULL, D3D11_MAP_WRITE, NULL, &ms);
+		context->Map(texture.Get(), 0, D3D11_MAP_WRITE, 0, &ms);
 		uint8_t* pData = (uint8_t*)ms.pData; // uint8_t�� ���� 1�� �� (ex: R�� 1��)
-		for (UINT h = 0; h < UINT(height); ++h) { 
+		for (UINT h = 0; h < UINT(height); ++h) {
 			// GPU �޸𸮿� CPU �޸𸮰� 1��1�� �������� �ʱ⿡ ������ �� �پ� ����
 			memcpy(&pData[h * ms.RowPitch], &image[h * width * pixelSize], width * pixelSize);
 		}
-		context->Unmap(texture.Get(), NULL);
+		context->Unmap(texture.Get(), 0);
 	}
 
 	void D3D11Utils::CreateTextureArray(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::vector<std::string>& filenames, Texture2D& texture)
@@ -700,9 +700,9 @@ namespace DE {
 	void D3D11Utils::CopyFromStagingTexture(ComPtr<ID3D11DeviceContext>& context, const ComPtr<ID3D11Texture2D>& texture, UINT size, void* dest)
 	{
 		D3D11_MAPPED_SUBRESOURCE ms;
-		context->Map(texture.Get(), NULL, D3D11_MAP_READ, NULL, &ms);
+		context->Map(texture.Get(), 0, D3D11_MAP_READ, 0, &ms);
 		memcpy(dest, ms.pData, size);
-		context->Unmap(texture.Get(), NULL);
+		context->Unmap(texture.Get(), 0);
 	}
 
 	void D3D11Utils::CreateTexture3D(
@@ -833,7 +833,7 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
 		}
 		else 
-			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, nullptr, buffer.GetAddressOf()));
 		
 		// SRV ����
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -873,7 +873,7 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
 		}
 		else
-			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, nullptr, buffer.GetAddressOf()));
 
 		// SRV ����
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -904,22 +904,22 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
 		}
 		else
-			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, nullptr, buffer.GetAddressOf()));
 
 	}
 	void D3D11Utils::CopyToStagingBuffer(ID3D11DeviceContext* context, ID3D11Buffer* dest, UINT size, void* src)
 	{
 		D3D11_MAPPED_SUBRESOURCE ms = {};
-		context->Map(dest, NULL, D3D11_MAP_WRITE, NULL, &ms);
+		context->Map(dest, 0, D3D11_MAP_WRITE, 0, &ms);
 		memcpy(ms.pData, src, size);
-		context->Unmap(dest, NULL);
+		context->Unmap(dest, 0);
 	}
 	void D3D11Utils::CopyFromStagingBuffer(ID3D11DeviceContext* context, void* dest, UINT size, ID3D11Buffer* src)
 	{
 		D3D11_MAPPED_SUBRESOURCE ms = {};
-		context->Map(src, NULL, D3D11_MAP_READ, NULL, &ms);
+		context->Map(src, 0, D3D11_MAP_READ, 0, &ms);
 		memcpy(dest, ms.pData, size);
-		context->Unmap(src, NULL);
+		context->Unmap(src, 0);
 	}
 	void D3D11Utils::CreateCS(ID3D11Device* device, const std::wstring& filename, ComPtr<ID3D11ComputeShader>& computeShader)
 	{
@@ -936,7 +936,7 @@ namespace DE {
 
 		ThrowIfFailed(device->CreateComputeShader(
 			shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(),
-			NULL, &computeShader));
+			nullptr, &computeShader));
 	}
 	void D3D11Utils::CreateAppendBuffer(ID3D11Device* device, const UINT numElements, const UINT elementSize, const void* initData, ComPtr<ID3D11Buffer>& buffer, ComPtr<ID3D11ShaderResourceView>& srv, ComPtr<ID3D11UnorderedAccessView>& uav, ComPtr<ID3D11UnorderedAccessView>& rwUav)
 	{
@@ -959,7 +959,7 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
 		}
 		else
-			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, nullptr, buffer.GetAddressOf()));
 
 		// SRV ����
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -998,7 +998,7 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&desc, &data, buffer.GetAddressOf()));
 		}
 		else {
-			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&desc, nullptr, buffer.GetAddressOf()));
 		}
 
 		// UAV ���� (R32_UINT ���� ���)
@@ -1028,7 +1028,7 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&desc, &data, buffer.GetAddressOf()));
 		}
 		else {
-			ThrowIfFailed(device->CreateBuffer(&desc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&desc, nullptr, buffer.GetAddressOf()));
 		}
 
 		// UAV ���� (R32_UINT ���� ���)
@@ -1061,7 +1061,7 @@ namespace DE {
 			ThrowIfFailed(device->CreateBuffer(&bufferDesc, &data, buffer.GetAddressOf()));
 		}
 		else
-			ThrowIfFailed(device->CreateBuffer(&bufferDesc, NULL, buffer.GetAddressOf()));
+			ThrowIfFailed(device->CreateBuffer(&bufferDesc, nullptr, buffer.GetAddressOf()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = format;

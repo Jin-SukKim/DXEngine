@@ -117,16 +117,12 @@ namespace DE {
 	{
 		if (m_activeSystems.empty()) return;
 
-		// Frustum + spawn ratio
-		DirectX::BoundingFrustum frustum(m_proj);
-		Matrix invView = m_view.Invert();
-		Vector3 cameraPos(invView._41, invView._42, invView._43);
-
+		// 캐싱된 frustum/cameraPos 사용
 		for (auto* sys : m_activeSystems)
-			if (sys) sys->UpdateSpawnRatios(cameraPos);
+			if (sys) sys->UpdateSpawnRatios(m_cachedCameraPos);
 
 		UINT totalCount = 0, visibleCount = 0;
-		GatherVisibleEmitters(frustum, cameraPos, totalCount, visibleCount);
+		GatherVisibleEmitters(m_cachedFrustum, m_cachedCameraPos, totalCount, visibleCount);
 		BuildBatchDescriptors();
 
 		m_memoryPool->UploadFrameConsts();
@@ -302,30 +298,31 @@ namespace DE {
 
 		m_memoryPool->UploadBatchData(m_batchEmitterList, m_batchDescriptors);
 
-		// Pass 1: BatchRenderArgsCS
-		UINT numBatches = static_cast<UINT>(m_batchDescriptors.size());
-		m_batchRenderArgsCB.SetCpuData({ numBatches, Vector3(0,0,0) });
-		m_batchRenderArgsCB.Upload();
-
-		context->CSSetConstantBuffers(0, 1, m_batchRenderArgsCB.GetAddressOf());
-
-		ID3D11ShaderResourceView* srvs[] = {
+		// 공통 SRV 바인딩 (Pass 1, Pass 2 공유) — t16~t29
+		ID3D11ShaderResourceView* commonSRVs[] = {
 			m_memoryPool->GetParticleBuffer().GetSRV(),    // t16
 			m_memoryPool->GetReadAliveCount().GetSRV(),    // t17
 			m_memoryPool->GetFrameConsts().GetSRV(),       // t18
 			nullptr,                                        // t19
 			nullptr,                                        // t20
-			nullptr,                                        // t21
+			m_memoryPool->GetEmitterIDs().GetSRV(),        // t21
 			nullptr,                                        // t22
 			nullptr,                                        // t23
 			m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
 			m_memoryPool->GetBatchDescriptors().GetSRV(),  // t25
 			nullptr,                                        // t26
 			nullptr,                                        // t27
-			m_memoryPool->GetReadAliveIndices().GetSRV(),  // t28 (simulation alive indices)
-			m_memoryPool->GetReadAliveCount().GetSRV()     // t29 (simulation alive counts)
+			m_memoryPool->GetReadAliveIndices().GetSRV(),  // t28
+			m_memoryPool->GetReadAliveCount().GetSRV()     // t29
 		};
-		context->CSSetShaderResources(16, 14, srvs);
+		context->CSSetShaderResources(16, 14, commonSRVs);
+
+		// Pass 1: BatchRenderArgsCS
+		UINT numBatches = static_cast<UINT>(m_batchDescriptors.size());
+		m_batchRenderArgsCB.SetCpuData({ numBatches, Vector3(0,0,0) });
+		m_batchRenderArgsCB.Upload();
+
+		context->CSSetConstantBuffers(0, 1, m_batchRenderArgsCB.GetAddressOf());
 
 		ID3D11UnorderedAccessView* uavs[] = {
 			m_memoryPool->GetBatchBillboardArgs().GetUAV(),   // u0
@@ -338,7 +335,7 @@ namespace DE {
 		context->CSSetShader(batchArgsCS.computeShader.Get(), nullptr, 0);
 		context->Dispatch(1, 1, 1);
 
-		// Unbind Pass 1
+		// Unbind Pass 1 UAVs
 		context->CSSetShader(nullptr, nullptr, 0);
 		ID3D11UnorderedAccessView* nullUAVs3[] = { nullptr, nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(0, 3, nullUAVs3, nullptr);
@@ -355,24 +352,6 @@ namespace DE {
 				m_memoryPool->GetEmitterWriteOffsets().GetSRV()
 			};
 			context->CSSetShaderResources(0, 1, aliveSRVs);
-
-			ID3D11ShaderResourceView* commonSRVs[] = {
-				m_memoryPool->GetParticleBuffer().GetSRV(),    // t16
-				m_memoryPool->GetReadAliveCount().GetSRV(),    // t17
-				m_memoryPool->GetFrameConsts().GetSRV(),       // t18
-				nullptr,                                        // t19
-				nullptr,                                        // t20
-				m_memoryPool->GetEmitterIDs().GetSRV(),        // t21
-				nullptr,                                        // t22
-				nullptr,                                        // t23
-				m_memoryPool->GetBatchEmitterList().GetSRV(),  // t24
-				m_memoryPool->GetBatchDescriptors().GetSRV(),  // t25
-				nullptr,                                        // t26
-				nullptr,                                        // t27
-				m_memoryPool->GetReadAliveIndices().GetSRV(),  // t28 (simulation alive indices)
-				m_memoryPool->GetReadAliveCount().GetSRV()     // t29 (simulation alive counts)
-			};
-			context->CSSetShaderResources(16, 14, commonSRVs);
 
 			ID3D11UnorderedAccessView* aliveUAVs[] = {
 				m_memoryPool->GetBatchAliveIndices().GetUAV()
@@ -408,17 +387,17 @@ namespace DE {
 				if (batch.blendMode != BlendMode::AlphaBlend) continue;
 
 				// GlobalConsts b0 재바인딩 (BitonicSort가 b0 사용)
-				ID3D11Buffer* globalCB = nullptr;
-				context->VSGetConstantBuffers(0, 1, &globalCB);
+				ComPtr<ID3D11Buffer> globalCB;
+				context->VSGetConstantBuffers(0, 1, globalCB.GetAddressOf());
 				if (globalCB) {
-					context->CSSetConstantBuffers(0, 1, &globalCB);
-					globalCB->Release();
+					context->CSSetConstantBuffers(0, 1, globalCB.GetAddressOf());
 				}
 
 				UINT globalBatchIdx = descStartIdx + static_cast<UINT>(batchIdx);
 
 				// Downloaded sort params에서 baseOffset/particleCount 읽기
 				const auto& sortParamsData = m_memoryPool->GetBatchSortParams().GetCpu();
+				if (globalBatchIdx >= sortParamsData.size()) continue;
 				UINT baseOffset = sortParamsData[globalBatchIdx].baseOffset;
 				UINT particleCount = sortParamsData[globalBatchIdx].particleCount;
 
@@ -454,6 +433,12 @@ namespace DE {
 
 				// 2. BitonicSort
 				m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, particleCount);
+
+				// UAV barrier: Sort 완료 후 UAV unbind하여 쓰기 완료 보장
+				{
+					ID3D11UnorderedAccessView* nullBarrier = nullptr;
+					context->CSSetUnorderedAccessViews(0, 1, &nullBarrier, nullptr);
+				}
 
 				// BitonicSort 후 b5 재바인딩 (BitonicSort가 b0, SRV 상태를 변경할 수 있음)
 				m_sortParamsCB.Bind(5);
@@ -647,12 +632,8 @@ namespace DE {
 	{
 		if (m_activeSystems.empty()) return;
 
-		DirectX::BoundingFrustum frustum(m_proj);
-		Matrix invView = m_view.Invert();
-		Vector3 cameraPos(invView._41, invView._42, invView._43);
-
 		UINT totalCount = 0, visibleCount = 0;
-		GatherVisibleEmitters(frustum, cameraPos, totalCount, visibleCount);
+		GatherVisibleEmitters(m_cachedFrustum, m_cachedCameraPos, totalCount, visibleCount);
 
 		// Depth pass only renders mesh particles - clear billboard data
 		m_billboardJobs.clear();
@@ -970,8 +951,11 @@ namespace DE {
 	{
 		if (m_activeSystems.empty()) return;
 
+		// 복사본으로 순회 — Defragment 중 m_activeSystems 변경 시 iterator invalidation 방지
+		auto systemsCopy = m_activeSystems;
+
 		std::vector<PoolHandle> activeHandles;
-		for (auto* system : m_activeSystems) {
+		for (auto* system : systemsCopy) {
 			if (system && system->GetPoolHandle().IsActive()) {
 				activeHandles.push_back(system->GetPoolHandle());
 			}
@@ -980,7 +964,7 @@ namespace DE {
 		std::vector<UINT> newOffsets = m_memoryPool->Defragment(activeHandles);
 
 		size_t idx = 0;
-		for (auto* system : m_activeSystems) {
+		for (auto* system : systemsCopy) {
 			if (!system || !system->GetPoolHandle().IsActive()) continue;
 
 			PoolHandle& handle = system->GetPoolHandle();
@@ -991,7 +975,7 @@ namespace DE {
 			}
 		}
 
-		m_needsSyncReadOffset = true; 
+		m_needsSyncReadOffset = true;
 	}
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
@@ -1065,14 +1049,7 @@ namespace DE {
 		if (m_instances.empty())
 			return nullptr;
 
-		// Extract camera position from view matrix
-		Matrix invView = m_view.Invert();
-		Vector3 cameraPos(invView._41, invView._42, invView._43);
-
-		// Create frustum for visibility check
-		DirectX::BoundingFrustum frustum(m_proj);
-
-		// Linear search for lowest priority
+		// 캐싱된 frustum/cameraPos 사용
 		ParticleSystem* lowestPrioritySystem = nullptr;
 		float lowestPriority = FLT_MAX;
 
@@ -1081,7 +1058,7 @@ namespace DE {
 			ParticleSystem* system = instance.get();
 			if (!system) continue;
 
-			float priority = CalculatePriority(system, cameraPos, frustum);
+			float priority = CalculatePriority(system, m_cachedCameraPos, m_cachedFrustum);
 
 			if (priority < lowestPriority)
 			{
