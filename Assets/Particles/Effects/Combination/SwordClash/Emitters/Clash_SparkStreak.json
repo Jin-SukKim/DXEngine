@@ -1,0 +1,50 @@
+{
+    "Name": "Clash_SparkStreak",
+    "Duration": 0.1,
+    "CompletionDelay": 1.5,
+    "Spawn": {
+        "space": "World",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.05, 0.05, 0.05],
+        "burst": 30,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 128,
+        "lifeRange": [0.3, 0.8]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.75, 0.3, 1.0],
+        "endColor": [1.0, 0.4, 0.05, 0.0],
+        "sizeRange": [0.03, 0.01],
+        "sizeRandomness": 0.5,
+        "colorRandomness": 0.3,
+        "sizeCurve": {
+            "keys": [
+                { "t": 0.0, "v": 0.0 },
+                { "t": 0.05, "v": 1.0 },
+                { "t": 1.0, "v": 0.0 }
+            ]
+        },
+        "alphaCurve": {
+            "keys": [
+                { "t": 0.0, "v": 1.0 },
+                { "t": 0.6, "v": 0.8 },
+                { "t": 1.0, "v": 0.0 }
+            ]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 0.5, 0.0],
+        "speedRange": [5.0, 12.0],
+        "randomDir": [1.0, 1.0, 1.0],
+        "gravity": [0.0, -3.0, 0.0],
+        "drag": 2.0
+    },
+    "BillboardRender": {
+        "blendMode": "Additive",
+        "solidCircle": true,
+        "centerWhiteIntensity": 0.3,
+        "velocityStretchFactor": 2.0
+    }
+}

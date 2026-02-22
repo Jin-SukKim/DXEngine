@@ -30,7 +30,7 @@
                     { "key": 1.00, "value": 0.0 }
                 ]
           },
-          "sizeRange": [ 0.05, 0.3 ],
+          "sizeRange": [ 0.05, 0.2 ],
           "sizeCurve": {
                 "type": "BEZIER",
                 "resolution": 256,

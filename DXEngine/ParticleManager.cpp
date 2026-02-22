@@ -554,6 +554,11 @@ namespace DE {
 				context->OMSetBlendState(GetBlendState(batch.blendMode),
 					RenderBase::graphicsCommon.particle.animPSO.blendFactor,
 					0xffffffff);
+				if (batch.blendMode == BlendMode::Opaque) {
+					context->OMSetDepthStencilState(RenderBase::graphicsCommon.drawDSS.Get(), 0);
+				} else {
+					context->OMSetDepthStencilState(RenderBase::graphicsCommon.particleDDS.Get(), 0);
+				}
 			}
 
 			if (batch.materialKey < 0) {
@@ -611,6 +616,11 @@ namespace DE {
 				context->OMSetBlendState(GetBlendState(batch.blendMode),
 					RenderBase::graphicsCommon.particle.animPSO.blendFactor,
 					0xffffffff);
+				if (batch.blendMode == BlendMode::Opaque) {
+					context->OMSetDepthStencilState(RenderBase::graphicsCommon.drawDSS.Get(), 0);
+				} else {
+					context->OMSetDepthStencilState(RenderBase::graphicsCommon.particleDDS.Get(), 0);
+				}
 			}
 
 			if (batch.materialKey < 0) {

@@ -55,7 +55,8 @@ namespace DE {
 
     struct VisualConsts {
         Vector2 sizeRange;
-        Vector2 padding2;
+        float sizeRandomness = 0.0f;
+        float colorRandomness = 0.0f;
 
         Vector4 startColor;
         Vector4 endColor;

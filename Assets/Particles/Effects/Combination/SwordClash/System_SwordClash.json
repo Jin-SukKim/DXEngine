@@ -1,0 +1,13 @@
+{
+    "Name": "SwordClash_Spark",
+    "Looping": true,
+    "Duration": 2.0,
+    "PlayRate": 1.0,
+    "PreWarmTime": 0.0,
+    "State": "Play",
+    "Emitters": [
+        "Particles\\Effects\\Combination\\SwordClash\\Emitters\\Clash_Flash.json",
+        "Particles\\Effects\\Combination\\SwordClash\\Emitters\\Clash_SparkStreak.json",
+        "Particles\\Effects\\Combination\\SwordClash\\Emitters\\Clash_Ember.json"
+    ]
+}

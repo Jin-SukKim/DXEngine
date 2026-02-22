@@ -57,6 +57,10 @@ namespace DE {
 		if (blendMode == BlendMode::Modulate) {
 			lowResolution = false;
 		}
+		// Opaque는 씬 depth buffer에 직접 write해야 하므로 full-res 필수
+		if (blendMode == BlendMode::Opaque) {
+			lowResolution = false;
+		}
 	}
 
 	void RenderModule::CopyBasicSettings(RenderModule* cloned) const

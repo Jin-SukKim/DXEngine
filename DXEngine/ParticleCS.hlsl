@@ -75,11 +75,15 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     p.position += p.velocity * velCurve * dt;
 
     // Visuals
+    // Per-particle random variation (using particleIdx as seed)
+    float sizeRand = 1.0 + (frac((float)particleIdx * 0.7183) * 2.0 - 1.0) * visual.sizeRandomness;
+    float colorRand = 1.0 + (frac((float)particleIdx * 0.3947) * 2.0 - 1.0) * visual.colorRandomness;
+
     // Size: remap via curve (default linear 0->1 = existing behavior)
-    p.size = lerp(visual.sizeRange.x, visual.sizeRange.y, sizeCurve);
+    p.size = lerp(visual.sizeRange.x, visual.sizeRange.y, sizeCurve) * sizeRand;
 
     // Color: RGB remap + Alpha separate (default linear 0->1 = existing behavior)
-    p.color.rgb = lerp(visual.startColor.rgb, visual.endColor.rgb, colorCurve);
+    p.color.rgb = lerp(visual.startColor.rgb, visual.endColor.rgb, colorCurve) * colorRand;
     p.color.a = lerp(visual.startColor.a, visual.endColor.a, alphaCurve);
 
     //p.rotation += p.rotSpeed * dt;

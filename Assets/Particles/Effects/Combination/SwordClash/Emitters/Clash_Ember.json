@@ -1,0 +1,50 @@
+{
+    "Name": "Clash_Ember",
+    "Duration": 0.1,
+    "CompletionDelay": 2.5,
+    "Spawn": {
+        "space": "World",
+        "localPos": [0.0, 0.0, 0.0],
+        "shape": "Sphere",
+        "spawnVolume": [0.1, 0.1, 0.1],
+        "burst": 15,
+        "spawnRate": 0.0,
+        "particlesPerSpawn": 1,
+        "maxParticles": 64,
+        "lifeRange": [0.5, 1.5]
+    },
+    "Visual": {
+        "startColor": [1.0, 0.7, 0.2, 1.0],
+        "endColor": [0.6, 0.2, 0.0, 1.0],
+        "sizeRange": [0.04, 0.02],
+        "sizeRandomness": 0.6,
+        "colorRandomness": 0.4,
+        "sizeCurve": {
+            "keys": [
+                { "t": 0.0, "v": 0.0 },
+                { "t": 0.1, "v": 1.0 },
+                { "t": 0.8, "v": 0.6 },
+                { "t": 1.0, "v": 0.0 }
+            ]
+        },
+        "alphaCurve": {
+            "keys": [
+                { "t": 0.0, "v": 1.0 },
+                { "t": 0.7, "v": 1.0 },
+                { "t": 1.0, "v": 0.0 }
+            ]
+        }
+    },
+    "Force": {
+        "velocity": [0.0, 1.0, 0.0],
+        "speedRange": [2.0, 5.0],
+        "randomDir": [1.0, 0.5, 1.0],
+        "gravity": [0.0, -9.8, 0.0],
+        "drag": 0.5
+    },
+    "BillboardRender": {
+        "blendMode": "Opaque",
+        "solidCircle": true,
+        "alphaClipThreshold": 0.3
+    }
+}

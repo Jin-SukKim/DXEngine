@@ -5,11 +5,13 @@
 namespace DE {
 	void VisualModule::Initialize(ParticleInitContext& ctx)
 	{
-		// »ó¼ö °ª ÃÊ±âÈ­ (OnSpawn¿¡¼­ ÀÌµ¿)
+		// ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­ (OnSpawnï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½)
 		VisualConsts& consts = ctx.consts.visual;
 		consts.startColor = startColor;
 		consts.endColor = endColor;
 		consts.sizeRange = sizeRange;
+		consts.sizeRandomness = sizeRandomness;
+		consts.colorRandomness = colorRandomness;
 		consts.minRotation = minRotation;
 		consts.maxRotation = maxRotation;
 		consts.minRotSpeed = minRotSpeed;
@@ -21,6 +23,8 @@ namespace DE {
 		if (data.contains("startColor")) startColor = JsonToVec4(data["startColor"]);
 		if (data.contains("endColor")) endColor = JsonToVec4(data["endColor"]);
 		if (data.contains("sizeRange")) sizeRange = JsonToVec2(data["sizeRange"]);
+		if (data.contains("sizeRandomness")) sizeRandomness = data["sizeRandomness"];
+		if (data.contains("colorRandomness")) colorRandomness = data["colorRandomness"];
 		if (data.contains("rotation")) {
 			auto& rot = data["rotation"];
 			if (rot.contains("minRotation")) minRotation = JsonToVec3(rot["minRotation"]);
@@ -59,6 +63,8 @@ namespace DE {
 		cloned->startColor = this->startColor;
 		cloned->endColor = this->endColor;
 		cloned->sizeRange = this->sizeRange;
+		cloned->sizeRandomness = this->sizeRandomness;
+		cloned->colorRandomness = this->colorRandomness;
 		cloned->minRotation = this->minRotation;
 		cloned->maxRotation = this->maxRotation;
 		cloned->minRotSpeed = this->minRotSpeed;

@@ -86,7 +86,8 @@ struct SpawnConsts
 struct VisualConsts
 {
     float2 sizeRange;
-    float2 padding2;
+    float sizeRandomness;
+    float colorRandomness;
 
     float4 startColor;
     float4 endColor;

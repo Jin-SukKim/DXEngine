@@ -12,8 +12,8 @@
     "lifeRange": [ 3.0, 5.0 ]
   },
   "Visual": {
-    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
-    "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "startColor": [ 0.1, 0.1, 0.1, 1.0 ],
+    "endColor": [ 0.1, 0.1, 0.1, 1.0 ],
     "sizeRange": [ 0.8, 1.0 ],
     "rotation": {
       "minRotation": [ 0.0, 0.0, 0.0 ],
