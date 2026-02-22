@@ -4,8 +4,8 @@ StructuredBuffer<SortElement> sortedElements : register(t0);
 RWStructuredBuffer<uint> batchAliveIndices : register(u0);
 
 cbuffer SortParams : register(b5) {
-    uint baseOffset;
-    uint particleCount;
+    uint sortBaseOffset;
+    uint sortParticleCount;
     uint2 padding;
 };
 
@@ -13,6 +13,9 @@ cbuffer SortParams : register(b5) {
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     uint id = dtID.x;
+
+    uint baseOffset = sortBaseOffset;
+    uint particleCount = sortParticleCount;
 
     if (id < particleCount)
     {

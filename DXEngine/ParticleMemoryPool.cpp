@@ -3,7 +3,6 @@
 #include "ParticleSystem.h"
 #include "GeometryGenerator.h"
 #include "D3D11Utils.h"
-#include <chrono>
 
 namespace DE {
 	void ParticleMemoryPool::Initialize(UINT maxParticles, UINT maxEmitters, UINT maxSystems)
@@ -27,12 +26,6 @@ namespace DE {
 		m_cachedLastUsedBlock = 0;
 		m_cachedTotalUsedBlocks = 0;
 		m_fragmentationDirty = true;
-		m_visualizationDirty = true;
-
-		// Lazy visualization caches (only allocated when GUI needs them)
-		m_particleBlockTableCache.clear();
-		m_spawnPosBlockTableCache.clear();
-		
 		std::queue<UINT> emptyQueue;
 		std::swap(m_freeEmitterSlots, emptyQueue);
 		std::swap(m_freeSystemSlots, emptyQueue);
@@ -137,21 +130,10 @@ namespace DE {
 		D3D11Utils::CreateVertexBuffer(devicePtr, quadMesh.vertices, m_quadVertexBuffer);
 		D3D11Utils::CreateIndexBuffer(devicePtr, quadMesh.indices, m_quadIndexBuffer);
 
-#ifdef _DEBUG
-		// Initialize performance counters
-		m_allocateCallCount = 0;
-		m_freeCallCount = 0;
-		m_totalAllocateTime = 0.0;
-		m_totalFreeTime = 0.0;
-#endif
 	}
 
 	PoolHandle ParticleMemoryPool::Allocate(UINT reqParticleCount, UINT reqEmitterCount, UINT reqSpawnPosCount)
 	{
-#ifdef _DEBUG
-		auto startTime = std::chrono::high_resolution_clock::now();
-#endif
-
 		PoolHandle handle;
 
 		if (m_freeSystemSlots.empty())
@@ -232,9 +214,7 @@ namespace DE {
 				m_spawnPosBlockMap[foundSpawnPosBlock] = neededSpawnPosBlocks;
 			}
 
-			// Invalidate caches
 			m_fragmentationDirty = true;
-			m_visualizationDirty = true;
 
 			handle.particleOffset = foundBlock * m_blockSize;
 			handle.blockCount = neededBlocks;
@@ -257,22 +237,11 @@ namespace DE {
 			}
 		}
 
-#ifdef _DEBUG
-		auto endTime = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-		m_totalAllocateTime += duration.count();
-		m_allocateCallCount++;
-#endif
-
 		return handle;
 	}
 
 	void ParticleMemoryPool::Free(const PoolHandle& handle)
 	{
-#ifdef _DEBUG
-		auto startTime = std::chrono::high_resolution_clock::now();
-#endif
-
 		if (!handle.IsActive()) return;
 
 		// System slot return
@@ -327,16 +296,7 @@ namespace DE {
 		}
 	}
 
-		// Invalidate caches
 		m_fragmentationDirty = true;
-		m_visualizationDirty = true;
-
-#ifdef _DEBUG
-		auto endTime = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-		m_totalFreeTime += duration.count();
-		m_freeCallCount++;
-#endif
 	}
 
 	void ParticleMemoryPool::BindSpawnCompute()
@@ -717,7 +677,6 @@ namespace DE {
 
 		m_spawnPosCache[bakedPath] = SpawnPosAllocation(outOffset, posCount, neededBlocks);
 
-		m_visualizationDirty = true;
 		return false;  // Need upload
 	}
 
@@ -832,7 +791,6 @@ namespace DE {
 	    // Update caches
 	    m_cachedUsedBlocks = currentBlock;
 	    m_fragmentationDirty = true;
-	    m_visualizationDirty = true;
 
 	    return newOffsets;
 	}
@@ -872,11 +830,6 @@ namespace DE {
 			m_fragmentationDirty = false;
 		}
 
-#ifdef _DEBUG
-		// Validation assertion in debug builds
-		assert(m_cachedTotalUsedBlocks == m_cachedUsedBlocks);
-#endif
-
 		if (m_cachedLastUsedBlock == 0 || m_cachedTotalUsedBlocks == 0) return 0.0f;
 
 		// Use cached values
@@ -884,26 +837,4 @@ namespace DE {
 		return static_cast<float>(gapBlocks) / m_cachedLastUsedBlock;
 	}
 
-	void ParticleMemoryPool::RebuildVisualizationCache() const
-	{
-		// Rebuild particle block cache
-		m_particleBlockTableCache.assign(m_blockCount, false);
-		for (const auto& [start, count] : m_particleBlockMap) {
-			for (UINT i = 0; i < count; ++i) {
-				if (start + i < m_blockCount) {
-					m_particleBlockTableCache[start + i] = true;
-				}
-			}
-		}
-
-		// Rebuild spawn position block cache
-		m_spawnPosBlockTableCache.assign(m_blockCount, false);
-		for (const auto& [start, count] : m_spawnPosBlockMap) {
-			for (UINT i = 0; i < count; ++i) {
-				if (start + i < m_blockCount) {
-					m_spawnPosBlockTableCache[start + i] = true;
-				}
-			}
-		}
-	}
 }

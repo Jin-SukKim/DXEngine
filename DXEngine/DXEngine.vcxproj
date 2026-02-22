@@ -219,7 +219,6 @@
     <ClInclude Include="PhoenixEffect.h" />
     <ClInclude Include="PortalEffect.h" />
     <ClInclude Include="RoseEffect.h" />
-    <ClInclude Include="ScopedTimer.h" />
     <ClInclude Include="SimplexNoise.h" />
     <ClInclude Include="SmokeActor.h" />
     <ClInclude Include="SnowActor.h" />

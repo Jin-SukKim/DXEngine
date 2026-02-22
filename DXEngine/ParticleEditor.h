@@ -23,7 +23,6 @@ namespace DE {
 
 		void Initialize() override;
 		void Update(const float& deltaTime) override;
-		void StressTest(const float& dt);
 		void UpdateGUI() override;
 		void Render() override;
 
@@ -56,8 +55,5 @@ namespace DE {
 		EffectActor* m_curlMagicAura = nullptr;
 		EffectActor* m_curlSpiritWisp = nullptr;
 
-		// ��Ʈ���� �׽�Ʈ�� ����
-		float m_stressTime = 0.0f;
-		std::vector<EffectActor*> m_stressSystems;
 	};
 }

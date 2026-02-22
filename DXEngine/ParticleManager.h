@@ -37,64 +37,11 @@ namespace DE {
 	};
 
 	struct SortParams {
-		UINT baseOffset;
-		UINT particleCount;
+		UINT sortBaseOffset;
+		UINT sortParticleCount;
 		UINT padding[2];
 		Vector3 cameraForward;
 		float padding2;
-	};
-
-	// [Added] Runtime Profiling Data Structure
-	struct RuntimeProfile {
-		float update = 0.0f;
-		float update_prepare = 0.0f;
-		float update_prepare_setup = 0.0f;
-		float update_prepare_cpu = 0.0f;
-		float update_prepare_upload = 0.0f;
-		float update_args = 0.0f;
-		float update_dispatch = 0.0f;
-		float update_swap = 0.0f;
-		float render = 0.0f;
-		float destroy = 0.0f;
-		float defrag = 0.0f;
-		float requestAlloc = 0.0f;
-		float uploadIDs = 0.0f;
-		float recalculateOffsets = 0.0f;
-		float syncReadOffsets = 0.0f;
-		float eviction = 0.0f;
-
-		// [Added] Frustum Culling Stats
-		UINT totalSystems = 0;
-		UINT visibleSystems = 0;
-		UINT culledSystems = 0;
-
-		// [Added] Eviction Stats
-		UINT evictionCount = 0;
-		UINT evictionFailures = 0;
-
-		void Reset() {
-			update = 0.0f;
-			update_prepare = 0.0f;
-			update_prepare_setup = 0.0f;
-			update_prepare_cpu = 0.0f;
-			update_prepare_upload = 0.0f;
-			update_args = 0.0f;
-			update_dispatch = 0.0f;
-			update_swap = 0.0f;
-			render = 0.0f;
-			destroy = 0.0f;
-			defrag = 0.0f;
-			requestAlloc = 0.0f;
-			uploadIDs = 0.0f;
-			recalculateOffsets = 0.0f;
-			syncReadOffsets = 0.0f;
-			eviction = 0.0f;
-			totalSystems = 0;
-			visibleSystems = 0;
-			culledSystems = 0;
-			evictionCount = 0;
-			evictionFailures = 0;
-		}
 	};
 
 	class ParticleManager
@@ -132,12 +79,7 @@ namespace DE {
 		// MeshConsts
 		void UpdateMeshConsts(UINT systemIndex, const ParticleMeshConsts& data);
 
-		// Debug
-		void RenderMemoryPoolGUI();
 		void Defragment();
-
-		UINT GetRebuildCount() const { return m_rebuildCount; }
-		float GetAvgRebuildTime() const { return m_avgRebuildTime; }
 
 		// Memory Pool 접근
 		ParticleMemoryPool& GetMemoryPool() { return *m_memoryPool; }
@@ -160,14 +102,6 @@ namespace DE {
 
 		void SyncReadOffsets();
 
-		void ResetMetrics();
-
-		// [Added] EMA Helper for smooth metric updates
-		void UpdateMetric(float& metric, float newValue) {
-			if (metric == 0.f) metric = newValue;
-			else metric = metric * 0.9f + newValue * 0.1f;
-		}
-
 		// Priority-based eviction helpers
 		float CalculatePriority(ParticleSystem* system, const Vector3& cameraPos,
 			const DirectX::BoundingFrustum& frustum) const;
@@ -185,13 +119,6 @@ namespace DE {
 
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
-
-		UINT m_rebuildCount = 0;
-		float m_totalRebuildTime = 0.0f;
-		float m_avgRebuildTime = 0.0f;
-
-		// [Added] Profiling Data
-		RuntimeProfile m_runtimeProfile;
 
 		// [Added] Frustum Culling
 		Matrix m_view;

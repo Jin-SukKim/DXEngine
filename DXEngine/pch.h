@@ -52,4 +52,3 @@ using nlohmann::json;
 #include "InputTypes.h"
 #include "RenderBase.h"
 #include "Utils.h"
-#include "ScopedTimer.h"

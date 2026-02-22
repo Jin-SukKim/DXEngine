@@ -116,13 +116,6 @@ namespace DE {
 			ParticleManager::Get().DestroyInstance(m_test3);
 			m_test3 = nullptr;
 		}
-		for (auto* effect : m_stressSystems) {
-			if (!m_stressSystems.empty()) {
-				RemoveEffects(m_stressSystems);
-				m_stressSystems.clear();
-			}
-		}
-		m_stressSystems.clear();
 	}
 
 	void ParticleEditor::Initialize()
@@ -158,146 +151,11 @@ namespace DE {
 	{
 		Scene::Update(dt);
 		FileWatcher::Get().Update();
-
-		//StressTest(dt);
-	}
-
-	void ParticleEditor::StressTest(const float& dt)
-	{
-		// =========================================================
-		// [Dynamic Stress Test Scenario]
-		// =========================================================
-		m_stressTime += dt;
-
-		static float burstTimer = 0.0f;
-		static float spawnTimer = 0.0f;
-		static float randomDeleteTimer = 0.0f; // [�߰�] ���� ������ Ÿ�̸�
-
-											   // 1. [0~5��] ����� ���� (HolySword�� �����)
-
-											   // 2. [5~10��] �������� ����Ʈ (Firework) 0.5�ʸ��� ����
-		if (m_stressTime >= 5.0f && m_stressTime < 10.0f) {
-			burstTimer += dt;
-			if (burstTimer >= 0.5f) {
-				burstTimer = 0.0f;
-				
-				// ���� ��ġ ���� (-50 ~ 50 ����)
-				Vector3 randomPos(
-					(rand() % 100 - 50) * 1.0f,
-					(rand() % 20) * 1.0f,
-					(rand() % 100 - 50) * 1.0f
-				);
-				auto effect = SpawnEffect<Firework>(L"StressFirework", L"", randomPos);
-				if (effect) m_stressSystems.push_back(effect);
-			}
-		}
-
-		// 3. [10~15��] ��� �����Ǵ� ����Ʈ (Smoke) 0.1�ʸ��� �뷮 ����
-		if (m_stressTime >= 10.0f && m_stressTime < 15.0f) {
-			spawnTimer += dt;
-			if (spawnTimer >= 0.1f) {
-				spawnTimer = 0.0f;
-				
-				Vector3 randomPos(
-					(rand() % 100 - 50) * 1.0f,
-					(rand() % 20) * 1.0f,
-					(rand() % 100 - 50) * 1.0f
-				);
-				auto effect = SpawnEffect<SmokeActor>(L"StressSmoke", L"", randomPos);
-				if (effect) m_stressSystems.push_back(effect);
-			}
-		}
-
-		// [�ű�] 4. [5~25�� ������] �����ϰ� ���õ� Effect �ټ� ���� (Cluster Deletion)
-		// 0.8�ʸ��� "3�� ~ 8��" ������ ����Ʈ�� �Ѳ����� �����Ͽ� ū ������ ����ϴ�.
-		if (m_stressTime >= 5.0f && m_stressTime < 25.0f) {
-			randomDeleteTimer += dt;
-			if (randomDeleteTimer >= 0.8f) {
-				randomDeleteTimer = 0.0f;
-
-				// �� ���� ������ ���� ���� (��: 3�� ~ 8�� ���� ����)
-				int deleteCount = (rand() % 400) + 100;
-				deleteCount = std::min(deleteCount, static_cast<int>(m_stressSystems.size()));
-
-				if (deleteCount > 0) {
-					// ������ �׸���� ���� ���� (��ġ ������ ����ȭ)
-					std::vector<EffectActor*> toRemove;
-					toRemove.reserve(deleteCount);
-					// Fisher-Yates shuffle�� �κ� �������� ���� ���ø�
-					for (int i = 0; i < deleteCount; ++i) {
-						int idx = i + (rand() % (m_stressSystems.size() - i));
-						toRemove.push_back(m_stressSystems[idx]);
-
-						// Swap to avoid duplicates
-						if (idx != i) {
-							std::swap(m_stressSystems[i], m_stressSystems[idx]);
-						}
-					}
-
-					// ��ġ ���� (O(N+M) - �ξ� ����!)
-					RemoveEffects(toRemove);
-
-					// m_stressSystems������ ����
-					m_stressSystems.erase(m_stressSystems.begin(), m_stressSystems.begin() + deleteCount);
-				}
-			}
-		}
-
-		// 5. [15��] �߰��� ���ڱ� �߰��Ǵ� ����Ʈ (DragonBreath)
-		if (m_stressTime >= 15.0f && m_test2 == nullptr) {
-			m_test2 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\DragonBreath\\System_DragonBreath.json");
-		}
-
-		if (m_stressTime >= 17.5f && m_test3 == nullptr) {
-			m_test3 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\Ice\\System_IceExplosion.json");
-		}
-
-		// 6. [20��] ���ڱ� ������� ����Ʈ (HolySword ����)
-		if (m_stressTime >= 20.0f && m_test1 != nullptr) {
-			ParticleManager::Get().DestroyInstance(m_test1);
-			m_test1 = nullptr;
-		}
-
-		// 7. [25��] ���� ���� �� �ʱ�ȭ (Loop)
-		if (m_stressTime >= 25.0f) {
-			// �����ִ� ���� �ý��� �� ����
-			if (!m_stressSystems.empty()) {
-				RemoveEffects(m_stressSystems);
-				m_stressSystems.clear();
-			}
-
-			if (m_test2) {
-				ParticleManager::Get().DestroyInstance(m_test2);
-				m_test2 = nullptr;
-			}
-			if (m_test3) {
-				ParticleManager::Get().DestroyInstance(m_test3);
-				m_test3 = nullptr;
-			}
-
-			// �ʱ� ���� ���� (HolySword �����)
-			if (m_test1 == nullptr) {
-				m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-			}
-
-			// Ÿ�̸� ����
-			m_stressTime = 0.0f;
-			burstTimer = 0.0f;
-			spawnTimer = 0.0f;
-			randomDeleteTimer = 0.0f;
-
-			// 25�� �ֱ� �Ϸ� �� �α� ���
-			OutputDebugStringA(("=== Cycle Complete ===\n"
-				"Rebuild Count: " + std::to_string(ParticleManager::Get().GetRebuildCount()) + "\n"
-				"Avg Rebuild Time: " + std::to_string(ParticleManager::Get().GetAvgRebuildTime()) + " ms\n"
-				).c_str());
-		}
 	}
 
 	void ParticleEditor::UpdateGUI()
 	{
 		Scene::UpdateGUI();
-		ParticleManager::Get().RenderMemoryPoolGUI();
 	}
 
 	void ParticleEditor::Render()
@@ -328,27 +186,15 @@ namespace DE {
 			//}
 
 			if (effect) {
-				// ���� �� ����Ʈ�� �߰� (���߿� ������)
-				m_stressSystems.push_back(effect);
 			}
 			else {
 				// 2. [�Ѱ� ����] ���� ���� (Nullptr ��ȯ��)
 				// �޸� Ǯ(Particle/Emitter/System Slot) �� �ϳ��� �� ��
-				static bool oomLogged = false;
-				if (!oomLogged) {
-					OutputDebugStringA(">>> [LIMIT REACHED] Memory Pool or System Slots FULL! <<<\n");
-					oomLogged = true;
-				}
-				break; // �� �̻� ���� �Ұ�
+				break;
 			}
 		}
 	}
 	void ParticleEditor::ClickDestroy()
 	{
-		if (!m_stressSystems.empty()) {
-			RemoveEffects(m_stressSystems);
-			m_stressSystems.clear();
-		}
-		OutputDebugStringA(">>> [RESET] All Stress Systems Destroyed. <<<\n");
 	}
 }

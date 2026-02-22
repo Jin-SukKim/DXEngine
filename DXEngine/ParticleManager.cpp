@@ -2,7 +2,6 @@
 #include "ParticleManager.h"
 #include "ParticleLoader.h"
 #include "RenderBase.h"
-#include "ScopedTimer.h" // [Added] Include ScopedTimer
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include <DirectXCollision.h> // [Added] For Frustum Culling
@@ -40,63 +39,26 @@ namespace DE {
 		// Track time for priority age calculation
 		m_currentTime += dt;
 
-		// [Added] Measure Total Update Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.update, t); });
-
 		constexpr float DEFRAG_THRESHOLD = 0.2f;
 		if (m_memoryPool->GetFragmentationRatio() >= DEFRAG_THRESHOLD) {
-			//  (Legacy Metric - Cumulative Average)
-			auto start = std::chrono::high_resolution_clock::now();
-			Defragment(); // Defragment internally also measures for RuntimeProfile
-
-			auto end = std::chrono::high_resolution_clock::now();
-			float elapsed = std::chrono::duration<float, std::milli>(end - start).count();
-
-			m_rebuildCount++;
-			m_totalRebuildTime += elapsed;
-			m_avgRebuildTime = m_totalRebuildTime / m_rebuildCount;
+			Defragment();
 		}
 
-		// [Added] Measure Prepare & Upload Phase
-		{
-			ScopedTimer tPrepare([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare, t); });
+		m_memoryPool->ClearWriteAliveCount();
 
-			// (A) Setup
-			{
-				ScopedTimer tSetup([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_setup, t); });
-				m_memoryPool->ClearWriteAliveCount();
-			}
-
-			// (B) CPU PreUpdate
-			{
-				ScopedTimer tCpu([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_cpu, t); });
-				// Mesh와 Billboard 모두 PreUpdate
-				for (auto* system : m_activeSystems) {
-					if (system) {
-						system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
-					}
-				}
-			}
-
-			// (C) GPU Upload
-			{
-				ScopedTimer tUpload([&](float t) { UpdateMetric(m_runtimeProfile.update_prepare_upload, t); });
-				m_memoryPool->UploadFrameConsts();
-				m_memoryPool->UploadEmitterIDs();
-				m_memoryPool->UploadMeshConsts();
+		for (auto* system : m_activeSystems) {
+			if (system) {
+				system->PreUpdate(dt, m_memoryPool->GetFrameConsts().GetCpu());
 			}
 		}
 
-		// [Added] Measure Args Update
-		{
-			ScopedTimer tArgs([&](float t) { UpdateMetric(m_runtimeProfile.update_args, t); });
-			
-			m_memoryPool->UpdateArgs();
-		}
+		m_memoryPool->UploadFrameConsts();
+		m_memoryPool->UploadEmitterIDs();
+		m_memoryPool->UploadMeshConsts();
 
-		// [Added] Measure Dispatch Logic
+		m_memoryPool->UpdateArgs();
+
 		{
-			ScopedTimer tDispatch([&](float t) { UpdateMetric(m_runtimeProfile.update_dispatch, t); });
 			m_memoryPool->BindSpawnCompute();
 			auto& spawnCS = RenderBase::computeCommon.particle.spawnCS;
 			auto context = GET_SINGLE(RenderBase)->GetContext();
@@ -144,17 +106,13 @@ namespace DE {
 			m_needsSyncReadOffset = false;
 		}
 
-		// [Added] Measure Swap Buffer
 		if (m_memoryPool) {
-			ScopedTimer tSwap([&](float t) { UpdateMetric(m_runtimeProfile.update_swap, t); });
 			m_memoryPool->SwapAliveIndices();
 		}
 	}
 
 	void ParticleManager::Render()
 	{
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.render, t); });
-
 		if (m_activeSystems.empty()) return;
 
 		// Frustum + spawn ratio
@@ -176,11 +134,12 @@ namespace DE {
 		if (!m_batchEmitterList.empty())
 			DispatchBatchCompute();
 
-		// GPU alive count를 CPU로 다운로드 (SortAlphaBlendEmitters에서 사용)
+		// batchSortParams를 GPU에서 CPU로 Download (1회)
 		{
 			auto context = GET_SINGLE(RenderBase)->GetContext();
-			m_memoryPool->GetReadAliveCount().Download(context.Get());
+			m_memoryPool->GetBatchSortParams().Download(context.Get());
 		}
+
 		SortAlphaBlendEmitters();
 
 		m_memoryPool->BindBatchAliveIndices();
@@ -193,9 +152,6 @@ namespace DE {
 		m_memoryPool->UnbindRender();
 		GET_SINGLE(RenderBase)->RenderCompositeLowResParticles();
 
-		m_runtimeProfile.totalSystems = totalCount;
-		m_runtimeProfile.visibleSystems = visibleCount;
-		m_runtimeProfile.culledSystems = totalCount - visibleCount;
 	}
 
 	void ParticleManager::GatherVisibleEmitters(
@@ -424,36 +380,19 @@ namespace DE {
 
 			UINT globalBatchIdx = m_billboardDescStartIdx + static_cast<UINT>(batchIdx);
 
-			// CPU에서 baseOffset 계산: 이 배치 앞의 모든 배치의 (alive * spawnRatio) 누적
-			UINT batchBaseOffset = 0;
-			for (size_t prevBatch = 0; prevBatch < globalBatchIdx; prevBatch++) {
-				const auto& prevDesc = m_batchDescriptors[prevBatch];
-				for (UINT j = 0; j < prevDesc.emitterCount; j++) {
-					UINT eid = m_batchEmitterList[prevDesc.emitterListOffset + j];
-					UINT rawCount = m_memoryPool->GetReadAliveCount().GetCpu()[eid];
-					float spawnRatio = m_memoryPool->GetFrameConsts().GetCpu()[eid].spawnRatio;
-					batchBaseOffset += (UINT)((float)rawCount * spawnRatio);
-				}
-			}
+			// Downloaded sort params에서 baseOffset/particleCount 읽기
+			const auto& sortParamsData = m_memoryPool->GetBatchSortParams().GetCpu();
+			UINT baseOffset = sortParamsData[globalBatchIdx].baseOffset;
+			UINT particleCount = sortParamsData[globalBatchIdx].particleCount;
 
-			// CPU에서 particleCount 계산: 이 배치의 (alive * spawnRatio) 합산
-			UINT batchParticleCount = 0;
-			const auto& desc = m_batchDescriptors[globalBatchIdx];
-			for (UINT j = 0; j < desc.emitterCount; j++) {
-				UINT eid = m_batchEmitterList[desc.emitterListOffset + j];
-				UINT rawCount = m_memoryPool->GetReadAliveCount().GetCpu()[eid];
-				float spawnRatio = m_memoryPool->GetFrameConsts().GetCpu()[eid].spawnRatio;
-				batchParticleCount += (UINT)((float)rawCount * spawnRatio);
-			}
-
-			if (batchParticleCount == 0) continue;
+			if (particleCount == 0) continue;
 
 			UINT sortSize = 1;
-			while (sortSize < batchParticleCount) sortSize *= 2;
+			while (sortSize < particleCount) sortSize *= 2;
 
 			// SortParams CB (b5): baseOffset + particleCount + cameraForward
-			m_sortParamsCB.GetCpu().baseOffset = batchBaseOffset;
-			m_sortParamsCB.GetCpu().particleCount = batchParticleCount;
+			m_sortParamsCB.GetCpu().sortBaseOffset = baseOffset;
+			m_sortParamsCB.GetCpu().sortParticleCount = particleCount;
 			m_sortParamsCB.GetCpu().cameraForward = cameraForward;
 			m_sortParamsCB.Upload();
 			m_sortParamsCB.Bind(5);
@@ -477,7 +416,10 @@ namespace DE {
 			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
 			// 2. BitonicSort
-			m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, batchParticleCount);
+			m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, particleCount);
+
+			// BitonicSort 후 b5 재바인딩 (BitonicSort가 b0, SRV 상태를 변경할 수 있음)
+			m_sortParamsCB.Bind(5);
 
 			// 3. CopySortedIndices
 			auto& copyCS = RenderBase::computeCommon.particle.copySortedIndicesCS;
@@ -486,12 +428,10 @@ namespace DE {
 			ID3D11ShaderResourceView* sortedSRV = m_memoryPool->GetBitonicSort().GetSRV();
 			context->CSSetShaderResources(0, 1, &sortedSRV);
 
-			m_sortParamsCB.Bind(5);
-
 			ID3D11UnorderedAccessView* batchUAV = m_memoryPool->GetBatchAliveIndices().GetUAV();
 			context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
 
-			context->Dispatch((batchParticleCount + 1023) / 1024, 1, 1);
+			context->Dispatch((particleCount + 1023) / 1024, 1, 1);
 		}
 
 		// Cleanup
@@ -766,9 +706,6 @@ namespace DE {
 
 	void ParticleManager::DestroyInstance(ParticleSystem* system)
 	{
-		// [Added] Measure Destroy Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.destroy, t); });
-
 		if (!system) return;
 
 		const PoolHandle& handle = system->GetPoolHandle();
@@ -885,256 +822,8 @@ namespace DE {
 		m_memoryPool->BindEmitterID(globalSlotIndex);
 	}
 
-	void ParticleManager::RenderMemoryPoolGUI()
-	{
-		if (!m_memoryPool) return;
-
-		if (ImGui::Begin("Particle Memory Pool Status"))
-		{
-			if (ImGui::CollapsingHeader("Stats Overview", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
-				UINT usedBlocks = m_memoryPool->GetUsedBlockCount();
-				float usage = (totalBlocks > 0) ? (float)usedBlocks / totalBlocks : 0.0f;
-
-				ImGui::Text("Particle Blocks: %d / %d (Size: %d)", usedBlocks, totalBlocks, m_memoryPool->GetBlockSize());
-				ImGui::ProgressBar(usage, ImVec2(-1, 0), "Particle Memory Usage");
-
-				ImGui::Text("Max Total Particles Count : %d", usedBlocks * m_memoryPool->GetBlockSize());
-
-				UINT totalEmitters = m_memoryPool->GetTotalEmitterSlots();
-				UINT usedEmitters = m_memoryPool->GetUsedEmitterSlots();
-				float emitterUsage = (totalEmitters > 0) ? (float)usedEmitters / totalEmitters : 0.0f;
-
-				ImGui::Text("Emitter Slots: %d / %d", usedEmitters, totalEmitters);
-				ImGui::ProgressBar(emitterUsage, ImVec2(-1, 0), "Emitter Slot Usage");
-
-				UINT totalSystems = m_memoryPool->GetTotalSystemSlots();
-				UINT usedSystems = m_memoryPool->GetUsedSystemSlots();
-				ImGui::Text("Active Systems: %d / %d", usedSystems, totalSystems);
-
-				//  ȭ 
-				float fragRatio = m_memoryPool->GetFragmentationRatio();
-				ImVec4 fragColor = (fragRatio < 0.2f) ? ImVec4(0, 1, 0, 1) :
-					(fragRatio < 0.5f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
-				ImGui::TextColored(fragColor, "Fragmentation: %.1f%%", fragRatio * 100.0f);
-			}
-
-			//   Ʈ  ߰
-			if (ImGui::CollapsingHeader("Performance Metrics", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Text("Rebuild Count: %d", m_rebuildCount);
-				ImGui::Text("Avg Rebuild Time: %.3f ms", m_avgRebuildTime);
-				ImGui::Text("Total Rebuild Time: %.3f ms", m_totalRebuildTime);
-
-#ifdef _DEBUG
-				ImGui::Separator();
-				ImGui::Text("Memory Pool Allocations:");
-				ImGui::Text("  Allocate Calls: %u", m_memoryPool->GetAllocateCallCount());
-				ImGui::Text("  Avg Allocate Time: %.6f ms", m_memoryPool->GetAvgAllocateTime() / 1000.0);
-				ImGui::Text("  Free Calls: %u", m_memoryPool->GetFreeCallCount());
-				ImGui::Text("  Avg Free Time: %.6f ms", m_memoryPool->GetAvgFreeTime() / 1000.0);
-#endif
-
-				if (ImGui::Button("Reset Metrics")) {
-					m_rebuildCount = 0;
-					m_avgRebuildTime = 0.0f;
-					m_totalRebuildTime = 0.0f;
-				}
-			}
-
-			// 2.  ðȭ (Grid Visualizer)
-			// :  , ȸ:  
-			if (ImGui::CollapsingHeader("Block Map (Visualizer)", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				UINT totalBlocks = m_memoryPool->GetTotalBlockCount();
-				std::vector<std::string> blockOwners(totalBlocks, "Free");
-
-				const auto& table = m_memoryPool->GetParticleBlockTable();
-				int columns = 32; //  ٿ   
-				float cellSize = 10.0f;
-				float spacing = 2.0f;
-
-				ImVec2 p = ImGui::GetCursorScreenPos();
-				float startX = p.x;
-				float startY = p.y;
-
-				for (size_t i = 0; i < table.size(); ++i)
-				{
-					float x = startX + (i % columns) * (cellSize + spacing);
-					float y = startY + (i / columns) * (cellSize + spacing);
-
-					ImU32 color = table[i] ? IM_COL32(50, 205, 50, 255) : IM_COL32(50, 50, 50, 255); // Green vs Gray
-
-					ImGui::GetWindowDrawList()->AddRectFilled(
-						ImVec2(x, y),
-						ImVec2(x + cellSize, y + cellSize),
-						color
-					);
-
-					// 콺    ȣ 
-					if (ImGui::IsMouseHoveringRect(ImVec2(x, y), ImVec2(x + cellSize, y + cellSize)))
-					{
-						ImGui::BeginTooltip();
-						// []  ̸ 
-						ImGui::Text("Block ID: %llu", i);
-						ImGui::TextColored(table[i] ? ImVec4(0, 1, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1),
-							"Status: %s", table[i] ? "Used" : "Free");
-
-						if (table[i]) {
-							ImGui::Text("Owner: %s", blockOwners[i].c_str());
-						}
-						ImGui::EndTooltip();
-					}
-				}
-
-				// ׸ ̸ŭ Ŀ ̵
-				float totalHeight = ((table.size() + columns - 1) / columns) * (cellSize + spacing);
-				ImGui::Dummy(ImVec2(0, totalHeight));
-			}
-		}
-		ImGui::End();
-
-		// [Added] Particle Manager Performance Window
-		if (ImGui::Begin("Particle Manager Performance"))
-		{
-			if (ImGui::CollapsingHeader("Runtime Execution Metrics", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				if (ImGui::BeginTable("RuntimeMetricsTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-				{
-					ImGui::TableSetupColumn("Function / Component");
-					ImGui::TableSetupColumn("Avg Time (ms)");
-					ImGui::TableHeadersRow();
-
-					auto AddRow = [](const char* name, float val, ImVec4 color = ImVec4(1, 1, 1, 1)) {
-						ImGui::TableNextRow();
-						ImGui::TableSetColumnIndex(0); ImGui::Text("%s", name);
-						ImGui::TableSetColumnIndex(1); ImGui::TextColored(color, "%.4f ms", val);
-					};
-
-					AddRow("Update (Total)", m_runtimeProfile.update, ImVec4(1.0f, 0.6f, 0.0f, 1.0f));
-
-					ImVec4 subColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
-					AddRow("  - Prepare & Upload (Total)", m_runtimeProfile.update_prepare, subColor);
-
-					ImVec4 detailColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
-					AddRow("      > Setup (Bind)", m_runtimeProfile.update_prepare_setup, detailColor);
-					AddRow("      > CPU PreUpdate", m_runtimeProfile.update_prepare_cpu, detailColor);
-					AddRow("      > GPU Upload", m_runtimeProfile.update_prepare_upload, detailColor);
-
-					AddRow("  - Update Args", m_runtimeProfile.update_args, subColor);
-					AddRow("  - Dispatch Logic", m_runtimeProfile.update_dispatch, subColor);
-					AddRow("  - Swap Buffer", m_runtimeProfile.update_swap, subColor);
-
-					ImGui::TableNextRow();
-
-					AddRow("Render (Total)", m_runtimeProfile.render, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-					AddRow("DestroyInstance", m_runtimeProfile.destroy);
-					AddRow("Defragment (Check+Run)", m_runtimeProfile.defrag, (m_runtimeProfile.defrag > 0.1f) ? ImVec4(1, 0, 0, 1) : ImVec4(1, 1, 1, 1));
-
-					ImGui::TableNextRow();
-					ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("--- Internal Helpers ---");
-
-					AddRow("  RequestAllocation", m_runtimeProfile.requestAlloc);
-					AddRow("  UploadEmitterIDs", m_runtimeProfile.uploadIDs);
-					AddRow("  RecalculateOffsets", m_runtimeProfile.recalculateOffsets);
-					AddRow("  SyncReadOffsets", m_runtimeProfile.syncReadOffsets);
-					AddRow("Eviction Logic", m_runtimeProfile.eviction,
-						(m_runtimeProfile.eviction > 0.1f) ? ImVec4(1, 0, 0, 1) : ImVec4(1, 1, 1, 1));
-
-					ImGui::EndTable();
-				}
-
-				if (ImGui::Button("Reset All Runtime Metrics", ImVec2(-1, 0))) {
-					m_runtimeProfile.Reset();
-				}
-			}
-
-			// [Added] Frustum Culling Statistics
-			if (ImGui::CollapsingHeader("Frustum Culling Stats", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Text("Total Particle Systems: %u", m_runtimeProfile.totalSystems);
-				ImGui::Text("Visible Systems: %u", m_runtimeProfile.visibleSystems);
-				ImGui::Text("Culled Systems: %u", m_runtimeProfile.culledSystems);
-
-				if (m_runtimeProfile.totalSystems > 0) {
-					float cullRatio = (float)m_runtimeProfile.culledSystems / m_runtimeProfile.totalSystems * 100.0f;
-					ImVec4 cullColor = (cullRatio < 30.0f) ? ImVec4(1, 0, 0, 1) :
-						(cullRatio < 60.0f) ? ImVec4(1, 1, 0, 1) : ImVec4(0, 1, 0, 1);
-					ImGui::TextColored(cullColor, "Cull Ratio: %.1f%%", cullRatio);
-				}
-
-				// Debug: Show first few systems' positions
-				ImGui::Separator();
-				ImGui::Text("Debug - Active Systems:");
-				for (int i = 0; i < 5 && i < m_activeSystems.size(); ++i) {
-					auto sys = m_activeSystems[i];
-					if (sys) {
-						Vector3 pos = sys->GetWorldPosition();
-						ImGui::Text("  Sys[%d]: Pos(%.1f, %.1f, %.1f) R:%.1f",
-							i, pos.x, pos.y, pos.z, sys->GetBoundingRadius());
-					}
-				}
-
-				// Debug: View/Proj matrices
-				ImGui::Separator();
-				if (ImGui::TreeNode("View Matrix (Debug)")) {
-					ImGui::Text("Row 0: %.2f, %.2f, %.2f, %.2f", m_view._11, m_view._12, m_view._13, m_view._14);
-					ImGui::Text("Row 1: %.2f, %.2f, %.2f, %.2f", m_view._21, m_view._22, m_view._23, m_view._24);
-					ImGui::Text("Row 2: %.2f, %.2f, %.2f, %.2f", m_view._31, m_view._32, m_view._33, m_view._34);
-					ImGui::Text("Row 3: %.2f, %.2f, %.2f, %.2f", m_view._41, m_view._42, m_view._43, m_view._44);
-					ImGui::TreePop();
-				}
-				if (ImGui::TreeNode("Proj Matrix (Debug)")) {
-					ImGui::Text("Row 0: %.2f, %.2f, %.2f, %.2f", m_proj._11, m_proj._12, m_proj._13, m_proj._14);
-					ImGui::Text("Row 1: %.2f, %.2f, %.2f, %.2f", m_proj._21, m_proj._22, m_proj._23, m_proj._24);
-					ImGui::Text("Row 2: %.2f, %.2f, %.2f, %.2f", m_proj._31, m_proj._32, m_proj._33, m_proj._34);
-					ImGui::Text("Row 3: %.2f, %.2f, %.2f, %.2f", m_proj._41, m_proj._42, m_proj._43, m_proj._44);
-					ImGui::TreePop();
-				}
-			}
-
-			// [Added] Priority-Based Eviction Stats
-			if (ImGui::CollapsingHeader("Priority-Based Eviction", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Text("Total Evictions: %u", m_runtimeProfile.evictionCount);
-				ImGui::Text("Eviction Failures: %u", m_runtimeProfile.evictionFailures);
-				ImGui::Text("Avg Eviction Time: %.4f ms", m_runtimeProfile.eviction);
-
-				ImGui::Separator();
-				ImGui::Text("Current System Priorities:");
-
-				if (!m_instances.empty()) {
-					Matrix invView = m_view.Invert();
-					Vector3 cameraPos(invView._41, invView._42, invView._43);
-					DirectX::BoundingFrustum frustum(m_proj);
-
-					for (const auto& instance : m_instances)
-					{
-						ParticleSystem* sys = instance.get();
-						if (!sys) continue;
-
-						float priority = CalculatePriority(sys, cameraPos, frustum);
-						float age = m_currentTime - sys->GetCreationTime();
-
-						std::string name = std::string(sys->GetName().begin(), sys->GetName().end());
-						ImGui::Text("  [%s] Priority: %.3f | Age: %.1fs | Base: %.2f",
-							name.c_str(), priority, age, sys->GetBasePriority());
-					}
-				}
-				else {
-					ImGui::TextDisabled("  No active systems");
-				}
-			}
-		}
-		ImGui::End();
-	}
-
 	PoolHandle ParticleManager::RequestAllocation(UINT particleCount, UINT emitterCount, UINT spawnPosCount)
 	{
-		// [Added] Measure Allocation Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.requestAlloc, t); });
-
 		PoolHandle handle = m_memoryPool->Allocate(particleCount, emitterCount, spawnPosCount);
 
 		// Defragment  
@@ -1147,9 +836,6 @@ namespace DE {
 
 	void ParticleManager::UploadEmitterIDs(ParticleSystem* system, const ParticleInitializer& initialData)
 	{
-		// [Added] Measure ID Upload Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.uploadIDs, t); });
-
 		const PoolHandle& handle = system->GetPoolHandle();
 
 		for (size_t i = 0; i < initialData.emitterIDs.size(); ++i) {
@@ -1176,9 +862,6 @@ namespace DE {
 
 	void ParticleManager::Defragment()
 	{
-		// [Added] Measure Defragment Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.defrag, t); });
-
 		if (m_activeSystems.empty()) return;
 
 		std::vector<PoolHandle> activeHandles;
@@ -1207,9 +890,6 @@ namespace DE {
 
 	void ParticleManager::RecalculateEmitterOffsets(ParticleSystem* system, UINT newParticleOffset)
 	{
-		// [Added] Measure Offset Recalculation Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.recalculateOffsets, t); });
-
 		PoolHandle& handle = system->GetPoolHandle();
 		const ParticleInitializer& initialData = system->GetInitialData();
 
@@ -1226,9 +906,6 @@ namespace DE {
 
 	void ParticleManager::SyncReadOffsets()
 	{
-		// [Added] Measure Sync Time
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.syncReadOffsets, t); });
-
 		// 두 배열 모두 순회
 		for (auto* system : m_activeSystems) {
 			if (!system || !system->GetPoolHandle().IsActive()) continue;
@@ -1238,13 +915,6 @@ namespace DE {
 				m_memoryPool->SyncReadOffset(emitterID);
 			}
 		}
-	}
-
-	void ParticleManager::ResetMetrics()
-	{
-		m_rebuildCount = 0;
-		m_avgRebuildTime = 0.0f;
-		m_totalRebuildTime = 0.0f;
 	}
 
 	float ParticleManager::CalculatePriority(
@@ -1323,38 +993,23 @@ namespace DE {
 		UINT spawnPosCount,
 		PoolHandle& outHandle)
 	{
-		ScopedTimer timer([&](float t) { UpdateMetric(m_runtimeProfile.eviction, t); });
-
 		constexpr int MAX_EVICTION_ATTEMPTS = 3;
 
 		for (int attempt = 0; attempt < MAX_EVICTION_ATTEMPTS; ++attempt)
 		{
-			// Find lowest priority system
 			ParticleSystem* victim = FindLowestPrioritySystem(particleCount);
 
 			if (!victim)
-			{
-				// No systems available to evict
-				m_runtimeProfile.evictionFailures++;
 				return false;
-			}
 
-			// Evict the victim
 			DestroyInstance(victim);
-			m_runtimeProfile.evictionCount++;
 
-			// Retry allocation
 			outHandle = RequestAllocation(particleCount, emitterCount, spawnPosCount);
 
 			if (outHandle.IsActive())
-			{
-				// Success!
 				return true;
-			}
 		}
 
-		// Failed after max attempts
-		m_runtimeProfile.evictionFailures++;
 		return false;
 	}
 }

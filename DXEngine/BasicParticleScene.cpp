@@ -127,12 +127,12 @@ namespace DE {
 			if (tr) {
 				Vector3 pos = tr->GetPos();
 
-				// 4x2 ¹èÄ¡ (4¿­, 2Çà)
-				int row = i / 4;  // Çà ÀÎµ¦½º (0 ¶Ç´Â 1)
-				int col = i % 4;  // ¿­ ÀÎµ¦½º (0, 1, 2, 3)
+				// 4x2 ï¿½ï¿½Ä¡ (4ï¿½ï¿½, 2ï¿½ï¿½)
+				int row = i / 4;  // ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ (0 ï¿½Ç´ï¿½ 1)
+				int col = i % 4;  // ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ (0, 1, 2, 3)
 
-				pos.x += col * 5.f;  // XÃà ¹æÇâÀ¸·Î 10 °£°Ý
-				pos.z += row * 5.f;  // ZÃà ¹æÇâÀ¸·Î 10 °£°Ý
+				pos.x += col * 5.f;  // Xï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 10 ï¿½ï¿½ï¿½ï¿½
+				pos.z += row * 5.f;  // Zï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 10 ï¿½ï¿½ï¿½ï¿½
 
 				tr->SetPos(pos);
 			}
@@ -175,6 +175,5 @@ namespace DE {
 	void BasicParticleScene::UpdateGUI()
 	{
 		Scene::UpdateGUI();
-		ParticleManager::Get().RenderMemoryPoolGUI();
 	}
 }

@@ -475,9 +475,6 @@
     <ClInclude Include="ParticleMemoryPool.h">
       <Filter>public\ParticleSystem</Filter>
     </ClInclude>
-    <ClInclude Include="ScopedTimer.h">
-      <Filter>public\ParticleSystem\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="SmokeActor.h">
       <Filter>private\Basic</Filter>
     </ClInclude>

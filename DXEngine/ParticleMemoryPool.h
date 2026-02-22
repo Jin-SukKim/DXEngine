@@ -185,40 +185,12 @@ public:
 		return m_maxSystems - (UINT)m_freeSystemSlots.size();
 	}
 
-	const std::vector<bool>& GetParticleBlockTable() const {
-		if (m_visualizationDirty) {
-			RebuildVisualizationCache();
-			m_visualizationDirty = false;
-		}
-		return m_particleBlockTableCache;
-	}
-
-	const std::vector<bool>& GetSpawnPosBlockTable() const {
-		if (m_visualizationDirty) {
-			RebuildVisualizationCache();
-			m_visualizationDirty = false;
-		}
-		return m_spawnPosBlockTableCache;
-	}
-
 	std::vector<UINT> Defragment(const std::vector<PoolHandle>& activeHandles);
 	void UpdateWriteOffset(UINT slotIndex, UINT newWriteOffset);
 
 	void SyncReadOffset(UINT slotIndex);
 
 	float GetFragmentationRatio() const;
-
-#ifdef _DEBUG
-	// Performance benchmarking getters
-	UINT GetAllocateCallCount() const { return m_allocateCallCount; }
-	UINT GetFreeCallCount() const { return m_freeCallCount; }
-	double GetAvgAllocateTime() const {
-		return m_allocateCallCount > 0 ? m_totalAllocateTime / m_allocateCallCount : 0.0;
-	}
-	double GetAvgFreeTime() const {
-		return m_freeCallCount > 0 ? m_totalFreeTime / m_freeCallCount : 0.0;
-	}
-#endif
 
 private:
 	UINT m_blockSize = 1024;
@@ -264,7 +236,7 @@ private:
 	IndirectArgsBuffer<DrawIndexedInstancedArgs> m_batchBillboardArgs;  // Merged args
 	StructuredBuffer<UINT> m_emitterWriteOffsets;                    // Pass1 -> Pass2
 	StructuredBuffer<UINT> m_batchAliveIndices;                           // Pass2 -> VS (Batch Rendering)
-	StructuredBuffer<BatchSortParam> m_batchSortParams;                   // Per-batch sort params (GPU-only)
+	StructuredBuffer<BatchSortParam> m_batchSortParams;                   // Per-batch sort params (GPU→CPU download)
 	ConstantBuffer<BatchInfo> m_batchInfoBuffer;                    // CB5 for rendering
 	ConstantBuffer<MaterialConstants> m_defaultParticleMaterialCB;  // For circle rendering (no texture)
 
@@ -298,21 +270,6 @@ private:
 	// O(1) GetUsedBlockCount cached value
 	mutable UINT m_cachedUsedBlocks = 0;
 
-	// GUI visualization cache (lazy generation)
-	mutable std::vector<bool> m_particleBlockTableCache;
-	mutable std::vector<bool> m_spawnPosBlockTableCache;
-	mutable bool m_visualizationDirty = true;
-
-	// Helper method for visualization cache
-	void RebuildVisualizationCache() const;
-
-#ifdef _DEBUG
-	// Performance benchmarking
-	mutable UINT m_allocateCallCount = 0;
-	mutable UINT m_freeCallCount = 0;
-	mutable double m_totalAllocateTime = 0.0;  // microseconds
-	mutable double m_totalFreeTime = 0.0;      // microseconds
-#endif
 };
 
 }
