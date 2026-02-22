@@ -138,7 +138,8 @@ namespace DE {
         float alphaClipThreshold = 0.f;
         UINT solidCircle = 0;
         float centerWhiteIntensity = 0.f;
-        Vector2 renderPadding;
+        float softMaxDist = 0.0f;  // 0 = disabled (always apply soft particle)
+        float renderPadding = 0.f;
     };
 
     struct ParticleConsts {

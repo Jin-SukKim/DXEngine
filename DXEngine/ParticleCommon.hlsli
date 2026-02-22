@@ -150,7 +150,8 @@ struct RenderConsts
     float alphaClipThreshold;
     uint solidCircle;
     float centerWhiteIntensity;
-    float2 renderPadding;
+    float softMaxDist;    // Camera distance beyond which soft particle is disabled (0 = always on)
+    float renderPadding;
 };
 
 struct VortexConsts

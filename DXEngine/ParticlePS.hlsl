@@ -164,6 +164,16 @@ float4 main(ParticlePSInput input) : SV_TARGET
         float2 screenUV = input.pos.xy / texSize;
         float sceneDepthNDC = sceneDepthTex.SampleLevel(pointClampSampler, screenUV, 0).r;
         float softFactor = saturate((LinearizeDepth(sceneDepthNDC) - LinearizeDepth(input.pos.z)) / softDist);
+
+        // 멀어질수록 softFactor를 1.0으로 강제 (깊이 정밀도 손실에 면역)
+        float softMaxDist = consts[input.emitterSlotID].render.softMaxDist;
+        if (softMaxDist > 0.0f) {
+            float particleDist = length(input.posWorld.xyz - eyeWorld);
+            float fadeStart = softMaxDist * 0.8f;
+            float distBlend = 1.0f - smoothstep(fadeStart, softMaxDist, particleDist);
+            softFactor = lerp(1.0f, softFactor, distBlend);
+        }
+
         finalColor.a *= softFactor;
     }
 

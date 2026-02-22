@@ -38,6 +38,7 @@ public:
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	float m_softDistance = 0.0f;
+	float m_softMaxDist = 0.0f;
 	float m_velocityStretchFactor = 0.0f;
 	// All texture handling moved to MaterialModule
 	// IndirectArgsBuffer  - ParticleEmitter
