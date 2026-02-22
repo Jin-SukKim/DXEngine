@@ -134,7 +134,9 @@ namespace DE {
 
         float uvDistortStrength = 0.f;
         Vector2 uvDistortScroll = Vector2(0.f, 0.f);
-        float renderPadding;
+        float alphaClipThreshold = 0.f;
+        UINT solidCircle = 0;
+        Vector3 renderPadding;
     };
 
     struct ParticleConsts {

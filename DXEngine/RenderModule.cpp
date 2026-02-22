@@ -35,6 +35,9 @@ namespace DE {
 		case BlendMode::Opaque:
 			m_blendState = nullptr;
 			break;
+		case BlendMode::Modulate:
+			m_blendState = RenderBase::graphicsCommon.modulateBS.Get();
+			break;
 		}
 	}
 
@@ -45,9 +48,14 @@ namespace DE {
 			if (mode == "Additive") blendMode = BlendMode::Additive;
 			if (mode == "AlphaBlend") blendMode = BlendMode::AlphaBlend;
 			if (mode == "Opaque") blendMode = BlendMode::Opaque;
+			if (mode == "Modulate") blendMode = BlendMode::Modulate;
 		}
 		if (data.contains("lowResolution")) {
 			lowResolution = data["lowResolution"].get<bool>();
+		}
+		// Modulate는 low-res 버퍼에서 무의미 (클리어 값 [0,0,0,0]과 곱연산 = 0)
+		if (blendMode == BlendMode::Modulate) {
+			lowResolution = false;
 		}
 	}
 
@@ -72,6 +80,8 @@ namespace DE {
 		ctx.consts.render.uvDistortFrequency = m_uvDistortFrequency;
 		ctx.consts.render.uvDistortStrength = m_uvDistortStrength;
 		ctx.consts.render.uvDistortScroll = m_uvDistortScroll;
+		ctx.consts.render.alphaClipThreshold = m_alphaClipThreshold;
+		ctx.consts.render.solidCircle = m_solidCircle;
 	}
 
 	void BillboardRenderModule::LoadFromJson(const json& data)
@@ -90,6 +100,10 @@ namespace DE {
 			m_uvDistortStrength = n.value("strength", 0.05f);
 			if (n.contains("scrollSpeed")) m_uvDistortScroll = JsonToVec2(n["scrollSpeed"]);
 		}
+		if (data.contains("alphaClipThreshold"))
+			m_alphaClipThreshold = data["alphaClipThreshold"].get<float>();
+		if (data.contains("solidCircle"))
+			m_solidCircle = data["solidCircle"].get<bool>() ? 1 : 0;
 	}
 
 	std::unique_ptr<ParticleModule> BillboardRenderModule::Clone() const
@@ -102,6 +116,8 @@ namespace DE {
 		cloned->m_uvDistortFrequency = this->m_uvDistortFrequency;
 		cloned->m_uvDistortStrength = this->m_uvDistortStrength;
 		cloned->m_uvDistortScroll = this->m_uvDistortScroll;
+		cloned->m_alphaClipThreshold = this->m_alphaClipThreshold;
+		cloned->m_solidCircle = this->m_solidCircle;
 		return cloned;
 	}
 

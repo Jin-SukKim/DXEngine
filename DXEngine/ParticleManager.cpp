@@ -18,6 +18,8 @@ namespace DE {
 					return RenderBase::graphicsCommon.accumulateBS.Get();
 				case BlendMode::AlphaBlend:
 					return RenderBase::graphicsCommon.alphaBS.Get();
+				case BlendMode::Modulate:
+					return RenderBase::graphicsCommon.modulateBS.Get();
 				default:
 					return RenderBase::graphicsCommon.accumulateBS.Get();
 			}

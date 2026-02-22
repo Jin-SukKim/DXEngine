@@ -121,11 +121,16 @@ float4 main(ParticlePSInput input) : SV_TARGET
     }
     else
     {
-        // Case 2: No texture - Default Glow Circle
+        // Case 2: No texture
         float dist = length(float2(0.5f, 0.5f) - uv) * 2.0f;
-        float circleAlpha = saturate(1.0f - dist);
-
-        finalColor.a *= circleAlpha;
+        if (render.solidCircle) {
+            // Solid Circle: discard outside, keep alpha uniform
+            clip(1.0f - dist);
+        } else {
+            // Glow Circle: smooth gradient falloff
+            float circleAlpha = saturate(1.0f - dist);
+            finalColor.a *= circleAlpha;
+        }
     }
 
     // Apply albedoFactor
@@ -152,6 +157,10 @@ float4 main(ParticlePSInput input) : SV_TARGET
         float softFactor = saturate((LinearizeDepth(sceneDepthNDC) - LinearizeDepth(input.pos.z)) / softDist);
         finalColor.a *= softFactor;
     }
+
+    // Alpha clip (Masked blend mode)
+    if (render.alphaClipThreshold > 0.0f)
+        clip(finalColor.a - render.alphaClipThreshold);
 
     return finalColor;
 }

@@ -59,7 +59,8 @@
     "curlNoiseStrength": 0.1,
     "curlNoiseScrollSpeed": [ 0.0, 1.0, 0.0 ]
   },
-    "BillboardRender": {
-        "blendMode": "Additive"
-    }
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true
+  }
 }

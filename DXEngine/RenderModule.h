@@ -6,6 +6,7 @@ enum class BlendMode {
 	Opaque,      // 0 - 먼저 렌더링
 	Additive,    // 1 - 중간 렌더링
 	AlphaBlend,  // 2 - 마지막 렌더링
+	Modulate,    // 3 - 곱연산 (씬을 어둡게)
 };
 
 class RenderModule : public ParticleModule
@@ -45,6 +46,8 @@ private:
 	float m_uvDistortFrequency = 1.0f;
 	float m_uvDistortStrength = 0.015f;
 	Vector2 m_uvDistortScroll = Vector2(0.f, 0.5f);
+	float m_alphaClipThreshold = 0.0f;
+	UINT m_solidCircle = 0;
 };
 
 class MeshRenderModule : public RenderModule

@@ -160,8 +160,9 @@ namespace DE {
 		ComPtr<ID3D11GeometryShader> particleGS;
 		ComPtr<ID3D11PixelShader> particlePS;
 		ComPtr<ID3D11PixelShader> particlePbrPS;
-		ComPtr<ID3D11BlendState> accumulateBS; //   ϸ鼭 
-		ComPtr<ID3D11BlendState> alphaBS; 
+		ComPtr<ID3D11BlendState> accumulateBS; //   ϸ鼭
+		ComPtr<ID3D11BlendState> alphaBS;
+		ComPtr<ID3D11BlendState> modulateBS;
 		ComPtr<ID3D11DepthStencilState> particleDDS;
 
 		ComPtr<ID3D11VertexShader> particleMeshVS;

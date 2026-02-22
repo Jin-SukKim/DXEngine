@@ -146,7 +146,9 @@ struct RenderConsts
     
     float uvDistortStrength;
     float2 uvDistortScroll;
-    float renderPadding;
+    float alphaClipThreshold;
+    uint solidCircle;
+    float3 renderPadding;
 };
 
 struct VortexConsts
