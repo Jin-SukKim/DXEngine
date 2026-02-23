@@ -16,5 +16,6 @@ namespace DE {
 		void Update(const float& deltaTime) override;
 	private:
 		ModelComponent* m_sample;
+		float m_orbitAngle = 0.f;
 	};
 }

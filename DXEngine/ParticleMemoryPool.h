@@ -111,6 +111,7 @@ public:
 	void UploadSpawnPositions(UINT offset, const std::vector<Vector3>& positions);
 	void UploadMeshVertices(UINT offset, const std::vector<Vector3>& vertices);
 	void UploadMeshIndices(UINT offset, const std::vector<uint32_t>& indices);
+	void UploadMeshNormals(UINT offset, const std::vector<Vector3>& normals);
 	UINT AllocateMeshVertices(UINT count);
 	UINT AllocateMeshIndices(UINT count);
 	bool AllocateMeshForModel(int modelIdx, UINT vertexCount, UINT indexCount,
@@ -145,6 +146,7 @@ public:
 	StructuredBuffer<Vector3>& GetSpawnPosBuffer() { return m_spawnPositions; }
 	StructuredBuffer<Vector3>& GetMeshVertexPool() { return m_meshVertexPool; }
 	StructuredBuffer<uint32_t>& GetMeshIndexPool() { return m_meshIndexPool; }
+	StructuredBuffer<Vector3>& GetMeshNormalPool() { return m_meshNormalPool; }
 	StructuredBuffer<EmitterID>& GetEmitterIDs() { return m_emitterIDs; }
 
 	// Batch buffers getters
@@ -216,6 +218,7 @@ private:
 	StructuredBuffer<Vector3> m_spawnPositions;
 	StructuredBuffer<Vector3> m_meshVertexPool;
 	StructuredBuffer<uint32_t> m_meshIndexPool;
+	StructuredBuffer<Vector3> m_meshNormalPool;
 
 	// Quad Mesh for Billboard Instancing (GS 제거용)
 	ComPtr<ID3D11Buffer> m_quadVertexBuffer;

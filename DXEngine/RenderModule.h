@@ -51,6 +51,7 @@ private:
 	float m_alphaClipThreshold = 0.0f;
 	UINT m_solidCircle = 0;
 	float m_centerWhiteIntensity = 0.f;
+	UINT m_normalBillboard = 0;
 };
 
 class MeshRenderModule : public RenderModule

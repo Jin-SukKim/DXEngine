@@ -23,7 +23,7 @@ namespace DE {
 
 	BoxMeshEffect::~BoxMeshEffect()
 	{
-		// m_particleÀº ºÎ¸ð ~EffectActor()¿¡¼­ ÇØÁ¦µÊ
+		// m_particleï¿½ï¿½ ï¿½Î¸ï¿½ ~EffectActor()ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 
 	void BoxMeshEffect::Initialize() {
@@ -32,17 +32,19 @@ namespace DE {
 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			//tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
+			tr->SetPos(Vector3(0.0f, 0.0f, 3.0f));
 			//tr->SetScale(Vector3(0.5f));
 		}
 	}
 
 	void BoxMeshEffect::Update(const float& deltaTime) {
 		Super::Update(deltaTime);
-		// constant buffer data °»½Å
+		// constant buffer data ï¿½ï¿½ï¿½ï¿½
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			tr->SetPos(tr->GetPos() + Vector3(3.f, 0.f, 0.f) * deltaTime);
+			//m_orbitAngle += 1.f * deltaTime;
+			//float radius = 1.5f;
+			//tr->SetPos(Vector3(radius * cosf(m_orbitAngle), radius * sinf(m_orbitAngle), 0.f));
 		}
 	}
 }

@@ -13,6 +13,7 @@ struct Particle
     float3 rotSpeed;
     uint ownerID;
     uint systemID;
+    float3 normal;
 };
 
 RWStructuredBuffer<Particle> particles : register(u5);           // Single buffer (in-place update)
@@ -152,6 +153,7 @@ struct RenderConsts
     float centerWhiteIntensity;
     float softMaxDist;    // Camera distance beyond which soft particle is disabled (0 = always on)
     float softNearDist;   // Near boundary for soft particle fade (0 = use 0.8×softMaxDist)
+    uint normalBillboard;
 };
 
 struct VortexConsts
