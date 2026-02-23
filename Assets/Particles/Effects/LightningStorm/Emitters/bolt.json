@@ -1,0 +1,36 @@
+{
+  "Name": "LightningBolt",
+  "Duration": 0.1,
+  "CompletionDelay": 1.5,
+  "Spawn": {
+    "shape": "Box",
+    "spawnVolume": [ 0.1, 5.0, 0.1 ],
+    "localPos": [ 0, 5, 0 ],
+    "burst": 3,
+    "maxParticles": 1024,
+    "lifeRange": [ 0.1, 0.2 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "endColor": [ 0.5, 0.7, 1.0, 0.0 ],
+    "sizeRange": [ 0.2, 0.5 ]
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 5.0,
+    "solidCircle": true,
+    "centerWhiteIntensity": 1.0
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Effects\\LightningStorm\\Emitters\\impact_smoke.json",
+      "trigger": "OnComplete",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\LightningStorm\\Emitters\\impact_sparks.json",
+      "trigger": "OnComplete",
+      "inheritPosition": true
+    }
+  ]
+}

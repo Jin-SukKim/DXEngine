@@ -1,0 +1,28 @@
+{
+  "Name": "Slash",
+  "Duration": 0.1,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 2.0, 0.1, 0.5 ],
+    "burst": 20,
+    "maxParticles": 1024,
+    "lifeRange": [ 0.2, 0.4 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "endColor": [ 0.5, 0.8, 1.0, 0.0 ],
+    "sizeRange": [ 0.5, 1.0 ]
+  },
+  "Force": {
+    "velocity": [ 5, 0, 0 ],
+    "speedRange": [ 1.0, 2.0 ],
+    "randomDir": [ 0, 0.5, 0.5 ]
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 2.0,
+    "solidCircle": true,
+    "centerWhiteIntensity": 0.7
+  }
+}

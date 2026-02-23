@@ -1,0 +1,21 @@
+{
+  "Name": "Glow",
+  "Duration": -1,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.5, 0.5, 0.5 ],
+    "spawnRate": 5.0,
+    "maxParticles": 1024,
+    "lifeRange": [ 2.0, 3.0 ]
+  },
+  "Visual": {
+    "startColor": [ 0.1, 0.3, 0.8, 0.3 ],
+    "endColor": [ 0.0, 0.1, 0.5, 0.0 ],
+    "sizeRange": [ 2.0, 4.0 ]
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "softDistance": 1.0,
+    "softMaxDist": 3.0
+  }
+}

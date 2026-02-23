@@ -1,0 +1,46 @@
+{
+  "Name": "Core",
+  "Duration": -1,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.1, 0.1, 0.1 ],
+    "spawnRate": 30.0,
+    "maxParticles": 1024,
+    "lifeRange": [ 1.0, 1.5 ]
+  },
+  "Visual": {
+    "startColor": [ 0.3, 0.6, 1.0, 1.0 ],
+    "endColor": [ 0.1, 0.2, 0.8, 0.0 ],
+    "sizeRange": [ 0.5, 0.05 ],
+    "alphaCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        { "key": 0.0, "value": 0.0, "outTangent": 3.0 },
+        { "key": 0.1, "value": 1.0 },
+        { "key": 1.0, "value": 0.0 }
+      ]
+    }
+  },
+  "Orbit": {
+    "center": [ 0, 0, 0 ],
+    "axis": [ 0, 1, 0 ],
+    "rotationRate": 5.0
+  },
+  "Vortex": {
+    "center": [ 0, 0, 0 ],
+    "strength": 3.0,
+    "axis": [ 0, 1, 0 ],
+    "pull": [ 0.1, 0.3 ]
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true,
+    "centerWhiteIntensity": 0.8,
+    "noiseUVDistort": {
+      "enabled": true,
+      "frequency": 5.0,
+      "strength": 0.1,
+      "scrollSpeed": [ 0.2, 0.3 ]
+    }
+  }
+}

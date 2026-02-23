@@ -1,0 +1,25 @@
+{
+  "Name": "ImpactSmoke",
+  "Duration": 0.1,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.5, 0.2, 0.5 ],
+    "burst": 10,
+    "maxParticles": 1024,
+    "lifeRange": [ 1.0, 1.5 ]
+  },
+  "Visual": {
+    "startColor": [ 0.3, 0.3, 0.3, 0.6 ],
+    "endColor": [ 0.1, 0.1, 0.1, 0.0 ],
+    "sizeRange": [ 0.5, 2.0 ]
+  },
+  "Force": {
+    "velocity": [ 0, 1.0, 0 ],
+    "speedRange": [ 0.5, 1.0 ],
+    "randomDir": [ 1.0, 0, 1.0 ],
+    "drag": 0.8
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

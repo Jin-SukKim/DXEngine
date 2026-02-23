@@ -1,0 +1,27 @@
+{
+  "Name": "Sparks",
+  "Duration": -1,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 1.5, 1.5, 1.5 ],
+    "spawnInnerRatio": 0.8,
+    "spawnRate": 15.0,
+    "maxParticles": 1024,
+    "lifeRange": [ 0.5, 1.0 ]
+  },
+  "Visual": {
+    "startColor": [ 0.8, 0.9, 1.0, 1.0 ],
+    "endColor": [ 0.3, 0.5, 1.0, 0.0 ],
+    "sizeRange": [ 0.05, 0.01 ]
+  },
+  "Orbit": {
+    "center": [ 0, 0, 0 ],
+    "axis": [ 1, 1, 1 ],
+    "rotationRate": -2.0
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true,
+    "velocityStretchFactor": 0.3
+  }
+}

@@ -102,7 +102,14 @@ namespace DE {
 
 		//m_sample = AddObject<SampleActor>(L"SampleActor");
 
-		m_test = SpawnEffect<BoxMeshEffect>(L"MoxMeshEffect", L"Particles\\Effects\\BoxMesh\\BoxMesh.json", Vector3(0.f, 0.f, 03.f));
+		m_test = SpawnEffect<BoxMeshEffect>(L"MoxMeshEffect", L"Particles\\Effects\\BoxMesh\\BoxMesh.json", Vector3(0.f, 0.f, 3.f));
+
+		// --- Showcase Effects ---
+		m_celestialCore = SpawnEffect<EffectActor>(L"CelestialCore", L"Particles\\Effects\\CelestialCore\\CelestialCore.json", Vector3(0.f, 2.f, 0.f));
+		m_magmaFountain = SpawnEffect<EffectActor>(L"MagmaFountain", L"Particles\\Effects\\MagmaFountain\\MagmaFountain.json", Vector3(-6.f, 0.f, 6.f));
+		m_lightningStorm = SpawnEffect<EffectActor>(L"LightningStorm", L"Particles\\Effects\\LightningStorm\\LightningStorm.json", Vector3(6.f, 0.f, 6.f));
+		m_healingAura = SpawnEffect<EffectActor>(L"HealingAura", L"Particles\\Effects\\HealingAura\\HealingAura.json", Vector3(-6.f, 0.f, -6.f));
+		m_swordSlash = SpawnEffect<EffectActor>(L"SwordSlash", L"Particles\\Effects\\SwordSlash\\SwordSlash.json", Vector3(6.f, 1.f, -6.f));
 	}
 
 	ParticleEditor::~ParticleEditor()

@@ -57,5 +57,12 @@ namespace DE {
 		EffectActor* m_test = nullptr;
 		EffectActor* m_swordClash = nullptr;
 
+		// New Showcase Effects
+		EffectActor* m_celestialCore = nullptr;
+		EffectActor* m_magmaFountain = nullptr;
+		EffectActor* m_lightningStorm = nullptr;
+		EffectActor* m_healingAura = nullptr;
+		EffectActor* m_swordSlash = nullptr;
+
 	};
 }

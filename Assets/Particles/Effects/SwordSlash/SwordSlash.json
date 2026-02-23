@@ -1,0 +1,9 @@
+{
+  "Name": "SwordSlash",
+  "Looping": false,
+  "Duration": 1.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\SwordSlash\\Emitters\\slash.json"
+  ]
+}

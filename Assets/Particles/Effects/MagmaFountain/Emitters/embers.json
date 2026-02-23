@@ -1,0 +1,28 @@
+{
+  "Name": "Embers",
+  "Duration": -1,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 1.0, 0.2, 1.0 ],
+    "spawnRate": 10.0,
+    "maxParticles": 1024,
+    "lifeRange": [ 2.0, 4.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.6, 0.2, 1.0 ],
+    "endColor": [ 1.0, 0.1, 0.0, 0.0 ],
+    "sizeRange": [ 0.05, 0.01 ]
+  },
+  "Force": {
+    "velocity": [ 0, 2, 0 ],
+    "drag": 0.3,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 2.0,
+    "curlNoiseStrength": 0.5,
+    "curlNoiseScrollSpeed": [ 0, 0.5, 0 ]
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "Name": "HeatSmoke",
+  "Duration": -1,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.5, 0.5, 0.5 ],
+    "spawnRate": 5.0,
+    "maxParticles": 1024,
+    "lifeRange": [ 3.0, 5.0 ]
+  },
+  "Visual": {
+    "startColor": [ 0.2, 0.2, 0.2, 0.4 ],
+    "endColor": [ 0.1, 0.1, 0.1, 0.0 ],
+    "sizeRange": [ 1.0, 3.0 ]
+  },
+  "Force": {
+    "velocity": [ 0, 1.5, 0 ],
+    "drag": 0.5
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "softDistance": 0.5,
+    "softMaxDist": 2.0
+  }
+}

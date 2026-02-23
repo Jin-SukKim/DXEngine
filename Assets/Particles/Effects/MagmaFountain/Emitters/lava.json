@@ -1,0 +1,29 @@
+{
+  "Name": "LavaDrops",
+  "Duration": -1,
+  "Spawn": {
+    "shape": "Box",
+    "spawnVolume": [ 0.1, 0.1, 0.1 ],
+    "spawnRate": 20.0,
+    "maxParticles": 1024,
+    "lifeRange": [ 1.0, 2.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.4, 0.0, 1.0 ],
+    "endColor": [ 0.3, 0.0, 0.0, 1.0 ],
+    "sizeRange": [ 0.15, 0.05 ]
+  },
+  "Force": {
+    "velocity": [ 0, 8, 0 ],
+    "speedRange": [ 0.8, 1.2 ],
+    "randomDir": [ 0.2, 0, 0.2 ],
+    "gravity": [ 0, -15, 0 ],
+    "drag": 0.1
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 0.5,
+    "solidCircle": true,
+    "centerWhiteIntensity": 0.5
+  }
+}
