@@ -1,0 +1,63 @@
+{
+  "Name": "Explosion",
+  "Duration": 0.15,
+  "CompletionDelay": 0.55,
+  "Spawn": {
+    "shape": "Sphere",
+    "localPos": [ 0.0, 0.0, 0.0 ],
+    "spawnVolume": [ 0.4, 0.4, 0.4 ],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 0.0,
+    "burst": 1,
+    "particlesPerSpawn": 10,
+    "maxParticles": 10,
+    "lifeRange": [ 0.5, 0.7 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "sizeRange": [ 0.8, 1.0 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+    }
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.1, 0.2 ],
+    "randomDir": [ 1.0, 1.0, 1.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.9
+  },
+  "Material": {
+    "texture": "Textures\\Explosion02HD\\pngegg.png",
+    "sprite": {
+      "frameTiles": [ 5, 4 ],
+      "frameCount": 17,
+      "animDuration": 1.0,
+      "frameBlending": true
+    }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Effects\\Explosion\\Emitters\\smoke.json",
+      "trigger": "OnDurationEnd",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Explosion\\Emitters\\debris.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Explosion\\Emitters\\spark.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    }
+  ]
+}

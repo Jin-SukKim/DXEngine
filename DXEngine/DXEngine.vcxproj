@@ -42,13 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -192,6 +192,7 @@
     <ClInclude Include="AppendBuffer.h" />
     <ClInclude Include="BasicParticleScene.h" />
     <ClInclude Include="BillboardEffectsActor.h" />
+    <ClInclude Include="BoxMeshEffect.h" />
     <ClInclude Include="BreathEffect.h" />
     <ClInclude Include="ClickEffectManager.h" />
     <ClInclude Include="ComputeCommon.h" />
@@ -221,6 +222,7 @@
     <ClInclude Include="RoseEffect.h" />
     <ClInclude Include="SimplexNoise.h" />
     <ClInclude Include="SmokeActor.h" />
+    <ClInclude Include="SmokeEffect.h" />
     <ClInclude Include="SnowActor.h" />
     <ClInclude Include="SpawnEffectsActor.h" />
     <ClInclude Include="StarEffect.h" />
@@ -305,6 +307,7 @@
     <ClCompile Include="AppBase.cpp" />
     <ClCompile Include="BasicParticleScene.cpp" />
     <ClCompile Include="BillboardEffectsActor.cpp" />
+    <ClCompile Include="BoxMeshEffect.cpp" />
     <ClCompile Include="BreathEffect.cpp" />
     <ClCompile Include="ClickEffectManager.cpp" />
     <ClCompile Include="ComputeCommon.cpp" />
@@ -333,6 +336,7 @@
     <ClCompile Include="RoseEffect.cpp" />
     <ClCompile Include="SimplexNoise.cpp" />
     <ClCompile Include="SmokeActor.cpp" />
+    <ClCompile Include="SmokeEffect.cpp" />
     <ClCompile Include="SnowActor.cpp" />
     <ClCompile Include="SpawnEffectsActor.cpp" />
     <ClCompile Include="StarEffect.cpp" />

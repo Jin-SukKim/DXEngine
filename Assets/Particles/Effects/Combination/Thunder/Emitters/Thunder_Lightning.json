@@ -1,17 +1,17 @@
 {
     "Name": "Thunder_Lightning",
     "Duration": 0.1,
-    "CompletionDelay": 0.5,
+    "CompletionDelay": 1.0,
     "Spawn": {
         "space": "Local",
-        "localPos": [0.0, 2.5, 0.0],
+        "localPos": [0.0, 5.0, 0.0],
         "shape": "Box",
-        "spawnVolume": [0.1, 2.5, 0.1],
-        "burst": 500,
+        "spawnVolume": [0.1, 1.0, 0.1],
+        "burst": 1,
         "spawnRate": 0.0,
-        "particlesPerSpawn": 1,
-        "maxParticles": 2048,
-        "lifeRange": [0.1, 0.3]
+        "particlesPerSpawn": 4096,
+        "maxParticles": 4096,
+        "lifeRange": [1.0, 1.0]
     },
   "Visual": {
     "startColor": [ 0.8, 0.9, 1.0, 1.0 ],
@@ -25,10 +25,10 @@
     }
   },
     "Force": {
-        "velocity": [0.0, 0.0, 0.0],
+        "velocity": [0.0, -100.0, 0.0],
         "speedRange": [0.5, 2.0],
         "randomDir": [0.3, 0.1, 0.3],
-        "gravity": [0.0, 0.0, 0.0],
+        "gravity": [0.0, -100.0, 0.0],
         "drag": 0.0
     },
   "Material": {
@@ -39,7 +39,8 @@
     }
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "Additive",
+    "velocityStretchFactor": 0.8
   },
     "SubEmitters": [
       {

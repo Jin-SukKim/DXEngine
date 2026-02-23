@@ -1,21 +1,21 @@
 {
     "Name": "Thunder_Clouds",
     "Duration": 1.5,
-    "CompletionDelay": 0.5,
+    "CompletionDelay": 1.0,
     "Spawn": {
         "space": "World",
         "localPos": [0.0, 5.0, 0.0],
         "shape": "Box",
         "spawnVolume": [3.0, 0.5, 3.0],
-        "spawnRate": 50.0,
-        "particlesPerSpawn": 5,
+        "spawnRate": 25.0,
+        "particlesPerSpawn": 30,
         "maxParticles": 256,
         "lifeRange": [1.5, 2.5]
     },
     "Visual": {
-        "startColor": [0.2, 0.2, 0.3, 0.8],
+        "startColor": [0.2, 0.2, 0.3, 0.5],
         "endColor": [0.1, 0.1, 0.15, 0.0],
-        "sizeRange": [0.8, 1.5],
+        "sizeRange": [1.0, 1.5],
         "rotation": {
             "minRotation": [0.0, 0.0, 0.0],
             "maxRotation": [0.0, 0.0, 360.0],
@@ -38,18 +38,24 @@
         "pull": [-0.3, 0.0]
     },
   "Material": {
-    "texture": "Textures/SmokeSprite2.png",
+    "texture": "Textures/Fog-Group.png",
     "sprite": {
-      "frameTiles": [ 4.0, 4.0 ],
-      "frameCount": 16
+      "frameTiles": [ 2.0, 2.0 ],
+      "frameCount": 4,
+      "frameBlending": true
     }
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "AlphaBlend"
   },
     "SubEmitters": [
       {
         "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_ChargeOrbs.json",
+        "trigger": "OnStart",
+        "inheritPosition": false
+      },
+      {
+        "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_CloudsThunder.json",
         "trigger": "OnStart",
         "inheritPosition": false
       },

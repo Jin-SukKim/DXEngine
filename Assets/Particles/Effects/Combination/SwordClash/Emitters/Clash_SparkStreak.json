@@ -7,10 +7,10 @@
         "localPos": [0.0, 0.0, 0.0],
         "shape": "Sphere",
         "spawnVolume": [0.05, 0.05, 0.05],
-        "burst": 30,
+        "burst": 1,
         "spawnRate": 0.0,
-        "particlesPerSpawn": 1,
-        "maxParticles": 128,
+        "particlesPerSpawn": 30,
+        "maxParticles": 30,
         "lifeRange": [0.3, 0.8]
     },
     "Visual": {
@@ -43,7 +43,7 @@
     },
     "BillboardRender": {
         "blendMode": "Additive",
-        "solidCircle": true,
+        "solidCircle": false,
         "centerWhiteIntensity": 0.3,
         "velocityStretchFactor": 2.0
     }

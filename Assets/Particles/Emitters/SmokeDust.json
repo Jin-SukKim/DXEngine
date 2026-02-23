@@ -2,13 +2,13 @@
   "Name": "SmokeEffect",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ 0.0, 0.0, -0.2 ],
-    "spawnVolume": [ 0.5, 0.5, 0.5 ],
+    "localPos": [ 0.0, 0.0, 0.0 ],
+    "spawnVolume": [ 2.0, 2.0, 2.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 1.0,
+    "spawnRate": 0.0,
     "burst": 1,
-    "particlesPerSpawn": 15,
-    "maxParticles": 60,
+    "particlesPerSpawn": 100,
+    "maxParticles": 100,
     "lifeRange": [ 3.0, 5.0 ]
   },
   "Visual": {

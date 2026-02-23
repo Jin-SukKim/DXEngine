@@ -485,6 +485,8 @@
     <ClInclude Include="SimplexNoise.h">
       <Filter>public\ParticleSystem\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="SmokeEffect.h" />
+    <ClInclude Include="BoxMeshEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -773,6 +775,12 @@
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="CurveData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SmokeEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxMeshEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

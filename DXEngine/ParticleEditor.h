@@ -54,7 +54,8 @@ namespace DE {
 		EffectActor* m_curlFirefly = nullptr;
 		EffectActor* m_curlMagicAura = nullptr;
 		EffectActor* m_curlSpiritWisp = nullptr;
-	EffectActor* m_swordClash = nullptr;
+		EffectActor* m_test = nullptr;
+		EffectActor* m_swordClash = nullptr;
 
 	};
 }

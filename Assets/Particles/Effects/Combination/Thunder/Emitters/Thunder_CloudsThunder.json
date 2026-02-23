@@ -1,0 +1,44 @@
+{
+  "Name": "Thunder_CloudsThunder",
+  "Duration": 1.0,
+  "CompletionDelay": 1.0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [ 0.0, 5.0, 0.0 ],
+    "shape": "Box",
+    "spawnVolume": [ 3.0, 0.5, 3.0 ],
+    "spawnRate": 25.0,
+    "particlesPerSpawn": 10,
+    "maxParticles": 100,
+    "lifeRange": [ 1.0, 2.0 ]
+  },
+  "Visual": {
+    "startColor": [ 0.5, 0.7, 1.0, 1.0 ],
+    "endColor": [ 0.8, 0.9, 1.0, 0.0 ],
+    "sizeRange": [ 1.0, 1.5 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+    }
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
+    "randomDir": [ 0.0, 0.00, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.00
+  },
+  "Material": {
+    "texture": "Textures/spark2.png",
+    "sprite": {
+      "frameTiles": [ 4.0, 1.0 ],
+      "frameCount": 4,
+      "frameBlending": true
+    }
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

@@ -5,7 +5,7 @@
     "PlayRate": 1.0,
     "PreWarmTime": 0.0,
     "State": "Play",
-  "Emitters": [
-    "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Clouds.json"
-  ]
+    "Emitters": [
+      "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Clouds.json"
+    ]
 }

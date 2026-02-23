@@ -27,6 +27,7 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID)
     shared_data[idx0] = arr[blockOffset + idx0];
     shared_data[idx1] = arr[blockOffset + idx1];
 
+    // LDS(groupshared)에 데이터를 쓰고(Write) 나서, 그 데이터를 다른 스레드가 읽기(Read) 직전에 반드시 사용
     GroupMemoryBarrierWithGroupSync();
 
     // Full bitonic sort within the block (k=2..BLOCK_SIZE)

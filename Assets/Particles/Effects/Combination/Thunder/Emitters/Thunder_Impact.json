@@ -25,9 +25,10 @@
         "gravity": [0.0, -3.0, 0.0],
         "drag": 0.1
     },
-    "BillboardRender": {
-        "blendMode": "Additive"
-    },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 0.8
+  },
     "SubEmitters": [
       {
         "path": "Particles\\Effects\\Combination\\Thunder\\Emitters\\Thunder_Residue.json",

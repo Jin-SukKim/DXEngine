@@ -39,6 +39,8 @@
 #include "FireEffect.h"
 #include "IceEffect.h"
 #include "HolySwordEffect.h"
+#include "SmokeEffect.h"
+#include "BoxMeshEffect.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -78,11 +80,11 @@ namespace DE {
 
 		// [�ó����� ����] 1�� Ÿ��: ���� ����Ʈ (HolySword)
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\SmokeEffect.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
 
 		// m_test2�� �ó����� �߰�(15��)�� �����ϱ� ���� �����
 		m_test2 = nullptr;
-		m_test3 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\BillboardRenderModule\\CenterWhite.json");
+		m_test3 = nullptr;
 
 		//for (int i = 0; i < 1000; ++i) {
 		//	m_fireTests.push_back(AddObject<FireEffect>(L"FireEffect" + i));
@@ -98,7 +100,9 @@ namespace DE {
 		//m_curlMagicAura = SpawnEffect<EffectActor>(L"CurlMagicAura", L"Particles\\Effects\\ForceModule\\CurlNoise_MagicAura.json", Vector3(9.f, 0.f, -3.f));
 		//m_curlSpiritWisp = SpawnEffect<EffectActor>(L"CurlSpiritWisp", L"Particles\\Effects\\ForceModule\\CurlNoise_SpiritWisp.json", Vector3(12.f, 0.f, -3.f));
 
-		m_sample = AddObject<SampleActor>(L"SampleActor");
+		//m_sample = AddObject<SampleActor>(L"SampleActor");
+
+		m_test = SpawnEffect<BoxMeshEffect>(L"MoxMeshEffect", L"Particles\\Effects\\BoxMesh\\BoxMesh.json", Vector3(0.f, 0.f, 03.f));
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -143,8 +147,8 @@ namespace DE {
 		//if (tr)
 		//	tr->SetPos(Vector3(25.f, 0.f, 0.f));
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
-		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -179,7 +183,8 @@ namespace DE {
 			// IceEffect �Ǵ� HolySwordEffect�� �����ϰ� ����
 			EffectActor* effect = nullptr;
 			//if (rand() % 2 == 0) {
-				effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
+				//effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
+				effect = SpawnEffect<SmokeEffect>(L"ClickSmoke", L"", randomPos);
 			//}
 			//else {
 			//	effect = SpawnEffect<HolySwordEffect>(L"ClickHolySword", L"", randomPos);

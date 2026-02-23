@@ -16,7 +16,7 @@
     "Visual": {
         "startColor": [1.0, 0.7, 0.2, 1.0],
         "endColor": [0.6, 0.2, 0.0, 1.0],
-        "sizeRange": [0.04, 0.02],
+        "sizeRange": [0.03, 0.01],
         "sizeRandomness": 0.6,
         "colorRandomness": 0.4,
         "sizeCurve": {
