@@ -32,3 +32,6 @@
 8주차
 - 기존 기능 버그 수정
 - 이펙트 생성 및 씬 구성
+
+프로젝트 시작 날짜 (Jan 6) - 1월 6일
+be223c99d22aecc1676431f13edf4cf975f7898e - 이 Git Commit부터 ParticleSystem 프로젝트 시작
