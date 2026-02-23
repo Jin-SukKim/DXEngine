@@ -1,0 +1,172 @@
+{
+  "Name": "Campfire_Smoke",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0.3,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      0.15,
+      0.15,
+      0.15
+    ],
+    "spawnRate": 3.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 64,
+    "lifeRange": [
+      3.0,
+      6.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.3,
+      0.3,
+      0.3,
+      0.4
+    ],
+    "endColor": [
+      0.15,
+      0.15,
+      0.15,
+      0.0
+    ],
+    "sizeRange": [
+      0.3,
+      1.2
+    ],
+    "sizeCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0
+        },
+        {
+          "key": 1.0,
+          "value": 1.0
+        }
+      ]
+    },
+    "alphaCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 4.0
+        },
+        {
+          "key": 0.15,
+          "value": 0.8,
+          "inTangent": 4.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 0.6,
+          "value": 0.7,
+          "inTangent": 0.0,
+          "outTangent": -2.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": -2.0
+        }
+      ]
+    },
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        0,
+        0,
+        360
+      ],
+      "minRotSpeed": [
+        0,
+        0,
+        -0.2
+      ],
+      "maxRotSpeed": [
+        0,
+        0,
+        0.2
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0.6,
+      0
+    ],
+    "speedRange": [
+      0.1,
+      0.3
+    ],
+    "randomDir": [
+      0.1,
+      0.05,
+      0.1
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.05,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 0.6,
+    "curlNoiseStrength": 0.3,
+    "curlNoiseScrollSpeed": [
+      0.0,
+      0.2,
+      0.0
+    ],
+    "gravityCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": -0.2
+        },
+        {
+          "key": 1.0,
+          "value": -0.5
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/SmokeSprite.png",
+    "sprite": {
+      "frameTiles": [
+        5.0,
+        5.0
+      ],
+      "frameCount": 25
+    }
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "lowResolution": true,
+    "softDistance": 0.3,
+    "noiseUVDistort": {
+      "enabled": true,
+      "frequency": 1.2,
+      "strength": 0.03,
+      "scrollSpeed": [
+        0.02,
+        0.05
+      ]
+    }
+  }
+}

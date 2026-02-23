@@ -1,0 +1,153 @@
+{
+  "Name": "Crystal_Fragments",
+  "Duration": 0.1,
+  "CompletionDelay": 2.5,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "Custom",
+    "positions": [
+      [
+        0.0,
+        0.3,
+        0.0
+      ],
+      [
+        0.3,
+        0.0,
+        0.0
+      ],
+      [
+        -0.3,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.3
+      ],
+      [
+        0.0,
+        0.0,
+        -0.3
+      ],
+      [
+        0.2,
+        0.2,
+        0.2
+      ],
+      [
+        -0.2,
+        0.2,
+        -0.2
+      ],
+      [
+        0.2,
+        -0.2,
+        -0.2
+      ]
+    ],
+    "burst": 30,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 256,
+    "lifeRange": [
+      1.0,
+      2.5
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.3,
+      0.9,
+      1.0,
+      1.0
+    ],
+    "endColor": [
+      1.0,
+      1.0,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.04,
+      0.02
+    ],
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        360,
+        360,
+        360
+      ],
+      "minRotSpeed": [
+        -8.0,
+        -8.0,
+        -8.0
+      ],
+      "maxRotSpeed": [
+        8.0,
+        8.0,
+        8.0
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      3.0,
+      8.0
+    ],
+    "randomDir": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "gravity": [
+      0.0,
+      -5.0,
+      0.0
+    ],
+    "drag": 0.0,
+    "dragCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 0.2
+        },
+        {
+          "key": 0.5,
+          "value": 0.1,
+          "inTangent": 0.2,
+          "outTangent": 1.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.5,
+          "inTangent": 1.0
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/particle.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

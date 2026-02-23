@@ -1,0 +1,72 @@
+{
+  "Name": "Heal_Burst",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "HollowSphere",
+    "spawnVolume": [
+      0.8,
+      0.8,
+      0.8
+    ],
+    "innerRadius": 0.0,
+    "spawnRate": 0.67,
+    "particlesPerSpawn": 8,
+    "maxParticles": 64,
+    "lifeRange": [
+      0.5,
+      1.2
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.2,
+      1.0,
+      0.3,
+      0.8
+    ],
+    "endColor": [
+      0.5,
+      1.0,
+      0.5,
+      0.0
+    ],
+    "sizeRange": [
+      0.05,
+      0.03
+    ]
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      1.0,
+      3.0
+    ],
+    "randomDir": [
+      1.0,
+      0.5,
+      1.0
+    ],
+    "gravity": [
+      0.0,
+      -0.5,
+      0.0
+    ],
+    "drag": 0.2
+  },
+  "Material": {
+    "texture": "Textures/core1.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

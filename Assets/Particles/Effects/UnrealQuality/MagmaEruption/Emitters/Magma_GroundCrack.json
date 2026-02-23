@@ -1,0 +1,125 @@
+{
+  "Name": "Magma_GroundCrack",
+  "Duration": 0.5,
+  "CompletionDelay": 3.0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0.05,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      3.0,
+      0.2,
+      3.0
+    ],
+    "burst": 40,
+    "spawnRate": 5.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 64,
+    "lifeRange": [
+      1.5,
+      3.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      0.3,
+      0.0,
+      0.9
+    ],
+    "endColor": [
+      0.5,
+      0.1,
+      0.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.3,
+      1.2
+    ],
+    "sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 3.0
+        },
+        {
+          "key": 0.3,
+          "value": 1.0,
+          "inTangent": 3.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 0.8,
+          "value": 0.8,
+          "inTangent": 0.0,
+          "outTangent": -1.5
+        },
+        {
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": -1.5
+        }
+      ]
+    },
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        0,
+        0,
+        360
+      ],
+      "minRotSpeed": [
+        0,
+        0,
+        -0.3
+      ],
+      "maxRotSpeed": [
+        0,
+        0,
+        0.3
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0,
+      0
+    ],
+    "speedRange": [
+      0.0,
+      0.2
+    ],
+    "randomDir": [
+      0.3,
+      0.0,
+      0.3
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.1,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 2.0,
+    "curlNoiseStrength": 0.3
+  },
+  "Material": {
+    "texture": "Textures/flame.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

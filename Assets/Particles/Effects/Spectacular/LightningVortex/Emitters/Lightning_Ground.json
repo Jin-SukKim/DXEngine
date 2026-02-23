@@ -1,0 +1,93 @@
+{
+  "Name": "Lightning_Ground",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0.05,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      2.0,
+      0.1,
+      2.0
+    ],
+    "spawnRate": 0.0,
+    "burst": 20,
+    "particlesPerSpawn": 1,
+    "maxParticles": 64,
+    "lifeRange": [
+      0.3,
+      0.6
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.8,
+      0.9,
+      1.0,
+      0.9
+    ],
+    "endColor": [
+      0.3,
+      0.6,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.05,
+      0.5
+    ],
+    "sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 5.0
+        },
+        {
+          "key": 0.2,
+          "value": 1.0,
+          "inTangent": 5.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.6
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0,
+      0
+    ],
+    "speedRange": [
+      0.5,
+      2.0
+    ],
+    "randomDir": [
+      1.0,
+      0.0,
+      1.0
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.5
+  },
+  "Material": {
+    "texture": "Textures/flare0.dds"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 1.0
+  }
+}

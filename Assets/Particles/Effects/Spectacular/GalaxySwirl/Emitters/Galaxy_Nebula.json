@@ -1,0 +1,93 @@
+{
+  "Name": "Galaxy_Nebula",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      3.0,
+      0.5,
+      3.0
+    ],
+    "spawnRate": 2.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 64,
+    "lifeRange": [
+      8.0,
+      15.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.4,
+      0.2,
+      0.8,
+      0.4
+    ],
+    "endColor": [
+      0.2,
+      0.1,
+      0.5,
+      0.0
+    ],
+    "sizeRange": [
+      1.5,
+      3.0
+    ],
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        0,
+        0,
+        360
+      ],
+      "minRotSpeed": [
+        0,
+        0,
+        -0.05
+      ],
+      "maxRotSpeed": [
+        0,
+        0,
+        0.05
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0,
+      0
+    ],
+    "speedRange": [
+      0.0,
+      0.1
+    ],
+    "randomDir": [
+      0.1,
+      0.05,
+      0.1
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.0
+  },
+  "Material": {
+    "texture": "Textures/core2.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

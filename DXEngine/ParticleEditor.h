@@ -57,5 +57,20 @@ namespace DE {
 		EffectActor* m_test = nullptr;
 		EffectActor* m_swordClash = nullptr;
 
+		// Phase 2 effects
+		EffectActor* m_rain = nullptr;
+		EffectActor* m_snow = nullptr;
+		EffectActor* m_tornado = nullptr;
+		EffectActor* m_solarFlare = nullptr;
+		EffectActor* m_crystalShatter = nullptr;
+		EffectActor* m_bubble = nullptr;
+		EffectActor* m_firefly = nullptr;
+		EffectActor* m_portalGateway = nullptr;
+		EffectActor* m_healAura = nullptr;
+		EffectActor* m_shieldBarrier = nullptr;
+		EffectActor* m_levelUp = nullptr;
+		EffectActor* m_teleport = nullptr;
+		EffectActor* m_deathDissolve = nullptr;
+
 	};
 }

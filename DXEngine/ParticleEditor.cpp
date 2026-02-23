@@ -78,31 +78,28 @@ namespace DE {
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		// [�ó����� ����] 1�� Ÿ��: ���� ����Ʈ (HolySword)
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-
-		// m_test2�� �ó����� �߰�(15��)�� �����ϱ� ���� �����
+		m_test1 = nullptr;
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
-		//for (int i = 0; i < 1000; ++i) {
-		//	m_fireTests.push_back(AddObject<FireEffect>(L"FireEffect" + i));
-		//}
+		// Phase 2 effects — Row 1 (z=0): Realistic + Spectacular
+		m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(-12.f, 0.f, 0.f));
+		m_snow           = SpawnEffect<EffectActor>(L"Snow",           L"Particles\\Effects\\Realistic\\Snow\\System_Snow.json",                   Vector3( -6.f, 0.f, 0.f));
+		m_tornado        = SpawnEffect<EffectActor>(L"Tornado",        L"Particles\\Effects\\Realistic\\Tornado\\System_Tornado.json",             Vector3(  0.f, 0.f, 0.f));
+		m_solarFlare     = SpawnEffect<EffectActor>(L"SolarFlare",     L"Particles\\Effects\\Spectacular\\SolarFlare\\System_SolarFlare.json",     Vector3(  6.f, 0.f, 0.f));
+		m_crystalShatter = SpawnEffect<EffectActor>(L"CrystalShatter", L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json", Vector3( 12.f, 0.f, 0.f));
 
-		//m_smoke = AddObject<SmokeActor>(L"SmokeEffect");
+		// Phase 2 effects — Row 2 (z=6): Basic + UnrealQuality + GameScenario
+		m_bubble         = SpawnEffect<EffectActor>(L"Bubble",         L"Particles\\Effects\\Basic\\Bubble\\System_Bubble.json",                   Vector3(-12.f, 0.f, 6.f));
+		m_firefly        = SpawnEffect<EffectActor>(L"Firefly",        L"Particles\\Effects\\Basic\\Firefly\\System_Firefly.json",                 Vector3( -6.f, 0.f, 6.f));
+		m_portalGateway  = SpawnEffect<EffectActor>(L"PortalGateway",  L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json", Vector3( 0.f, 0.f, 6.f));
+		m_healAura       = SpawnEffect<EffectActor>(L"HealAura",       L"Particles\\Effects\\GameScenario\\HealAura\\System_HealAura.json",         Vector3(  6.f, 0.f, 6.f));
+		m_shieldBarrier  = SpawnEffect<EffectActor>(L"ShieldBarrier",  L"Particles\\Effects\\GameScenario\\ShieldBarrier\\System_ShieldBarrier.json", Vector3( 12.f, 0.f, 6.f));
 
-		//m_metalSpark = SpawnEffect<EffectActor>(L"MetalSpark", L"Particles\\MetalSparkEffect.json", Vector3(0.f, 0.f, 3.f));
-		m_sparkBurst = SpawnEffect<EffectActor>(L"SparkBurst", L"Particles\\SparkBurstEffect.json", Vector3(3.f, 0.f, 0.f));
-		//m_ember = SpawnEffect<EffectActor>(L"Ember", L"Particles\\EmberEffect.json", Vector3(-3.f, 0.f, 0.f));
-		m_curlFirefly = SpawnEffect<EffectActor>(L"CurlFirefly", L"Particles\\Effects\\ForceModule\\CurlNoise_Firefly.json", Vector3(6.f, 0.f, -3.f));
-		m_swordClash = SpawnEffect<EffectActor>(L"SwordClash", L"Particles\\Effects\\Combination\\SwordClash\\System_SwordClash.json", Vector3(-3.f, 1.f, 0.f));
-		//m_curlMagicAura = SpawnEffect<EffectActor>(L"CurlMagicAura", L"Particles\\Effects\\ForceModule\\CurlNoise_MagicAura.json", Vector3(9.f, 0.f, -3.f));
-		//m_curlSpiritWisp = SpawnEffect<EffectActor>(L"CurlSpiritWisp", L"Particles\\Effects\\ForceModule\\CurlNoise_SpiritWisp.json", Vector3(12.f, 0.f, -3.f));
-
-		//m_sample = AddObject<SampleActor>(L"SampleActor");
-
-		m_test = SpawnEffect<BoxMeshEffect>(L"MoxMeshEffect", L"Particles\\Effects\\BoxMesh\\BoxMesh.json", Vector3(0.f, 0.f, 03.f));
+		// Phase 2 effects — Row 3 (z=12): GameScenario
+		m_levelUp        = SpawnEffect<EffectActor>(L"LevelUp",        L"Particles\\Effects\\GameScenario\\LevelUp\\System_LevelUp.json",           Vector3( -6.f, 0.f, 12.f));
+		m_teleport       = SpawnEffect<EffectActor>(L"Teleport",       L"Particles\\Effects\\GameScenario\\Teleport\\System_Teleport.json",         Vector3(  0.f, 0.f, 12.f));
+		m_deathDissolve  = SpawnEffect<EffectActor>(L"DeathDissolve",  L"Particles\\Effects\\GameScenario\\DeathDissolve\\System_DeathDissolve.json", Vector3(  6.f, 0.f, 12.f));
 	}
 
 	ParticleEditor::~ParticleEditor()

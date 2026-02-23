@@ -1,0 +1,127 @@
+{
+  "Name": "Snow_Flakes",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0.0,
+      8.0,
+      0.0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      12.0,
+      0.5,
+      12.0
+    ],
+    "spawnRate": 50.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 2048,
+    "lifeRange": [
+      4.0,
+      8.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      1.0,
+      1.0,
+      0.8
+    ],
+    "endColor": [
+      0.95,
+      0.95,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.03,
+      0.05
+    ],
+    "sizeCurve": {
+      "type": "COS",
+      "frequency": 2.0,
+      "amplitude": 0.15,
+      "offset": 0.5
+    },
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        0,
+        0,
+        360
+      ],
+      "minRotSpeed": [
+        0,
+        0,
+        -0.3
+      ],
+      "maxRotSpeed": [
+        0,
+        0,
+        0.3
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      -1.5,
+      0.0
+    ],
+    "speedRange": [
+      0.8,
+      1.2
+    ],
+    "randomDir": [
+      0.2,
+      0.05,
+      0.2
+    ],
+    "gravity": [
+      0.0,
+      -0.3,
+      0.0
+    ],
+    "drag": 0.5,
+    "dragCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.5,
+          "outTangent": 1.0
+        },
+        {
+          "key": 0.4,
+          "value": 0.8,
+          "inTangent": 1.0,
+          "outTangent": -1.0
+        },
+        {
+          "key": 0.7,
+          "value": 0.3,
+          "inTangent": -1.0,
+          "outTangent": 0.5
+        },
+        {
+          "key": 1.0,
+          "value": 0.5,
+          "inTangent": 0.5
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/particle.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "softNearDist": 0.5
+  }
+}

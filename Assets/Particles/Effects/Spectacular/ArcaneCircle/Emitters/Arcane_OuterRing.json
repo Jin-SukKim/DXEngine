@@ -1,0 +1,92 @@
+{
+  "Name": "Arcane_OuterRing",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      2.5,
+      0,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 512,
+    "lifeRange": [
+      0.5,
+      1.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.6,
+      0.1,
+      1.0,
+      1.0
+    ],
+    "endColor": [
+      0.3,
+      0.0,
+      0.8,
+      0.0
+    ],
+    "sizeRange": [
+      0.08,
+      0.04
+    ],
+    "colorRandomness": 0.15
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0,
+      0
+    ],
+    "speedRange": [
+      0.0,
+      0.1
+    ],
+    "randomDir": [
+      0.1,
+      0.05,
+      0.1
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.5
+  },
+  "Orbit": {
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "axis": [
+      0,
+      1,
+      0
+    ],
+    "rotationRate": 2.0,
+    "offset": 0.0,
+    "rateCurve": {
+      "type": "SIN",
+      "frequency": 0.3,
+      "amplitude": 0.5,
+      "offset": 1.0
+    }
+  },
+  "Material": {
+    "texture": "Textures/runes.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

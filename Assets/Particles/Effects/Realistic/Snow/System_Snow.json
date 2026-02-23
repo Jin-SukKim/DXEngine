@@ -1,0 +1,12 @@
+{
+  "Name": "Snow",
+  "Looping": true,
+  "Duration": 10.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 4.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Realistic\\Snow\\Emitters\\Snow_Flakes.json",
+    "Particles\\Effects\\Realistic\\Snow\\Emitters\\Snow_Ground.json"
+  ]
+}

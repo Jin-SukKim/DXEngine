@@ -1,0 +1,80 @@
+{
+  "Name": "Teleport_Energy",
+  "Duration": 2.5,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "HollowSphere",
+    "spawnVolume": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "innerRadius": 0.5,
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 256,
+    "lifeRange": [
+      0.5,
+      1.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.6,
+      0.1,
+      1.0,
+      0.8
+    ],
+    "endColor": [
+      1.0,
+      1.0,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.03,
+      0.01
+    ],
+    "alphaCurve": {
+      "type": "NOISE",
+      "frequency": 2.0,
+      "amplitude": 0.6,
+      "seed": 99
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      0.5,
+      1.5
+    ],
+    "randomDir": [
+      0.5,
+      0.3,
+      0.5
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.2,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 3.0,
+    "curlNoiseStrength": 1.0
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true
+  }
+}

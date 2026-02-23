@@ -1,0 +1,81 @@
+{
+  "Name": "Campfire_Flicker",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0.1,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      0.05,
+      0.05,
+      0.05
+    ],
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 32,
+    "lifeRange": [
+      0.05,
+      0.1
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      0.9,
+      0.7,
+      1.0
+    ],
+    "endColor": [
+      1.0,
+      0.8,
+      0.5,
+      0.0
+    ],
+    "sizeRange": [
+      0.08,
+      0.15
+    ],
+    "sizeCurve": {
+      "type": "SIN",
+      "params": {
+        "frequency": 8.0,
+        "amplitude": 0.4,
+        "offset": 0.0
+      }
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0.5,
+      0
+    ],
+    "speedRange": [
+      0.1,
+      0.3
+    ],
+    "randomDir": [
+      0.2,
+      0.1,
+      0.2
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.5
+  },
+  "Material": {
+    "texture": "Textures/core1.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true,
+    "centerWhiteIntensity": 0.9
+  }
+}

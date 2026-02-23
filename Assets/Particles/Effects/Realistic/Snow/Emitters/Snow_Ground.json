@@ -1,0 +1,93 @@
+{
+  "Name": "Snow_Ground",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0.0,
+      0.01,
+      0.0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      10.0,
+      0.01,
+      10.0
+    ],
+    "spawnRate": 5.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 128,
+    "lifeRange": [
+      8.0,
+      15.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      1.0,
+      1.0,
+      0.0
+    ],
+    "endColor": [
+      0.95,
+      0.95,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.1,
+      0.15
+    ],
+    "alphaCurve": {
+      "type": "STEP",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0
+        },
+        {
+          "key": 0.05,
+          "value": 1.0
+        },
+        {
+          "key": 0.9,
+          "value": 1.0
+        },
+        {
+          "key": 0.95,
+          "value": 0.0
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      0.0,
+      0.0
+    ],
+    "randomDir": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.0
+  },
+  "Material": {
+    "texture": "Textures/particle.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "normalBillboard": true
+  }
+}

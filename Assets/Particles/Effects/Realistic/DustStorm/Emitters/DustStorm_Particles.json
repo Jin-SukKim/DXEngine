@@ -1,0 +1,70 @@
+{
+  "Name": "DustStorm_Particles",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0,
+      1.5,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      25.0,
+      3.0,
+      25.0
+    ],
+    "spawnRate": 100.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 2048,
+    "lifeRange": [
+      3.0,
+      8.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.65,
+      0.55,
+      0.4,
+      0.7
+    ],
+    "endColor": [
+      0.5,
+      0.4,
+      0.3,
+      0.0
+    ],
+    "sizeRange": [
+      0.02,
+      0.005
+    ],
+    "colorRandomness": 0.3
+  },
+  "Force": {
+    "velocity": [
+      3.5,
+      0.1,
+      0.3
+    ],
+    "speedRange": [
+      0.7,
+      1.3
+    ],
+    "randomDir": [
+      0.4,
+      0.2,
+      0.4
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.3
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "solidCircle": true
+  }
+}

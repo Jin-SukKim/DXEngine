@@ -1,0 +1,159 @@
+{
+  "Name": "DustStorm_Body",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0,
+      2.0,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      20.0,
+      4.0,
+      20.0
+    ],
+    "spawnRate": 20.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 1024,
+    "lifeRange": [
+      8.0,
+      15.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.6,
+      0.5,
+      0.35,
+      0.5
+    ],
+    "endColor": [
+      0.5,
+      0.4,
+      0.25,
+      0.0
+    ],
+    "sizeRange": [
+      1.5,
+      3.5
+    ],
+    "colorRandomness": 0.2,
+    "sizeCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.5
+        },
+        {
+          "key": 0.2,
+          "value": 1.0
+        },
+        {
+          "key": 0.8,
+          "value": 1.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.5
+        }
+      ]
+    },
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        0,
+        0,
+        360
+      ],
+      "minRotSpeed": [
+        0,
+        0,
+        -0.05
+      ],
+      "maxRotSpeed": [
+        0,
+        0,
+        0.05
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      3.0,
+      0.2,
+      0.5
+    ],
+    "speedRange": [
+      0.8,
+      1.2
+    ],
+    "randomDir": [
+      0.3,
+      0.1,
+      0.3
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.02,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 0.5,
+    "curlNoiseStrength": 2.0,
+    "curlNoiseScrollSpeed": [
+      0.3,
+      0.0,
+      0.1
+    ],
+    "noiseStrengthCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 1.0
+        },
+        {
+          "key": 1.0,
+          "value": 2.0
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/SmokeSprite2.png",
+    "sprite": {
+      "frameTiles": [
+        4.0,
+        4.0
+      ],
+      "frameCount": 16
+    }
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "lowResolution": true,
+    "softDistance": 1.0
+  },
+  "overdrawControl": {
+    "sizeScaling": {
+      "enabled": true,
+      "minDistance": 5.0,
+      "maxDistance": 30.0,
+      "closeRangeScale": 0.6
+    },
+    "spawnLimiting": {
+      "enabled": true,
+      "nearDistance": 2.0,
+      "farDistance": 8.0,
+      "nearSpawnRatio": 0.4
+    }
+  }
+}

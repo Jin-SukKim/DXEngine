@@ -1,0 +1,14 @@
+{
+  "Name": "Tornado",
+  "Looping": true,
+  "Duration": 10.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 2.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Realistic\\Tornado\\Emitters\\Tornado_Funnel.json",
+    "Particles\\Effects\\Realistic\\Tornado\\Emitters\\Tornado_Debris.json",
+    "Particles\\Effects\\Realistic\\Tornado\\Emitters\\Tornado_DustBase.json",
+    "Particles\\Effects\\Realistic\\Tornado\\Emitters\\Tornado_Lightning.json"
+  ]
+}

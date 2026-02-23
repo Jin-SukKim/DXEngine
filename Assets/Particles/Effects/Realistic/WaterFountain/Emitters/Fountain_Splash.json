@@ -1,0 +1,92 @@
+{
+  "Name": "Fountain_Splash",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0.02,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      0.5,
+      0.02,
+      0.5
+    ],
+    "spawnRate": 5.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 32,
+    "lifeRange": [
+      0.4,
+      0.8
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.8,
+      0.9,
+      1.0,
+      0.8
+    ],
+    "endColor": [
+      0.6,
+      0.8,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.1,
+      0.8
+    ],
+    "sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 6.0
+        },
+        {
+          "key": 0.3,
+          "value": 1.0,
+          "inTangent": 6.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.8
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0,
+      0
+    ],
+    "speedRange": [
+      0,
+      0
+    ],
+    "randomDir": [
+      0,
+      0,
+      0
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.0
+  },
+  "Material": {
+    "texture": "Textures/water_splash.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "normalBillboard": true
+  }
+}

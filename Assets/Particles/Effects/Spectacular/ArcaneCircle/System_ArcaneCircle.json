@@ -1,0 +1,14 @@
+{
+  "Name": "ArcaneCircle",
+  "Looping": true,
+  "Duration": 10.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 0.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Spectacular\\ArcaneCircle\\Emitters\\Arcane_OuterRing.json",
+    "Particles\\Effects\\Spectacular\\ArcaneCircle\\Emitters\\Arcane_InnerRing.json",
+    "Particles\\Effects\\Spectacular\\ArcaneCircle\\Emitters\\Arcane_Sparks.json",
+    "Particles\\Effects\\Spectacular\\ArcaneCircle\\Emitters\\Arcane_Glow.json"
+  ]
+}

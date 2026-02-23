@@ -1,0 +1,14 @@
+{
+  "Name": "WaterFountain",
+  "Looping": true,
+  "Duration": 10.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 1.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Realistic\\WaterFountain\\Emitters\\Fountain_Jet.json",
+    "Particles\\Effects\\Realistic\\WaterFountain\\Emitters\\Fountain_Mist.json",
+    "Particles\\Effects\\Realistic\\WaterFountain\\Emitters\\Fountain_Splash.json",
+    "Particles\\Effects\\Realistic\\WaterFountain\\Emitters\\Fountain_Droplets.json"
+  ]
+}

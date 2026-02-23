@@ -1,0 +1,14 @@
+{
+  "Name": "GalaxySwirl",
+  "Looping": true,
+  "Duration": 10.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 3.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Core.json",
+    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Stars.json",
+    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Nebula.json",
+    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Stream.json"
+  ]
+}

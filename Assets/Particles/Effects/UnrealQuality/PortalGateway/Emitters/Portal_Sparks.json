@@ -1,0 +1,71 @@
+{
+  "Name": "Portal_Sparks",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "HollowSphere",
+    "spawnVolume": [
+      1.5,
+      1.5,
+      0.5
+    ],
+    "innerRadius": 0.8,
+    "spawnRate": 20.0,
+    "particlesPerSpawn": 2,
+    "maxParticles": 256,
+    "lifeRange": [
+      0.3,
+      0.8
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "endColor": [
+      0.3,
+      0.9,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.03,
+      0.01
+    ]
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      2.0,
+      6.0
+    ],
+    "randomDir": [
+      1.0,
+      1.0,
+      0.5
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.3
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true,
+    "velocityStretchFactor": 1.5
+  }
+}
