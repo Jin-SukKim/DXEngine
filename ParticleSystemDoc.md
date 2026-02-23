@@ -42,6 +42,19 @@ ParticleSystem          ← 최상위 컨테이너 (Duration, Looping, PlayRate)
 
 Emitter JSON의 각 최상위 키가 `ParticleModuleFactory::Create(key)`를 통해 해당 모듈 인스턴스로 변환된다. 예약된 키(`Name`, `Duration`, `CompletionDelay`, `SubEmitters`, `overdrawControl`)는 이미터 수준에서 별도 처리된다.
 
+### 모듈 실행 우선순위
+
+각 이미터 내 모듈은 GPU 파이프라인에서 고정된 순서로 실행된다.
+
+| 우선순위 | 모듈 | 설명 |
+|---------|------|------|
+| 1 | Spawn | 파티클 생성 |
+| 2 | Visual | 색상·크기·회전 초기화 |
+| 3 | Force | 기본 힘 (속도, 중력, Drag) |
+| 4 | UpdateForce | 추가 힘 (Vortex, Orbit) |
+| 5 | Material | 머티리얼 바인딩 |
+| 6 | Render | 빌보드/메쉬 렌더링 |
+
 ### GPU 파이프라인
 
 ```
@@ -428,6 +441,7 @@ System JSON
 | `noiseUVDistort` | object | — | UV 디스토션 설정 (아래 참조) |
 | `alphaClipThreshold` | float | 0.0 | 알파 클리핑 임계값 |
 | `solidCircle` | bool | false | 원형 파티클 (셰이더에서 원 마스크 적용) |
+| `normalBillboard` | bool | false | 법선 방향 기준 빌보드 정렬 (카메라 향 대신 노멀 사용) |
 | `centerWhiteIntensity` | float | 0.0 | 중심부 백색 강도 (발광 효과) |
 
 #### blendMode 종류
