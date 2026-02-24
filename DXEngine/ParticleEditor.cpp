@@ -41,6 +41,8 @@
 #include "HolySwordEffect.h"
 #include "SmokeEffect.h"
 #include "BoxMeshEffect.h"
+#include "ExplosionEffect.h"
+#include "SwordClashEffect.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -59,21 +61,21 @@ namespace DE {
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
 		// ���� Spawner�� ��� ���ΰų� �����ص� �� (���⼱ ����)
-		//m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spawner->SetScene(this);
-		//m_spawner->SetActorType<Firework>();
-		//m_spawner->SetSpawnMode(SpawnMode::Interval);
-		//m_spawner->SetSpawnInterval(0.1f);
-		//m_spawner->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		//m_spawner->SetMaxActiveParticles(100);
+		m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		m_spawner->SetScene(this);
+		m_spawner->SetActorType<SwordClashEffect>();
+		m_spawner->SetSpawnMode(SpawnMode::Interval);
+		m_spawner->SetSpawnInterval(0.01f);
+		m_spawner->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
+		m_spawner->SetMaxActiveParticles(1000);
 
-		//m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spawner2->SetScene(this);
-		//m_spawner2->SetActorType<IceEffect>();
-		//m_spawner2->SetSpawnMode(SpawnMode::Interval);
-		//m_spawner2->SetSpawnInterval(0.01f);
-		//m_spawner2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
-		//m_spawner2->SetMaxActiveParticles(3000);
+		m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		m_spawner2->SetScene(this);
+		m_spawner2->SetActorType<ExplosionEffect>();
+		m_spawner2->SetSpawnMode(SpawnMode::Interval);
+		m_spawner2->SetSpawnInterval(0.1f);
+		m_spawner2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
+		m_spawner2->SetMaxActiveParticles(100);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
@@ -87,10 +89,10 @@ namespace DE {
 			Vector3(0.f, 0.f, 0.f));
 
 		// ── Spectacular ──────────────────────────────────────────────────
-		m_arcaneCircle = SpawnEffect<EffectActor>(
-			L"ArcaneCircle",
-			L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json",
-			Vector3(0.f, 0.f, 0.f));
+		//m_arcaneCircle = SpawnEffect<EffectActor>(
+		//	L"ArcaneCircle",
+		//	L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json",
+		//	Vector3(0.f, 0.f, 0.f));
 
 		m_crystalShatter = SpawnEffect<EffectActor>(
 			L"CrystalShatter",
@@ -148,10 +150,10 @@ namespace DE {
 			L"Particles\\SparkBurstEffect.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		m_fog = SpawnEffect<EffectActor>(
-			L"Fog",
-			L"Particles\\Effects\\Custom\\Fog.json",
-			Vector3(0.f, 0.f, 0.f));
+		//m_fog = SpawnEffect<EffectActor>(
+		//	L"Fog",
+		//	L"Particles\\Effects\\Custom\\Fog.json",
+		//	Vector3(0.f, 0.f, 0.f));
 
 		m_custom = SpawnEffect<EffectActor>(
 			L"Custom",
@@ -195,7 +197,7 @@ namespace DE {
 		{
 			// ── Row 0 (z = 0) : Realistic / Spectacular ──────────────────
 			{ &m_rain,             Vector3(-15.f, 0.f,  0.f) },
-			{ &m_arcaneCircle,     Vector3(-7.f, 0.f,  0.f) },
+			//{ &m_arcaneCircle,     Vector3(-7.f, 0.f,  0.f) },
 			{ &m_crystalShatter,   Vector3(0.f, 0.f,  0.f) },
 			{ &m_galaxySwirl,      Vector3(7.f, 0.f,  0.f) },
 			{ &m_portalGateway,    Vector3(15.f, 0.f,  0.f) },
@@ -210,7 +212,7 @@ namespace DE {
 			{ &m_curlNoiseFirefly, Vector3(-7.f, 0.f, 20.f) },
 			{ &m_fireEffect,       Vector3(0.f, 0.f, 20.f) },
 			{ &m_sparkBurst,       Vector3(7.f, 0.f, 20.f) },
-			{ &m_fog,              Vector3(14.f, 0.f, 20.f) },
+			//{ &m_fog,              Vector3(14.f, 0.f, 20.f) },
 			{ &m_custom,           Vector3(21.f, 0.f, 20.f) },
 		};
 

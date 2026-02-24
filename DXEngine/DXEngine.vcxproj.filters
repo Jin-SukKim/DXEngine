@@ -487,6 +487,8 @@
     </ClInclude>
     <ClInclude Include="SmokeEffect.h" />
     <ClInclude Include="BoxMeshEffect.h" />
+    <ClInclude Include="ExplosionEffect.h" />
+    <ClInclude Include="SwordClashEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -781,6 +783,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BoxMeshEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExplosionEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SwordClashEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

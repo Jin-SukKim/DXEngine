@@ -198,6 +198,7 @@
     <ClInclude Include="ComputeCommon.h" />
     <ClInclude Include="CurveData.h" />
     <ClInclude Include="EffectActor.h" />
+    <ClInclude Include="ExplosionEffect.h" />
     <ClInclude Include="FireEffect.h" />
     <ClInclude Include="Firework.h" />
     <ClInclude Include="ForceEffectsActor.h" />
@@ -227,6 +228,7 @@
     <ClInclude Include="SpawnEffectsActor.h" />
     <ClInclude Include="StarEffect.h" />
     <ClInclude Include="SubEmitterEffectsActor.h" />
+    <ClInclude Include="SwordClashEffect.h" />
     <ClInclude Include="TestActor.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="BitonicSort.h" />
@@ -313,6 +315,7 @@
     <ClCompile Include="ComputeCommon.cpp" />
     <ClCompile Include="CurveData.cpp" />
     <ClCompile Include="EffectActor.cpp" />
+    <ClCompile Include="ExplosionEffect.cpp" />
     <ClCompile Include="FireEffect.cpp" />
     <ClCompile Include="Firework.cpp" />
     <ClCompile Include="ForceEffectsActor.cpp" />
@@ -341,6 +344,7 @@
     <ClCompile Include="SpawnEffectsActor.cpp" />
     <ClCompile Include="StarEffect.cpp" />
     <ClCompile Include="SubEmitterEffectsActor.cpp" />
+    <ClCompile Include="SwordClashEffect.cpp" />
     <ClCompile Include="TestActor.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="BitonicSort.cpp" />
