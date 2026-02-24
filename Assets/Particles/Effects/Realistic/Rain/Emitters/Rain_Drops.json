@@ -17,8 +17,8 @@
     "particlesPerSpawn": 70,
     "maxParticles": 2048,
     "lifeRange": [
-      1.0,
-      3.0
+      1.8,
+      2.0
     ]
   },
   "Visual": {
@@ -88,8 +88,7 @@
     }
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
-    "velocityStretchFactor": 2.0,
-    "softNearDist": 0.3
+    "blendMode": "Additive",
+    "velocityStretchFactor": 2.0
   }
 }
