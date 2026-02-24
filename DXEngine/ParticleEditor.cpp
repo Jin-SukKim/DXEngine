@@ -252,24 +252,29 @@ namespace DE {
 	void ParticleEditor::ClickEvent()
 	{
 		static const Vector3 kSpawnCenter(0.f, 0.f, 20.f);
-		static const float   kSpawnRange = 3.0f;
+		static const float   kSpawnRange  = 5.0f;
+		static const float   kSpawnRangeY = 1.0f;
+		static const int     kBombCount   = 15;
 
 		auto rnd = [](float range) {
 			return (rand() % 201 - 100) / 100.0f * range;
 		};
 
-		Vector3 spawnPos(
-			kSpawnCenter.x + rnd(kSpawnRange),
-			kSpawnCenter.y,
-			kSpawnCenter.z + rnd(kSpawnRange));
+		for (int i = 0; i < kBombCount; ++i)
+		{
+			Vector3 spawnPos(
+				kSpawnCenter.x + rnd(kSpawnRange),
+				kSpawnCenter.y + rnd(kSpawnRangeY),
+				kSpawnCenter.z + rnd(kSpawnRange));
 
-		EffectActor* effect = SpawnEffect<EffectActor>(
-			L"ClickExplosion",
-			L"Particles\\Effects\\Explosion\\Explosion.json",
-			spawnPos);
+			EffectActor* effect = SpawnEffect<EffectActor>(
+				L"ClickExplosion",
+				L"Particles\\Effects\\Explosion\\Explosion.json",
+				spawnPos);
 
-		if (effect)
-			m_clickExplosions.push_back(effect);
+			if (effect)
+				m_clickExplosions.push_back(effect);
+		}
 	}
 
 	void ParticleEditor::ClickDestroy()
