@@ -1,22 +1,21 @@
 {
   "Name": "Rain_Splash",
-  "Duration": 0,
   "Spawn": {
     "space": "World",
     "localPos": [
       0.0,
-      0.01,
+      -2.0,
       0.0
     ],
     "shape": "Box",
     "spawnVolume": [
-      12.0,
+      1.5,
       0.01,
-      12.0
+      1.5
     ],
-    "spawnRate": 30.0,
-    "particlesPerSpawn": 2,
-    "maxParticles": 256,
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 15,
+    "maxParticles": 1024,
     "lifeRange": [
       0.1,
       0.3
@@ -27,7 +26,7 @@
       0.8,
       0.85,
       0.95,
-      0.5
+      1.0
     ],
     "endColor": [
       0.7,
@@ -59,6 +58,12 @@
           "inTangent": -2.0
         }
       ]
+    },
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
     }
   },
   "Force": {
@@ -84,10 +89,17 @@
     "drag": 0.0
   },
   "Material": {
-    "texture": "Textures/water_splash.png"
+    "texture": "Textures/splashes.png",
+    "sprite": {
+      "frameTiles": [
+        2.0,
+        2.0
+      ],
+      "frameCount": 4,
+      "frameBlending": true
+    }
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
-    "normalBillboard": true
+    "blendMode": "AlphaBlend"
   }
 }

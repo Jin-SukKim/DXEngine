@@ -83,23 +83,23 @@ namespace DE {
 		m_test3 = nullptr;
 
 		// Phase 2 effects — Row 1 (z=0): Realistic + Spectacular
-		m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(-12.f, 0.f, 0.f));
-		m_snow           = SpawnEffect<EffectActor>(L"Snow",           L"Particles\\Effects\\Realistic\\Snow\\System_Snow.json",                   Vector3( -6.f, 0.f, 0.f));
-		m_tornado        = SpawnEffect<EffectActor>(L"Tornado",        L"Particles\\Effects\\Realistic\\Tornado\\System_Tornado.json",             Vector3(  0.f, 0.f, 0.f));
-		m_solarFlare     = SpawnEffect<EffectActor>(L"SolarFlare",     L"Particles\\Effects\\Spectacular\\SolarFlare\\System_SolarFlare.json",     Vector3(  6.f, 0.f, 0.f));
-		m_crystalShatter = SpawnEffect<EffectActor>(L"CrystalShatter", L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json", Vector3( 12.f, 0.f, 0.f));
+		m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(0.f, 0.f, 0.f));
+		//m_snow           = SpawnEffect<EffectActor>(L"Snow",           L"Particles\\Effects\\Realistic\\Snow\\System_Snow.json",                   Vector3( -6.f, 0.f, 0.f));
+		//m_tornado        = SpawnEffect<EffectActor>(L"Tornado",        L"Particles\\Effects\\Realistic\\Tornado\\System_Tornado.json",             Vector3(  0.f, 0.f, 0.f));
+		//m_solarFlare     = SpawnEffect<EffectActor>(L"SolarFlare",     L"Particles\\Effects\\Spectacular\\SolarFlare\\System_SolarFlare.json",     Vector3(  6.f, 0.f, 0.f));
+		//m_crystalShatter = SpawnEffect<EffectActor>(L"CrystalShatter", L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json", Vector3( 12.f, 0.f, 0.f));
 
 		// Phase 2 effects — Row 2 (z=6): Basic + UnrealQuality + GameScenario
-		m_bubble         = SpawnEffect<EffectActor>(L"Bubble",         L"Particles\\Effects\\Basic\\Bubble\\System_Bubble.json",                   Vector3(-12.f, 0.f, 6.f));
-		m_firefly        = SpawnEffect<EffectActor>(L"Firefly",        L"Particles\\Effects\\Basic\\Firefly\\System_Firefly.json",                 Vector3( -6.f, 0.f, 6.f));
-		m_portalGateway  = SpawnEffect<EffectActor>(L"PortalGateway",  L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json", Vector3( 0.f, 0.f, 6.f));
-		m_healAura       = SpawnEffect<EffectActor>(L"HealAura",       L"Particles\\Effects\\GameScenario\\HealAura\\System_HealAura.json",         Vector3(  6.f, 0.f, 6.f));
-		m_shieldBarrier  = SpawnEffect<EffectActor>(L"ShieldBarrier",  L"Particles\\Effects\\GameScenario\\ShieldBarrier\\System_ShieldBarrier.json", Vector3( 12.f, 0.f, 6.f));
+		//m_bubble         = SpawnEffect<EffectActor>(L"Bubble",         L"Particles\\Effects\\Basic\\Bubble\\System_Bubble.json",                   Vector3(-12.f, 0.f, 6.f));
+		//m_firefly        = SpawnEffect<EffectActor>(L"Firefly",        L"Particles\\Effects\\Basic\\Firefly\\System_Firefly.json",                 Vector3( -6.f, 0.f, 6.f));
+		//m_portalGateway  = SpawnEffect<EffectActor>(L"PortalGateway",  L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json", Vector3( 0.f, 0.f, 6.f));
+		//m_healAura       = SpawnEffect<EffectActor>(L"HealAura",       L"Particles\\Effects\\GameScenario\\HealAura\\System_HealAura.json",         Vector3(  6.f, 0.f, 6.f));
+		//m_shieldBarrier  = SpawnEffect<EffectActor>(L"ShieldBarrier",  L"Particles\\Effects\\GameScenario\\ShieldBarrier\\System_ShieldBarrier.json", Vector3( 12.f, 0.f, 6.f));
 
 		// Phase 2 effects — Row 3 (z=12): GameScenario
-		m_levelUp        = SpawnEffect<EffectActor>(L"LevelUp",        L"Particles\\Effects\\GameScenario\\LevelUp\\System_LevelUp.json",           Vector3( -6.f, 0.f, 12.f));
-		m_teleport       = SpawnEffect<EffectActor>(L"Teleport",       L"Particles\\Effects\\GameScenario\\Teleport\\System_Teleport.json",         Vector3(  0.f, 0.f, 12.f));
-		m_deathDissolve  = SpawnEffect<EffectActor>(L"DeathDissolve",  L"Particles\\Effects\\GameScenario\\DeathDissolve\\System_DeathDissolve.json", Vector3(  6.f, 0.f, 12.f));
+		//m_levelUp        = SpawnEffect<EffectActor>(L"LevelUp",        L"Particles\\Effects\\GameScenario\\LevelUp\\System_LevelUp.json",           Vector3( -6.f, 0.f, 12.f));
+		//m_teleport       = SpawnEffect<EffectActor>(L"Teleport",       L"Particles\\Effects\\GameScenario\\Teleport\\System_Teleport.json",         Vector3(  0.f, 0.f, 12.f));
+		//m_deathDissolve  = SpawnEffect<EffectActor>(L"DeathDissolve",  L"Particles\\Effects\\GameScenario\\DeathDissolve\\System_DeathDissolve.json", Vector3(  6.f, 0.f, 12.f));
 	}
 
 	ParticleEditor::~ParticleEditor()

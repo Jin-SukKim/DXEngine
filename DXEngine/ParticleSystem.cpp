@@ -124,6 +124,7 @@ namespace DE {
 		eID.readParticleOffset = m_currentParticleOffset;
 		eID.writeParticleOffset = m_currentParticleOffset;
 
+		emitter->SetName(GetName() + std::to_wstring(eID.systemID) + std::to_wstring(eID.emitterID));
 		emitter->SetOwner(this);
 		emitter->SetMemoryInfo(m_currentEmitterIndex);
 		emitter->Initialize(pConsts, pfConsts, pMeshArgs);

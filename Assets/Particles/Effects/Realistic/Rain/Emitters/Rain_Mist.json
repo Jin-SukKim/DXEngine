@@ -1,105 +1,43 @@
 {
-  "Name": "Rain_Mist",
-  "Duration": 0,
+  "Name": "Smoke",
   "Spawn": {
-    "space": "World",
-    "localPos": [
-      0.0,
-      0.5,
-      0.0
-    ],
     "shape": "Sphere",
-    "spawnVolume": [
-      3.0,
-      0.5,
-      3.0
-    ],
-    "spawnRate": 3.0,
-    "particlesPerSpawn": 1,
-    "maxParticles": 32,
-    "lifeRange": [
-      3.0,
-      6.0
-    ]
+    "localPos": [ 0.0, 5.0, 0.0 ],
+    "spawnVolume": [ 2.0, 0.4, 2.0 ],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 10.0,
+    "burst": 0,
+    "particlesPerSpawn": 10,
+    "maxParticles": 2048,
+    "lifeRange": [ 5.0, 5.0 ]
   },
   "Visual": {
-    "startColor": [
-      0.7,
-      0.7,
-      0.75,
-      0.15
-    ],
-    "endColor": [
-      0.6,
-      0.6,
-      0.65,
-      0.0
-    ],
-    "sizeRange": [
-      1.0,
-      2.5
-    ],
+    "startColor": [ 1.0, 1.0, 1.0, 0.6 ],
+    "endColor": [ 1.0, 1.0, 1.0, 0.6 ],
+    "sizeRange": [ 0.2, 2.0 ],
     "rotation": {
-      "minRotation": [
-        0,
-        0,
-        0
-      ],
-      "maxRotation": [
-        0,
-        0,
-        360
-      ],
-      "minRotSpeed": [
-        0,
-        0,
-        -0.05
-      ],
-      "maxRotSpeed": [
-        0,
-        0,
-        0.05
-      ]
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
     }
   },
   "Force": {
-    "velocity": [
-      0.0,
-      0.1,
-      0.0
-    ],
-    "speedRange": [
-      0.05,
-      0.1
-    ],
-    "randomDir": [
-      0.05,
-      0.02,
-      0.05
-    ],
-    "gravity": [
-      0.0,
-      0.0,
-      0.0
-    ],
-    "drag": 0.02,
-    "curlNoiseEnabled": true,
-    "curlNoiseFrequency": 0.3,
-    "curlNoiseStrength": 0.5
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
+    "randomDir": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.0
   },
   "Material": {
-    "texture": "Textures/SmokeSprite2.png",
+    "texture": "Textures\\ExplosionCloud\\Explosion01-nofire_5x5.tga",
     "sprite": {
-      "frameTiles": [
-        4.0,
-        4.0
-      ],
-      "frameCount": 16
+      "frameTiles": [ 5, 5 ],
+      "frameCount": 25,
+      "frameBlending": true
     }
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
-    "lowResolution": true,
-    "softDistance": 1.0
+    "blendMode": "AlphaBlend"
   }
 }
