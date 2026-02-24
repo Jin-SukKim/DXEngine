@@ -37,8 +37,8 @@
       0.0
     ],
     "sizeRange": [
-      0.02,
-      0.01
+      0.2,
+      0.1
     ]
   },
   "Force": {
@@ -78,7 +78,14 @@
     "offset": 0.0
   },
   "Material": {
-    "texture": "Textures/star.jpg"
+    "texture": "Textures/star.png",
+    "sprite": {
+      "frameTiles": [
+        9.0,
+        1.0
+      ],
+      "frameCount": 9
+    }
   },
   "BillboardRender": {
     "blendMode": "Additive"

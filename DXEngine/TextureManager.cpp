@@ -241,7 +241,8 @@ int TextureManager::LoadCurveLUT(const std::string& key, std::unordered_map<Part
         if (curveIt != curveData.end()) {
             const auto& baked = curveIt->second.CreateCurveData();
             UINT srcSize = static_cast<UINT>(baked.size());
-
+            if (srcSize == 0)
+                return 0;
             for (UINT x = 0; x < width; ++x) {
                 // TODO: 각 resolution 별로 array를 만들어 사용
                 pixels[row * width + x] = baked[x];

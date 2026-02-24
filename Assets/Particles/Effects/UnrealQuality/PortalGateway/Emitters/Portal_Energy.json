@@ -14,8 +14,8 @@
       1.0,
       0.3
     ],
-    "spawnRate": 25.0,
-    "particlesPerSpawn": 2,
+    "spawnRate": 20.0,
+    "particlesPerSpawn": 4,
     "maxParticles": 256,
     "lifeRange": [
       1.0,

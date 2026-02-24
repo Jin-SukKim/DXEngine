@@ -87,7 +87,7 @@
     "drag": 0.05
   },
   "MeshRender": {
-    "blendMode": "AlphaBlend",
+    "blendMode": "Additive",
     "defaultMesh": 1
   }
 }

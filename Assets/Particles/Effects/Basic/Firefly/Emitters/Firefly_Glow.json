@@ -10,9 +10,9 @@
     ],
     "shape": "Box",
     "spawnVolume": [
-      8.0,
       3.0,
-      8.0
+      1.0,
+      3.0
     ],
     "spawnRate": 5.0,
     "particlesPerSpawn": 1,

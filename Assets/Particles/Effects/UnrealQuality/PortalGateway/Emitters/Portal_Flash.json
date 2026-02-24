@@ -14,12 +14,12 @@
       0.1,
       0.1
     ],
-    "spawnRate": 0.4,
+    "spawnRate": 5,
     "particlesPerSpawn": 1,
-    "maxParticles": 8,
+    "maxParticles": 18,
     "lifeRange": [
-      0.12,
-      0.18
+      0.48,
+      0.72
     ]
   },
   "Visual": {

@@ -15,9 +15,9 @@
       0.1,
       0.1
     ],
-    "burst": 10,
+    "burst": 1,
     "spawnRate": 0.0,
-    "particlesPerSpawn": 1,
+    "particlesPerSpawn": 32,
     "maxParticles": 32,
     "lifeRange": [
       0.15,
@@ -39,7 +39,7 @@
     ],
     "sizeRange": [
       0.5,
-      3.0
+      1.5
     ],
     "sizeCurve": {
       "type": "STEP",

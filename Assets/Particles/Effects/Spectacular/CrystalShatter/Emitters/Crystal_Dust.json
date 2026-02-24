@@ -15,8 +15,8 @@
       0.5,
       0.5
     ],
-    "spawnRate": 40.0,
-    "particlesPerSpawn": 3,
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 15,
     "maxParticles": 256,
     "lifeRange": [
       1.0,
@@ -28,7 +28,7 @@
       0.3,
       0.9,
       1.0,
-      0.4
+      1.0
     ],
     "endColor": [
       0.5,
@@ -97,10 +97,10 @@
     "texture": "Textures/SmokeSprite.png",
     "sprite": {
       "frameTiles": [
-        5.0,
-        5.0
+        2.0,
+        2.0
       ],
-      "frameCount": 25
+      "frameCount": 4
     }
   },
   "BillboardRender": {

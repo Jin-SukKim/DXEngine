@@ -1,5 +1,5 @@
 {
-  "Name": "Clash_Flash",
+  "Name": "Clash_Circle",
   "Duration": 0.1,
   "CompletionDelay": 0.3,
   "Spawn": {
@@ -9,14 +9,14 @@
     "spawnVolume": [ 0.01, 0.01, 0.01 ],
     "burst": 1,
     "spawnRate": 0.0,
-    "particlesPerSpawn": 10,
-    "maxParticles": 10,
-    "lifeRange": [ 0.10, 0.2 ]
+    "particlesPerSpawn": 1,
+    "maxParticles": 1,
+    "lifeRange": [ 0.1, 0.25 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.85, 0.4, 1.0 ],
     "endColor": [ 1.0, 0.5, 0.1, 0.0 ],
-    "sizeRange": [ 0.7, 0.1 ],
+    "sizeRange": [ 0.1, 0.7 ],
     "sizeCurve": {
       "keys": [
         {
@@ -54,13 +54,7 @@
     "drag": 0.0
   },
   "Material": {
-    "texture": "Textures\\flash.png",
-    "sprite": {
-      "frameTiles": [ 5, 1 ],
-      "frameCount": 5,
-      "animDuration": 1.0,
-      "frameBlending": false
-    }
+    "texture": "Textures\\46.png"
   },
   "BillboardRender": {
     "blendMode": "Additive",

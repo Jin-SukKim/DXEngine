@@ -2,39 +2,35 @@
   "Name": "VortexAura",
   "Spawn": {
     "shape": "Sphere",
-    "localPos": [ -0.25, -0.15, 0.0 ],
-    "spawnVolume": [ 0.15, 0.1, 0.15 ],
-    "spawnInnerRatio": 0.99,
-    "spawnRate": 20.0,
-    "particlesPerSpawn": 5,
-    "maxParticles": 1024,
-    "lifeRange": [ 0.5, 0.55 ]
+    "localPos": [ 0.0, 0.05, 0.0 ],
+    "spawnVolume": [ 1.0, 0.01, 1.0 ],
+    "spawnInnerRatio": 0.0,
+    "spawnRate": 15.0,
+    "particlesPerSpawn": 80,
+    "maxParticles": 8000,
+    "lifeRange": [ 1.2, 1.5 ]
   },
   "Visual": {
-    "startColor": [ 1.0, 1.0, 1.0, 0.5 ],
-    "endColor": [ 0.0, 0.0, 0.0, 0.1 ],
-    "sizeRange": [ 0.1, 0.01 ],
+    "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
+    "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
+    "sizeRange": [ 0.03, 0.001 ],
     "rotation": {
-      "minRotSpeed": [ -2.0, -2.0, -2.0 ],
-      "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 0.0, 0.0, 0.0 ],
+      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
     }
   },
   "Force": {
     "velocity": [ 0.0, 0.5, 0.0 ],
-    "speedRange": [ 1.0, 2.0 ],
-    "randomDir": [ 0.2, 0.5, 0.2 ],
-    "gravity": [ 0.0, 5.0, 0.0 ],
-    "drag": 0.5
-  },
-  "Vortex": {
-    "strength": 15.0,
-    "pull": [ -15, 100 ],
-    "center": [ -0.25, 0.0, 0.0 ],
-    "vortexFalloff": 1.0,
-    "axis": [ 0.0, 1.0, 0.0 ]
-  },
-  "Material": {
-    "texture": "Textures\\glassParticle.png"
+    "speedRange": [ 0.01, 0.02 ],
+    "randomDir": [ 0.3, 0.00, 0.3 ],
+    "gravity": [ 0.0, 1.0, 0.0 ],
+    "drag": 0.6,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 1.2,
+    "curlNoiseStrength": 0.5,
+    "curlNoiseScrollSpeed": [ 0.0, 1.0, 0.0 ]
   },
   "BillboardRender": {
     "blendMode": "Additive"

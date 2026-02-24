@@ -7,8 +7,6 @@
   "State": "Play",
   "Emitters": [
     "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Core.json",
-    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Stars.json",
-    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Nebula.json",
-    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Stream.json"
+    "Particles\\Effects\\Spectacular\\GalaxySwirl\\Emitters\\Galaxy_Stars.json"
   ]
 }

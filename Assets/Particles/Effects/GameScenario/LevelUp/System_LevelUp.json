@@ -1,11 +1,11 @@
 {
   "Name": "LevelUp",
-  "Looping": false,
+  "Looping": true,
   "Duration": 4.0,
   "PlayRate": 1.0,
   "PreWarmTime": 0.0,
   "State": "Play",
   "Emitters": [
-    "Particles\\Effects\\GameScenario\\LevelUp\\Emitters\\LevelUp_Base.json"
+    "Particles\\Effects\\GameScenario\\LevelUp\\ShieldBarrier\\System_ShieldBarrier.json"
   ]
 }

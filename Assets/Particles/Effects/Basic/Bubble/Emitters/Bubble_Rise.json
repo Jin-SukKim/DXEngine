@@ -83,7 +83,12 @@
     }
   },
   "Material": {
-    "texture": "Textures/particle.png"
+    "texture": "Textures/Bubbles.png",
+    "sprite": {
+      "frameTiles": [ 12, 1 ],
+      "frameCount": 12,
+      "frameBlending": true
+    }
   },
   "BillboardRender": {
     "blendMode": "AlphaBlend"
