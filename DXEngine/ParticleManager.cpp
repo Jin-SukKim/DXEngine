@@ -454,6 +454,13 @@ namespace DE {
 				context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
 
 				context->Dispatch((particleCount + 1023) / 1024, 1, 1);
+
+				// UAV barrier: 다음 배치의 GenerateSortKeys가 batchAliveIndices를
+				// SRV로 바인딩하기 전에 UAV 바인딩을 해제 (SRV/UAV 충돌 방지)
+				{
+					ID3D11UnorderedAccessView* nullBarrier = nullptr;
+					context->CSSetUnorderedAccessViews(0, 1, &nullBarrier, nullptr);
+				}
 			}
 		};
 

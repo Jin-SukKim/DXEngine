@@ -5,10 +5,10 @@
     "localPos": [ 0.0, 5.0, 0.0 ],
     "spawnVolume": [ 2.0, 0.4, 2.0 ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 10.0,
+    "spawnRate": 15.0,
     "burst": 0,
-    "particlesPerSpawn": 10,
-    "maxParticles": 128,
+    "particlesPerSpawn": 15,
+    "maxParticles": 512,
     "lifeRange": [ 5.0, 5.0 ]
   },
   "Visual": {

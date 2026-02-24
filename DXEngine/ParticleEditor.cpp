@@ -69,13 +69,13 @@ namespace DE {
 		//m_spawner->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
 		//m_spawner->SetMaxActiveParticles(1000);
 
-		m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spawner2->SetScene(this);
-		m_spawner2->SetActorType<ExplosionEffect>();
-		m_spawner2->SetSpawnMode(SpawnMode::Interval);
-		m_spawner2->SetSpawnInterval(0.01f);
-		m_spawner2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
-		m_spawner2->SetMaxActiveParticles(1000);
+		//m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spawner2->SetScene(this);
+		//m_spawner2->SetActorType<ExplosionEffect>();
+		//m_spawner2->SetSpawnMode(SpawnMode::Interval);
+		//m_spawner2->SetSpawnInterval(0.01f);
+		//m_spawner2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
+		//m_spawner2->SetMaxActiveParticles(1000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 

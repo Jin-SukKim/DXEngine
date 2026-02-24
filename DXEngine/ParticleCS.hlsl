@@ -95,5 +95,10 @@ void main(uint3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID, uint3 dtID : SV_
     // Append to write alive indices (compacted)
     uint writeSlot;
     InterlockedAdd(writeAliveCount[p.ownerID], 1, writeSlot);
+    if (writeSlot >= frameConsts[p.ownerID].maxParticles)
+    {
+        deadIndices.Append(particleIdx);
+        return;
+    }
     writeAliveIndices[eID.readParticleOffset + writeSlot] = particleIdx;
 }

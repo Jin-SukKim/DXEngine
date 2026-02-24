@@ -15,7 +15,7 @@
     ],
     "spawnRate": 40.0,
     "particlesPerSpawn": 50,
-    "maxParticles": 4096,
+    "maxParticles": 2048,
     "lifeRange": [
       1.8,
       2.0

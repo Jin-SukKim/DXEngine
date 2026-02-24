@@ -115,7 +115,13 @@ float3 SpawnFromPositions(inout uint rngState, uint posCount, uint startIndex, u
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
-    if (dtID.x >= frameConsts[emitterID].spawnCount)
+    // clampedSpawn: dead-list가 고갈된 상태에서 overflow하지 않도록 실제 가용 슬롯으로 제한
+    uint _count = readAliveCount[emitterID];
+    uint _maxP = frameConsts[emitterID].maxParticles;
+    uint _available = (_count < _maxP) ? (_maxP - _count) : 0;
+    uint clampedSpawn = min(frameConsts[emitterID].spawnCount, _available);
+
+    if (dtID.x >= clampedSpawn)
         return;
     
     // �õ� �ʱ�ȭ
@@ -193,5 +199,8 @@ void main(uint3 dtID : SV_DispatchThreadID)
     // AliveIndices�� �߰�
     uint aliveSlot;
     InterlockedAdd(writeAliveCount[emitterID], 1, aliveSlot);
+    // Defense-in-depth: aliveSlot이 maxParticles를 초과하면 다른 에미터 구획을 덮어쓰지 않도록 중단
+    if (aliveSlot >= frameConsts[emitterID].maxParticles)
+        return;
     writeAliveIndices[readParticleOffset + aliveSlot] = particleIdx;
 }

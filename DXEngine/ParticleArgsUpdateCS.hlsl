@@ -9,15 +9,20 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint myEmitterID = DTid.x;
     uint count = readAliveCount[myEmitterID];
     uint spawnCount = frameConsts[myEmitterID].spawnCount;
+    uint maxP = frameConsts[myEmitterID].maxParticles;
+
+    // 현재 alive 수 기준으로 남은 슬롯만큼만 스폰 허용 (overflow 방지)
+    uint availableSlots = (count < maxP) ? (maxP - count) : 0;
+    uint clampedSpawn = min(spawnCount, availableSlots);
 
     // Per-emitter dispatch args (SpawnCS 등에서 사용)
     uint dispatchIdx = myEmitterID * 3;
-    dispatchArgs[dispatchIdx + 0] = (spawnCount + 1023) / 1024;
+    dispatchArgs[dispatchIdx + 0] = (clampedSpawn + 1023) / 1024;
     dispatchArgs[dispatchIdx + 1] = 1;
     dispatchArgs[dispatchIdx + 2] = 1;
 
     // 배치 dispatch args: 전체 중 최대 endIndex 기반으로 그룹 수 계산
-    uint totalExpected = count + spawnCount;
+    uint totalExpected = count + clampedSpawn;
     if (totalExpected > 0)
     {
         uint endIndex = emitterIDs[myEmitterID].readParticleOffset + totalExpected;

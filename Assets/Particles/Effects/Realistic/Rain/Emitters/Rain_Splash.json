@@ -100,6 +100,6 @@
     }
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "AlphaBlend"
   }
 }
