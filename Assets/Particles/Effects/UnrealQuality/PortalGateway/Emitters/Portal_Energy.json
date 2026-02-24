@@ -1,0 +1,107 @@
+{
+  "Name": "Portal_Energy",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      1.0,
+      1.0,
+      0.3
+    ],
+    "spawnRate": 25.0,
+    "particlesPerSpawn": 2,
+    "maxParticles": 256,
+    "lifeRange": [
+      1.0,
+      2.5
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.6,
+      0.1,
+      1.0,
+      0.7
+    ],
+    "endColor": [
+      0.3,
+      0.8,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.08,
+      0.15
+    ],
+    "alphaCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 4.0
+        },
+        {
+          "key": 0.15,
+          "value": 0.8,
+          "inTangent": 4.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 0.7,
+          "value": 0.6,
+          "inTangent": 0.0,
+          "outTangent": -2.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": -2.0
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      0.1,
+      0.3
+    ],
+    "randomDir": [
+      0.2,
+      0.2,
+      0.1
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.05,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 2.0,
+    "curlNoiseStrength": 1.5,
+    "noiseStrengthCurve": {
+      "type": "NOISE",
+      "frequency": 1.0,
+      "amplitude": 0.5,
+      "seed": 13
+    }
+  },
+  "Material": {
+    "texture": "Textures/core2.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

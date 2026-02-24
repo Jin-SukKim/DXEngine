@@ -1,0 +1,98 @@
+{
+  "Name": "Nuke_Debris",
+  "Duration": 0.1,
+  "CompletionDelay": 3.0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0,
+      0,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      0.3,
+      0.3,
+      0.3
+    ],
+    "burst": 30,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 30,
+    "lifeRange": [
+      2.0,
+      4.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.3,
+      0.25,
+      0.2,
+      1.0
+    ],
+    "endColor": [
+      0.15,
+      0.1,
+      0.08,
+      1.0
+    ],
+    "sizeRange": [
+      0.04,
+      0.02
+    ],
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        360,
+        360,
+        360
+      ],
+      "minRotSpeed": [
+        -3.0,
+        -3.0,
+        -3.0
+      ],
+      "maxRotSpeed": [
+        3.0,
+        3.0,
+        3.0
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0,
+      1.0,
+      0
+    ],
+    "speedRange": [
+      5.0,
+      15.0
+    ],
+    "randomDir": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "gravity": [
+      0,
+      -9.8,
+      0
+    ],
+    "drag": 0.1
+  },
+  "Material": {
+    "materials": [
+      "Materials\\debrie.json"
+    ]
+  },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "defaultMesh": 0
+  }
+}

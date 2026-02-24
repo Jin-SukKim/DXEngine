@@ -450,6 +450,12 @@ namespace DE {
 
 			pool.UploadMeshVertices(vertexOffset, vertices);
 			pool.UploadMeshIndices(indexOffset, meshes.indexCPU);
+
+			std::vector<Vector3> normals;
+			normals.reserve(vertexCount);
+			for (const auto& vertex : meshes.vertexCPU)
+				normals.push_back(vertex.normalModel);
+			pool.UploadMeshNormals(vertexOffset, normals);
 		}
 
 		m_meshConsts.vertexCount = vertexCount;

@@ -1,0 +1,106 @@
+{
+  "Name": "Shield_Shell",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "HollowSphere",
+    "spawnVolume": [
+      1.5,
+      1.5,
+      1.5
+    ],
+    "innerRadius": 0.95,
+    "spawnRate": 20.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 256,
+    "lifeRange": [
+      1.0,
+      2.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.3,
+      0.9,
+      1.0,
+      0.5
+    ],
+    "endColor": [
+      0.2,
+      0.7,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.08,
+      0.08
+    ],
+    "sizeCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 1.0
+        },
+        {
+          "key": 1.0,
+          "value": 1.0
+        }
+      ]
+    },
+    "alphaCurve": {
+      "type": "STEP",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 1.0
+        },
+        {
+          "key": 0.4,
+          "value": 1.0
+        },
+        {
+          "key": 0.45,
+          "value": 0.3
+        },
+        {
+          "key": 0.5,
+          "value": 1.0
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      0.0,
+      0.05
+    ],
+    "randomDir": [
+      0.05,
+      0.05,
+      0.05
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.5
+  },
+  "Material": {
+    "texture": "Textures/core2.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

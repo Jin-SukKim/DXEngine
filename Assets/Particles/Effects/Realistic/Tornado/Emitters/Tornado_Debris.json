@@ -1,0 +1,163 @@
+{
+  "Name": "Tornado_Debris",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "Custom",
+    "positions": [
+      [
+        1.5,
+        0.0,
+        0.0
+      ],
+      [
+        1.299,
+        0.0,
+        0.75
+      ],
+      [
+        0.75,
+        0.0,
+        1.299
+      ],
+      [
+        0.0,
+        0.0,
+        1.5
+      ],
+      [
+        -0.75,
+        0.0,
+        1.299
+      ],
+      [
+        -1.299,
+        0.0,
+        0.75
+      ],
+      [
+        -1.5,
+        0.0,
+        0.0
+      ],
+      [
+        -1.299,
+        0.0,
+        -0.75
+      ],
+      [
+        -0.75,
+        0.0,
+        -1.299
+      ],
+      [
+        -0.0,
+        0.0,
+        -1.5
+      ],
+      [
+        0.75,
+        0.0,
+        -1.299
+      ],
+      [
+        1.299,
+        0.0,
+        -0.75
+      ]
+    ],
+    "spawnRate": 15.0,
+    "particlesPerSpawn": 2,
+    "maxParticles": 512,
+    "lifeRange": [
+      1.5,
+      3.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.5,
+      0.4,
+      0.3,
+      0.8
+    ],
+    "endColor": [
+      0.3,
+      0.25,
+      0.15,
+      0.0
+    ],
+    "sizeRange": [
+      0.03,
+      0.08
+    ],
+    "rotation": {
+      "minRotation": [
+        0,
+        0,
+        0
+      ],
+      "maxRotation": [
+        360,
+        360,
+        360
+      ],
+      "minRotSpeed": [
+        -5.0,
+        -5.0,
+        -5.0
+      ],
+      "maxRotSpeed": [
+        5.0,
+        5.0,
+        5.0
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "speedRange": [
+      0.5,
+      1.5
+    ],
+    "randomDir": [
+      0.3,
+      0.2,
+      0.3
+    ],
+    "gravity": [
+      0.0,
+      -3.0,
+      0.0
+    ],
+    "drag": 0.1,
+    "dragCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.1
+        },
+        {
+          "key": 1.0,
+          "value": 0.8
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/particle.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend"
+  }
+}

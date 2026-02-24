@@ -1,0 +1,117 @@
+{
+  "Name": "LevelUp_Base",
+  "Duration": 0.5,
+  "CompletionDelay": 3.0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.01,
+      0.0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      2.0,
+      0.05,
+      2.0
+    ],
+    "burst": 20,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 64,
+    "lifeRange": [
+      0.5,
+      1.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      0.85,
+      0.2,
+      1.0
+    ],
+    "endColor": [
+      1.0,
+      1.0,
+      0.8,
+      0.0
+    ],
+    "sizeRange": [
+      0.1,
+      0.3
+    ],
+    "sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 5.0
+        },
+        {
+          "key": 0.2,
+          "value": 1.0,
+          "inTangent": 5.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 0.8,
+          "value": 1.0,
+          "inTangent": 0.0,
+          "outTangent": -2.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": -2.0
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      0.0,
+      0.1
+    ],
+    "randomDir": [
+      0.1,
+      0.0,
+      0.1
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.0
+  },
+  "Material": {
+    "texture": "Textures/flare0.dds"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Effects\\GameScenario\\LevelUp\\Emitters\\LevelUp_Pillar.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\GameScenario\\LevelUp\\Emitters\\LevelUp_Sparks.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\GameScenario\\LevelUp\\Emitters\\LevelUp_Flash.json",
+      "trigger": "OnDurationEnd",
+      "inheritPosition": true
+    }
+  ]
+}

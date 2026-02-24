@@ -13,6 +13,7 @@ namespace DE {
 		Vector3 rotSpeed = Vector3(0.f);
         UINT ownerID = UINT_MAX;
         UINT systemID = UINT_MAX;
+        Vector3 normal = Vector3(0.f, 0.f, 0.f);
 	};
 
     struct EmitterID {
@@ -140,6 +141,7 @@ namespace DE {
         float centerWhiteIntensity = 0.f;
         float softMaxDist = 0.0f;  // 0 = disabled (always apply soft particle)
         float softNearDist = 0.0f;  // Near boundary for soft particle fade (0 = use 0.8×softMaxDist)
+        UINT normalBillboard = 0;
     };
 
     struct ParticleConsts {

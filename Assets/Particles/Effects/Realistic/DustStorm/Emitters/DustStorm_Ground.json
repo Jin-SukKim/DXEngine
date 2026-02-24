@@ -1,0 +1,72 @@
+{
+  "Name": "DustStorm_Ground",
+  "Duration": 0,
+  "Spawn": {
+    "space": "World",
+    "localPos": [
+      0,
+      0.1,
+      0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      20.0,
+      0.2,
+      20.0
+    ],
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 2,
+    "maxParticles": 256,
+    "lifeRange": [
+      5.0,
+      10.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.7,
+      0.6,
+      0.4,
+      0.4
+    ],
+    "endColor": [
+      0.6,
+      0.5,
+      0.35,
+      0.0
+    ],
+    "sizeRange": [
+      0.5,
+      1.5
+    ]
+  },
+  "Force": {
+    "velocity": [
+      2.0,
+      0.0,
+      0.3
+    ],
+    "speedRange": [
+      0.5,
+      1.0
+    ],
+    "randomDir": [
+      0.3,
+      0.0,
+      0.3
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.1
+  },
+  "Material": {
+    "texture": "Textures/dust.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "normalBillboard": true
+  }
+}

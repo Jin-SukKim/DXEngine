@@ -8,6 +8,8 @@ struct GSInput
     float lifeRatio : TEXCOORD0;
     float size : PSIZE1;
     float rotation : PSIZE2;
+    float3 normal : NORMAL0;
+    nointerpolation uint normalBillboard : BLENDINDICES0;
 };
 
 struct ParticlePSInput
@@ -41,13 +43,10 @@ void main(
     output.primID = primID;
     output.color = input[0].color;
     output.lifeRatio = input[0].lifeRatio;
-
-    output.posWorld = input[0].pos;
     output.center = input[0].pos;
-    float4 viewPos = mul(float4(input[0].pos.xyz, 1.f), view);
+
     float hw = input[0].size * 0.5f;
 
-    // View space에서의 offset 정의
     float2 offsets[4] = {
         float2(-1.f, -1.f),
         float2(-1.f, 1.f),
@@ -62,23 +61,49 @@ void main(
         float2(1.f, 0.f)
     };
 
-    float2x2 rotMatrix = GetRotationMatrix(input[0].rotation);
-
-    [unroll]
-    for (int i = 0; i < 4; ++i)
+    if (input[0].normalBillboard)
     {
-        // View space에서 billboard 위치 결정
-        float4 newPos = viewPos;
-        float2 offset = mul(rotMatrix, offsets[i]);
-        newPos.xy += offset * hw;
+        // Normal-based orientation (world space quad)
+        float3 billNormal = normalize(input[0].normal);
+        float3 worldUp = float3(0, 1, 0);
+        float3 right = cross(worldUp, billNormal);
+        if (length(right) < 0.001f) right = float3(1, 0, 0); // degenerate fallback
+        right = normalize(right);
+        float3 up = normalize(cross(billNormal, right));
 
-        // TODO: 만약 2D 회전을 넣고 싶다면 여기서 offsets[i]를 회전 행렬로 돌리기
+        float2x2 rotMat = GetRotationMatrix(input[0].rotation);
+        [unroll]
+        for (int i = 0; i < 4; ++i)
+        {
+            float2 rotOffset = mul(rotMat, offsets[i]);
+            float3 worldCorner = input[0].pos.xyz + rotOffset.x * hw * right + rotOffset.y * hw * up;
+            float4 viewPos = mul(float4(worldCorner, 1.0), view);
+            output.pos = mul(viewPos, proj);
+            output.posWorld = float4(worldCorner, 1.0);
+            output.texcoord = uvs[i];
+            outputStream.Append(output);
+        }
+    }
+    else
+    {
+        // Camera-facing billboard (view space)
+        output.posWorld = input[0].pos;
+        float4 viewPos = mul(float4(input[0].pos.xyz, 1.f), view);
 
-        output.pos = mul(newPos, proj);
-        output.texcoord = uvs[i];
+        float2x2 rotMatrix = GetRotationMatrix(input[0].rotation);
+        [unroll]
+        for (int i = 0; i < 4; ++i)
+        {
+            float4 newPos = viewPos;
+            float2 offset = mul(rotMatrix, offsets[i]);
+            newPos.xy += offset * hw;
 
-        outputStream.Append(output);
+            output.pos = mul(newPos, proj);
+            output.texcoord = uvs[i];
+
+            outputStream.Append(output);
+        }
     }
 
-    outputStream.RestartStrip(); // Strip을 다시 시작
+    outputStream.RestartStrip();
 }

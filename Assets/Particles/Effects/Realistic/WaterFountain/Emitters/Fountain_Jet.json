@@ -1,0 +1,88 @@
+{
+  "Name": "Fountain_Jet",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      0.1,
+      0.1,
+      0.1
+    ],
+    "spawnRate": 60.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 256,
+    "lifeRange": [
+      1.2,
+      1.8
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.7,
+      0.85,
+      1.0,
+      0.9
+    ],
+    "endColor": [
+      0.5,
+      0.7,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.04,
+      0.02
+    ]
+  },
+  "Force": {
+    "velocity": [
+      0,
+      8.0,
+      0
+    ],
+    "speedRange": [
+      0.9,
+      1.1
+    ],
+    "randomDir": [
+      0.1,
+      0.05,
+      0.1
+    ],
+    "gravity": [
+      0,
+      -9.8,
+      0
+    ],
+    "drag": 0.15,
+    "velocityCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 1.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.0
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/water_drop.png"
+  },
+  "BillboardRender": {
+    "blendMode": "AlphaBlend",
+    "softDistance": 0.5,
+    "softMaxDist": 2.0,
+    "velocityStretchFactor": 0.6,
+    "softNearDist": 0.2
+  }
+}

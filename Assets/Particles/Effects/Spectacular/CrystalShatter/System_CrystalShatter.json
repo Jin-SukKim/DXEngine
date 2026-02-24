@@ -1,0 +1,13 @@
+{
+  "Name": "CrystalShatter",
+  "Looping": false,
+  "Duration": 3.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 0.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\Spectacular\\CrystalShatter\\Emitters\\Crystal_Flash.json",
+    "Particles\\Effects\\Spectacular\\CrystalShatter\\Emitters\\Crystal_Fragments.json",
+    "Particles\\Effects\\Spectacular\\CrystalShatter\\Emitters\\Crystal_Dust.json"
+  ]
+}

@@ -80,6 +80,7 @@ namespace DE {
 		m_spawnPositions.Initialize(device, maxParticles);
 		m_meshVertexPool.Initialize(device, m_meshVertexPoolCapacity);
 		m_meshIndexPool.Initialize(device, m_meshIndexPoolCapacity);
+		m_meshNormalPool.Initialize(device, m_meshVertexPoolCapacity);
 		m_meshVertexNextOffset = 0;
 		m_meshIndexNextOffset = 0;
 
@@ -311,12 +312,13 @@ namespace DE {
 		};
 		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
 
-		// t2, t3: mesh vertex/index pool
+		// t2, t3, t4: mesh vertex/index/normal pool
 		ID3D11ShaderResourceView* meshSRVs[] = {
 			m_meshVertexPool.GetSRV(),      // t2
-			m_meshIndexPool.GetSRV()        // t3
+			m_meshIndexPool.GetSRV(),       // t3
+			m_meshNormalPool.GetSRV()       // t4
 		};
-		context->CSSetShaderResources(2, 2, meshSRVs);
+		context->CSSetShaderResources(2, 3, meshSRVs);
 
 		ID3D11ShaderResourceView* srvs[] = {
 			m_particles.GetSRV(),           // t16
@@ -337,8 +339,8 @@ namespace DE {
 		ID3D11UnorderedAccessView* uavs[] = { nullptr, nullptr, nullptr, nullptr };
 		context->CSSetUnorderedAccessViews(4, 4, uavs, nullptr);
 
-		ID3D11ShaderResourceView* nullMeshSRVs[] = { nullptr, nullptr };
-		context->CSSetShaderResources(2, 2, nullMeshSRVs);
+		ID3D11ShaderResourceView* nullMeshSRVs[] = { nullptr, nullptr, nullptr };
+		context->CSSetShaderResources(2, 3, nullMeshSRVs);
 
 		ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		context->CSSetShaderResources(16, 7, srvs);
@@ -572,6 +574,18 @@ namespace DE {
 		box.right = static_cast<UINT>((offset + indices.size()) * sizeof(uint32_t));
 		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 		context->UpdateSubresource(m_meshIndexPool.GetBuffer(), 0, &box, indices.data(), 0, 0);
+	}
+
+	void ParticleMemoryPool::UploadMeshNormals(UINT offset, const std::vector<Vector3>& normals)
+	{
+		if (normals.empty()) return;
+
+		auto context = GET_SINGLE(RenderBase)->GetContext();
+		D3D11_BOX box;
+		box.left = offset * sizeof(Vector3);
+		box.right = static_cast<UINT>((offset + normals.size()) * sizeof(Vector3));
+		box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
+		context->UpdateSubresource(m_meshNormalPool.GetBuffer(), 0, &box, normals.data(), 0, 0);
 	}
 
 	UINT ParticleMemoryPool::AllocateMeshVertices(UINT count)

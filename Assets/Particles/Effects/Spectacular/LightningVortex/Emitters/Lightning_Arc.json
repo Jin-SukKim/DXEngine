@@ -1,0 +1,99 @@
+{
+  "Name": "Lightning_Arc",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "spawnRate": 200.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 1024,
+    "lifeRange": [
+      0.05,
+      0.15
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "endColor": [
+      0.2,
+      0.5,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.04,
+      0.01
+    ]
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0,
+      0
+    ],
+    "speedRange": [
+      0.5,
+      2.0
+    ],
+    "randomDir": [
+      0.8,
+      0.5,
+      0.8
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.0,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 2.0,
+    "curlNoiseStrength": 1.5,
+    "noiseStrengthCurve": {
+      "type": "NOISE",
+      "frequency": 3.0,
+      "amplitude": 0.8,
+      "seed": 31
+    }
+  },
+  "Vortex": {
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "strength": 3.0,
+    "axis": [
+      0,
+      1,
+      0
+    ],
+    "vortexFalloff": 1.0,
+    "pull": [
+      -0.5,
+      0.0
+    ]
+  },
+  "Material": {
+    "texture": "Textures/thunder1.jpg"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 2.5
+  }
+}

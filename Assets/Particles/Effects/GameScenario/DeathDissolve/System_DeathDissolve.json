@@ -1,0 +1,13 @@
+{
+  "Name": "DeathDissolve",
+  "Looping": false,
+  "Duration": 4.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 0.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\GameScenario\\DeathDissolve\\Emitters\\Death_Particles.json",
+    "Particles\\Effects\\GameScenario\\DeathDissolve\\Emitters\\Death_Smoke.json",
+    "Particles\\Effects\\GameScenario\\DeathDissolve\\Emitters\\Death_Soul.json"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "Name": "SkillImpact",
+  "Looping": false,
+  "Duration": 3.0,
+  "PlayRate": 1.0,
+  "PreWarmTime": 0.0,
+  "State": "Play",
+  "Emitters": [
+    "Particles\\Effects\\UnrealQuality\\SkillImpact\\Emitters\\Impact_Flash.json"
+  ]
+}

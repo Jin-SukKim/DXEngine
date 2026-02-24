@@ -90,39 +90,65 @@ ParticlePSInput main(VSParticleInput input)
         halfSize *= sizeFactor;
     }
 
-    // Velocity Stretch Billboard
-    float stretchFactor = consts[emitterSlotID].render.velocityStretchFactor;
-    float3 worldVel = p.velocity;
-    if (spawn.simulationSpace == 0)
-    {
-        // Local Space → World Space
-        worldVel = mul(float4(worldVel, 0.0), meshConsts[p.systemID].pWorld).xyz;
-    }
-    float3 viewVel = mul(float4(worldVel, 0.0), view).xyz;
-    float speed2D = length(viewVel.xy);
+    RenderConsts render = consts[emitterSlotID].render;
 
-    if (stretchFactor > 0.0 && speed2D > 0.001)
+    if (render.normalBillboard)
     {
-        // 속도 방향과 수직 방향 계산
-        float2 velDir = viewVel.xy / speed2D;
-        float2 velPerp = float2(-velDir.y, velDir.x);
+        // Normal-based billboard: orient quad along mesh surface normal
+        float3 worldNormal;
+        if (spawn.simulationSpace == 1)
+            worldNormal = p.normal; // Already world space (transformed in SpawnCS)
+        else
+            worldNormal = normalize(mul(p.normal, (float3x3) meshConsts[p.systemID].pWorldIT));
 
-        // 속도 방향으로 스트레치
-        float stretchAmount = 1.0 + speed2D * stretchFactor;
-        viewPos.xy += (quadOffset.x * velDir * stretchAmount
-                     + quadOffset.y * velPerp) * halfSize;
+        float3 billNormal = normalize(worldNormal);
+        float3 worldUp = float3(0, 1, 0);
+        float3 right = cross(worldUp, billNormal);
+        if (length(right) < 0.001f) right = float3(1, 0, 0); // degenerate fallback
+        right = normalize(right);
+        float3 up = normalize(cross(billNormal, right));
+
+        float2x2 rotMatrix = GetRotationMatrix2D(p.rotation.x);
+        float2 rotatedOffset = mul(rotMatrix, quadOffset);
+
+        float3 worldCorner = particleCenter.xyz + rotatedOffset.x * halfSize * right + rotatedOffset.y * halfSize * up;
+        float4 worldCornerViewPos = mul(float4(worldCorner, 1.0), view);
+        output.pos = mul(worldCornerViewPos, proj);
+        output.posWorld = float4(worldCorner, 1.0);
     }
     else
     {
-        // 기존 회전 빌보드
-        float2x2 rotMatrix = GetRotationMatrix2D(p.rotation.x);
-        float2 rotatedOffset = mul(rotMatrix, quadOffset);
-        viewPos.xy += rotatedOffset * halfSize;
-    }
+        // Camera-facing billboard (view space)
+        // Velocity Stretch Billboard
+        float stretchFactor = render.velocityStretchFactor;
+        float3 worldVel = p.velocity;
+        if (spawn.simulationSpace == 0)
+        {
+            // Local Space → World Space
+            worldVel = mul(float4(worldVel, 0.0), meshConsts[p.systemID].pWorld).xyz;
+        }
+        float3 viewVel = mul(float4(worldVel, 0.0), view).xyz;
+        float speed2D = length(viewVel.xy);
 
-    // Projection
-    output.pos = mul(viewPos, proj);
-    output.posWorld = particleCenter;
+        if (stretchFactor > 0.0 && speed2D > 0.001)
+        {
+            float2 velDir = viewVel.xy / speed2D;
+            float2 velPerp = float2(-velDir.y, velDir.x);
+
+            float stretchAmount = 1.0 + speed2D * stretchFactor;
+            viewPos.xy += (quadOffset.x * velDir * stretchAmount
+                         + quadOffset.y * velPerp) * halfSize;
+        }
+        else
+        {
+            float2x2 rotMatrix = GetRotationMatrix2D(p.rotation.x);
+            float2 rotatedOffset = mul(rotMatrix, quadOffset);
+            viewPos.xy += rotatedOffset * halfSize;
+        }
+
+        output.pos = mul(viewPos, proj);
+        output.posWorld = particleCenter;
+    }
 
     return output;
 }

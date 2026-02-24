@@ -1,0 +1,93 @@
+{
+  "Name": "LevelUp_Pillar",
+  "Duration": 1.5,
+  "CompletionDelay": 1.0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "Box",
+    "spawnVolume": [
+      0.3,
+      0.1,
+      0.3
+    ],
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 3,
+    "maxParticles": 256,
+    "lifeRange": [
+      0.5,
+      1.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      0.85,
+      0.2,
+      1.0
+    ],
+    "endColor": [
+      1.0,
+      0.9,
+      0.5,
+      0.0
+    ],
+    "sizeRange": [
+      0.05,
+      0.03
+    ],
+    "sizeCurve": {
+      "type": "STEP",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0
+        },
+        {
+          "key": 0.05,
+          "value": 1.0
+        },
+        {
+          "key": 0.7,
+          "value": 1.0
+        },
+        {
+          "key": 0.75,
+          "value": 0.0
+        }
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      8.0,
+      0.0
+    ],
+    "speedRange": [
+      0.8,
+      1.2
+    ],
+    "randomDir": [
+      0.05,
+      0.0,
+      0.05
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.0
+  },
+  "Material": {
+    "texture": "Textures/core1.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

@@ -11,6 +11,7 @@ struct Vertex
 
 StructuredBuffer<float3> meshVertex : register(t2);
 StructuredBuffer<uint> meshIndices : register(t3);
+StructuredBuffer<float3> meshNormals : register(t4);
 ConsumeStructuredBuffer<uint> deadIndices : register(u4);
 
 // --- [Robust Random Functions (Wang Hash)] ---
@@ -71,7 +72,7 @@ void VertexSpawn(inout uint rngState, uint vCount, uint vOffset, out float3 outP
     }
 }
 
-void SurfaceSpawn(inout uint rngState, uint iCount, uint iOffset, uint vOffset, out float3 outPos)
+void SurfaceSpawn(inout uint rngState, uint iCount, uint iOffset, uint vOffset, out float3 outPos, out float3 outNormal)
 {
     if (iCount > 0) {
         uint triCount = iCount / 3;
@@ -90,9 +91,15 @@ void SurfaceSpawn(inout uint rngState, uint iCount, uint iOffset, uint vOffset, 
         float3 v1 = meshVertex[vOffset + i1];
         float3 v2 = meshVertex[vOffset + i2];
         outPos = v0 + ra * (v1 - v0) + rb * (v2 - v0);
+
+        float3 n0 = meshNormals[vOffset + i0];
+        float3 n1 = meshNormals[vOffset + i1];
+        float3 n2 = meshNormals[vOffset + i2];
+        outNormal = normalize(n0 + ra * (n1 - n0) + rb * (n2 - n0));
     }
     else {
         outPos = float3(0, 0, 0);
+        outNormal = float3(0, 0, 0);
     }
 }
 
@@ -116,6 +123,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     rngState = wang_hash(rngState);
 
     float3 spawnPos = float3(0, 0, 0);
+    float3 localNormal = float3(0, 0, 0);
     rngState = wang_hash(rngState);
 
     SpawnConsts spawn = consts[emitterID].spawn;
@@ -123,13 +131,16 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (spawn.spawnShape == 0) spawnPos = BoxSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 1) spawnPos = SphereSpawn(rngState, spawn.spawnVolume, spawn.spawnInnerRatio);
     else if (spawn.spawnShape == 2) VertexSpawn(rngState, meshConsts[systemID].vertexCount, meshConsts[systemID].vertexOffset, spawnPos);
-    else if (spawn.spawnShape == 3) SurfaceSpawn(rngState, meshConsts[systemID].indexCount, meshConsts[systemID].indexOffset, meshConsts[systemID].vertexOffset, spawnPos);
+    else if (spawn.spawnShape == 3) SurfaceSpawn(rngState, meshConsts[systemID].indexCount, meshConsts[systemID].indexOffset, meshConsts[systemID].vertexOffset, spawnPos, localNormal);
     else if (spawn.spawnShape == 4) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, 0, dtID.x, false);
     else if (spawn.spawnShape == 5) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, spawn.spawnStartIndex, dtID.x, true);
 
     // ��ġ �� �ӵ� ���
     Particle p;
     float3 localPos = spawnPos + spawn.localPos;
+    // Surface spawn: lift particle slightly above mesh surface to prevent overlap
+    if (spawn.spawnShape == 3)
+        localPos += localNormal * 0.001f;
 
     float3 noiseDir;
     noiseDir.x = rand_signed(rngState);
@@ -146,11 +157,16 @@ void main(uint3 dtID : SV_DispatchThreadID)
         matrix pWorld = meshConsts[systemID].pWorld;
         p.position = mul(float4(localPos, 1.0f), pWorld).xyz;
         p.velocity = mul(localVel, (float3x3) pWorld);
+        if (length(localNormal) > 0.001f)
+            p.normal = normalize(mul(localNormal, (float3x3) meshConsts[systemID].pWorldIT));
+        else
+            p.normal = float3(0, 0, 0);
     }
     else // Local Space
     {
         p.position = localPos;
         p.velocity = localVel;
+        p.normal = localNormal;
     }
 
     p.life = lerp(spawn.lifeRange.x, spawn.lifeRange.y, rand_float(rngState));

@@ -1,0 +1,73 @@
+{
+  "Name": "Shield_Impact",
+  "Duration": 0.1,
+  "CompletionDelay": 1.0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "shape": "HollowSphere",
+    "spawnVolume": [
+      1.5,
+      1.5,
+      1.5
+    ],
+    "innerRadius": 0.8,
+    "burst": 15,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 64,
+    "lifeRange": [
+      0.2,
+      0.5
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "endColor": [
+      0.3,
+      0.9,
+      1.0,
+      0.0
+    ],
+    "sizeRange": [
+      0.04,
+      0.02
+    ]
+  },
+  "Force": {
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "speedRange": [
+      1.0,
+      4.0
+    ],
+    "randomDir": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "gravity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "drag": 0.3
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "solidCircle": true,
+    "velocityStretchFactor": 1.0
+  }
+}

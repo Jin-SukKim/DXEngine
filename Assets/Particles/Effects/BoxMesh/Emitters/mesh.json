@@ -24,6 +24,7 @@
     "drag": 0.0
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "Additive",
+    "normalBillboard": true
   }
 }

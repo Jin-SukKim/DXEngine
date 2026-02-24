@@ -1,0 +1,108 @@
+{
+  "Name": "Galaxy_Stream",
+  "Duration": 0,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [
+      0,
+      0,
+      0
+    ],
+    "shape": "Sphere",
+    "spawnVolume": [
+      2.0,
+      0.3,
+      2.0
+    ],
+    "spawnRate": 100.0,
+    "particlesPerSpawn": 10,
+    "maxParticles": 2048,
+    "lifeRange": [
+      2.0,
+      4.0
+    ]
+  },
+  "Visual": {
+    "startColor": [
+      0.5,
+      0.3,
+      1.0,
+      0.8
+    ],
+    "endColor": [
+      0.3,
+      0.1,
+      0.8,
+      0.0
+    ],
+    "sizeRange": [
+      0.03,
+      0.01
+    ]
+  },
+  "Force": {
+    "velocity": [
+      0,
+      0.2,
+      0
+    ],
+    "speedRange": [
+      0.1,
+      0.5
+    ],
+    "randomDir": [
+      0.1,
+      0.05,
+      0.1
+    ],
+    "gravity": [
+      0,
+      0,
+      0
+    ],
+    "drag": 0.0,
+    "velocityCurve": {
+      "type": "LINEAR",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.3
+        },
+        {
+          "key": 1.0,
+          "value": 1.0
+        }
+      ]
+    }
+  },
+  "Vortex": {
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "strength": 5.0,
+    "axis": [
+      0,
+      1,
+      0
+    ],
+    "vortexFalloff": 0.2,
+    "pull": [
+      -1.5,
+      0.3
+    ],
+    "strengthCurve": {
+      "type": "SIN",
+      "frequency": 0.5,
+      "amplitude": 0.3,
+      "offset": 1.0
+    }
+  },
+  "Material": {
+    "texture": "Textures/core1.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}
