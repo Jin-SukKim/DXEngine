@@ -58,7 +58,6 @@ namespace DE {
 		ClickEffectManager::Get().Initialize();
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
-
 		// ���� Spawner�� ��� ���ΰų� �����ص� �� (���⼱ ����)
 		//m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		//m_spawner->SetScene(this);
@@ -66,7 +65,7 @@ namespace DE {
 		//m_spawner->SetSpawnMode(SpawnMode::Interval);
 		//m_spawner->SetSpawnInterval(0.1f);
 		//m_spawner->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		//m_spawner->SetMaxActiveParticles(100);
+		//m_spawner->SetMaxActiveParticles(300);
 
 		//m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		//m_spawner2->SetScene(this);
@@ -79,21 +78,24 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Custom\\Fog.json");
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
-		//m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(0.f, 0.f, 0.f));
+		m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(0.f, 0.f, 0.f));
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\GalaxySwirl\\System_Galaxy.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Magic\\System_MagicCast.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\ForceModule\\CurlNoise_Firefly.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\SwordClash\\System_SwordClash.json");
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\SparkBurstEffect.json");
+
+		m_sample = AddObject<SampleActor>(L"SampleActor");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -174,8 +176,7 @@ namespace DE {
 			// IceEffect �Ǵ� HolySwordEffect�� �����ϰ� ����
 			EffectActor* effect = nullptr;
 			//if (rand() % 2 == 0) {
-				//effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
-				effect = SpawnEffect<SmokeEffect>(L"ClickSmoke", L"", randomPos);
+				effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
 			//}
 			//else {
 			//	effect = SpawnEffect<HolySwordEffect>(L"ClickHolySword", L"", randomPos);

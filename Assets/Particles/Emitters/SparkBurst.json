@@ -4,10 +4,10 @@
     "shape": "Sphere",
     "localPos": [ 0.0, 0.0, 0.0 ],
     "spawnVolume": [ 0.01, 0.01, 0.01 ],
-    "spawnRate": 40.0,
+    "spawnRate": 30.0,
     "burst": 0,
-    "particlesPerSpawn": 20,
-    "maxParticles": 1024,
+    "particlesPerSpawn": 150,
+    "maxParticles": 10000,
     "lifeRange": [ 0.3, 0.7 ]
   },
   "Visual": {
@@ -17,7 +17,7 @@
   },
   "Force": {
     "velocity": [ 0.6, 0.6, 0.0 ],
-    "speedRange": [ 2.0, 3.0 ],
+    "speedRange": [ 2.0, 5.0 ],
     "randomDir": [ 0.0, 0.2, 0.0 ],
     "gravity": [ 0.0, -7.0, 0.0 ],
     "drag": 0.9

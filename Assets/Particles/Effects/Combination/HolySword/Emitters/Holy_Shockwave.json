@@ -9,9 +9,9 @@
     "spawnVolume": [ 0.1, 0.02, 0.1 ],
     "burst": 1,
     "spawnRate": 0.0,
-    "particlesPerSpawn": 80,
-    "maxParticles": 256,
-    "lifeRange": [ 0.5, 0.8 ]
+    "particlesPerSpawn": 8192,
+    "maxParticles": 8192,
+    "lifeRange": [ 0.5, 0.6 ]
   },
     "Visual": {
         "startColor": [1.0, 0.95, 0.7, 0.7],
@@ -20,7 +20,7 @@
     },
     "Force": {
         "velocity": [0.0, 0.0, 0.0],
-        "speedRange": [4.0, 6.0],
+        "speedRange": [5.5, 6.0],
         "randomDir": [1.0, 0.0, 1.0],
         "gravity": [0.0, 0.0, 0.0],
         "drag": 0.15

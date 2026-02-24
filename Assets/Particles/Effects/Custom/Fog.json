@@ -11,6 +11,6 @@
   "PreWarmTime": 0.0,
   "State": "Play",
   "Emitters": [
-    "Particles\\Effects\\Custom\\Emitters\\flame.json"
+    "Particles\\Effects\\Custom\\Emitters\\smoke.json"
   ]
 }

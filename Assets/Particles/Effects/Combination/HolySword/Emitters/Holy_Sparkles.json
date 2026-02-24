@@ -8,8 +8,8 @@
         "shape": "Box",
         "spawnVolume": [0.5, 3.0, 0.5],
         "spawnRate": 100.0,
-        "particlesPerSpawn": 10,
-        "maxParticles": 1024,
+        "particlesPerSpawn": 100,
+        "maxParticles": 10000,
         "lifeRange": [0.5, 1.5]
     },
     "Visual": {

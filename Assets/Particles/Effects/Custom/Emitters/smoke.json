@@ -1,45 +1,74 @@
 {
-  "Name": "Smoke",
-  "Duration": 1.2,
-  "CompletionDelay": 0.0,
+  "Name": "GroundFog",
+  "Duration": -1.0,
   "Spawn": {
-    "shape": "Sphere",
-    "localPos": [ 0.0, 0.0, 0.0 ],
-    "spawnVolume": [ 0.5, 0.5, 0.2 ],
-    "spawnInnerRatio": 0.0,
-    "spawnRate": 0.0,
-    "burst": 1,
-    "particlesPerSpawn": 10,
-    "maxParticles": 10,
-    "lifeRange": [ 1.0, 1.2 ]
+    "shape": "Box",
+    "localPos": [ 0.0, 0.2, 0.0 ],
+    "spawnVolume": [ 3.0, 0.2, 3.0 ],
+    "spawnRate": 15.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 1024,
+    "lifeRange": [ 8.0, 10.0 ]
   },
   "Visual": {
-    "startColor": [ 1.0, 1.0, 1.0, 0.6 ],
-    "endColor": [ 1.0, 1.0, 1.0, 0.6 ],
-    "sizeRange": [ 0.2, 2.0 ],
+    "startColor": [ 1.0, 1.0, 1.0, 0.3 ],
+    "endColor": [ 1.0, 1.0, 1.0, 0.0 ],
+    "sizeRange": [ 1.5, 4.0 ],
+    "sizeRandomness": 0.5,
     "rotation": {
-      "minRotation": [ 0.0, 0.0, 0.0 ],
-      "maxRotation": [ 0.0, 0.0, 0.0 ],
-      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
-      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
+      "minRotation": [ 0.0, 0.0, -3.14 ],
+      "maxRotation": [ 0.0, 0.0, 3.14 ],
+      "minRotSpeed": [ 0.0, 0.0, -0.05 ],
+      "maxRotSpeed": [ 0.0, 0.0, 0.05 ]
+    },
+    "alphaCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 2.0
+        },
+        {
+          "key": 0.3,
+          "value": 1.0
+        },
+        {
+          "key": 0.7,
+          "value": 1.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": -2.0
+        }
+      ]
     }
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
-    "speedRange": [ 0.8, 1.2 ],
-    "randomDir": [ 1.0, 1.0, 1.0 ],
-    "gravity": [ 0.0, 1.0, 0.0 ],
-    "drag": 0.9
+    "speedRange": [ 0.2, 0.8 ],
+    "randomDir": [ 1.0, 0.05, 1.0 ],
+    "gravity": [ 0.0, 0.3, 0.0 ],
+    "drag": 0.8,
+    "curlNoiseEnabled": true,
+    "curlNoiseFrequency": 0.4,
+    "curlNoiseStrength": 0.1,
+    "curlNoiseScrollSpeed": [ 0.2, 0.0, 0.2 ]
   },
   "Material": {
-    "texture": "Textures\\ExplosionCloud\\Explosion01-nofire_5x5.tga",
+    "texture": "Textures/Fog-Group.png",
     "sprite": {
-      "frameTiles": [ 5, 5 ],
-      "frameCount": 25,
+      "frameTiles": [ 2, 2 ],
+      "frameCount": 4,
+      "animDuration": 1.0,
       "frameBlending": true
     }
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend"
+    "blendMode": "AlphaBlend",
+    "softDistance": 0.1,
+    "softNearDist": 1.0,
+    "softMaxDist": 2.0
   }
 }
