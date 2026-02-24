@@ -10,12 +10,12 @@
     ],
     "shape": "Box",
     "spawnVolume": [
-      20.0,
-      0.2,
-      20.0
+      3.0,
+      0.1,
+      3.0
     ],
     "spawnRate": 10.0,
-    "particlesPerSpawn": 2,
+    "particlesPerSpawn": 5,
     "maxParticles": 256,
     "lifeRange": [
       5.0,
@@ -27,7 +27,7 @@
       0.7,
       0.6,
       0.4,
-      0.4
+      1.0
     ],
     "endColor": [
       0.6,
@@ -63,10 +63,18 @@
     "drag": 0.1
   },
   "Material": {
-    "texture": "Textures/dust.png"
+    "texture": "Textures/dirt.png",
+    "sprite": {
+      "frameTiles": [
+        3.0,
+        1.0
+      ],
+      "frameCount": 3,
+      "frameBlending": true
+    }
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
+    "blendMode": "Additive",
     "normalBillboard": true
   }
 }

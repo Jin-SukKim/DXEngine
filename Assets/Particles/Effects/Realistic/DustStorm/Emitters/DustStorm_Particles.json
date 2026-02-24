@@ -5,17 +5,17 @@
     "space": "World",
     "localPos": [
       0,
-      1.5,
+      0,
       0
     ],
     "shape": "Box",
     "spawnVolume": [
-      25.0,
       3.0,
-      25.0
+      1.0,
+      3.0
     ],
-    "spawnRate": 100.0,
-    "particlesPerSpawn": 5,
+    "spawnRate": 5.0,
+    "particlesPerSpawn": 100,
     "maxParticles": 2048,
     "lifeRange": [
       3.0,

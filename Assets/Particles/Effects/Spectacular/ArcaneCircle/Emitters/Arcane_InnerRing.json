@@ -1,6 +1,5 @@
 {
   "Name": "Arcane_InnerRing",
-  "Duration": 0,
   "Spawn": {
     "space": "Local",
     "localPos": [
@@ -14,12 +13,12 @@
       0.08,
       0.08
     ],
-    "spawnRate": 40.0,
-    "particlesPerSpawn": 4,
-    "maxParticles": 512,
+    "spawnRate": 30.0,
+    "particlesPerSpawn": 7,
+    "maxParticles": 1024,
     "lifeRange": [
-      0.4,
-      0.8
+      3.0,
+      5.0
     ]
   },
   "Visual": {
@@ -36,8 +35,8 @@
       0.0
     ],
     "sizeRange": [
-      0.06,
-      0.03
+      0.05,
+      0.15
     ]
   },
   "Force": {
@@ -73,7 +72,7 @@
       1,
       0
     ],
-    "rotationRate": -3.5,
+    "rotationRate": -7.0,
     "offset": 0.0
   },
   "Material": {

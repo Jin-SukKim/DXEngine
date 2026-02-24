@@ -1,6 +1,5 @@
 {
   "Name": "Arcane_Sparks",
-  "Duration": 0,
   "Spawn": {
     "space": "Local",
     "localPos": [
@@ -15,8 +14,8 @@
       0.3
     ],
     "spawnInnerRatio": 0.0,
-    "spawnRate": 25.0,
-    "particlesPerSpawn": 1,
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 5,
     "maxParticles": 128,
     "lifeRange": [
       0.3,
@@ -44,21 +43,21 @@
   "Force": {
     "velocity": [
       0,
-      2.0,
+      0.0,
       0
     ],
     "speedRange": [
-      1.0,
-      4.0
+      2.0,
+      5.0
     ],
     "randomDir": [
       0.5,
-      0.3,
+      0.5,
       0.5
     ],
     "gravity": [
       0,
-      -4.0,
+      -3.0,
       0
     ],
     "drag": 0.3

@@ -5,17 +5,17 @@
     "space": "World",
     "localPos": [
       0.0,
-      8.0,
+      3.0,
       0.0
     ],
     "shape": "Box",
     "spawnVolume": [
-      12.0,
+      2.0,
       0.5,
-      12.0
+      2.0
     ],
-    "spawnRate": 50.0,
-    "particlesPerSpawn": 3,
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 30,
     "maxParticles": 2048,
     "lifeRange": [
       4.0,
@@ -121,7 +121,7 @@
     "texture": "Textures/particle.png"
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
+    "blendMode": "Additive",
     "softNearDist": 0.5
   }
 }

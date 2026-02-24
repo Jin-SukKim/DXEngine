@@ -6,8 +6,6 @@
   "PreWarmTime": 2.0,
   "State": "Play",
   "Emitters": [
-    "Particles\\Effects\\Realistic\\DustStorm\\Emitters\\DustStorm_Body.json",
-    "Particles\\Effects\\Realistic\\DustStorm\\Emitters\\DustStorm_Particles.json",
     "Particles\\Effects\\Realistic\\DustStorm\\Emitters\\DustStorm_Ground.json"
   ]
 }

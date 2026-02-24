@@ -10,12 +10,12 @@
     ],
     "shape": "Box",
     "spawnVolume": [
-      10.0,
+      2.0,
       0.01,
-      10.0
+      2.0
     ],
     "spawnRate": 5.0,
-    "particlesPerSpawn": 1,
+    "particlesPerSpawn": 10,
     "maxParticles": 128,
     "lifeRange": [
       8.0,
@@ -27,7 +27,7 @@
       1.0,
       1.0,
       1.0,
-      0.0
+      1.0
     ],
     "endColor": [
       0.95,
@@ -87,7 +87,6 @@
     "texture": "Textures/particle.png"
   },
   "BillboardRender": {
-    "blendMode": "AlphaBlend",
-    "normalBillboard": true
+    "blendMode": "Additive"
   }
 }

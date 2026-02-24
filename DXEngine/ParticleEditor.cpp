@@ -78,14 +78,16 @@ namespace DE {
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
-		m_test1 = nullptr;
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
+		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json");
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
 		// Phase 2 effects — Row 1 (z=0): Realistic + Spectacular
-		m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(0.f, 0.f, 0.f));
-		//m_snow           = SpawnEffect<EffectActor>(L"Snow",           L"Particles\\Effects\\Realistic\\Snow\\System_Snow.json",                   Vector3( -6.f, 0.f, 0.f));
-		//m_tornado        = SpawnEffect<EffectActor>(L"Tornado",        L"Particles\\Effects\\Realistic\\Tornado\\System_Tornado.json",             Vector3(  0.f, 0.f, 0.f));
+		//m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(0.f, 0.f, 0.f));
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json");
+		
+		
 		//m_solarFlare     = SpawnEffect<EffectActor>(L"SolarFlare",     L"Particles\\Effects\\Spectacular\\SolarFlare\\System_SolarFlare.json",     Vector3(  6.f, 0.f, 0.f));
 		//m_crystalShatter = SpawnEffect<EffectActor>(L"CrystalShatter", L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json", Vector3( 12.f, 0.f, 0.f));
 

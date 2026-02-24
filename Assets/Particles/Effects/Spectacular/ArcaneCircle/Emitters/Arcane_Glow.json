@@ -1,6 +1,5 @@
 {
   "Name": "Arcane_Glow",
-  "Duration": 0,
   "Spawn": {
     "space": "Local",
     "localPos": [
@@ -10,12 +9,12 @@
     ],
     "shape": "Sphere",
     "spawnVolume": [
-      0.1,
-      0.1,
-      0.1
+      0.15,
+      0.15,
+      0.15
     ],
-    "spawnRate": 3.0,
-    "particlesPerSpawn": 1,
+    "spawnRate": 1.5,
+    "particlesPerSpawn": 4,
     "maxParticles": 16,
     "lifeRange": [
       2.0,
@@ -36,8 +35,8 @@
       0.0
     ],
     "sizeRange": [
-      0.5,
-      0.5
+      1.0,
+      1.0
     ],
     "sizeCurve": {
       "type": "SIN",
