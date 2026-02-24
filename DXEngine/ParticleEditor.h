@@ -41,36 +41,43 @@ namespace DE {
 		InputAction m_Lclick;
 		InputAction m_Rclick;
 
-		ParticleSystem* m_test1 = nullptr; // ���� ����Ʈ��
-		ParticleSystem* m_test2 = nullptr; // ���ڱ� �߰��Ǵ� ����Ʈ��
-		ParticleSystem* m_test3 = nullptr;
-		TestActor* m_testActor = nullptr;
-		std::vector<FireEffect*> m_fireTests;
+		// Spectacular 
+		EffectActor* m_arcaneCircle = nullptr;
+		EffectActor* m_crystalShatter = nullptr;
+		EffectActor* m_galaxySwirl = nullptr;
 
-		EffectActor* m_metalSpark = nullptr;
-		EffectActor* m_sparkBurst = nullptr;
-		EffectActor* m_ember = nullptr;
-		EffectActor* m_curlSmoke = nullptr;
-		EffectActor* m_curlFirefly = nullptr;
-		EffectActor* m_curlMagicAura = nullptr;
-		EffectActor* m_curlSpiritWisp = nullptr;
-		EffectActor* m_test = nullptr;
+		// UnrealQuality 
+		EffectActor* m_portalGateway = nullptr;
+
+		// Explosion
+		EffectActor* m_explosion = nullptr;
+
+		// Combination
+		EffectActor* m_holySword = nullptr;
 		EffectActor* m_swordClash = nullptr;
 
-		// Phase 2 effects
+		// Magic
+		EffectActor* m_magicCast = nullptr;
+
+		// ForceModule
+		EffectActor* m_curlNoiseFirefly = nullptr;
+
+		// Misc / Custom
+		EffectActor* m_fireEffect = nullptr;
+		EffectActor* m_sparkBurst = nullptr;
+		EffectActor* m_fog = nullptr;
+		EffectActor* m_custom = nullptr;
+
+		// Realistic
 		EffectActor* m_rain = nullptr;
-		EffectActor* m_snow = nullptr;
-		EffectActor* m_tornado = nullptr;
-		EffectActor* m_solarFlare = nullptr;
-		EffectActor* m_crystalShatter = nullptr;
-		EffectActor* m_bubble = nullptr;
-		EffectActor* m_firefly = nullptr;
-		EffectActor* m_portalGateway = nullptr;
-		EffectActor* m_healAura = nullptr;
-		EffectActor* m_shieldBarrier = nullptr;
-		EffectActor* m_levelUp = nullptr;
-		EffectActor* m_teleport = nullptr;
-		EffectActor* m_deathDissolve = nullptr;
+
+		// Legacy test handles (kept for destructor cleanup)
+		ParticleSystem* m_test1 = nullptr;
+		ParticleSystem* m_test2 = nullptr;
+		ParticleSystem* m_test3 = nullptr;
+
+		TestActor* m_testActor = nullptr;
+		std::vector<FireEffect*> m_fireTests;
 
 	};
 }

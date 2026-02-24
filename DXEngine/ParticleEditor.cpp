@@ -65,7 +65,7 @@ namespace DE {
 		//m_spawner->SetSpawnMode(SpawnMode::Interval);
 		//m_spawner->SetSpawnInterval(0.1f);
 		//m_spawner->SetSpawnBox(Vector3(5.0f, 0.5f, 1.f));
-		//m_spawner->SetMaxActiveParticles(300);
+		//m_spawner->SetMaxActiveParticles(100);
 
 		//m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		//m_spawner2->SetScene(this);
@@ -78,24 +78,91 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Custom\\Fog.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Custom\\Custom.json");
+		
+		// ── Realistic ────────────────────────────────────────────────────
+		m_rain = SpawnEffect<EffectActor>(
+			L"Rain",
+			L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── Spectacular ──────────────────────────────────────────────────
+		m_arcaneCircle = SpawnEffect<EffectActor>(
+			L"ArcaneCircle",
+			L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		m_crystalShatter = SpawnEffect<EffectActor>(
+			L"CrystalShatter",
+			L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		m_galaxySwirl = SpawnEffect<EffectActor>(
+			L"GalaxySwirl",
+			L"Particles\\Effects\\Spectacular\\GalaxySwirl\\System_Galaxy.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── UnrealQuality ────────────────────────────────────────────────
+		m_portalGateway = SpawnEffect<EffectActor>(
+			L"PortalGateway",
+			L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── Explosion ────────────────────────────────────────────────────
+		m_explosion = SpawnEffect<EffectActor>(
+			L"Explosion",
+			L"Particles\\Effects\\Explosion\\Explosion.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── Combination ──────────────────────────────────────────────────
+		m_holySword = SpawnEffect<EffectActor>(
+			L"HolySword",
+			L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		m_swordClash = SpawnEffect<EffectActor>(
+			L"SwordClash",
+			L"Particles\\Effects\\Combination\\SwordClash\\System_SwordClash.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── Magic ────────────────────────────────────────────────────────
+		m_magicCast = SpawnEffect<EffectActor>(
+			L"MagicCast",
+			L"Particles\\Effects\\Magic\\System_MagicCast.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── ForceModule ──────────────────────────────────────────────────
+		m_curlNoiseFirefly = SpawnEffect<EffectActor>(
+			L"CurlNoiseFirefly",
+			L"Particles\\Effects\\ForceModule\\CurlNoise_Firefly.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		// ── Misc / Custom ────────────────────────────────────────────────
+		m_fireEffect = SpawnEffect<EffectActor>(
+			L"FireEffect",
+			L"Particles\\FireEffect.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		m_sparkBurst = SpawnEffect<EffectActor>(
+			L"SparkBurst",
+			L"Particles\\SparkBurstEffect.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		m_fog = SpawnEffect<EffectActor>(
+			L"Fog",
+			L"Particles\\Effects\\Custom\\Fog.json",
+			Vector3(0.f, 0.f, 0.f));
+
+		m_custom = SpawnEffect<EffectActor>(
+			L"Custom",
+			L"Particles\\Effects\\Custom\\Custom.json",
+			Vector3(0.f, 0.f, 0.f));
+
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
-		m_rain           = SpawnEffect<EffectActor>(L"Rain",           L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",                   Vector3(0.f, 0.f, 0.f));
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\ArcaneCircle\\System_ArcaneCircle.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Spectacular\\GalaxySwirl\\System_Galaxy.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-		m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Magic\\System_MagicCast.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\ForceModule\\CurlNoise_Firefly.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Combination\\SwordClash\\System_SwordClash.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\FireEffect.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\SparkBurstEffect.json");
+		//m_sample = AddObject<SampleActor>(L"SampleActor");
 
-		m_sample = AddObject<SampleActor>(L"SampleActor");
 	}
 
 	ParticleEditor::~ParticleEditor()
@@ -119,22 +186,42 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		float spacing = 2.0f; // ���� (�ʿ信 ���� ����)
-		int width = 32;       // �� �ٿ� ��ġ�� ���� (���� ����)
+		// ── Effect 배치 위치 설정 ──────────────────────────────────────────
+		// 각 Effect를 일정 간격으로 배열하여 씬에서 한눈에 확인할 수 있도록 배치합니다.
+		// 필요에 따라 위치·간격을 조정하세요.
 
-		//for (int i = 0; i < 1000; ++i) {
-		//	auto tr = m_fireTests[i]->GetComponent<TransformComponent>();
-		//	if (tr) {
-		//		// x�� ������ �������� 0 ~ 31 �ݺ�
-		//		int x = i % width;
+		struct EffectPlacement { EffectActor** actor; Vector3 pos; };
+		const EffectPlacement placements[] =
+		{
+			// ── Row 0 (z = 0) : Realistic / Spectacular ──────────────────
+			{ &m_rain,             Vector3(-15.f, 0.f,  0.f) },
+			{ &m_arcaneCircle,     Vector3(-7.f, 0.f,  0.f) },
+			{ &m_crystalShatter,   Vector3(0.f, 0.f,  0.f) },
+			{ &m_galaxySwirl,      Vector3(7.f, 0.f,  0.f) },
+			{ &m_portalGateway,    Vector3(15.f, 0.f,  0.f) },
 
-		//		// z�� ������ �������� 32������ 1�� ���� (�ٹٲ�)
-		//		int z = i / width;
+			// ── Row 1 (z = 10) : Explosion / Combination ─────────────────
+			{ &m_explosion,        Vector3(-10.f, 0.f, 10.f) },
+			{ &m_holySword,        Vector3(0.f, 0.f, 10.f) },
+			{ &m_swordClash,       Vector3(10.f, 0.f, 10.f) },
 
-		//		// Vector3(x��ǥ, ����, z��ǥ) * ����
-		//		tr->SetPos(Vector3(x * spacing, 0.0f, z * spacing));
-		//	}
-		//}
+			// ── Row 2 (z = 20) : Magic / Force / Custom ──────────────────
+			{ &m_magicCast,        Vector3(-14.f, 0.f, 20.f) },
+			{ &m_curlNoiseFirefly, Vector3(-7.f, 0.f, 20.f) },
+			{ &m_fireEffect,       Vector3(0.f, 0.f, 20.f) },
+			{ &m_sparkBurst,       Vector3(7.f, 0.f, 20.f) },
+			{ &m_fog,              Vector3(14.f, 0.f, 20.f) },
+			{ &m_custom,           Vector3(21.f, 0.f, 20.f) },
+		};
+
+		for (const auto& p : placements)
+		{
+			if (*p.actor)
+			{
+				auto* tr = (*p.actor)->GetComponent<TransformComponent>();
+				if (tr) tr->SetPos(p.pos);
+			}
+		}
 
 		//auto tr = m_spawner2->GetComponent<TransformComponent>();
 		//if (tr)
@@ -162,35 +249,18 @@ namespace DE {
 
 	void ParticleEditor::ClickEvent()
 	{
-		//ClickEffectManager::Get().TriggerPreset("Firework");
-		// �� �����ӿ� 100���� ���� �õ�! (���İ��� ��õ ���� ��)
 		for (int i = 0; i < 100; ++i)
 		{
-			// 1. ����Ʈ ���� (Smoke�� Firework ��)
 			Vector3 randomPos(
 				(rand() % 100 - 50) * 1.0f,
 				(rand() % 20) * 1.0f,
-				(rand() % 100 - 50) * 1.0f
-			);
+				(rand() % 100 - 50) * 1.0f);
 
-			// IceEffect �Ǵ� HolySwordEffect�� �����ϰ� ����
-			EffectActor* effect = nullptr;
-			//if (rand() % 2 == 0) {
-				effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
-			//}
-			//else {
-			//	effect = SpawnEffect<HolySwordEffect>(L"ClickHolySword", L"", randomPos);
-			//}
-
-			if (effect) {
-			}
-			else {
-				// 2. [�Ѱ� ����] ���� ���� (Nullptr ��ȯ��)
-				// �޸� Ǯ(Particle/Emitter/System Slot) �� �ϳ��� �� ��
-				break;
-			}
+			EffectActor* effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
+			if (!effect) break; // 슬롯 소진 시 중단
 		}
 	}
+
 	void ParticleEditor::ClickDestroy()
 	{
 	}

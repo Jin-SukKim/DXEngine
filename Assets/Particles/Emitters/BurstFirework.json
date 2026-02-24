@@ -8,10 +8,10 @@
     "spawnVolume": [ 0.0, 0.0, 0.0 ],
     "spawnInnerRatio": 0.0,
     "spawnRate": 0.0,
-    "burst": 1024,
-    "particlesPerSpawn": 1,
-    "maxParticles": 1024,
-    "lifeRange": [ 0.8, 1.2 ]
+    "burst": 1,
+    "particlesPerSpawn": 2048,
+    "maxParticles": 2048,
+    "lifeRange": [ 0.2, 1.2 ]
   },
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
@@ -20,12 +20,13 @@
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
-    "speedRange": [ 1.2, 2.0 ],
+    "speedRange": [ 0.3, 2.0 ],
     "randomDir": [ 1.0, 1.0, 1.0 ],
     "gravity": [ 0.0, -3.0, 0.0 ],
     "drag": 0.7
   },
   "BillboardRender": {
-    "blendMode": "Additive"
+    "blendMode": "Additive",
+    "velocityStretchFactor": 0.1
   }
 }
