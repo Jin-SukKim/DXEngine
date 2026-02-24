@@ -195,25 +195,20 @@ namespace DE {
 		struct EffectPlacement { EffectActor** actor; Vector3 pos; };
 		const EffectPlacement placements[] =
 		{
-			// ── Row 0 (z = 0) : Realistic / Spectacular ──────────────────
-			{ &m_rain,             Vector3(-15.f, 0.f,  0.f) },
-			//{ &m_arcaneCircle,     Vector3(-7.f, 0.f,  0.f) },
-			{ &m_crystalShatter,   Vector3(0.f, 0.f,  0.f) },
-			{ &m_galaxySwirl,      Vector3(7.f, 0.f,  0.f) },
-			{ &m_portalGateway,    Vector3(15.f, 0.f,  0.f) },
-
-			// ── Row 1 (z = 10) : Explosion / Combination ─────────────────
-			{ &m_explosion,        Vector3(-10.f, 0.f, 10.f) },
-			{ &m_holySword,        Vector3(0.f, 0.f, 10.f) },
-			{ &m_swordClash,       Vector3(10.f, 0.f, 10.f) },
-
-			// ── Row 2 (z = 20) : Magic / Force / Custom ──────────────────
-			{ &m_magicCast,        Vector3(-14.f, 0.f, 20.f) },
-			{ &m_curlNoiseFirefly, Vector3(-7.f, 0.f, 20.f) },
-			{ &m_fireEffect,       Vector3(0.f, 0.f, 20.f) },
-			{ &m_sparkBurst,       Vector3(7.f, 0.f, 20.f) },
-			{ &m_fog,              Vector3(14.f, 0.f, 20.f) },
-			{ &m_custom,           Vector3(21.f, 0.f, 20.f) },
+			// ── X축 일직선, 간격 8.0f, 중앙 기준 ──────────────────────
+			{ &m_rain,             Vector3(-48.f, 0.f, 0.f) },  // Realistic
+			{ &m_crystalShatter,   Vector3(-40.f, 0.f, 0.f) },  // Spectacular
+			{ &m_galaxySwirl,      Vector3(-32.f, 0.f, 0.f) },  // Spectacular
+			{ &m_portalGateway,    Vector3(-24.f, 0.f, 0.f) },  // UnrealQuality
+			{ &m_explosion,        Vector3(-16.f, 0.f, 0.f) },  // Explosion
+			{ &m_holySword,        Vector3( -8.f, 0.f, 0.f) },  // Combination
+			{ &m_swordClash,       Vector3(  0.f, 0.f, 0.f) },  // Combination
+			{ &m_magicCast,        Vector3(  8.f, 0.f, 0.f) },  // Magic
+			{ &m_curlNoiseFirefly, Vector3( 16.f, 0.f, 0.f) },  // ForceModule
+			{ &m_fireEffect,       Vector3( 24.f, 0.f, 0.f) },  // Misc
+			{ &m_sparkBurst,       Vector3( 32.f, 0.f, 0.f) },  // Misc
+			{ &m_fog,              Vector3( 40.f, 0.f, 0.f) },  // Misc
+			{ &m_custom,           Vector3( 48.f, 0.f, 0.f) },  // Misc
 		};
 
 		for (const auto& p : placements)
