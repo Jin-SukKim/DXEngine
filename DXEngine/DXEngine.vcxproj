@@ -228,6 +228,7 @@
     <ClInclude Include="SpawnEffectsActor.h" />
     <ClInclude Include="StarEffect.h" />
     <ClInclude Include="SubEmitterEffectsActor.h" />
+    <ClInclude Include="SwordBurstEffect.h" />
     <ClInclude Include="SwordClashEffect.h" />
     <ClInclude Include="TestActor.h" />
     <ClInclude Include="TextureManager.h" />
@@ -344,6 +345,7 @@
     <ClCompile Include="SpawnEffectsActor.cpp" />
     <ClCompile Include="StarEffect.cpp" />
     <ClCompile Include="SubEmitterEffectsActor.cpp" />
+    <ClCompile Include="SwordBurstEffect.cpp" />
     <ClCompile Include="SwordClashEffect.cpp" />
     <ClCompile Include="TestActor.cpp" />
     <ClCompile Include="TextureManager.cpp" />

@@ -68,6 +68,8 @@ namespace DE {
 		EffectActor* m_fog = nullptr;
 		EffectActor* m_custom = nullptr;
 
+		std::vector<EffectActor*> m_clickExplosions;
+
 		// Realistic
 		EffectActor* m_rain = nullptr;
 

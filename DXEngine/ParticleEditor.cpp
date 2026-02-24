@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ParticleEditor.h"
 #include "ParticleEmitter.h"
 #include "SquareActor.h"
@@ -43,6 +43,7 @@
 #include "BoxMeshEffect.h"
 #include "ExplosionEffect.h"
 #include "SwordClashEffect.h"
+#include "SwordBurstEffect.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -122,9 +123,9 @@ namespace DE {
 			L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		m_swordClash = SpawnEffect<EffectActor>(
-			L"SwordClash",
-			L"Particles\\Effects\\Combination\\SwordClash\\System_SwordClash.json",
+		m_swordClash = SpawnEffect<SwordBurstEffect>(
+			L"SwordBurst",
+			L"",
 			Vector3(0.f, 0.f, 0.f));
 
 		// ── Magic ────────────────────────────────────────────────────────
@@ -195,20 +196,21 @@ namespace DE {
 		struct EffectPlacement { EffectActor** actor; Vector3 pos; };
 		const EffectPlacement placements[] =
 		{
-			// ── X축 일직선, 간격 8.0f, 중앙 기준 ──────────────────────
-			{ &m_rain,             Vector3(-48.f, 0.f, 0.f) },  // Realistic
-			{ &m_crystalShatter,   Vector3(-40.f, 0.f, 0.f) },  // Spectacular
-			{ &m_galaxySwirl,      Vector3(-32.f, 0.f, 0.f) },  // Spectacular
-			{ &m_portalGateway,    Vector3(-24.f, 0.f, 0.f) },  // UnrealQuality
-			{ &m_explosion,        Vector3(-16.f, 0.f, 0.f) },  // Explosion
-			{ &m_holySword,        Vector3( -8.f, 0.f, 0.f) },  // Combination
-			{ &m_swordClash,       Vector3(  0.f, 0.f, 0.f) },  // Combination
-			{ &m_magicCast,        Vector3(  8.f, 0.f, 0.f) },  // Magic
-			{ &m_curlNoiseFirefly, Vector3( 16.f, 0.f, 0.f) },  // ForceModule
-			{ &m_fireEffect,       Vector3( 24.f, 0.f, 0.f) },  // Misc
-			{ &m_sparkBurst,       Vector3( 32.f, 0.f, 0.f) },  // Misc
-			{ &m_fog,              Vector3( 40.f, 0.f, 0.f) },  // Misc
-			{ &m_custom,           Vector3( 48.f, 0.f, 0.f) },  // Misc
+			// ── Row 1 (Z = -8): Realistic → Combination ─────────────────────────────
+			{ &m_rain,             Vector3(-24.f, 0.f, -8.f) },
+			{ &m_crystalShatter,   Vector3(-16.f, 0.f, -8.f) },
+			{ &m_galaxySwirl,      Vector3( -8.f, 0.f, -8.f) },
+			{ &m_portalGateway,    Vector3(  0.f, 0.f, -8.f) },
+			{ &m_explosion,        Vector3(  8.f, 0.f, -8.f) },
+			{ &m_holySword,        Vector3( 16.f, 0.f, -8.f) },
+			{ &m_swordClash,       Vector3( 24.f, 0.f, -8.f) },  // SwordBurst
+			// ── Row 2 (Z = +8): Magic → Misc ────────────────────────────────────────
+			{ &m_magicCast,        Vector3(-20.f, 0.f,  8.f) },
+			{ &m_curlNoiseFirefly, Vector3(-12.f, 0.f,  8.f) },
+			{ &m_fireEffect,       Vector3( -4.f, 0.f,  8.f) },
+			{ &m_sparkBurst,       Vector3(  4.f, 0.f,  8.f) },
+			{ &m_fog,              Vector3( 12.f, 0.f,  8.f) },
+			{ &m_custom,           Vector3( 20.f, 0.f,  8.f) },
 		};
 
 		for (const auto& p : placements)
@@ -220,12 +222,15 @@ namespace DE {
 			}
 		}
 
+		if (auto* burst = dynamic_cast<SwordBurstEffect*>(m_swordClash))
+			burst->RepositionChildren();
+
 		//auto tr = m_spawner2->GetComponent<TransformComponent>();
 		//if (tr)
 		//	tr->SetPos(Vector3(25.f, 0.f, 0.f));
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
-		//AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		//AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
+		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -246,19 +251,33 @@ namespace DE {
 
 	void ParticleEditor::ClickEvent()
 	{
-		for (int i = 0; i < 100; ++i)
-		{
-			Vector3 randomPos(
-				(rand() % 100 - 50) * 1.0f,
-				(rand() % 20) * 1.0f,
-				(rand() % 100 - 50) * 1.0f);
+		static const Vector3 kSpawnCenter(0.f, 0.f, 20.f);
+		static const float   kSpawnRange = 3.0f;
 
-			EffectActor* effect = SpawnEffect<IceEffect>(L"ClickIce", L"", randomPos);
-			if (!effect) break; // 슬롯 소진 시 중단
-		}
+		auto rnd = [](float range) {
+			return (rand() % 201 - 100) / 100.0f * range;
+		};
+
+		Vector3 spawnPos(
+			kSpawnCenter.x + rnd(kSpawnRange),
+			kSpawnCenter.y,
+			kSpawnCenter.z + rnd(kSpawnRange));
+
+		EffectActor* effect = SpawnEffect<EffectActor>(
+			L"ClickExplosion",
+			L"Particles\\Effects\\Explosion\\Explosion.json",
+			spawnPos);
+
+		if (effect)
+			m_clickExplosions.push_back(effect);
 	}
 
 	void ParticleEditor::ClickDestroy()
 	{
+		if (!m_clickExplosions.empty())
+		{
+			RemoveEffects(m_clickExplosions);
+			m_clickExplosions.clear();
+		}
 	}
 }
