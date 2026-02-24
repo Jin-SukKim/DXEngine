@@ -61,21 +61,21 @@ namespace DE {
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
 		// ���� Spawner�� ��� ���ΰų� �����ص� �� (���⼱ ����)
-		m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		m_spawner->SetScene(this);
-		m_spawner->SetActorType<SwordClashEffect>();
-		m_spawner->SetSpawnMode(SpawnMode::Interval);
-		m_spawner->SetSpawnInterval(0.01f);
-		m_spawner->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
-		m_spawner->SetMaxActiveParticles(1000);
+		//m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		//m_spawner->SetScene(this);
+		//m_spawner->SetActorType<SwordClashEffect>();
+		//m_spawner->SetSpawnMode(SpawnMode::Interval);
+		//m_spawner->SetSpawnInterval(0.01f);
+		//m_spawner->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
+		//m_spawner->SetMaxActiveParticles(1000);
 
 		m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		m_spawner2->SetScene(this);
 		m_spawner2->SetActorType<ExplosionEffect>();
 		m_spawner2->SetSpawnMode(SpawnMode::Interval);
-		m_spawner2->SetSpawnInterval(0.1f);
+		m_spawner2->SetSpawnInterval(0.01f);
 		m_spawner2->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
-		m_spawner2->SetMaxActiveParticles(100);
+		m_spawner2->SetMaxActiveParticles(1000);
 
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
@@ -150,10 +150,10 @@ namespace DE {
 			L"Particles\\SparkBurstEffect.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		//m_fog = SpawnEffect<EffectActor>(
-		//	L"Fog",
-		//	L"Particles\\Effects\\Custom\\Fog.json",
-		//	Vector3(0.f, 0.f, 0.f));
+		m_fog = SpawnEffect<EffectActor>(
+			L"Fog",
+			L"Particles\\Effects\\Custom\\Fog.json",
+			Vector3(0.f, 0.f, 0.f));
 
 		m_custom = SpawnEffect<EffectActor>(
 			L"Custom",
@@ -212,7 +212,7 @@ namespace DE {
 			{ &m_curlNoiseFirefly, Vector3(-7.f, 0.f, 20.f) },
 			{ &m_fireEffect,       Vector3(0.f, 0.f, 20.f) },
 			{ &m_sparkBurst,       Vector3(7.f, 0.f, 20.f) },
-			//{ &m_fog,              Vector3(14.f, 0.f, 20.f) },
+			{ &m_fog,              Vector3(14.f, 0.f, 20.f) },
 			{ &m_custom,           Vector3(21.f, 0.f, 20.f) },
 		};
 

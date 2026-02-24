@@ -67,8 +67,9 @@
   },
   "BillboardRender": {
     "blendMode": "AlphaBlend",
+    "lowResolution": true,
     "softDistance": 0.1,
-    "softNearDist": 1.0,
-    "softMaxDist": 2.0
+    "softNearDist": 3.0,
+    "softMaxDist": 16.0
   }
 }

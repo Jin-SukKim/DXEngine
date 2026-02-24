@@ -7,7 +7,7 @@
     "spawnInnerRatio": 0.2,
     "spawnRate": 15.0,
     "particlesPerSpawn": 50,
-    "maxParticles": 5000,
+    "maxParticles": 1024,
     "lifeRange": [ 1.2, 1.5 ]
   },
   "Visual": {
