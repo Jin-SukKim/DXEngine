@@ -2,7 +2,7 @@
   "Name": "FireEffect",
   "Spawn": {
     "space": "local",
-    "localPos": [ 1.5, 0.0, -0.1 ],
+    "localPos": [ 0.0, 0.0, -0.05 ],
     "spawnVolume": [ 1.0, 1.0, 1.0 ],
     "spawnInnerRatio": 0.0,
     "shape": "Texture",
@@ -15,7 +15,7 @@
   "Visual": {
     "startColor": [ 1.0, 0.1, 0.0, 1.0 ],
     "endColor": [ 1.0, 0.8, 0.1, 1.0 ],
-    "sizeRange": [ 0.02, 0.02 ],
+    "sizeRange": [ 0.015, 0.015 ],
     "rotation": {
       "minRotation": [ 0.0, 0.0, 0.0 ], 
       "maxRotation": [ 6.28, 0.0, 0.0 ],

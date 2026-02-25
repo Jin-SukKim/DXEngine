@@ -30,7 +30,7 @@ namespace DE {
 		//float m_projFovAngleY = 90.f * 0.5f; // Luna 교재 기본 설정 (FOV)
 		float m_projFovAngleY = 70.0f; // Luna 교재 기본 설정 (FOV)
 		float m_nearZ = 0.01f;
-		float m_farZ = 100.f;
+		float m_farZ = 1000.f;
 		float m_aspect = 16.f / 9.f;
 		bool m_usePerspectiveProjection = true; // 원근 투영
 

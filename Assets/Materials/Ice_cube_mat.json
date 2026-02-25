@@ -13,7 +13,7 @@
     0.0
   ],
   "Textures": {
-    "albedo": "Models\\ice-cube-texture\\Ice_cube_texture_3.png",
+    "diffuse": "Models\\ice-cube-texture\\Ice_cube_texture_3.png",
     "normal": "Models\\ice-cube-texture\\Ice_texture.png"
   }
 }

@@ -42,19 +42,17 @@
       1.5
     ],
     "sizeCurve": {
-      "type": "STEP",
+      "type": "BEZIER",
       "keyframes": [
         {
           "key": 0.0,
-          "value": 1.0
+          "value": 1.0,
+          "outTangent": -3.0
         },
         {
-          "key": 0.1,
-          "value": 1.0
-        },
-        {
-          "key": 0.15,
-          "value": 0.0
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": 0.0
         }
       ]
     }
