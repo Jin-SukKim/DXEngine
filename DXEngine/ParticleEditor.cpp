@@ -44,6 +44,7 @@
 #include "ExplosionEffect.h"
 #include "SwordClashEffect.h"
 #include "SwordBurstEffect.h"
+#include "OrbitEffectsActor.h"
 
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
@@ -81,7 +82,7 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Custom\\Portal.json");
+		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\OrbitModule\\OrbitTilted.json");
 		
 		// ── Realistic ────────────────────────────────────────────────────
 		m_rain = SpawnEffect<EffectActor>(
@@ -166,6 +167,11 @@ namespace DE {
 			L"Particles\\Effects\\Custom\\Portal.json",
 			Vector3(0.f, 0.f, 0.f));
 
+		m_orbit = SpawnEffect<OrbitEffectsActor>(
+			L"BoxMesh",
+			L"",
+			Vector3(0.f, 0.f, 0.f));
+
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
@@ -217,7 +223,8 @@ namespace DE {
 			// ── Row 2 (Z = +8): Magic → Misc ────────────────────────────────────────
 			{ &m_magicCast,        Vector3(-20.f, 0.f,  8.f) },
 			{ &m_curlNoiseFirefly, Vector3(-12.f, 0.f,  8.f) },
-			{ &m_fireEffect,       Vector3( -4.f, 0.f,  8.f) },
+			{ &m_fireEffect,       Vector3( -6.f, 0.f,  8.f) },
+			{ &m_orbit,            Vector3( 0.f, 0.f,  8.f) },
 			{ &m_sparkBurst,       Vector3(  4.f, 0.f,  8.f) },
 			{ &m_fog,              Vector3( 12.f, 0.f,  8.f) },
 			{ &m_custom,           Vector3( 20.f, 0.f,  8.f) },

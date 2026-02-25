@@ -3,7 +3,7 @@
     "Duration": 0,
     "Spawn": {
         "space": "Local",
-        "localPos": [1.0, 0.0, 0.0],
+        "localPos": [-1.0, 0.0, 0.0],
         "shape": "Sphere",
         "spawnVolume": [0.1, 0.1, 0.1],
         "spawnRate": 30.0,
@@ -26,7 +26,7 @@
     "Orbit": {
         "center": [0.0, 0.0, 0.0],
         "axis": [0.0, 1.0, 0.0],
-        "rotationRate": 2.0,
+        "rotationRate": -2.0,
         "offset": 0.0
     },
     "BillboardRender": {

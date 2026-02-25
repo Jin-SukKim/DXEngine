@@ -71,6 +71,7 @@ namespace DE {
 		// 추가
 		EffectActor* m_boxMesh = nullptr;
 		EffectActor* m_portal = nullptr;
+		EffectActor* m_orbit = nullptr;
 
 		std::vector<EffectActor*> m_clickExplosions;
 
