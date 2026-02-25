@@ -7,7 +7,7 @@
 
 struct Element
 {
-    float key;
+    uint2 key;
     uint value;
 };
 
@@ -27,7 +27,7 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID)
     shared_data[idx0] = arr[blockOffset + idx0];
     shared_data[idx1] = arr[blockOffset + idx1];
 
-    // LDS(groupshared)¿¡ µ¥ÀÌÅÍ¸¦ ¾²°í(Write) ³ª¼­, ±× µ¥ÀÌÅÍ¸¦ ´Ù¸¥ ½º·¹µå°¡ ÀÐ±â(Read) Á÷Àü¿¡ ¹Ýµå½Ã »ç¿ë
+    // LDS(groupshared)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½(Write) ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½å°¡ ï¿½Ð±ï¿½(Read) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ï¿½ ï¿½ï¿½ï¿½
     GroupMemoryBarrierWithGroupSync();
 
     // Full bitonic sort within the block (k=2..BLOCK_SIZE)
@@ -48,10 +48,12 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID)
                     Element iElem = shared_data[i];
                     Element lElem = shared_data[l];
 
-                    bool isLess = (iElem.key < lElem.key) ||
-                                  ((iElem.key == lElem.key) && (iElem.value < lElem.value));
-                    bool isGreater = (iElem.key > lElem.key) ||
-                                     ((iElem.key == lElem.key) && (iElem.value > lElem.value));
+                    bool isLess = (iElem.key.x < lElem.key.x) ||
+                                  (iElem.key.x == lElem.key.x && iElem.key.y < lElem.key.y) ||
+                                  (iElem.key.x == lElem.key.x && iElem.key.y == lElem.key.y && iElem.value < lElem.value);
+                    bool isGreater = (iElem.key.x > lElem.key.x) ||
+                                     (iElem.key.x == lElem.key.x && iElem.key.y > lElem.key.y) ||
+                                     (iElem.key.x == lElem.key.x && iElem.key.y == lElem.key.y && iElem.value > lElem.value);
 
                     if (((globalI & k) == 0) && isLess ||
                         ((globalI & k) != 0) && isGreater)
