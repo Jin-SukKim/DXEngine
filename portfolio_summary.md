@@ -792,17 +792,90 @@ float ParticleManager::CalculatePriority(
 
 ---
 
-## 8. LDS Bitonic Sort 3-Phase
+## 8. LDS Bitonic Sort 3-Phase — 64-bit 계층적 정렬
 
 ### WHAT
-AlphaBlend 파티클의 올바른 렌더링을 위한 back-to-front 깊이 정렬. groupshared memory(LDS)를 활용한 3단계 최적화 Bitonic Sort.
+AlphaBlend 파티클의 올바른 렌더링을 위한 **64-bit 계층적 키(Batch ID + Depth) 기반 back-to-front 정렬**.
+groupshared memory(LDS)를 활용한 3단계 최적화 Bitonic Sort로, 다중 Material 배치를 단일 Sort 호출로 처리.
 
 ### WHY
-- AlphaBlend: 뒤에서 앞으로(back-to-front) 순서로 렌더링해야 올바른 블렌딩
-- 일반 Bitonic Sort: 매 단계마다 global memory 접근 → 대역폭 병목
+
+**단순 depth 정렬의 한계**
+- AlphaBlend 파티클은 뒤에서 앞으로(back-to-front) 순서로 렌더링해야 올바른 블렌딩
+- 하지만 서로 다른 Material(Batch)의 파티클이 depth만으로 섞이면, **렌더링 시 Material 전환(셰이더·텍스처 바인딩)이 파티클마다 발생** → Draw Call 폭증
+- 해결: **Batch ID를 Major Key, Depth를 Minor Key**로 하여 같은 Material끼리 연속 배치 + 각 Material 내에서 back-to-front 유지
+
+**일반 Bitonic Sort의 대역폭 병목**
+- 일반 Bitonic Sort: 매 (k, j) 단계마다 global memory 접근 → Dispatch 횟수 폭증
 - LDS 활용: 블록 내부 정렬은 빠른 shared memory에서 수행 → global memory 접근 대폭 감소
 
 ### HOW
+
+#### 64-bit Key 구조
+
+```cpp
+// BitonicSort.h
+struct Element {
+    uint32_t key[2]; // x: Batch ID (Major), y: Depth (Minor)
+    uint32_t value;  // 파티클 인덱스
+};
+```
+
+- `key[0]` (= `key.x`): Batch ID — `0xFFFFFFFF - batchIdx`로 반전하여 **작은 batchIdx가 내림차순에서 앞으로**
+- `key[1]` (= `key.y`): Depth — `FloatToSortableUint(viewZ)`로 float를 **크기 비교 가능한 uint**로 변환
+
+```hlsl
+// GenerateSortKeysCS.hlsl — IEEE 754 float → sortable uint 변환
+uint FloatToSortableUint(float f) {
+    uint u = asuint(f);
+    // 양수: MSB를 1로 세워 음수보다 크게, 음수: 비트 전체 반전으로 크기 순서 보존
+    return (u & 0x80000000) ? ~u : (u | 0x80000000);
+}
+```
+
+#### Key 생성: GenerateSortKeysCS
+
+```hlsl
+// GenerateSortKeysCS.hlsl
+[numthreads(1024, 1, 1)]
+void main(uint3 dtID : SV_DispatchThreadID)
+{
+    uint id = dtID.x;
+    SortElement elem;
+    if (id < particleCount)
+    {
+        uint gIdx = baseOffset + id;
+        uint particleIdx = batchAliveIndices[gIdx];
+        Particle p = readParticles[particleIdx];
+
+        float3 toParticle = p.position - eyeWorld;
+        float viewZ = dot(toParticle, cameraForward);
+
+        // 1. 현재 파티클이 속한 Batch Index 찾기
+        uint batchIdx = firstBatchIdx;
+        for (uint b = firstBatchIdx; b <= lastBatchIdx; ++b) {
+            if (gIdx >= batchParams[b].baseOffset &&
+                gIdx < batchParams[b].baseOffset + batchParams[b].particleCount) {
+                batchIdx = b;
+                break;
+            }
+        }
+
+        // 2. Key 할당 (내림차순 정렬 기준)
+        elem.key.x = 0xFFFFFFFF - batchIdx; // BatchID 작을수록 앞으로
+        elem.key.y = FloatToSortableUint(viewZ); // viewZ 클수록(멀수록) 앞으로
+        elem.value = particleIdx;
+    }
+    else
+    {
+        // 패딩 원소: 정렬 시 맨 뒤로 밀리도록 최소값
+        elem.key.x = 0;
+        elem.key.y = 0;
+        elem.value = 0xFFFFFFFF;
+    }
+    sortBuffer[id] = elem;
+}
+```
 
 #### 3-Phase 아키텍처
 
@@ -819,96 +892,111 @@ void BitonicSort::SortInternal(ID3D11DeviceContext* context,
 
         for (uint32_t k = BLOCK_SIZE * 2; k <= sortSize; k *= 2) {
             // Phase 2: Global Memory merge (j >= BLOCK_SIZE인 단계)
-            // 블록 간 비교-교환은 global memory에서 수행
             context->CSSetShader(sortPSOs.bitonicSortCS.computeShader.Get(), 0, 0);
             for (uint32_t j = k / 2; j >= BLOCK_SIZE; j /= 2) {
                 m_constBuffer.SetCpuData({ k, j });
                 m_constBuffer.Upload();
+                context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
                 context->Dispatch((sortSize + 1023) / 1024, 1, 1);
             }
-
             // Phase 3: LDS Inner Merge (1회 디스패치)
-            // j < BLOCK_SIZE인 나머지 단계를 LDS에서 일괄 처리
             m_constBuffer.SetCpuData({ k, 0 });
             m_constBuffer.Upload();
+            context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
             context->CSSetShader(sortPSOs.bitonicInnerSortCS.computeShader.Get(), 0, 0);
             context->Dispatch(sortSize / BLOCK_SIZE, 1, 1);
         }
-    }
-}
-```
-
-#### Phase 1: LDS 블록 정렬
-
-```hlsl
-// BitonicBlockSortCS.hlsl
-#define BLOCK_SIZE 2048
-#define THREADS 1024
-groupshared Element shared_data[BLOCK_SIZE];
-
-[numthreads(THREADS, 1, 1)]
-void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID)
-{
-    uint localIdx = gtID.x;
-    uint blockOffset = gID.x * BLOCK_SIZE;
-
-    // 각 스레드가 2개 원소를 LDS에 로드
-    shared_data[localIdx] = arr[blockOffset + localIdx];
-    shared_data[localIdx + THREADS] = arr[blockOffset + localIdx + THREADS];
-    GroupMemoryBarrierWithGroupSync();
-
-    // LDS에서 완전한 Bitonic Sort 수행
-    for (uint k = 2; k <= BLOCK_SIZE; k <<= 1) {
-        for (uint j = k >> 1; j > 0; j >>= 1) {
-            for (uint t = 0; t < 2; t++) {
-                uint i = localIdx + t * THREADS;
-                uint l = i ^ j;
-                if (l > i) {
-                    // 비교-교환 (ascending/descending은 globalI & k로 결정)
-                    uint globalI = blockOffset + i;
-                    if (((globalI & k) == 0) && shared_data[i].key < shared_data[l].key ||
-                        ((globalI & k) != 0) && shared_data[i].key > shared_data[l].key) {
-                        Element temp = shared_data[i];
-                        shared_data[i] = shared_data[l];
-                        shared_data[l] = temp;
-                    }
-                }
+    } else {
+        // Fallback: sortSize < 2048이면 LDS 블록을 채울 수 없으므로
+        // 기존 BitonicSortCS로 모든 (k, j) 패스를 Global Memory에서 수행
+        context->CSSetShader(sortPSOs.bitonicSortCS.computeShader.Get(), 0, 0);
+        for (uint32_t k = 2; k <= sortSize; k *= 2) {
+            for (uint32_t j = k / 2; j > 0; j /= 2) {
+                m_constBuffer.SetCpuData({ k, j });
+                m_constBuffer.Upload();
+                context->CSSetConstantBuffers(0, 1, m_constBuffer.GetAddressOf());
+                context->Dispatch((sortSize + 1023) / 1024, 1, 1);
             }
-            GroupMemoryBarrierWithGroupSync();
         }
     }
-
-    // 결과를 global memory에 기록
-    arr[blockOffset + localIdx] = shared_data[localIdx];
-    arr[blockOffset + localIdx + THREADS] = shared_data[localIdx + THREADS];
 }
 ```
 
-#### Depth Key 생성
+#### Phase 1: LDS 블록 정렬 — uint2 Lexicographic 비교
 
 ```hlsl
-// GenerateSortKeysCS.hlsl - 카메라 forward dot product로 planar depth 계산
+// BitonicBlockSortCS.hlsl (핵심 비교 로직)
+// 각 스레드가 2개 원소를 LDS에 로드 후, k=2~BLOCK_SIZE까지 완전 정렬
+Element iElem = shared_data[i];
+Element lElem = shared_data[l];
+
+// uint2 lexicographic 3단 비교: key.x → key.y → value (tie-break)
+bool isLess = (iElem.key.x < lElem.key.x) ||
+              (iElem.key.x == lElem.key.x && iElem.key.y < lElem.key.y) ||
+              (iElem.key.x == lElem.key.x && iElem.key.y == lElem.key.y
+               && iElem.value < lElem.value);
+bool isGreater = (iElem.key.x > lElem.key.x) ||
+                 (iElem.key.x == lElem.key.x && iElem.key.y > lElem.key.y) ||
+                 (iElem.key.x == lElem.key.x && iElem.key.y == lElem.key.y
+                  && iElem.value > lElem.value);
+
+if (((globalI & k) == 0) && isLess ||
+    ((globalI & k) != 0) && isGreater) {
+    shared_data[i] = lElem;   // swap
+    shared_data[l] = iElem;
+}
+```
+
+Phase 2(BitonicSortCS)와 Phase 3(BitonicInnerSortCS)도 동일한 lexicographic 비교를 사용.
+Phase 2는 헬퍼 함수로 간결하게 표현:
+
+```hlsl
+// BitonicSortCS.hlsl
+bool IsLess(uint2 a, uint2 b) {
+    return (a.x < b.x) || (a.x == b.x && a.y < b.y);
+}
+bool IsGreater(uint2 a, uint2 b) {
+    return (a.x > b.x) || (a.x == b.x && a.y > b.y);
+}
+```
+
+#### 전체 Sort Pipeline 흐름
+
+`ParticleManager::SortAlphaBlendEmitters`에서 3단계 파이프라인으로 통합:
+
+```
+1. GenerateSortKeysCS  — 파티클 → {BatchID, Depth, ParticleIdx} 키 생성
+       ↓ (UAV barrier)
+2. BitonicSort.Sort()  — 3-Phase LDS Bitonic Sort 실행
+       ↓ (UAV barrier)
+3. CopySortedIndicesCS — 정렬된 인덱스를 batchAliveIndices에 기록
+```
+
+```hlsl
+// CopySortedIndicesCS.hlsl — 정렬 결과 복사
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
     uint id = dtID.x;
-    if (id < particleCount) {
-        uint particleIdx = batchAliveIndices[baseOffset + id];
-        Particle p = readParticles[particleIdx];
-
-        // Planar depth: 카메라 방향과의 내적 → back-to-front 정렬
-        float3 toParticle = p.position - eyeWorld;
-        float viewZ = dot(toParticle, cameraForward);
-
-        sortBuffer[id].key = viewZ;
-        sortBuffer[id].value = particleIdx;
-    } else {
-        // 패딩 원소: -FLT_MAX로 뒤쪽에 정렬
-        sortBuffer[id].key = -3.402823466e+38f;
-        sortBuffer[id].value = 0xFFFFFFFF;
+    if (id < particleCount)
+    {
+        uint sortedParticleIdx = sortedElements[id].value;
+        batchAliveIndices[baseOffset + id] = sortedParticleIdx;
     }
 }
 ```
+
+여러 Batch 그룹(FullResBillboard, Billboard)에 대해 각각 독립적으로 파이프라인을 실행하며,
+각 단계 사이에 UAV barrier(unbind)를 삽입하여 SRV/UAV 충돌을 방지.
+
+#### 디스패치 횟수 비교 (LDS 최적화 효과)
+
+| 파티클 수 | 기존 (매 패스 Dispatch) | 3-Phase LDS | 개선 |
+|----------|----------------------|-------------|------|
+| 2,048 | 66회 | 1회 | 66배 |
+| 4,096 | 78회 | 3회 | 26배 |
+| 8,192 | 91회 | 6회 | 15배 |
+| 65,536 | 136회 | 21회 | 6.5배 |
 
 ---
 

@@ -154,6 +154,7 @@ namespace DE {
 		std::vector<BatchGroup> m_fullResBillboardBatches;
 		UINT m_fullResBillboardDescStartIdx = 0;
 		UINT m_billboardDescStartIdx = 0;
+
 	};
 
 }

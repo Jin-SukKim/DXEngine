@@ -401,7 +401,7 @@ namespace DE {
 				}
 			}
 
-			if (totalParticleCount == 0) return;
+			if (totalParticleCount <= 1) return;
 
 			// 2. 단 한 번의 정렬을 위한 파라미터 세팅
 			UINT sortSize = 1;
@@ -545,6 +545,7 @@ namespace DE {
 		context->VSSetShaderResources(24, 2, batchSRVs);
 
 		BlendMode lastBlendMode = static_cast<BlendMode>(-1);
+		int lastMaterialKey = INT_MIN;
 
 		for (size_t batchIdx = 0; batchIdx < m_fullResBillboardBatches.size(); batchIdx++) {
 			const auto& batch = m_fullResBillboardBatches[batchIdx];
@@ -563,10 +564,13 @@ namespace DE {
 				}
 			}
 
-			if (batch.materialKey < 0) {
-				m_memoryPool->BindDefaultParticleMaterial();
-			} else {
-				MaterialSystem::Get().BindMaterial(batch.materialKey);
+			if (batch.materialKey != lastMaterialKey) {
+				lastMaterialKey = batch.materialKey;
+				if (batch.materialKey < 0) {
+					m_memoryPool->BindDefaultParticleMaterial();
+				} else {
+					MaterialSystem::Get().BindMaterial(batch.materialKey);
+				}
 			}
 
 			m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);
@@ -604,6 +608,7 @@ namespace DE {
 		context->VSSetShaderResources(24, 2, batchSRVs);
 
 		BlendMode lastBlendMode = static_cast<BlendMode>(-1);
+		int lastMaterialKey = INT_MIN;
 
 		// Material이 변경될때만 Binding해서 렌더링
 		for (size_t batchIdx = 0; batchIdx < m_billboardBatches.size(); batchIdx++) {
@@ -625,10 +630,13 @@ namespace DE {
 				}
 			}
 
-			if (batch.materialKey < 0) {
-				m_memoryPool->BindDefaultParticleMaterial();
-			} else {
-				MaterialSystem::Get().BindMaterial(batch.materialKey);
+			if (batch.materialKey != lastMaterialKey) {
+				lastMaterialKey = batch.materialKey;
+				if (batch.materialKey < 0) {
+					m_memoryPool->BindDefaultParticleMaterial();
+				} else {
+					MaterialSystem::Get().BindMaterial(batch.materialKey);
+				}
 			}
 
 			m_memoryPool->BindBatchInfo(desc.emitterCount, desc.emitterListOffset, desc.instanceOffset);

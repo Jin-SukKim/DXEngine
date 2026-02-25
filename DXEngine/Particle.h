@@ -162,7 +162,7 @@ namespace DE {
     };
 
     struct BatchDescriptor {
-        UINT emitterCount;      
+        UINT emitterCount;
         UINT emitterListOffset;
         UINT instanceOffset;
         // batch�� �ϳ��� ���� ���
@@ -171,6 +171,7 @@ namespace DE {
         UINT baseVertexLocation;
         UINT isMesh;
         UINT padding;
+
     };
 
     struct BatchSortParam {
