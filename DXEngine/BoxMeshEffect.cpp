@@ -28,13 +28,6 @@ namespace DE {
 
 	void BoxMeshEffect::Initialize() {
 		Super::Initialize();
-
-
-		TransformComponent* tr = this->GetComponent<TransformComponent>();
-		if (tr) {
-			tr->SetPos(Vector3(0.0f, 0.0f, 3.0f));
-			//tr->SetScale(Vector3(0.5f));
-		}
 	}
 
 	void BoxMeshEffect::Update(const float& deltaTime) {
@@ -42,9 +35,11 @@ namespace DE {
 		// constant buffer data ����
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			//m_orbitAngle += 1.f * deltaTime;
-			//float radius = 1.5f;
-			//tr->SetPos(Vector3(radius * cosf(m_orbitAngle), radius * sinf(m_orbitAngle), 0.f));
+			Vector3 cur = tr->GetPos();
+			if (cur.x < -36.f)
+				tr->SetPos(Vector3(-32.f, 0.f, -8.f));
+			Vector3 move = Vector3(-1.5f, 0.f, 0.0f) * deltaTime;
+			tr->SetPos(tr->GetPos() + move);
 		}
 	}
 }

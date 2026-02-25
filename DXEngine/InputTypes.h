@@ -26,6 +26,7 @@ namespace DE {
 		E = 'E',
 		F = 'F',
 		Q = 'Q',
+		Z = 'Z',
 		S = 0x53,
 		W = 0x57,
 		F1 = VK_F1,

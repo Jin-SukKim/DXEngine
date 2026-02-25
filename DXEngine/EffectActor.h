@@ -21,6 +21,7 @@ namespace DE {
         ParticleSystem* GetParticleSystem() const { return m_particle; }
 
         // ÇïÆÛ ÇÔ¼ö
+        void Play();
         void Stop();
         bool IsPlaying() const;
 

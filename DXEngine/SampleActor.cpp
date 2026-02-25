@@ -45,7 +45,7 @@ namespace DE {
 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
-			//tr->SetPos(Vector3(0.0f, 0.5f, 0.0f));
+			tr->SetPos(Vector3(12.f, 0.f, 15.f));
 			//tr->SetScale(Vector3(0.5f));
 		}
 	}
@@ -55,6 +55,11 @@ namespace DE {
 		// constant buffer data °»½Å
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
+			Vector3 cur = tr->GetPos();
+			if (cur.z < 4.f)
+				tr->SetPos(Vector3(12.f, 0.f, 15.f));
+			Vector3 move = Vector3(0.f, 0.f, -1.5f) * deltaTime;
+			tr->SetPos(tr->GetPos() + move);
 			//tr->LocalRotate(0.1f, 0.1f, 0.1f);
 			//tr->RotateYaw(0.05f);
 			//tr->RotatePitch(0.05f);

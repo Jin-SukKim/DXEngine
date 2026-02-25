@@ -1,0 +1,64 @@
+{
+  "Name": "Magic_Ice",
+  "Duration": 0.2,
+  "CompletionDelay": 1.5,
+  "Spawn": {
+    "space": "Local",
+    "localPos": [ 0.0, 0.0, 0.0 ],
+    "shape": "Sphere",
+    "spawnVolume": [ 0.0, 0.0, 0.0 ],
+    "burst": 1,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 10,
+    "maxParticles": 10,
+    "lifeRange": [ 0.8, 1.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
+    "sizeRange": [ 0.1, 1.0 ],
+    "rotation": {
+      "minRotation": [ 0.0, 0.0, 0.0 ],
+      "maxRotation": [ 360.0, 360.0, 360.0 ],
+      "minRotSpeed": [ -2.0, -2.0, -2.0 ],
+      "maxRotSpeed": [ 2.0, 2.0, 2.0 ]
+    },"sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        { "key": 0.0, "value": 0.0, "outTangent": 8.0 },
+        { "key": 0.15, "value": 1.0 },
+        {"key": 1.0, "value": 0.0, "inTangent": -5.0}
+      ]
+    }
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "speedRange": [ 0.0, 0.0 ],
+    "randomDir": [ 0.0, 0.0, 0.0 ],
+    "gravity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.99
+  },
+  "Material": {
+    "materials": [ "Materials\\Ice_cube_mat.json" ]
+  },
+  "MeshRender": {
+    "blendMode": "Opaque",
+    "model": "Ice_cube.fbx",
+    "basePath": "ice-cube-texture\\",
+    "isGLTF": false
+  },
+  "overdrawControl": {
+    "sizeScaling": {
+      "enabled": true,
+      "minDistance": 2.0,
+      "maxDistance": 10.0,
+      "closeRangeScale": 0.7
+    },
+    "spawnLimiting": {
+      "enabled": true,
+      "nearDistance": 0.5,
+      "farDistance": 2.0,
+      "nearSpawnRatio": 0.5
+    }
+  }
+}

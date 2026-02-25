@@ -47,6 +47,11 @@
         "inheritPosition": true
       },
       {
+        "path": "Particles\\Effects\\Magic\\Emitters\\Magic_Ice.json",
+        "trigger": "OnDurationEnd",
+        "inheritPosition": true
+      },
+      {
         "path": "Particles\\Effects\\Magic\\Emitters\\Magic_Runes_Circle.json",
         "trigger": "OnStart",
         "inheritPosition": true

@@ -62,13 +62,13 @@ namespace DE {
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
 		// ���� Spawner�� ��� ���ΰų� �����ص� �� (���⼱ ����)
-		//m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
-		//m_spawner->SetScene(this);
-		//m_spawner->SetActorType<SwordClashEffect>();
-		//m_spawner->SetSpawnMode(SpawnMode::Interval);
-		//m_spawner->SetSpawnInterval(0.01f);
-		//m_spawner->SetSpawnBox(Vector3(15.0f, 5.0f, 1.f));
-		//m_spawner->SetMaxActiveParticles(1000);
+		m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
+		m_spawner->SetScene(this);
+		m_spawner->SetActorType<Firework>();
+		m_spawner->SetSpawnMode(SpawnMode::Interval);
+		m_spawner->SetSpawnInterval(0.1f);
+		m_spawner->SetSpawnBox(Vector3(3.0f, 1.0f, 1.f));
+		m_spawner->SetMaxActiveParticles(100);
 
 		//m_spawner2 = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		//m_spawner2->SetScene(this);
@@ -161,10 +161,15 @@ namespace DE {
 			L"Particles\\Effects\\Custom\\Custom.json",
 			Vector3(0.f, 0.f, 0.f));
 
+		m_boxMesh = SpawnEffect<BoxMeshEffect>(
+			L"BoxMesh",
+			L"",
+			Vector3(0.f, 0.f, 0.f));
+
 		m_test2 = nullptr;
 		m_test3 = nullptr;
 
-		//m_sample = AddObject<SampleActor>(L"SampleActor");
+		m_sample = AddObject<SampleActor>(L"SampleActor");
 
 	}
 
@@ -193,10 +198,15 @@ namespace DE {
 		// 각 Effect를 일정 간격으로 배열하여 씬에서 한눈에 확인할 수 있도록 배치합니다.
 		// 필요에 따라 위치·간격을 조정하세요.
 
+		auto tr = m_spawner->GetComponent<TransformComponent>();
+		if (tr)
+			tr->SetPos(Vector3(-28.f, 0.f, 8.f));
+
 		struct EffectPlacement { EffectActor** actor; Vector3 pos; };
 		const EffectPlacement placements[] =
 		{
 			// ── Row 1 (Z = -8): Realistic → Combination ─────────────────────────────
+			{ &m_boxMesh,		   Vector3(-32.f, 0.f,  -8.f) },
 			{ &m_rain,             Vector3(-24.f, 0.f, -8.f) },
 			{ &m_crystalShatter,   Vector3(-16.f, 0.f, -8.f) },
 			{ &m_galaxySwirl,      Vector3( -8.f, 0.f, -8.f) },
@@ -230,7 +240,7 @@ namespace DE {
 		//	tr->SetPos(Vector3(25.f, 0.f, 0.f));
 		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
 		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
-		AppBase::GetInputManager().BindInputAction(m_rButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
+		AppBase::GetInputManager().BindInputAction(m_zButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}
 
 	void ParticleEditor::Update(const float& dt)
@@ -251,10 +261,10 @@ namespace DE {
 
 	void ParticleEditor::ClickEvent()
 	{
-		static const Vector3 kSpawnCenter(0.f, 0.f, 20.f);
-		static const float   kSpawnRange  = 5.0f;
-		static const float   kSpawnRangeY = 1.0f;
-		static const int     kBombCount   = 15;
+		static const Vector3 kSpawnCenter(0.f, 0.f, -20.f);
+		static const float   kSpawnRange  = 7.0f;
+		static const float   kSpawnRangeY = 2.0f;
+		static const int     kBombCount   = 50;
 
 		auto rnd = [](float range) {
 			return (rand() % 201 - 100) / 100.0f * range;

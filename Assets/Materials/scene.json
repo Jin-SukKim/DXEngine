@@ -1,0 +1,18 @@
+{
+    "Name": "ice_cluster_4_free\\scene.gltf_0",
+    "Albedo": [
+        1.0,
+        1.0,
+        1.0
+    ],
+    "Roughness": 0.5,
+    "Metallic": 0.5,
+    "Emission": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "Textures": {
+        "albedo": "Models\\ice_cluster_4_free\\Material.004_diffuse.png"
+    }
+}

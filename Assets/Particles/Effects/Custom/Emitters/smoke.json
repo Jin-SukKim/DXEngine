@@ -5,13 +5,13 @@
     "shape": "Box",
     "localPos": [ 0.0, 0.2, 0.0 ],
     "spawnVolume": [ 3.0, 0.2, 3.0 ],
-    "spawnRate": 15.0,
-    "particlesPerSpawn": 5,
-    "maxParticles": 1024,
+    "spawnRate": 10.0,
+    "particlesPerSpawn": 15,
+    "maxParticles": 512,
     "lifeRange": [ 8.0, 10.0 ]
   },
   "Visual": {
-    "startColor": [ 1.0, 1.0, 1.0, 0.3 ],
+    "startColor": [ 1.0, 1.0, 1.0, 0.7 ],
     "endColor": [ 1.0, 1.0, 1.0, 0.0 ],
     "sizeRange": [ 1.5, 4.0 ],
     "sizeRandomness": 0.5,

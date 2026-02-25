@@ -110,6 +110,7 @@ namespace DE {
 		InputButton m_fButton = InputButton::F;
 		InputButton m_lButton = InputButton::LButton;
 		InputButton m_rButton = InputButton::RButton;
+		InputButton m_zButton = InputButton::Z;
 		InputAxis m_xAxis = InputAxis::XAxis;
 		
 		// InputAction ߿  (ư )

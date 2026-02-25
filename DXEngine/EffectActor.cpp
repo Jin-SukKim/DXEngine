@@ -50,6 +50,12 @@ namespace DE {
         }
     }
 
+    void EffectActor::Play()
+    {
+        if (m_particle)
+            m_particle->Play();
+    }
+
     void EffectActor::Stop()
     {
         if (m_particle) {
