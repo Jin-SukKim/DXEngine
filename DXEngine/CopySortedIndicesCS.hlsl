@@ -1,21 +1,22 @@
 #include "ParticleCommon.hlsli"
 
 StructuredBuffer<SortElement> sortedElements : register(t0);
+StructuredBuffer<GPUSortParams> gpuSortParams : register(t2);
 RWStructuredBuffer<uint> batchAliveIndices : register(u0);
 
-cbuffer SortParams : register(b5) {
-    uint sortBaseOffset;
-    uint sortParticleCount;
-    uint2 padding;
+cbuffer SortGroupConsts : register(b5) {
+    uint sortParamsSlot;
+    float3 sgPadding;
 };
 
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
+    GPUSortParams sp = gpuSortParams[sortParamsSlot];
     uint id = dtID.x;
 
-    uint baseOffset = sortBaseOffset;
-    uint particleCount = sortParticleCount;
+    uint baseOffset = sp.sortBaseOffset;
+    uint particleCount = sp.sortParticleCount;
 
     if (id < particleCount)
     {

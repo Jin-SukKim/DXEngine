@@ -179,6 +179,32 @@ namespace DE {
         UINT particleCount;
     };
 
+    // GPU-side sort parameters (replaces CPU cbuffer b5 for sort)
+    struct GPUSortParams {
+        UINT sortBaseOffset;
+        UINT sortParticleCount;
+        UINT firstBatchIdx;
+        UINT lastBatchIdx;
+        Vector3 cameraForward;
+        UINT sortSize;
+    };
+
+    // PrepareSortDispatchCS constant buffer
+    struct PrepareSortConsts {
+        UINT firstBatchIdx;
+        UINT lastBatchIdx;
+        UINT numSortSteps;
+        UINT sortParamsSlot;
+        Vector3 cameraForward;
+        float padding;
+    };
+
+    // GenKeys/CopyBack constant buffer (indexes into gpuSortParams[slot])
+    struct SortGroupConsts {
+        UINT sortParamsSlot;
+        Vector3 padding;
+    };
+
     struct BatchRenderArgsConsts {
         UINT numBatches;    // �� batch ����
         Vector3 padding;

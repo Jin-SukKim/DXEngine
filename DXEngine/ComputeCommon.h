@@ -25,6 +25,7 @@ namespace DE {
 			ComputePSO buildAliveIndicesCS;   // BuildAliveIndicesCS.hlsl
 			ComputePSO copySortedIndicesCS;   // CopySortedIndicesCS.hlsl
 			ComputePSO generateSortKeysCS;   // GenerateSortKeysCS.hlsl
+		ComputePSO prepareSortDispatchCS; // PrepareSortDispatchCS.hlsl
 		} particle;
 
 		// BitonicSort
@@ -55,6 +56,7 @@ namespace DE {
 		ComPtr<ID3D11ComputeShader> buildAliveIndicesCS;
 		ComPtr<ID3D11ComputeShader> copySortedIndicesCS;
 		ComPtr<ID3D11ComputeShader> generateSortKeysCS;
+		ComPtr<ID3D11ComputeShader> prepareSortDispatchCS;
 
 		// Depth shaders
 		ComPtr<ID3D11ComputeShader> depthDownsampleCS;

@@ -2,16 +2,13 @@
 #include "ParticleCommon.hlsli"
 
 StructuredBuffer<uint> batchAliveIndices : register(t0);
-StructuredBuffer<BatchSortParam> batchParams : register(t1); // 추가: Batch 경계 정보
+StructuredBuffer<BatchSortParam> batchParams : register(t1); // Batch boundary info
+StructuredBuffer<GPUSortParams> gpuSortParams : register(t2);
 RWStructuredBuffer<SortElement> sortBuffer : register(u0);
 
-cbuffer SortParams : register(b5) {
-    uint sortBaseOffset;
-    uint sortParticleCount;
-    uint firstBatchIdx;
-    uint lastBatchIdx;
-    float3 cameraForward;
-    float pad1;
+cbuffer SortGroupConsts : register(b5) {
+    uint sortParamsSlot;
+    float3 sgPadding;
 };
 
 // Float를 크기 비교 가능한 uint로 변환하는 헬퍼 함수
@@ -23,9 +20,10 @@ uint FloatToSortableUint(float f) {
 [numthreads(1024, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
+    GPUSortParams sp = gpuSortParams[sortParamsSlot];
     uint id = dtID.x;
-    uint baseOffset = sortBaseOffset;
-    uint particleCount = sortParticleCount;
+    uint baseOffset = sp.sortBaseOffset;
+    uint particleCount = sp.sortParticleCount;
 
     SortElement elem;
     if (id < particleCount)
@@ -35,11 +33,11 @@ void main(uint3 dtID : SV_DispatchThreadID)
         Particle p = readParticles[particleIdx];
 
         float3 toParticle = p.position - eyeWorld;
-        float viewZ = dot(toParticle, cameraForward);
+        float viewZ = dot(toParticle, sp.cameraForward);
 
         // 1. 현재 파티클이 속한 Batch Index 찾기 (AlphaBlend Batch 개수는 적으므로 단순 루프 무방)
-        uint batchIdx = firstBatchIdx;
-        for (uint b = firstBatchIdx; b <= lastBatchIdx; ++b) {
+        uint batchIdx = sp.firstBatchIdx;
+        for (uint b = sp.firstBatchIdx; b <= sp.lastBatchIdx; ++b) {
             if (gIdx >= batchParams[b].baseOffset &&
                 gIdx < batchParams[b].baseOffset + batchParams[b].particleCount) {
                 batchIdx = b;

@@ -37,14 +37,7 @@ namespace DE {
 		UINT instanceOffset;
 	};
 
-	struct SortParams {
-		UINT sortBaseOffset;
-		UINT sortParticleCount;
-		UINT firstBatchIdx;    // 추가: 일괄 정렬할 첫 Batch 인덱스
-		UINT lastBatchIdx;     // 추가: 일괄 정렬할 마지막 Batch 인덱스
-		Vector3 cameraForward;
-		float padding2;
-	};
+	static constexpr UINT MAX_SORT_SIZE = 131072;
 
 	class ParticleManager
 	{
@@ -143,7 +136,12 @@ namespace DE {
 		// CS용 ConstantBuffer (Initialize에서 1회 초기화)
 		ConstantBuffer<BatchRenderArgsConsts> m_batchRenderArgsCB;
 		ConstantBuffer<BuildAliveConsts> m_buildAliveCB;
-		ConstantBuffer<SortParams> m_sortParamsCB;
+
+		// GPU-driven sort resources
+		StructuredBuffer<GPUSortParams> m_gpuSortParams;    // 2 slots: [0]=fullRes, [1]=lowRes
+		IndirectArgsBuffer<DispatchArgs> m_sortIndirectArgs; // GenKeys + sort steps + CopyBack
+		ConstantBuffer<PrepareSortConsts> m_prepareSortCB;
+		ConstantBuffer<SortGroupConsts> m_sortGroupCB;
 
 		// 매 프레임 재사용 컨테이너
 		std::vector<EmitterJob> m_meshJobs;

@@ -23,6 +23,7 @@ namespace DE {
 		D3D11Utils::CreateCS(device.Get(), L"BuildAliveIndicesCS.hlsl", buildAliveIndicesCS);
 		D3D11Utils::CreateCS(device.Get(), L"CopySortedIndicesCS.hlsl", copySortedIndicesCS);
 		D3D11Utils::CreateCS(device.Get(), L"GenerateSortKeysCS.hlsl", generateSortKeysCS);
+		D3D11Utils::CreateCS(device.Get(), L"PrepareSortDispatchCS.hlsl", prepareSortDispatchCS);
 
 		// Depth shaders
 		D3D11Utils::CreateCS(device.Get(), L"DepthDownsampleCS.hlsl", depthDownsampleCS);
@@ -50,6 +51,7 @@ namespace DE {
 		particle.buildAliveIndicesCS.computeShader = buildAliveIndicesCS;
 		particle.copySortedIndicesCS.computeShader = copySortedIndicesCS;
 		particle.generateSortKeysCS.computeShader = generateSortKeysCS;
+		particle.prepareSortDispatchCS.computeShader = prepareSortDispatchCS;
 
 		// BitonicSort PSOs
 		sort.bitonicSortCS.computeShader = bitonicSortCS;

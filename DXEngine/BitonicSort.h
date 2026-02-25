@@ -14,6 +14,22 @@ namespace DE {
             uint32_t j;
         };
 
+        // GPU-readable sort step info (matches SortStepGPU in HLSL)
+        struct SortStepGPU {
+            uint32_t k;
+            uint32_t j;
+            uint32_t minSortSize;
+            uint32_t phase; // 1=BlockSort, 2=GlobalSort, 3=InnerSort
+        };
+
+        // CPU-side sort step info
+        struct SortStepInfo {
+            uint32_t k;
+            uint32_t j;
+            uint32_t phase; // 1, 2, or 3
+            uint32_t minSortSize;
+        };
+
         BitonicSort() {};
 
         BitonicSort(ID3D11Device* device, const UINT numElements) {
@@ -29,6 +45,16 @@ namespace DE {
                   ID3D11UnorderedAccessView* sortBufferUAV,
                   UINT elementCount);
 
+        // GPU-driven indirect sort (no CPU readback, no per-dispatch CB upload)
+        void InitIndirect(UINT maxSortSize);
+        void SortIndirect(ID3D11DeviceContext* context,
+                          ID3D11UnorderedAccessView* sortBufferUAV,
+                          ID3D11Buffer* indirectArgsBuffer,
+                          UINT argsBaseByteOffset);
+
+        UINT GetNumSortSteps() const { return static_cast<UINT>(m_sortStepTable.size()); }
+        ID3D11ShaderResourceView* GetStepTableSRV() const { return m_sortStepTableBuffer.GetSRV(); }
+
         ID3D11ShaderResourceView* GetSRV() const { return m_array.GetSRV(); }
         ID3D11UnorderedAccessView* GetUAV() const { return m_array.GetUAV(); }
     protected:
@@ -43,6 +69,11 @@ namespace DE {
         StructuredBuffer<Element> m_array;
 
         UINT m_numElements = 0;
+
+        // Indirect sort resources
+        std::vector<SortStepInfo> m_sortStepTable;
+        std::vector<ConstantBuffer<Consts>> m_stepConstBuffers;
+        StructuredBuffer<SortStepGPU> m_sortStepTableBuffer;
     };
 
 }

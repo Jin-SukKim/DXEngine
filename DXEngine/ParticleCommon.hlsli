@@ -275,4 +275,22 @@ struct BatchSortParam {
     uint particleCount;
 };
 
+// GPU-side sort parameters (written by PrepareSortDispatchCS, read by GenKeys/CopyBack)
+struct GPUSortParams {
+    uint sortBaseOffset;
+    uint sortParticleCount;
+    uint firstBatchIdx;
+    uint lastBatchIdx;
+    float3 cameraForward;
+    uint sortSize;
+};
+
+// Sort step info for PrepareSortDispatchCS to compute dispatch args
+struct SortStepGPU {
+    uint k;
+    uint j;
+    uint minSortSize;
+    uint phase; // 1=BlockSort, 2=GlobalSort, 3=InnerSort
+};
+
 #endif // __PARTICLE_COMMON_HLSLI__
