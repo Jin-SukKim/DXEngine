@@ -161,13 +161,14 @@ Feb 22  Low/High Resolution 분리 → BlendMode → Solid Circle → Bloom Effe
 - **다양한 이펙트 제작**: Rain, ArcaneCircle, Flash, Explosion 등
 - **씬 배치 및 통합 테스트**: 여러 이펙트를 씬에 배치하여 실제 환경 테스트
 - **AlphaBlend Overdraw 최적화**: 파티클 겹침 제어
+- **GPU-Driven Sort Dispatch**: CPU readback 제거 + DispatchIndirect 전환으로 정렬 파이프라인 최적화
 - **최종 문서 정리**
 
 ### 커밋 흐름
 ```
 Feb 23  New Effect → Final Presentation TOC → Billboard Normal → Effect Test
 Feb 24  Rain → ArcaneCircle → Effect 배치 → AlphaBlend Overdraw → Boundary Bug Fix
-Feb 25  배치 업데이트 → 최종 업데이트
+Feb 25  Sort Dispatch Optimization → GPU-Driven Indirect Sort → 배치 업데이트 → 최종 업데이트
 ```
 
 ---
@@ -1127,8 +1128,8 @@ return lerp(
   ↓  배치별 Indirect Draw Args 계산 + 이미터별 쓰기 오프셋 계산
 [GPU] BuildAliveIndicesCS
   ↓  이미터별 alive indices → 배치용 평탄 배열로 변환
-[GPU] SortAlphaBlend
-  ↓  AlphaBlend 배치만 선택적 정렬 (GenerateKeys → BitonicSort → CopySorted)
+[GPU] SortAlphaBlend (GPU-Driven)
+  ↓  PrepareSortDispatchCS → DispatchIndirect(GenKeys → BitonicSort → CopyBack)
 [GPU] DrawMeshBatches
   ↓  3D 메시 파티클 렌더링 (DrawIndexedInstancedIndirect)
 [GPU] DrawFullResBillboardBatches
@@ -1145,6 +1146,163 @@ return lerp(
 
 ---
 
+## 11. GPU-Driven Sort Dispatch
+
+### WHAT
+정렬 파이프라인에서 GPU→CPU readback과 매 dispatch CB Map/Unmap을 완전 제거.
+PrepareSortDispatchCS가 GPU에서 직접 sort 파라미터를 집계하고, 모든 정렬 단계를 DispatchIndirect로 실행.
+
+### WHY
+
+**CPU readback 스톨 제거**
+- 기존: `batchSortParams.Download()`로 GPU→CPU readback 발생 → 매 프레임 GPU 파이프라인 동기 스톨 (~0.3-0.5ms)
+- 개선: GPU에서 직접 sort 파라미터를 집계하여 readback 완전 제거
+
+**Per-dispatch CB 오버헤드 제거**
+- 기존: BitonicSort의 매 step마다 `m_constBuffer.SetCpuData() → Upload() → CSSetConstantBuffers()` 호출 (dispatch 수 × ~50μs)
+- 개선: 초기화 시 모든 step의 CB를 사전 할당하여 런타임 Map/Unmap 제로
+
+### HOW
+
+#### Sort Step Table: 사전 계산 + Pre-allocated CB
+
+초기화 시 `maxSortSize`까지 모든 가능한 정렬 단계(Phase 1/2/3)를 테이블로 생성.
+각 단계의 Constant Buffer를 1회 Upload 후 런타임에 재사용.
+
+```cpp
+// BitonicSort::InitIndirect — 초기화 시 1회 실행
+void BitonicSort::InitIndirect(UINT maxSortSize)
+{
+    // Step 0: Phase 1 (BitonicBlockSortCS)
+    m_sortStepTable.push_back({ 0, 0, 1, BLOCK_SIZE });
+
+    // Phase 2+3 steps for k = BLOCK_SIZE*2 up to maxSortSize
+    for (uint32_t k = BLOCK_SIZE * 2; k <= maxSortSize; k *= 2) {
+        for (uint32_t j = k / 2; j >= BLOCK_SIZE; j /= 2)
+            m_sortStepTable.push_back({ k, j, 2, k });  // Phase 2
+        m_sortStepTable.push_back({ k, 0, 3, k });      // Phase 3
+    }
+
+    // Pre-allocated CB: 1회 Upload, 런타임 Map/Unmap 제로
+    m_stepConstBuffers.resize(m_sortStepTable.size());
+    for (size_t i = 0; i < m_sortStepTable.size(); ++i) {
+        m_stepConstBuffers[i].Initialize();
+        m_stepConstBuffers[i].SetCpuData({ m_sortStepTable[i].k, m_sortStepTable[i].j });
+        m_stepConstBuffers[i].Upload();  // 초기화 시 1회만
+    }
+
+    // GPU-readable step table (PrepareSortDispatchCS용)
+    m_sortStepTableBuffer.Initialize(device);
+    m_sortStepTableBuffer.Upload(context);
+}
+```
+
+#### PrepareSortDispatchCS: GPU-side 파라미터 집계
+
+GPU에서 batchSortParams를 읽어 totalParticleCount를 집계하고,
+sortSize(power of 2)를 계산한 뒤 각 단계의 IndirectArgs를 기록.
+
+```hlsl
+// PrepareSortDispatchCS.hlsl (핵심 로직)
+[numthreads(1, 1, 1)]
+void main(uint3 dtID : SV_DispatchThreadID)
+{
+    // 1. Batch별 파티클 수 집계
+    uint totalParticleCount = 0;
+    uint baseOffset = 0xFFFFFFFF;
+    for (uint b = firstBatchIdx; b <= lastBatchIdx; ++b) {
+        BatchSortParam param = batchSortParams[b];
+        if (param.particleCount > 0) {
+            if (baseOffset == 0xFFFFFFFF) baseOffset = param.baseOffset;
+            totalParticleCount += param.particleCount;
+        }
+    }
+
+    // 2. Sort size 계산 (power of 2, at least BLOCK_SIZE)
+    uint sortSize = max(NextPowerOf2(totalParticleCount), BLOCK_SIZE);
+
+    // 3. 각 sort step의 dispatch args 결정
+    for (uint i = 0; i < numSortSteps; ++i) {
+        SortStepGPU step = sortStepTable[i];
+        uint offset = (i + 1) * 3;
+
+        if (sortSize >= step.minSortSize) {
+            // Phase 1,3: sortSize/BLOCK_SIZE  |  Phase 2: (sortSize+1023)/1024
+            uint groups = (step.phase == 1 || step.phase == 3)
+                ? sortSize / BLOCK_SIZE : (sortSize + 1023) / 1024;
+            dispatchArgs[offset] = groups;
+        } else {
+            dispatchArgs[offset] = 0;  // no-op: DispatchIndirect(0,1,1)
+        }
+    }
+
+    // 4. GPUSortParams 기록 (GenKeys/CopyBack에서 사용)
+    gpuSortParams[sortParamsSlot] = sp;
+}
+```
+
+#### minSortSize 기반 자동 스킵
+
+각 sort step에 `minSortSize` 필드가 있어, 실제 sortSize가 이보다 작으면 `groups=0`을 기록.
+`DispatchIndirect(0, 1, 1)`은 GPU에서 자동으로 no-op이 되므로, 런타임 분기 없이 불필요한 단계를 스킵.
+
+```hlsl
+// SortStepGPU 구조체
+struct SortStepGPU {
+    uint k, j;
+    uint minSortSize;  // 이 step이 필요한 최소 sortSize
+    uint phase;        // 1=BlockSort, 2=GlobalSort, 3=InnerSort
+};
+```
+
+#### SortIndirect: Pre-allocated CB + DispatchIndirect
+
+```cpp
+// BitonicSort::SortIndirect — 런타임 정렬 실행
+void BitonicSort::SortIndirect(ID3D11DeviceContext* context,
+                                ID3D11UnorderedAccessView* sortBufferUAV,
+                                ID3D11Buffer* indirectArgsBuffer,
+                                UINT argsBaseByteOffset)
+{
+    context->CSSetUnorderedAccessViews(0, 1, &sortBufferUAV, nullptr);
+
+    for (UINT i = 0; i < m_sortStepTable.size(); ++i) {
+        // Pre-allocated CB 바인딩 (Map/Unmap 없음!)
+        context->CSSetConstantBuffers(0, 1, m_stepConstBuffers[i].GetAddressOf());
+
+        // Phase에 따라 셰이더 선택
+        switch (m_sortStepTable[i].phase) {
+        case 1: context->CSSetShader(bitonicBlockSortCS, 0, 0); break;
+        case 2: context->CSSetShader(bitonicSortCS, 0, 0);      break;
+        case 3: context->CSSetShader(bitonicInnerSortCS, 0, 0);  break;
+        }
+
+        // GPU가 기록한 dispatch args 사용 (groups=0이면 자동 no-op)
+        context->DispatchIndirect(indirectArgsBuffer, argsBaseByteOffset + i * 12);
+    }
+}
+```
+
+#### 전체 GPU-Driven Sort 파이프라인
+
+```
+ParticleManager::SortAlphaBlendEmitters
+  ↓
+[GPU] PrepareSortDispatchCS (1,1,1)
+  → batchSortParams 집계 → sortSize 계산 → IndirectArgs 기록 → GPUSortParams 기록
+  ↓ (UAV barrier)
+[GPU] DispatchIndirect: GenerateSortKeysCS
+  → gpuSortParams[slot]에서 파라미터 읽기 → 키 생성
+  ↓ (UAV barrier)
+[GPU] DispatchIndirect × N: BitonicSort steps
+  → Pre-allocated CB + Phase별 셰이더 → groups=0이면 자동 스킵
+  ↓ (UAV barrier)
+[GPU] DispatchIndirect: CopySortedIndicesCS
+  → 정렬된 인덱스를 batchAliveIndices에 복사
+```
+
+---
+
 ## 참조 파일 요약
 
 | 영역 | 파일 | 핵심 역할 |
@@ -1157,6 +1315,7 @@ return lerp(
 | 시뮬레이션 | `ParticleCS.hlsl` | 물리 + 컴팩팅 단일 패스 |
 | 정렬 | `BitonicSort.h/cpp`, `BitonicBlockSortCS.hlsl`, `BitonicSortCS.hlsl`, `BitonicInnerSortCS.hlsl` | 3-Phase LDS Bitonic Sort |
 | 키 생성 | `GenerateSortKeysCS.hlsl` | Planar depth 키 생성 |
+| Sort Dispatch | `PrepareSortDispatchCS.hlsl` | GPU-driven sort 파라미터 집계 + IndirectArgs 생성 |
 | 배치 렌더링 | `BatchRenderArgsCS.hlsl`, `BuildAliveIndicesCS.hlsl` | Indirect Args + 인덱스 평탄화 |
 | VS 렌더링 | `ParticleBillboardVS.hlsl`, `ParticleVS.hlsl` | 쿼드 확장, Velocity Stretch |
 | PS 렌더링 | `ParticlePS.hlsl` | Soft Particles, Sprite Animation |
