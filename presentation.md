@@ -37,5 +37,67 @@
 be223c99d22aecc1676431f13edf4cf975f7898e - 이 Git Commit부터 ParticleSystem 프로젝트 시작
 
 
-AlphaBlend Particle 개수
-128 + 10 * 폭발 개수 + 1024
+이펙트 당 Particle 개수
+
+Firework
+	- UpFirework : Additive, 최대 512, spawnrate 10, perSpawn 5
+	- Burst : Additive, 최대 2048, burst 2048
+
+Rain
+	- Drop : Additive, 최대 2048, spawnRate 40, perSpawn 50
+	- Mist : AlphaBlend, 최대 512, spawnRate 15, perSpawn 15
+	- Splash : AlphaBlend, 최대 128, spawnRate 10, perSpawn 15
+
+CrystalShatter
+	- Flash : Additive, 최대 32, burst 32
+	- Dust : AlphaBlend, 최대 256, spawnRate 10, perSpawn 15
+	- Fragment : Additive, 최대 128, burst 128
+
+GalaxySwirl
+	- Core : Additive, 최대 32, spawnRate 5, perSpawn 1
+	- Star : Additive, 최대 1024, spawnRate 20, perSpawn 5
+
+PortalGateway
+	- Flash : Additive, 최대 18, spawnRate 5, perSpawn 1
+	- Energy : AlphaBlend, 최대 512, spawnRate 20, perSpawn 4
+	- Spark : Additive, 최대 256, spawnRate 10, perSpawn 5
+	- Ring : Additive, 최대 512, spawnRate 40, perSpawn 3
+
+Explosion
+	- Explosion : Additive, 최대 10, burst 10
+	- Smoke : AlphaBlend, 최대 10, burst 10
+	- Spark : Additive, 최대 50, burst 50
+	- Debrie : Opaque, 최대 15, burst 15 (Mesh)
+
+SwordClash 
+	- Circle : Additive, 최대 1, burst 1
+	- Flash : Additive, 최대 10, burst 10
+	- Spark : Additive, 최대 30, burst 30
+	- Ember : Opaque, 최대 32, burst 32
+
+Magic
+	- Charge : Additive, 최대 1024, spawnRate 100, perSpawn 10
+	- Core : Additive, 최대 256, spawnRate 60, perSpawn 5
+	- RuneCircle : Additive, 최대 500, spawnRate 16, perSpawn 16
+	- Release : Additive, 최대 250, burst 250
+	- Ice : Opaque, 최대 10, burst 10 (Mesh)
+
+FireFly
+	- FireFly : Additive, 최대 512, spawnRate 15, perSpawn 5
+
+Fire
+	- Fire : Additive, 최대 10000, spawnRate 30, perSpawn 100
+	- Smoke : AlphaBlend, 최대 1024, spawnRate 15, perSpawn 50
+	- Ember(VortexAura) : Additive, 최대 8000, spawnRate 15, perSpawn 80
+
+SparkBurst
+	- SparkBurst : Additive, 최대 10000, spawnRate 30, perSpawn 150
+
+Fog
+	- Fog : AlphaBlend, 최대 512, spawnRate 10, perSpawn 15 (SoftParticle)
+
+Custom
+	- slow : Additive, 최대 20000, spawnRate 30, perSpawn 1000
+
+BoxMesh
+	- mesh : Additive, 최대 5120, spawnRate 10, perSpawn 512

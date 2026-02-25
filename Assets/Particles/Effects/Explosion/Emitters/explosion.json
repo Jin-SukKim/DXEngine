@@ -16,13 +16,7 @@
   "Visual": {
     "startColor": [ 1.0, 1.0, 1.0, 1.0 ],
     "endColor": [ 1.0, 1.0, 1.0, 1.0 ],
-    "sizeRange": [ 0.8, 1.0 ],
-    "rotation": {
-      "minRotation": [ 0.0, 0.0, 0.0 ],
-      "maxRotation": [ 0.0, 0.0, 0.0 ],
-      "minRotSpeed": [ 0.0, 0.0, 0.0 ],
-      "maxRotSpeed": [ 0.0, 0.0, 0.0 ]
-    }
+    "sizeRange": [ 0.8, 1.0 ]
   },
   "Force": {
     "velocity": [ 0.0, 0.0, 0.0 ],
@@ -46,6 +40,16 @@
   "SubEmitters": [
     {
       "path": "Particles\\Effects\\Explosion\\Emitters\\smoke.json",
+      "trigger": "OnDurationEnd",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Explosion\\Emitters\\smoke2.json",
+      "trigger": "OnDurationEnd",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Explosion\\Emitters\\smoke3.json",
       "trigger": "OnDurationEnd",
       "inheritPosition": true
     },

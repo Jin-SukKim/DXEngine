@@ -10,7 +10,7 @@
         "burst": 1,
         "spawnRate": 0.0,
         "particlesPerSpawn": 250,
-        "maxParticles": 512,
+        "maxParticles": 250,
         "lifeRange": [0.4, 0.7]
     },
     "Visual": {

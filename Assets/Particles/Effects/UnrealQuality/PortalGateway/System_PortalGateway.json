@@ -8,6 +8,7 @@
   "Emitters": [
     "Particles\\Effects\\UnrealQuality\\PortalGateway\\Emitters\\Portal_Ring.json",
     "Particles\\Effects\\UnrealQuality\\PortalGateway\\Emitters\\Portal_Sparks.json",
-    "Particles\\Effects\\UnrealQuality\\PortalGateway\\Emitters\\Portal_Flash.json"
+    "Particles\\Effects\\UnrealQuality\\PortalGateway\\Emitters\\Portal_Flash.json",
+    "Particles\\Effects\\UnrealQuality\\PortalGateway\\Emitters\\Portal_Energy.json"
   ]
 }

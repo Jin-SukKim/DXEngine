@@ -1,0 +1,39 @@
+{
+  "Name": "BlackHoleSuck",
+  "Duration": 5.0,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 1.2, 1.2, 1.2 ],
+    "spawnInnerRatio": 0.95,
+    "spawnRate": 20.0,
+    "particlesPerSpawn": 50,
+    "maxParticles": 1024,
+    "lifeRange": [ 0.1, 0.2 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.6, 0.1, 1.0 ],
+    "endColor": [ 1.0, 0.1, 0.0, 0.0 ],
+    "sizeRange": [ 0.1, 0.04 ]
+  },
+  "Force": {
+    "velocity": [ 0.0, 0.0, 0.0 ],
+    "drag": 0.1
+  },
+  "Vortex": {
+    "center": [ 0.0, 0.0, 0.0 ],
+    "strength": 15.0,
+    "axis": [ 0.0, 0.0, 1.0 ],
+    "pull": [ 20.0, 30.0 ]
+  },
+  "Orbit": {
+    "center": [ 0.0, 0.0, 0.0 ],
+    "axis": [ 0.0, 0.0, 1.0 ],
+    "rotationRate": 3.0
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "velocityStretchFactor": 0.5,
+    "centerWhiteIntensity": 0.8
+  }
+}

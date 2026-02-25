@@ -1,0 +1,32 @@
+{
+  "Name": "SlingRingVortex",
+  "Duration": 5.0,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.0, 0.0, 0.0 ],
+    "spawnInnerRatio": 0.0,
+    "burst": 0,
+    "spawnRate": 2.0,
+    "particlesPerSpawn": 1,
+    "maxParticles": 128,
+    "lifeRange": [ 3.0, 4.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.6, 0.1, 1.0 ],
+    "endColor": [ 1.0, 0.1, 0.0, 0.0 ],
+    "sizeRange": [ 1.5, 2.5 ]
+  },
+  "Material": {
+    "texture": "Textures/vortex1.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive",
+    "noiseUVDistort": {
+      "enabled": true,
+      "frequency": 1.0,
+      "strength": 0.1,
+      "scrollSpeed": [ 0.2, 0.5 ]
+    }
+  }
+}

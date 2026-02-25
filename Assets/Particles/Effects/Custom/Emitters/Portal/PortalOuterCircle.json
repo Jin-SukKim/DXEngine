@@ -1,0 +1,33 @@
+{
+  "Name": "SlingRingCore",
+  "Duration": 5.0,
+  "CompletionDelay": 0.5,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.0, 0.0, 0.0 ],
+    "spawnInnerRatio": 0.0,
+    "burst": 1,
+    "spawnRate": 1.8,
+    "particlesPerSpawn": 8,
+    "maxParticles": 64,
+    "lifeRange": [ 1.1, 1.3 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.6, 0.1, 1.0 ],
+    "endColor": [ 1.0, 0.3, 0.1, 1.0 ],
+    "sizeRange": [ 0.0, 4.0 ],
+    "sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        { "key": 0.0, "value": 0.0, "outTangent": 4.0 },
+        { "key": 0.5, "value": 1.0, "inTangent": 0.0, "outTangent": 0.0 }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/circle_04.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  }
+}

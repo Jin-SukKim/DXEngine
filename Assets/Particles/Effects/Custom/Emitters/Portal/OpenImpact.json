@@ -1,0 +1,48 @@
+{
+  "Name": "SlingRingCore",
+  "Duration": 0.2,
+  "CompletionDelay": 0.3,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.0, 0.0, 0.0 ],
+    "spawnInnerRatio": 0.0,
+    "burst": 1,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 64,
+    "maxParticles": 64,
+    "lifeRange": [ 0.5, 0.5 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.6, 0.1, 1.0 ],
+    "endColor": [ 1.0, 0.1, 0.0, 0.0 ],
+    "sizeRange": [ 0.0, 7.0 ]
+  },
+  "Material": {
+    "texture": "Textures/circle_01.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Effects\\Custom\\Emitters\\Portal\\PortalPull.json",
+      "trigger": "OnDurationEnd",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Custom\\Emitters\\Portal\\PortalOuterCircle.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Custom\\Emitters\\Portal\\OpenSpark.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    },
+    {
+      "path": "Particles\\Effects\\Custom\\Emitters\\Portal\\PortalCircle.json",
+      "trigger": "OnStart",
+      "inheritPosition": true
+    }
+  ]
+}

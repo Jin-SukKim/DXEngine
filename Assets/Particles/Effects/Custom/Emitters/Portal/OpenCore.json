@@ -1,0 +1,60 @@
+{
+  "Name": "SlingRingCore",
+  "Duration": 0.8,
+  "CompletionDelay": 0.2,
+  "Spawn": {
+    "shape": "Sphere",
+    "spawnVolume": [ 0.0, 0.0, 0.0 ],
+    "spawnInnerRatio": 0.0,
+    "burst": 1,
+    "spawnRate": 0.0,
+    "particlesPerSpawn": 5,
+    "maxParticles": 64,
+    "lifeRange": [ 1.0, 1.0 ]
+  },
+  "Visual": {
+    "startColor": [ 1.0, 0.6, 0.1, 1.0 ],
+    "endColor": [ 1.0, 0.1, 0.0, 1.0 ],
+    "sizeRange": [ 0.0, 2.4 ],
+    "sizeCurve": {
+      "type": "BEZIER",
+      "keyframes": [
+        {
+          "key": 0.0,
+          "value": 0.0,
+          "outTangent": 4.0
+        },
+        {
+          "key": 0.2,
+          "value": 1.0,
+          "inTangent": 0.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 0.6,
+          "value": 1.0,
+          "inTangent": 0.0,
+          "outTangent": 0.0
+        },
+        {
+          "key": 1.0,
+          "value": 0.0,
+          "inTangent": -4.0
+        }
+      ]
+    }
+  },
+  "Material": {
+    "texture": "Textures/circle_05.png"
+  },
+  "BillboardRender": {
+    "blendMode": "Additive"
+  },
+  "SubEmitters": [
+    {
+      "path": "Particles\\Effects\\Custom\\Emitters\\Portal\\OpenImpact.json",
+      "trigger": "OnDurationEnd",
+      "inheritPosition": true
+    }
+  ]
+}
