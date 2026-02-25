@@ -1,8 +1,15 @@
-struct Element
-{
-    float key;
+struct Element {
+    uint2 key;
     uint value;
 };
+
+// Batch ID 별로 먼저 정렬 후 depth를 비교해서 정렬
+bool IsLess(uint2 a, uint2 b) {
+    return (a.x < b.x) || (a.x == b.x && a.y < b.y);
+}
+bool IsGreater(uint2 a, uint2 b) {
+    return (a.x > b.x) || (a.x == b.x && a.y > b.y);
+}
 
 cbuffer MyBuffer : register(b0)
 {
@@ -27,10 +34,10 @@ void main(int3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID,
         Element iElem = arr[i];
         Element lElem = arr[l];
         
-        bool isLess = (iElem.key < lElem.key) ||
-                      ((iElem.key == lElem.key) && (iElem.value < lElem.value));
-        bool isGreater = (iElem.key > lElem.key) ||
-                         ((iElem.key == lElem.key) && (iElem.value > lElem.value));
+        bool isLess = IsLess(iElem.key, lElem.key) ||
+            (iElem.key.x == lElem.key.x && iElem.key.y == lElem.key.y && iElem.value < lElem.value);
+        bool isGreater = IsGreater(iElem.key, lElem.key) ||
+            (iElem.key.x == lElem.key.x && iElem.key.y == lElem.key.y && iElem.value > lElem.value);
 
         if (((i & k) == 0) && isLess ||
             ((i & k) != 0) && isGreater)

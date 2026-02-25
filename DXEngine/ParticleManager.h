@@ -40,7 +40,8 @@ namespace DE {
 	struct SortParams {
 		UINT sortBaseOffset;
 		UINT sortParticleCount;
-		UINT padding[2];
+		UINT firstBatchIdx;    // 추가: 일괄 정렬할 첫 Batch 인덱스
+		UINT lastBatchIdx;     // 추가: 일괄 정렬할 마지막 Batch 인덱스
 		Vector3 cameraForward;
 		float padding2;
 	};

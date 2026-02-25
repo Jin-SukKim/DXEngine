@@ -5,7 +5,7 @@ namespace DE {
     class BitonicSort {
     public:
         struct Element {
-            float key;
+            uint32_t key[2]; // x: Batch ID (Major), y : Depth (Minor)
             uint32_t value;
         };
 

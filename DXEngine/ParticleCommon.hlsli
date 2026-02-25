@@ -266,7 +266,7 @@ float2 SampleCurlNoise2D(float2 uv, float frequency, float2 scrollSpeed, float t
 
 struct SortElement
 {
-    float key;
+    uint2 key;
     uint value;
 };
 

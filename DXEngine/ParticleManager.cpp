@@ -382,85 +382,95 @@ namespace DE {
 
 		// Lambda for sorting a batch group
 		auto sortBatchGroup = [&](const std::vector<BatchGroup>& batches, UINT descStartIdx) {
+			UINT firstBatchIdx = UINT_MAX;
+			UINT lastBatchIdx = UINT_MAX;
+			UINT totalParticleCount = 0;
+			UINT baseOffset = UINT_MAX;
+
+			// 1. AlphaBlend Batch들의 전체 범위(Boundary) 계산
 			for (size_t batchIdx = 0; batchIdx < batches.size(); batchIdx++) {
-				const auto& batch = batches[batchIdx];
-				if (batch.blendMode != BlendMode::AlphaBlend) continue;
+				if (batches[batchIdx].blendMode == BlendMode::AlphaBlend) {
+					UINT globalBatchIdx = descStartIdx + static_cast<UINT>(batchIdx);
 
-				// GlobalConsts b0 재바인딩 (BitonicSort가 b0 사용)
-				ComPtr<ID3D11Buffer> globalCB;
-				context->VSGetConstantBuffers(0, 1, globalCB.GetAddressOf());
-				if (globalCB) {
-					context->CSSetConstantBuffers(0, 1, globalCB.GetAddressOf());
+					if (firstBatchIdx == UINT_MAX) {
+						firstBatchIdx = globalBatchIdx;
+						baseOffset = m_memoryPool->GetBatchSortParams().GetCpu()[globalBatchIdx].baseOffset;
+					}
+					lastBatchIdx = globalBatchIdx;
+					totalParticleCount += m_memoryPool->GetBatchSortParams().GetCpu()[globalBatchIdx].particleCount;
 				}
+			}
 
-				UINT globalBatchIdx = descStartIdx + static_cast<UINT>(batchIdx);
+			if (totalParticleCount == 0) return;
 
-				// Downloaded sort params에서 baseOffset/particleCount 읽기
-				const auto& sortParamsData = m_memoryPool->GetBatchSortParams().GetCpu();
-				if (globalBatchIdx >= sortParamsData.size()) continue;
-				UINT baseOffset = sortParamsData[globalBatchIdx].baseOffset;
-				UINT particleCount = sortParamsData[globalBatchIdx].particleCount;
+			// 2. 단 한 번의 정렬을 위한 파라미터 세팅
+			UINT sortSize = 1;
+			while (sortSize < totalParticleCount) sortSize *= 2;
 
-				if (particleCount == 0) continue;
+			m_sortParamsCB.GetCpu().sortBaseOffset = baseOffset;
+			m_sortParamsCB.GetCpu().sortParticleCount = totalParticleCount;
+			m_sortParamsCB.GetCpu().firstBatchIdx = firstBatchIdx;
+			m_sortParamsCB.GetCpu().lastBatchIdx = lastBatchIdx;
+			m_sortParamsCB.GetCpu().cameraForward = cameraForward;
+			m_sortParamsCB.Upload();
+			m_sortParamsCB.Bind(5);
 
-				UINT sortSize = 1;
-				while (sortSize < particleCount) sortSize *= 2;
+			// GlobalCB 바인딩 (BitonicSort용)
+			ComPtr<ID3D11Buffer> globalCB;
+			context->VSGetConstantBuffers(0, 1, globalCB.GetAddressOf());
+			if (globalCB) context->CSSetConstantBuffers(0, 1, globalCB.GetAddressOf());
 
-				// SortParams CB (b5): baseOffset + particleCount + cameraForward
-				m_sortParamsCB.GetCpu().sortBaseOffset = baseOffset;
-				m_sortParamsCB.GetCpu().sortParticleCount = particleCount;
-				m_sortParamsCB.GetCpu().cameraForward = cameraForward;
-				m_sortParamsCB.Upload();
-				m_sortParamsCB.Bind(5);
+			// batchSortParams를 t1에 바인딩 (GenerateSortKeysCS에서 Batch Boundary 파악용)
+			ID3D11ShaderResourceView* sortParamsSRV = m_memoryPool->GetBatchSortParams().GetSRV();
+			context->CSSetShaderResources(1, 1, &sortParamsSRV);
 
-				// 1. GenerateSortKeys
-				auto& genKeysCS = RenderBase::computeCommon.particle.generateSortKeysCS;
-				context->CSSetShader(genKeysCS.computeShader.Get(), 0, 0);
+			// 1. GenerateSortKeys
+			auto& genKeysCS = RenderBase::computeCommon.particle.generateSortKeysCS;
+			context->CSSetShader(genKeysCS.computeShader.Get(), 0, 0);
 
-				ID3D11ShaderResourceView* batchSRV = m_memoryPool->GetBatchAliveIndices().GetSRV();
-				context->CSSetShaderResources(0, 1, &batchSRV);
-				ID3D11ShaderResourceView* particleSRV = m_memoryPool->GetParticleBuffer().GetSRV();
-				context->CSSetShaderResources(16, 1, &particleSRV);
+			ID3D11ShaderResourceView* batchSRV = m_memoryPool->GetBatchAliveIndices().GetSRV();
+			context->CSSetShaderResources(0, 1, &batchSRV);
+			ID3D11ShaderResourceView* particleSRV = m_memoryPool->GetParticleBuffer().GetSRV();
+			context->CSSetShaderResources(16, 1, &particleSRV);
 
-				ID3D11UnorderedAccessView* sortUAV = m_memoryPool->GetBitonicSort().GetUAV();
-				context->CSSetUnorderedAccessViews(0, 1, &sortUAV, nullptr);
+			ID3D11UnorderedAccessView* sortUAV = m_memoryPool->GetBitonicSort().GetUAV();
+			context->CSSetUnorderedAccessViews(0, 1, &sortUAV, nullptr);
 
-				context->Dispatch((sortSize + 1023) / 1024, 1, 1);
+			context->Dispatch((sortSize + 1023) / 1024, 1, 1);
 
-				// UAV barrier
-				ID3D11UnorderedAccessView* nullUAV = nullptr;
-				context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+			// UAV barrier
+			ID3D11UnorderedAccessView* nullUAV = nullptr;
+			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
-				// 2. BitonicSort
-				m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, particleCount);
+			// 2. BitonicSort
+			m_memoryPool->GetBitonicSort().Sort(context.Get(), sortUAV, totalParticleCount);
 
-				// UAV barrier: Sort 완료 후 UAV unbind하여 쓰기 완료 보장
-				{
-					ID3D11UnorderedAccessView* nullBarrier = nullptr;
-					context->CSSetUnorderedAccessViews(0, 1, &nullBarrier, nullptr);
-				}
+			// UAV barrier: Sort 완료 후 UAV unbind하여 쓰기 완료 보장
+			{
+				ID3D11UnorderedAccessView* nullBarrier = nullptr;
+				context->CSSetUnorderedAccessViews(0, 1, &nullBarrier, nullptr);
+			}
 
-				// BitonicSort 후 b5 재바인딩 (BitonicSort가 b0, SRV 상태를 변경할 수 있음)
-				m_sortParamsCB.Bind(5);
+			// BitonicSort 후 b5 재바인딩 (BitonicSort가 b0, SRV 상태를 변경할 수 있음)
+			m_sortParamsCB.Bind(5);
 
-				// 3. CopySortedIndices
-				auto& copyCS = RenderBase::computeCommon.particle.copySortedIndicesCS;
-				context->CSSetShader(copyCS.computeShader.Get(), 0, 0);
+			// 3. CopySortedIndices
+			auto& copyCS = RenderBase::computeCommon.particle.copySortedIndicesCS;
+			context->CSSetShader(copyCS.computeShader.Get(), 0, 0);
 
-				ID3D11ShaderResourceView* sortedSRV = m_memoryPool->GetBitonicSort().GetSRV();
-				context->CSSetShaderResources(0, 1, &sortedSRV);
+			ID3D11ShaderResourceView* sortedSRV = m_memoryPool->GetBitonicSort().GetSRV();
+			context->CSSetShaderResources(0, 1, &sortedSRV);
 
-				ID3D11UnorderedAccessView* batchUAV = m_memoryPool->GetBatchAliveIndices().GetUAV();
-				context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
+			ID3D11UnorderedAccessView* batchUAV = m_memoryPool->GetBatchAliveIndices().GetUAV();
+			context->CSSetUnorderedAccessViews(0, 1, &batchUAV, nullptr);
 
-				context->Dispatch((particleCount + 1023) / 1024, 1, 1);
+			context->Dispatch((totalParticleCount + 1023) / 1024, 1, 1);
 
-				// UAV barrier: 다음 배치의 GenerateSortKeys가 batchAliveIndices를
-				// SRV로 바인딩하기 전에 UAV 바인딩을 해제 (SRV/UAV 충돌 방지)
-				{
-					ID3D11UnorderedAccessView* nullBarrier = nullptr;
-					context->CSSetUnorderedAccessViews(0, 1, &nullBarrier, nullptr);
-				}
+			// UAV barrier: 다음 배치의 GenerateSortKeys가 batchAliveIndices를
+			// SRV로 바인딩하기 전에 UAV 바인딩을 해제 (SRV/UAV 충돌 방지)
+			{
+				ID3D11UnorderedAccessView* nullBarrier = nullptr;
+				context->CSSetUnorderedAccessViews(0, 1, &nullBarrier, nullptr);
 			}
 		};
 
