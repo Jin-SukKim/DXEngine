@@ -16,8 +16,6 @@ namespace DE {
 		D3D11Utils::CreateCS(device.Get(), L"ParticleMeshArgsUpdateCS.hlsl", particleMeshArgsUpdateCS);
 		D3D11Utils::CreateCS(device.Get(), L"SpawnCS.hlsl", spawnCS);
 		D3D11Utils::CreateCS(device.Get(), L"ParticleCS.hlsl", particleCS);
-		//D3D11Utils::CreateCS(device.Get(), L"VortexCS.hlsl", vortexCS);
-		//D3D11Utils::CreateCS(device.Get(), L"OrbitCS.hlsl", orbitCS);
 		D3D11Utils::CreateCS(device.Get(), L"RenderArgsUpdateCS.hlsl", renderArgsUpdateCS);
 		D3D11Utils::CreateCS(device.Get(), L"BatchRenderArgsCS.hlsl", batchRenderArgsCS);
 		D3D11Utils::CreateCS(device.Get(), L"BuildAliveIndicesCS.hlsl", buildAliveIndicesCS);

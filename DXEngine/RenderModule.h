@@ -27,7 +27,6 @@ public:
 protected:
 	int m_modelIdx = -1;
 	ID3D11BlendState* m_blendState = NULL;
-	// BitonicSort  - ParticleEmitter 
 };
 
 class BillboardRenderModule : public RenderModule
@@ -41,9 +40,6 @@ private:
 	float m_softMaxDist = 0.0f;
 	float m_softNearDist = 0.0f;
 	float m_velocityStretchFactor = 0.0f;
-	// All texture handling moved to MaterialModule
-	// IndirectArgsBuffer  - ParticleEmitter
-
 	UINT m_uvDistortEnabled = false;
 	float m_uvDistortFrequency = 1.0f;
 	float m_uvDistortStrength = 0.015f;
@@ -63,7 +59,6 @@ public:
 	std::unique_ptr<ParticleModule> Clone() const override;
 private:
 	UINT m_meshCount = 0;
-	// IndirectArgsBuffer  - ParticleEmitter 
 };
 }
 

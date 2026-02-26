@@ -24,7 +24,7 @@ RWStructuredBuffer<Element> arr : register(u0);
 void main(int3 gID : SV_GroupID, int3 gtID : SV_GroupThreadID,
           uint3 dtID : SV_DispatchThreadID)
 {
-    // (value ����) key�� ����
+    // (value ) key 
     uint i = dtID.x;
     
     uint l = i ^ j;

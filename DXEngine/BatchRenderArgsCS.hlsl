@@ -11,8 +11,8 @@ cbuffer BatchRenderArgsConsts : register(b0) {
     uint3 batchArgsPadding;
 };
 
-// ����� ��� Batch�� drawArgs�� ��� (Single Thread)
-// TODO: Multi-Thread�� ��ĥ �� ������ ����
+//   Batch drawArgs  (Single Thread)
+// TODO: Multi-Thread ĥ   
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -22,7 +22,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // Batch
         BatchDescriptor batch = batchDescriptors[batchID];
 
-        // Batch ������ Emitter�� id�� ������ (�̰� ����� AliveIndices�� ä��)
+        // Batch  Emitter id  (̰  AliveIndices ä)
         uint totalInstances = 0;
         for (uint i = 0; i < batch.emitterCount; i++) {
             uint eid = batchEmitterList[batch.emitterListOffset + i];
@@ -34,7 +34,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             totalInstances += count;
         }
         
-        // drawArgs ���� ä���
+        // drawArgs  ä
         uint argsIdx = batchID * 5;
         batchBillboardArgs[argsIdx + 0] = batch.indexCount;
         batchBillboardArgs[argsIdx + 1] = totalInstances;

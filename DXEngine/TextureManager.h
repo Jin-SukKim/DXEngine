@@ -68,7 +68,7 @@ private:
 	static const UINT CURVE_LUT_RESOLUTION = 128;
 	static const UINT CURVE_LUT_MAX_SLICES = 128;
 	std::unique_ptr<Texture2D> m_curveLUTArray;
-	UINT m_nextCurveLUTSlice = 0;  // 0 = default, 1+ = user curves
+	UINT m_nextCurveLUTSlice = 0;  // 0 = default, 1 = user curves
 	std::unordered_map<std::string, int> m_curveLUTCache;
 };
 }

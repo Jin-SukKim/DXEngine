@@ -481,15 +481,27 @@
     <ClInclude Include="FireEffect.h">
       <Filter>private\Basic</Filter>
     </ClInclude>
-    <ClInclude Include="CurveData.h" />
     <ClInclude Include="SimplexNoise.h">
       <Filter>public\ParticleSystem\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="SmokeEffect.h" />
-    <ClInclude Include="BoxMeshEffect.h" />
-    <ClInclude Include="ExplosionEffect.h" />
-    <ClInclude Include="SwordClashEffect.h" />
-    <ClInclude Include="SwordBurstEffect.h" />
+    <ClInclude Include="CurveData.h">
+      <Filter>public\ParticleSystem\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxMeshEffect.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SmokeEffect.h">
+      <Filter>public\ParticleSystem\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="SwordClashEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="SwordBurstEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ExplosionEffect.h">
+      <Filter>public\ParticleSystem\Actor\Combination</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXEngine.cpp">
@@ -777,23 +789,29 @@
     <ClCompile Include="SmokeActor.cpp">
       <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="CurveData.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="BillboardRenderModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="SmokeEffect.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="MeshRenderModule.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="BoxMeshEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CurveData.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ExplosionEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
-    <ClCompile Include="SwordClashEffect.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SmokeEffect.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="SwordBurstEffect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>private\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SwordClashEffect.cpp">
+      <Filter>private\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -942,6 +960,9 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="DepthDownsampleCS.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="PrepareSortDispatchCS.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
   </ItemGroup>

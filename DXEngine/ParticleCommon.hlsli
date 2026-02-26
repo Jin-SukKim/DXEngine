@@ -231,7 +231,7 @@ static const uint CURVE_ORBIT_RATE = 8;
 static const uint CURVE_COUNT = 9;
 
 float SampleCurve(uint curveType, float t, uint sliceIdx) {
-    // TODO: ���� 0.5�� ������ �ʿ䰡 �ֳ�?
+    // TODO:  0.5  ʿ䰡 ֳ?
     float v = ((float)curveType + 0.5) / (float)CURVE_COUNT;
     return curveLUT.SampleLevel(curveSampler, float3(t, v, sliceIdx), 0).r;
 }
@@ -250,18 +250,18 @@ StructuredBuffer<BatchDescriptor> batchDescriptors : register(t25);
 
 // Curl Noise sampling (Tiling Mode)
 float3 SampleCurlNoiseTiling(float3 worldPos, float frequency, float3 scrollSpeed, float time) {
-    // ������ [0.0, 1.0]���� ����
+    //  [0.0, 1.0] 
     float3 scroll = frac(scrollSpeed * time);
     float3 uvw = (worldPos * frequency) + scroll;
     float4 curlData = curlNoiseTexture.SampleLevel(curlNoiseSampler, uvw, 0);
-    return curlData.xyz * curlData.w; // ���� �� ���� = Curl ����
+    return curlData.xyz * curlData.w; //    = Curl 
 }
 
 float2 SampleCurlNoise2D(float2 uv, float frequency, float2 scrollSpeed, float time) {
     float2 scroll = frac(scrollSpeed * time);
     float2 uvCoord = (uv * frequency) + scroll;
     float4 curlData = curlNoiseTexture2D.SampleLevel(curlNoiseSampler, uvCoord, 0);
-    return curlData.rg;  // xy ���� �� ũ��
+    return curlData.rg;  // xy   ũ
 }
 
 struct SortElement

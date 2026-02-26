@@ -67,7 +67,7 @@ namespace DE {
 		} mirror;
 
 		struct {
-			GraphicsPSO depthOnlyPSO; // Depth ϱ  PSO
+			GraphicsPSO depthOnlyPSO;
 		} depth;
 
 		struct {
@@ -76,7 +76,7 @@ namespace DE {
 			GraphicsPSO billboardInstancedPSO; // GS 없는 인스턴싱 빌보드
 		} particle;
 
-		// Shader   Sampler
+		// Shader Sampler
 		std::vector<ID3D11SamplerState*> sampleStates;
 
 		// Rasterizer State (CCW : Counter-Clockwise)
@@ -85,17 +85,17 @@ namespace DE {
 		ComPtr<ID3D11RasterizerState> postProcessRS;
 		// front and back (cull-none)
 		ComPtr<ID3D11RasterizerState> solidBothRS; 
-		// Counter-Clockwise FrontFace  Ǿ  
-		ComPtr<ID3D11RasterizerState> solidCcwRS; // index ݽð   
+		// Counter-Clockwise FrontFace 
+		ComPtr<ID3D11RasterizerState> solidCcwRS;
 		ComPtr<ID3D11RasterizerState> wireCcwRS; 
 
 		// Depth Stencil State
 
-		// Ϲ(Default)
+		// Default
 		ComPtr<ID3D11DepthStencilState> drawDSS; 
-		//  ׸ Maskingϴ State
+		// Masking State
 		ComPtr<ID3D11DepthStencilState> maskDSS;
-		// Stencil Buffer Masking    ִ DSS
+		// Stencil Buffer Masking draw
 		ComPtr<ID3D11DepthStencilState> drawMaskedDSS; 
 
 		// InputLayouts
@@ -116,7 +116,7 @@ namespace DE {
 		ComPtr<ID3D11VertexShader> skyboxVS;
 		ComPtr<ID3D11PixelShader> skyboxPS;
 
-		// DepthStencilBuffer ϰ  
+		// DepthStencilBuffer   
 		ComPtr<ID3D11VertexShader> depthOnlyVS; 
 		ComPtr<ID3D11PixelShader> depthOnlyPS;
 
@@ -150,8 +150,7 @@ namespace DE {
 		ComPtr<ID3D11SamplerState> shadowCompareSS;
 		ComPtr<ID3D11SamplerState> pointClampSS;
 
-		// Blend States (     ο     ϴ )
-		 // 2  Alpha() ִ Alpha Blending
+		// Blend States
 		ComPtr<ID3D11BlendState> mirrorBS;
 
 		// Particle System
@@ -160,7 +159,7 @@ namespace DE {
 		ComPtr<ID3D11GeometryShader> particleGS;
 		ComPtr<ID3D11PixelShader> particlePS;
 		ComPtr<ID3D11PixelShader> particlePbrPS;
-		ComPtr<ID3D11BlendState> accumulateBS; //   ϸ鼭
+		ComPtr<ID3D11BlendState> accumulateBS; 
 		ComPtr<ID3D11BlendState> alphaBS;
 		ComPtr<ID3D11BlendState> modulateBS;
 		ComPtr<ID3D11DepthStencilState> particleDDS;

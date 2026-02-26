@@ -21,7 +21,7 @@ float3x3 GetRotationMatrix(float3 rot) {
     float cY = cos(rot.y), sY = sin(rot.y);
     float cZ = cos(rot.z), sZ = sin(rot.z);
 
-    // Z * Y * X ���� (Roll -> Yaw -> Pitch)
+    // Z * Y * X  (Roll -> Yaw -> Pitch)
     float3x3 mX = { 1, 0, 0,  0, cX, -sX,  0, sX, cX };
     float3x3 mY = { cY, 0, sY,  0, 1, 0,  -sY, 0, cY };
     float3x3 mZ = { cZ, -sZ, 0,  sZ, cZ, 0,  0, 0, 1 };
@@ -39,18 +39,18 @@ GSInput main(uint vertexID : SV_VertexID)
     GSInput output;
 
     SpawnConsts spawn = consts[emitterID].spawn;
-    // ����/���� ��忡 ���� ������ ��ġ ����
+    // / 忡   ġ 
     if (spawn.simulationSpace == 1)
     {
-        // �̹� World ��ǥ�̹Ƿ� View-Projection ��ȯ�� �����ϸ� ��
-        // ������ VS������ World ��� ���� �����ϰ�, float4(p.position, 1.0)�� �ѱ�
-        // (Pixel Shader�� Geometry Shader �ܰ迡�� View/Proj�� ����� ����)
-        // �� �ڵ�� VSInput -> GSInput �ܰ��̹Ƿ� World ��ȯ ���θ� ����
+        // ̹ World ǥ̹Ƿ View-Projection ȯ ϸ 
+        //  VS World   , float4(p.position, 1.0) ѱ
+        // (Pixel Shader Geometry Shader ܰ迡 View/Proj  )
+        //  ڵ VSInput -> GSInput ̹ܰǷ World ȯ θ 
         output.position = float4(p.position.xyz, 1.0);
     }
     else
     {
-        // ����: Local ��ǥ�̹Ƿ� World ��� ���� �ʿ�
+        // : Local ǥ̹Ƿ World   ʿ
         output.position = mul(float4(p.position.xyz, 1.0), meshConsts[p.systemID].pWorld);
     }
 

@@ -105,8 +105,8 @@ namespace DE {
         m_sortStepTable.clear();
         m_stepConstBuffers.clear();
 
-        // Build step table (same pattern as SortInternal, for sortSize >= BLOCK_SIZE)
-        // Step 0: Phase 1 (BitonicBlockSortCS)
+        // 1) 모든 가능한 step을 테이블로 생성
+        // Step 0: Phase 1 (BlockSort) — minSortSize = BLOCK_SIZE(2048)
         m_sortStepTable.push_back({ 0, 0, 1, BLOCK_SIZE });
 
         // Phase 2+3 steps for k = BLOCK_SIZE*2 up to maxSortSize
@@ -119,7 +119,7 @@ namespace DE {
             m_sortStepTable.push_back({ k, 0, 3, k });
         }
 
-        // Create one pre-allocated CB per step (uploaded once, never updated)
+        // 2) 각 step마다 CB를 하나씩 만들어서 미리 Upload
         m_stepConstBuffers.resize(m_sortStepTable.size());
         for (size_t i = 0; i < m_sortStepTable.size(); ++i) {
             m_stepConstBuffers[i].Initialize();
@@ -127,7 +127,7 @@ namespace DE {
             m_stepConstBuffers[i].Upload();
         }
 
-        // Create GPU-readable step table (for PrepareSortDispatchCS)
+        // 3) GPU용 step table 생성 (PrepareSortDispatchCS가 읽을 SRV)
         auto device = GET_SINGLE(RenderBase)->GetDevice().Get();
         std::vector<SortStepGPU> gpuTable(m_sortStepTable.size());
         for (size_t i = 0; i < m_sortStepTable.size(); ++i) {
@@ -155,7 +155,7 @@ namespace DE {
             // Bind pre-allocated CB (no Map/Unmap!)
             context->CSSetConstantBuffers(0, 1, m_stepConstBuffers[i].GetAddressOf());
 
-            // Select shader based on phase
+            // Phase에 따라 셰이더 선택
             switch (step.phase) {
             case 1:
                 context->CSSetShader(sortPSOs.bitonicBlockSortCS.computeShader.Get(), 0, 0);
@@ -168,7 +168,8 @@ namespace DE {
                 break;
             }
 
-            // DispatchIndirect — GPU wrote 0 groups for steps where sortSize < minSortSize
+            // DispatchIndirect — GPU가 써놓은 args를 읽어서 실행
+            // groups=0이면 GPU가 자동으로 아무것도 안 함
             UINT byteOffset = argsBaseByteOffset + i * 12; // 3 UINTs per dispatch args
             context->DispatchIndirect(indirectArgsBuffer, byteOffset);
         }

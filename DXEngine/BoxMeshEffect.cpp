@@ -23,7 +23,7 @@ namespace DE {
 
 	BoxMeshEffect::~BoxMeshEffect()
 	{
-		// m_particle�� �θ� ~EffectActor()���� ������
+		// m_particle θ ~EffectActor() 
 	}
 
 	void BoxMeshEffect::Initialize() {
@@ -32,7 +32,7 @@ namespace DE {
 
 	void BoxMeshEffect::Update(const float& deltaTime) {
 		Super::Update(deltaTime);
-		// constant buffer data ����
+		// constant buffer data 
 		TransformComponent* tr = this->GetComponent<TransformComponent>();
 		if (tr) {
 			Vector3 cur = tr->GetPos();

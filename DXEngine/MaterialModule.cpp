@@ -55,7 +55,7 @@ namespace DE {
 			std::string texturePath = data["texture"];
 			MaterialConstants constants = {}; // Zero-initialize all fields
 			constants.albedoFactor = Vector3(1.0f);
-			// All use*Map flags are now explicitly 0 (will be set to 1 when texture loads)
+			// Default Texture = 0
 			std::vector<std::string> texPaths = { texturePath };
 			int matIdx = MaterialSystem::Get().CreateMaterial(
 				"Inline_" + texturePath, constants, texPaths);

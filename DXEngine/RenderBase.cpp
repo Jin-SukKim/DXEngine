@@ -9,7 +9,7 @@
 
 namespace DE {
 	GraphicsCommon RenderBase::graphicsCommon;
-	ComputeCommon RenderBase::computeCommon;  // �߰�
+	ComputeCommon RenderBase::computeCommon;  // ߰
 
 	RenderBase::~RenderBase()
 	{
@@ -17,15 +17,15 @@ namespace DE {
 
 	bool RenderBase::Initialize(WindowInfo& window)
 	{
-		// �׷���ī�� �ϵ�̿��� ȣȯ�� ����
+		// ׷ī ϵ̿ ȣȯ 
 		const D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_HARDWARE;
 
 		UINT createDeviceFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
-		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG; // �׷��Ƚ� ����� Ȱ��ȭ
+		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG; // ׷Ƚ  Ȱȭ
 #endif
 
-		// DirectX ���� (���߿� �߰� ����) - �� ���� ������ ���� ������ ����
+		// DirectX  (߿ ߰ ) -      
 		const D3D_FEATURE_LEVEL featureLevels[1] = {
 			D3D_FEATURE_LEVEL_11_0
 		};
@@ -34,28 +34,28 @@ namespace DE {
 		m_screenWidth = window.width;
 		m_screenHeight = window.height;
 
-		// Swap-Chain ����
+		// Swap-Chain 
 		DXGI_SWAP_CHAIN_DESC sd;
-		ZeroMemory(&sd, sizeof(sd)); // �޸� �ʱ�ȭ
+		ZeroMemory(&sd, sizeof(sd)); // ޸ ʱȭ
 		sd.BufferDesc.Width = m_screenWidth;
 		sd.BufferDesc.Height = m_screenHeight;
 		sd.BufferDesc.Format = m_backBufferFormat;
 		sd.BufferCount = 2; // double-buffering
 		sd.BufferDesc.RefreshRate.Numerator = 0;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
-		sd.BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering��
-			// Compute Shader ��(CS���� Back-Buffer�� ����Ұ� �ƴ϶�� �ʿ������ ��ó���� ����� �� �����Ƿ� ����)
+		sd.BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT | // Rendering
+			// Compute Shader (CS Back-Buffer Ұ ƴ϶ ʿ ó   Ƿ )
 			DXGI_USAGE_UNORDERED_ACCESS; 
-		sd.OutputWindow = window.hwnd; // �������� ������
+		sd.OutputWindow = window.hwnd; //  
 		sd.Windowed = TRUE; // windowed/full-screen
-		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // full-screen ��� ���� ����
+		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // full-screen   
 		//sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		// No MSAA
 		sd.SampleDesc.Count = 1; 
 		sd.SampleDesc.Quality = 0;
 
-		// Device, Device Context, SwapChain ����
+		// Device, Device Context, SwapChain 
 		ThrowIfFailed(::D3D11CreateDeviceAndSwapChain(
 			0, driverType, 0, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels),
 			D3D11_SDK_VERSION, &sd, m_swapChain.GetAddressOf(),
@@ -64,25 +64,25 @@ namespace DE {
 		//window.device = m_device;
 		//window.context = m_context;
 
-		// ���ϴ� D3D �������� Ȯ��
+		// ϴ D3D  Ȯ
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
 			std::cout << "D3D Feature Level 11 unsupported." << std::endl;
 			return false;
 		}
 
-		// Back Buffer�� RTV ����
+		// Back Buffer RTV 
 		CreateBuffers();
-		// Viewport ����
+		// Viewport 
 		SetViewport();
-		// DepthStencilView ����
+		// DepthStencilView 
 		CreateDepthStencilBuffer();
 
 		graphicsCommon.InitCommonStates(m_device);
-		computeCommon.InitCommonStates(m_device);  // �߰�
+		computeCommon.InitCommonStates(m_device);  // ߰
 
 		// Particle
 		{
-			// ȭ���� �� ������ �簢���� �����ϰ� �� �簢���� Texture�� Shading�ؼ�(PostProcessing) ���� ȭ���� ������
+			// ȭ   簢   簢 Texture Shadingؼ(PostProcessing)  ȭ 
 			MeshData quadData = GeometryGenerator::MakeSquare();
 			m_compositeQuad = std::make_shared<Mesh>();
 			D3D11Utils::CreateVertexBuffer(m_device, quadData.vertices, m_compositeQuad->vertexBuffer);
@@ -92,7 +92,7 @@ namespace DE {
 			m_compositeQuad->offset = 0;
 		}
 
-		// TODO: �ӽ�
+		// TODO: ӽ
 		D3D11Utils::CreateImageFilterTexture(m_device, int(m_screenViewport.Width), int(m_screenViewport.Height), m_toneMapTexture);
 		m_toneMapping = std::make_shared<ToneMappingFilter>();
 		m_toneMapping->Initialize({ m_toneMapTexture.GetSRV() }, { m_backBufferRTV }, int(m_screenViewport.Width), int(m_screenViewport.Height));
@@ -105,7 +105,7 @@ namespace DE {
 		if (m_postProcess)
 			m_postProcess->Update();
 
-		// TODO: �ӽ�
+		// TODO: ӽ
 		m_toneMapping->Update();
 	}
 
@@ -116,7 +116,7 @@ namespace DE {
 
 	void RenderBase::PostRender()
 	{
-		// ��ó�� ���� �����ϱ� ���� Texture2DMS�� ������ �� ����� Texture2D�� ����
+		// ó  ϱ  Texture2DMS    Texture2D 
 		//ComPtr<ID3D11Texture2D> backBuffer;
 		//ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
 		//m_context->CopyResource(m_tempTexture.Get(), m_floatBuffer.GetTexture());
@@ -126,14 +126,14 @@ namespace DE {
 		if (m_postProcess)
 			m_postProcess->Render();
 
-		// TODO: �ӽ�
+		// TODO: ӽ
 		m_toneMapping->Render();
 
-		// ���� ������ ��� ����
+		//    
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf())));
-		m_context->CopyResource(m_prevFrame.GetTexture(), backBuffer.Get()); // ��� ���� ȿ���� ���� ������ ��� ����
-		//m_context->CopyResource(m_prevFrame.GetTexture(), m_floatBuffer.GetTexture()); // ��� ���� ȿ���� ���� ������ ��� ����
+		m_context->CopyResource(m_prevFrame.GetTexture(), backBuffer.Get()); //   ȿ    
+		//m_context->CopyResource(m_prevFrame.GetTexture(), m_floatBuffer.GetTexture()); //   ȿ    
 	}
 
 	void RenderBase::Present()
@@ -156,9 +156,9 @@ namespace DE {
 	void RenderBase::CreateBuffers()
 	{
 		// Raterization -> float/depthBuffer(MSAA) -> resolved -> backBuffer
-		// ������ MSAA�� ��� ���ϴ� Raterization -> float -> backBuffer �帧 (HDR Pipeline)
+		//  MSAA  ϴ Raterization -> float -> backBuffer 帧 (HDR Pipeline)
 		
-		// BackBuffer�� ȭ������ ���� ��� (SRV�� ���ʿ�)
+		// BackBuffer ȭ   (SRV ʿ)
 		ComPtr<ID3D11Texture2D> backBuffer;
 		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 		ThrowIfFailed(m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_backBufferRTV.GetAddressOf()));
@@ -171,7 +171,7 @@ namespace DE {
 		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		desc.MipLevels = desc.ArraySize = 1;
 		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture�κ��� ���� ����
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Textureκ  
 		desc.MiscFlags = 0;
 		desc.CPUAccessFlags = 0;
 		desc.SampleDesc.Count = 1;
@@ -179,25 +179,25 @@ namespace DE {
 
 		D3D11Utils::CreateTexture(m_device, desc, m_floatBuffer);
 
-		// TODO: postEffect Buffer�� float buffer�� �Ȱ��� �������� ����
+		// TODO: postEffect Buffer float buffer Ȱ  
 		//D3D11Utils::CreateTexture(m_device, desc, m_postEffectsBuffer);
 
 		// Mouse Picking
-		// 1x1 ���� Staging Texture ���� (Pixel�� ���� GPU���� CPU�� ������ �� �ֵ��� ������ Texture)
+		// 1x1  Staging Texture  (Pixel  GPU CPU   ֵ  Texture)
 		D3D11Utils::CreateStagingTexture(m_device, 1, 1, m_indexStagingTexture, m_backBufferFormat);
 
-		// Mouse Picking�� ����� Index ���� �������� Texture�� RenderTargetVeiw ����
+		// Mouse Picking  Index   Texture RenderTargetVeiw 
 		backBuffer->GetDesc(&desc);
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTexture.GetAddressOf())); 
 		ThrowIfFailed(m_device->CreateRenderTargetView(m_indexTexture.Get(), nullptr, m_indexRTV.GetAddressOf()));
 		
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Index-Buffer ����� �����ؼ� �ӽ� ����
+		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_indexTempTexture.GetAddressOf())); // Index-Buffer  ؼ ӽ 
 
-		// ���� ������ �����
+		//   
 		D3D11Utils::CreateTexture(m_device, backBuffer, m_prevFrame);
 
-		// Particle Low Res ��
+		// Particle Low Res 
 		m_lowResWidth = static_cast<int>(desc.Width * 0.5f);
 		m_lowResHeight = static_cast<int>(desc.Height * 0.5f);
 		desc.Width = m_lowResWidth;
@@ -208,7 +208,7 @@ namespace DE {
 
 	void RenderBase::SetViewport()
 	{
-		// Viewport ����
+		// Viewport 
 		ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
 		m_screenViewport.TopLeftX = 0;
 		m_screenViewport.TopLeftY = 0;
@@ -225,7 +225,7 @@ namespace DE {
 		D3D11_TEXTURE2D_DESC dsDesc;
 		dsDesc.Width = m_screenWidth;
 		dsDesc.Height = m_screenHeight;
-		dsDesc.MipLevels = 1; // Depth Stencil Buffer�� Mipmap ���ʿ�
+		dsDesc.MipLevels = 1; // Depth Stencil Buffer Mipmap ʿ
 		dsDesc.ArraySize = 1;
 		dsDesc.Usage = D3D11_USAGE_DEFAULT;
 		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -239,27 +239,27 @@ namespace DE {
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, 0, depthStencilBuffer.GetAddressOf()));
 		ThrowIfFailed(m_device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, m_defaultDSV.GetAddressOf()));
 	
-		// Depth Only (Stencil�� �ʿ䰡 ���⿡ Depth�� 32bit ���� ���)
-		// Typeless�� ������ DepthStencilView������ D32 Format�� ���, ShaderResourceView������ R32 Format�� ���
-		// �� Format�� ���� �ٸ��� ������ Typeless�� ���
+		// Depth Only (Stencil ʿ䰡 ⿡ Depth 32bit  )
+		// Typeless  DepthStencilView D32 Format , ShaderResourceView R32 Format 
+		//  Format  ٸ  Typeless 
 		dsDesc.Format = DXGI_FORMAT_R32_TYPELESS; 
 		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, nullptr, m_depthOnlyBuffer.GetAddressOfTexture()));
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format ���
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format 
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		ThrowIfFailed(m_device->CreateDepthStencilView(m_depthOnlyBuffer.GetTexture(), &dsvDesc, m_depthOnlyDSV.GetAddressOf()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV�� ����ϱ� ���� R32 format ���
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV ϱ  R32 format 
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_depthOnlyBuffer.GetTexture(), &srvDesc, m_depthOnlyBuffer.GetAddressOfSRV()));
 
-		// Particle Overdraw ��
+		// Particle Overdraw 
 		dsDesc.Width = m_lowResWidth;
 		dsDesc.Height = m_lowResHeight;
 		ThrowIfFailed(m_device->CreateTexture2D(&dsDesc, nullptr, m_lowResDepth.GetAddressOfTexture()));
@@ -317,7 +317,7 @@ namespace DE {
 	void RenderBase::SetDepthOnlyRender()
 	{
 		m_context->ClearDepthStencilView(m_depthOnlyDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-		// DepthOnly�� RTV ���ʿ�
+		// DepthOnly RTV ʿ
 		m_context->OMSetRenderTargets(0, nullptr, m_depthOnlyDSV.Get());
 	}
 
@@ -343,32 +343,32 @@ namespace DE {
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Width = light->GetShadowWidth();
 		desc.Height = light->GetShadowHeight();
-		desc.MipLevels = 1; // Mipmap Level �ִ�
-		desc.ArraySize = arraySize; // Texture Array�̹Ƿ� ����� Texture ����
+		desc.MipLevels = 1; // Mipmap Level ִ
+		desc.ArraySize = arraySize; // Texture Array̹Ƿ  Texture 
 		desc.Format = DXGI_FORMAT_R32_TYPELESS;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Texture�κ��� ���� ����
+		desc.Usage = D3D11_USAGE_DEFAULT; // Staging Textureκ  
 		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 
-		// �ʱ� ������ ���� Texture ����
+		// ʱ   Texture 
 		ThrowIfFailed(m_device->CreateTexture2D(&desc, nullptr, m_shadowArrayBuffer.GetAddressOfTexture()));
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		ZeroMemory(&srvDesc, sizeof(srvDesc));
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV�� ����ϱ� ���� R32 format ���
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // SRV ϱ  R32 format 
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		srvDesc.Texture2DArray.MipLevels = 1;
 		srvDesc.Texture2DArray.ArraySize = arraySize;
-		// Shadow Map�� SRV ���� (������ ���� srvDesc �״�� ���)
+		// Shadow Map SRV  (  srvDesc ״ )
 		ThrowIfFailed(m_device->CreateShaderResourceView(m_shadowArrayBuffer.GetTexture(), &srvDesc, m_shadowArrayBuffer.GetAddressOfSRV()));
 	
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		ZeroMemory(&dsvDesc, sizeof(dsvDesc));
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format ���
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; // D32 Format 
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		dsvDesc.Texture2DArray.MipSlice = 0;
-		dsvDesc.Texture2DArray.ArraySize = 1; // �� DSV�� �ϳ��� ���
+		dsvDesc.Texture2DArray.ArraySize = 1; //  DSV ϳ 
 
 		m_shadowDSVs.resize(arraySize);
 		for (int i = 0; i < arraySize; ++i) {
@@ -418,7 +418,7 @@ namespace DE {
 		m_context->CSSetShader(nullptr, 0, 0);
 		m_context->IASetInputLayout(pso.inputLayout.Get());
 		m_context->RSSetState(pso.rasterizerState.Get());
-		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); // ������ parameter�� multi-sample�� ����Ҷ� ���
+		m_context->OMSetBlendState(pso.blendState.Get(), pso.blendFactor, 0xffffffff); //  parameter multi-sample Ҷ 
 		m_context->OMSetDepthStencilState(pso.depthStencilState.Get(), pso.stencilRef);
 		m_context->IASetPrimitiveTopology(pso.primitiveTopology);
 	}
@@ -446,7 +446,7 @@ namespace DE {
 		{
 			m_context->CopyResource(m_indexTempTexture.Get(), m_indexTexture.Get());
 
-			// ���콺 Ŀ���� �ȼ� �Ѱ��� ���� Staging Texture�� ����
+			// 콺 Ŀ ȼ Ѱ  Staging Texture 
 			D3D11_BOX box;
 			box.left = mouseX;
 			box.right = mouseX + 1;
@@ -458,11 +458,11 @@ namespace DE {
 				m_indexTempTexture.Get(), 0, &box);
 
 
-			// GPU���� CPU�� ������ ����
+			// GPU CPU  
 			D3D11_MAPPED_SUBRESOURCE ms;
 			m_context->Map(m_indexStagingTexture.Get(), 0, D3D11_MAP_READ, 0,
 				&ms);
-			// �ȼ� �ϳ��� ���� ����
+			// ȼ ϳ  
 			memcpy(dest, ms.pData, sizeof(uint8_t) * 4);
 			m_context->Unmap(m_indexStagingTexture.Get(), 0);
 
@@ -477,12 +477,12 @@ namespace DE {
 
 	void RenderBase::SetShadowViewport(float width, float height)
 	{
-		// Shadow Mapping�� �´� Viewport�� ����
+		// Shadow Mapping ´ Viewport 
 		D3D11_VIEWPORT shadowViewport;
 		ZeroMemory(&shadowViewport, sizeof(shadowViewport));
 		shadowViewport.TopLeftX = 0;
 		shadowViewport.TopLeftY = 0;
-		// Shadow Map���� ����� Depth Buffer�� �ػ󵵸� ���� ����������
+		// Shadow Map  Depth Buffer ػ󵵸  
 		shadowViewport.Width = width;
 		shadowViewport.Height = height;
 		shadowViewport.MinDepth = 0.f;
@@ -506,7 +506,7 @@ namespace DE {
 	{
 		ComPtr<ID3D11DeviceContext>& context = GET_SINGLE(RenderBase)->GetContext();
 
-		// RTS ���� ����
+		// RTS  
 		context->OMSetRenderTargets(0, nullptr, m_shadowDSVs[idx].Get());
 		context->ClearDepthStencilView(m_shadowDSVs[idx].Get(),
 			D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -598,7 +598,7 @@ namespace DE {
 
 	void RenderBase::ClearStencilBuffer()
 	{
-		// Stencil�� 0���� Clear(�ʱ�ȭ)
+		// Stencil 0 Clear(ʱȭ)
 		m_context->ClearDepthStencilView(m_defaultDSV.Get(), D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 }

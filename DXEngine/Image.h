@@ -11,7 +11,7 @@ namespace DE {
 
 		bool Load(const std::string& filename) override;
 		bool LoadExr(const std::string& filename, DXGI_FORMAT& pixelFormat);
-		// HDRI �̹��� �о���� (HDRI�� ���� IBL�Ҷ� �ַ� ���)
+		// HDRI ̹ о (HDRI  IBLҶ ַ )
 
 		const std::vector<uint8_t>& GetImage() { return m_image; }
 		const int& GetWidth() { return m_width; }
@@ -33,6 +33,6 @@ namespace DE {
 		int m_width = 0;
 		int m_height = 0;
 		int m_channels = 0;
-		std::vector<uint8_t> m_image; // Element�ϳ� �� color�� r, g, b, a�� �� 4���� Index�� 1���� Color���� ���� (4 ä���� ���)
+		std::vector<uint8_t> m_image; // Elementϳ  color r, g, b, a  4 Index 1 Color  (4 ä )
 	};
 }

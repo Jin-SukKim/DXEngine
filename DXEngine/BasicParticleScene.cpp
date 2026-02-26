@@ -127,12 +127,12 @@ namespace DE {
 			if (tr) {
 				Vector3 pos = tr->GetPos();
 
-				// 4x2 ��ġ (4��, 2��)
-				int row = i / 4;  // �� �ε��� (0 �Ǵ� 1)
-				int col = i % 4;  // �� �ε��� (0, 1, 2, 3)
+				// 4x2 ġ (4, 2)
+				int row = i / 4;  //  ε (0 Ǵ 1)
+				int col = i % 4;  //  ε (0, 1, 2, 3)
 
-				pos.x += col * 5.f;  // X�� �������� 10 ����
-				pos.z += row * 5.f;  // Z�� �������� 10 ����
+				pos.x += col * 5.f;  // X  10 
+				pos.z += row * 5.f;  // Z  10 
 
 				tr->SetPos(pos);
 			}

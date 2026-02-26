@@ -5,7 +5,6 @@
 namespace DE {
 	void VisualModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ��� �� �ʱ�ȭ (OnSpawn���� �̵�)
 		VisualConsts& consts = ctx.consts.visual;
 		consts.startColor = startColor;
 		consts.endColor = endColor;

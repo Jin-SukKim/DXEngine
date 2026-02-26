@@ -9,20 +9,20 @@
 
 #include <filesystem>
 namespace fs = std::filesystem;
-#include <DirectXTexEXR.h> // EXR ���� HDRI �б�
+#include <DirectXTexEXR.h> // EXR  HDRI б
 #include <fp16.h>
 
 namespace DE {
 	bool Image::Load(const std::string& filename)
 	{
 		fs::path filePath = filename;
-		if (!fs::exists(filePath)) // ���� ���� ���� Ȯ��
+		if (!fs::exists(filePath)) //    Ȯ
 			return false;
 
-		// ���Ϸκ��� �̹����� �о����
+		// Ϸκ ̹ о
 		unsigned char* img = stbi_load(filename.c_str(), &m_width, &m_height, &m_channels, 0);
 		//std::cout << "ReadImage() " << filename << " " << m_width << " " << m_height << " " << m_channels << std::endl;
-			// �ε� ���� �� ���� Ȯ��
+			// ε    Ȯ
 		if (!img) {
 			std::cerr << "Failed to load image: " << filename << std::endl;
 			std::cerr << "STB Error: " << stbi_failure_reason() << std::endl;
@@ -32,7 +32,7 @@ namespace DE {
 		std::cout << "Image loaded: " << filename << " (" << m_width << "x" << m_height
 			<< ", " << m_channels << " channels)" << std::endl;
 
-		// ������ 4ä�η� ���� ����
+		//  4äη  
 		m_image.resize(m_width * m_height * 4);
 
 		if (m_channels == 0) {
@@ -123,23 +123,23 @@ namespace DE {
 		ThrowIfFailed(DirectX::GetMetadataFromEXRFile(wFilename.c_str(), metadata));
 
 		DirectX::ScratchImage scratchImage;
-		// ���� �̹��� �����͸� �о���� (exr �������� float Format�� ����ϰ� r, g, b, a ���� 16-bit float�� ���)
+		//  ̹ ͸ о (exr  float Format  r, g, b, a  16-bit float )
 		ThrowIfFailed(DirectX::LoadFromEXRFile(wFilename.c_str(), NULL, scratchImage));
 
 		width = static_cast<int>(metadata.width);
 		height = static_cast<int>(metadata.height);
-		pixelFormat = metadata.format; // DirectX�� ȣȯ�Ǵ� Library�̱� ������ ���� FOrmat�� ���
+		pixelFormat = metadata.format; // DirectX ȣȯǴ Library̱   FOrmat 
 
 		std::cout << filename << " " << metadata.width << " " << metadata.height << " " << metadata.format << std::endl;
 
-		// image�� uint8_t�� 8bit¥�� uint ���� �迭�� �ϴ� �о���� �޸𸮸� ����
+		// image uint8_t 8bit¥ uint  迭 ϴ о ޸𸮸 
 		image.resize(scratchImage.GetPixelsSize());
 		memcpy(image.data(), scratchImage.GetPixels(), image.size());
 
-		// ������ ���� Ȯ��
-		// exr �����ʹ� rgba ���� 16-bit float�� ��������� C++�� float�� 32bit ũ�⸦ ���
-		// float���� ǥ���� 16bit�� ����ؼ� �������� �ߵǱ⿡ GPU�� 16bit¥���� ���� ����ȭ�� �ߵǾ� ����
-		// ��, C++�� half-float(16bit)�� ���⿡ �ܺ� library ��� (debugging�� 16bits float�� 32bits�� ��ȯ)
+		//   Ȯ
+		// exr ʹ rgba  16-bit float  C++ float 32bit ũ⸦ 
+		// float ǥ 16bit ؼ  ߵǱ⿡ GPU 16bit¥  ȭ ߵǾ 
+		// , C++ half-float(16bit) ⿡ ܺ library  (debugging 16bits float 32bits ȯ)
 		std::vector<float> f32(image.size() / 2);
 		uint16_t* f16 = (uint16_t*)image.data();
 		for (int i = 0; i < image.size() / 2; ++i)

@@ -4,7 +4,7 @@
 #include "RenderBase.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
-#include <DirectXCollision.h> // [Added] For Frustum Culling
+#include <DirectXCollision.h> // Frustum Culling
 #include "MaterialSystem.h"
 #include "RenderModule.h"
 
@@ -117,7 +117,6 @@ namespace DE {
 			}
 		}
 
-		// Compute , SwapBuffer  Read  ȭ
 		if (m_needsSyncReadOffset) {
 			SyncReadOffsets();
 			m_needsSyncReadOffset = false;
@@ -393,11 +392,13 @@ namespace DE {
 		UINT numSortSteps = m_memoryPool->GetBitonicSort().GetNumSortSteps();
 		ID3D11Buffer* argsBuffer = m_sortIndirectArgs.GetBuffer();
 
-		// Lambda for GPU-driven indirect sort of a batch group
+		// sortBatchGroupIndirect 람다를 2번 호출:
+		//   slot 0: fullResBillboard 배치
+		//   slot 1: lowResBillboard 배치
 		auto sortBatchGroupIndirect = [&](const std::vector<BatchGroup>& batches,
 		                                   UINT descStartIdx, UINT sortParamsSlot)
 		{
-			// 1. CPU: find firstBatchIdx/lastBatchIdx (blend mode is CPU-side data)
+			// 1. CPU 최소 작업: AlphaBlend batch 범위만 찾기
 			UINT firstBatchIdx = UINT_MAX;
 			UINT lastBatchIdx = UINT_MAX;
 
@@ -413,7 +414,8 @@ namespace DE {
 			// No AlphaBlend batches → skip
 			if (firstBatchIdx == UINT_MAX) return;
 
-			// 2. PrepareSortDispatchCS — GPU computes sort params + dispatch args
+
+			// 2. PrepareSortDispatchCS (GPU가 계획) — GPU computes sort params + dispatch args
 			{
 				m_prepareSortCB.SetCpuData({
 					firstBatchIdx,
@@ -440,7 +442,10 @@ namespace DE {
 
 				auto& prepCS = RenderBase::computeCommon.particle.prepareSortDispatchCS;
 				context->CSSetShader(prepCS.computeShader.Get(), 0, 0);
-				context->Dispatch(1, 1, 1);
+				// GPU 스레드 1개가 계획 수립
+				//	- dispatchArgs 버퍼에 모든 step의 args가 기록됨
+				//	- gpuSortParams[slot]에 sortSize, baseOffset 등 기록됨
+				context->Dispatch(1, 1, 1); 
 
 				// Unbind UAVs (barrier before DispatchIndirect reads)
 				ID3D11UnorderedAccessView* nullUAVs2[] = { nullptr, nullptr };
@@ -782,7 +787,7 @@ namespace DE {
 	{
 		ParticleSystem* prototype = nullptr;
 
-		// 1. Prototype Load (Cache üũ)
+		// 1. Prototype Load (Cache hit)
 		auto prototypeIt = m_prototypes.find(path);
 		if (prototypeIt != m_prototypes.end())
 		{
@@ -1008,7 +1013,6 @@ namespace DE {
 			eID.readParticleOffset = handle.particleOffset + initialData.emitterIDs[i].readParticleOffset;
 			eID.writeParticleOffset = handle.particleOffset + initialData.emitterIDs[i].writeParticleOffset;
 
-			// spawnPos ϴ emitter  
 			if (handle.spawnPosOffset != UINT_MAX && eID.spawnPosOffset != UINT_MAX) {
 				eID.spawnPosOffset += handle.spawnPosOffset;
 			}
@@ -1059,7 +1063,7 @@ namespace DE {
 		const ParticleInitializer& initialData = system->GetInitialData();
 
 		for (size_t i = 0; i < handle.emitterIDs.size(); ++i) {
-			// writeParticleOffset  ġ 
+			// writeParticleOffset
 			UINT globalEmitterID = handle.emitterIDs[i];
 			UINT localOffset = initialData.emitterIDs[i].writeParticleOffset;
 

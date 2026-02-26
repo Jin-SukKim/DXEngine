@@ -27,7 +27,7 @@ void main(uint3 gID : SV_GroupID, uint3 gtID : SV_GroupThreadID)
     shared_data[idx0] = arr[blockOffset + idx0];
     shared_data[idx1] = arr[blockOffset + idx1];
 
-    // LDS(groupshared)�� �����͸� ����(Write) ����, �� �����͸� �ٸ� �����尡 �б�(Read) ������ �ݵ�� ���
+    // LDS(groupshared) ͸ (Write) ,  ͸ ٸ  б(Read)   
     GroupMemoryBarrierWithGroupSync();
 
     // Full bitonic sort within the block (k=2..BLOCK_SIZE)

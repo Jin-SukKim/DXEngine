@@ -72,7 +72,7 @@ namespace DE {
 		ParticleSystem* CreateSystem(const std::wstring& path);
 		void DestroyInstance(ParticleSystem* system);
 
-		// EmitterID ε (Manager ó)
+		// EmitterID
 		void BindEmitterID(UINT globalSlotIndex);
 
 		// MeshConsts
@@ -112,7 +112,7 @@ namespace DE {
 	private:
 		std::unordered_map<std::wstring, std::unique_ptr<ParticleSystem>> m_prototypes;
 		std::vector<std::unique_ptr<ParticleSystem>> m_instances;
-		// [0] = Mesh RenderModule, [1] = Billboard RenderModule
+		// 0 = Mesh RenderModule, 1 = Billboard RenderModule
 		std::vector<ParticleSystem*> m_activeSystems;
 
 		std::unique_ptr<ParticleMemoryPool> m_memoryPool;
@@ -120,16 +120,16 @@ namespace DE {
 		bool m_needsDefragment = false;
 		bool m_needsSyncReadOffset = false;
 
-		// [Added] Frustum Culling
+		// Frustum Culling
 		Matrix m_view;
 		Matrix m_proj;
 		DirectX::BoundingFrustum m_cachedFrustum;
 		Vector3 m_cachedCameraPos;
 
-		// [Added] Priority-based eviction time tracking
+		// Priority-based eviction time tracking
 		float m_currentTime = 0.0f;
 
-		// [Added] Batch rendering
+		// Batch rendering
 		std::vector<BatchGroup> m_billboardBatches;
 		std::vector<BatchGroup> m_meshBatches;
 
@@ -138,7 +138,7 @@ namespace DE {
 		ConstantBuffer<BuildAliveConsts> m_buildAliveCB;
 
 		// GPU-driven sort resources
-		StructuredBuffer<GPUSortParams> m_gpuSortParams;    // 2 slots: [0]=fullRes, [1]=lowRes
+		StructuredBuffer<GPUSortParams> m_gpuSortParams;    // 2 slots: 0 = fullRes, 1 = lowRes
 		IndirectArgsBuffer<DispatchArgs> m_sortIndirectArgs; // GenKeys + sort steps + CopyBack
 		ConstantBuffer<PrepareSortConsts> m_prepareSortCB;
 		ConstantBuffer<SortGroupConsts> m_sortGroupCB;
@@ -152,7 +152,6 @@ namespace DE {
 		std::vector<BatchGroup> m_fullResBillboardBatches;
 		UINT m_fullResBillboardDescStartIdx = 0;
 		UINT m_billboardDescStartIdx = 0;
-
 	};
 
 }

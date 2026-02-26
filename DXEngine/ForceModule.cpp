@@ -5,7 +5,6 @@
 namespace DE {
 	void ForceModule::Initialize(ParticleInitContext& ctx)
 	{
-		// ��� �� �ʱ�ȭ (OnSpawn���� �̵�)
 		ForceConsts& consts = ctx.consts.force;
 		consts.velocity = velocity;
 		consts.speedRange = speedRange;

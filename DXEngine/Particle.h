@@ -125,7 +125,7 @@ namespace DE {
         UINT indexCount;
 
         UINT useSorting;
-        float animDuration;     // NEW: 0.0~1.0 (Animation duration as ratio of particle lifetime)
+        float animDuration;     // 0.0~1.0 (Animation duration as ratio of particle lifetime)
         float softDistance = 0.0f;  // Soft particle fade distance (0 = disabled)
         UINT frameBlending = 0;
        
@@ -140,7 +140,7 @@ namespace DE {
         UINT solidCircle = 0;
         float centerWhiteIntensity = 0.f;
         float softMaxDist = 0.0f;  // 0 = disabled (always apply soft particle)
-        float softNearDist = 0.0f;  // Near boundary for soft particle fade (0 = use 0.8×softMaxDist)
+        float softNearDist = 0.0f;  // Near boundary for soft particle fade (0 = use 0.8 x softMaxDist)
         UINT normalBillboard = 0;
     };
 
@@ -155,8 +155,8 @@ namespace DE {
 
     // Batch Rendering Structures
     struct BatchInfo {
-        UINT emitterCount;        // Batch �ϳ��� Emitter ����
-        UINT emitterListOffset;   // batch�� ���� emitter offset
+        UINT emitterCount;        // Batch ϳ Emitter 
+        UINT emitterListOffset;   // batch  emitter offset
         UINT instanceOffset;      // Global instance start for this batch
         UINT padding;
     };
@@ -165,8 +165,8 @@ namespace DE {
         UINT emitterCount;
         UINT emitterListOffset;
         UINT instanceOffset;
-        // batch�� �ϳ��� ���� ���
-        UINT indexCount;        // Mesh Rendering�� index ����
+        // batch ϳ  
+        UINT indexCount;        // Mesh Rendering index 
         UINT startIndexLocation;
         UINT baseVertexLocation;
         UINT isMesh;
@@ -206,12 +206,12 @@ namespace DE {
     };
 
     struct BatchRenderArgsConsts {
-        UINT numBatches;    // �� batch ����
+        UINT numBatches;    //  batch 
         Vector3 padding;
     };
 
     struct BuildAliveConsts {
-        UINT numFlatEmitters; // AliveIndices�� ���鶧 ����� Emitter ����
+        UINT numFlatEmitters;
         Vector3 padding;
     };
 }

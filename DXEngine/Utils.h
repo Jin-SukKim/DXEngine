@@ -5,12 +5,12 @@ namespace DE {
 	template <typename T_CONST>
 	class ConstantBuffer {
 	public:
-		// GPU�� Constant Buffer ����
+		// GPU Constant Buffer 
 		void Initialize() {
 			D3D11Utils::CreateConstantBuffer(GET_SINGLE(RenderBase)->GetDevice().Get(), m_cpu, m_gpu);
 		}
 
-		// CPU �����͸� GPU�� ����
+		// CPU ͸ GPU 
 		void Upload() {
 			D3D11Utils::UpdateBuffer(GET_SINGLE(RenderBase)->GetContext(), m_cpu, m_gpu);
 		}

@@ -360,7 +360,7 @@ namespace DE {
 
 		// t16 = particles (read), t17 = readAliveCount, t23 = readAliveIndices
 		ID3D11ShaderResourceView* srvs[] = {
-			nullptr,              // t16
+			nullptr,						   // t16
 			GetReadAliveCount().GetSRV(),      // t17
 			m_frameConsts.GetSRV(),            // t18
 			m_consts.GetSRV(),                 // t19
@@ -405,7 +405,7 @@ namespace DE {
 	{
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 		ID3D11ShaderResourceView* srvs[] = {
-			m_batchAliveIndices.GetSRV(),          // t26
+			m_batchAliveIndices.GetSRV(),     // t26
 			m_emitterWriteOffsets.GetSRV()    // t27
 		};
 		context->VSSetShaderResources(26, 2, srvs);
@@ -444,26 +444,24 @@ namespace DE {
 
 	void ParticleMemoryPool::UploadConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleConsts>& data)
 	{
-		if (emitterIDs.size() != data.size()) return; //  ġ
+		if (emitterIDs.size() != data.size()) return; 
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
 		for (size_t i = 0; i < emitterIDs.size(); ++i)
 		{
 			D3D11_BOX box;
-			// GPU   ġ (񿬼  ID )
 			box.left = emitterIDs[i] * sizeof(ParticleConsts);
 			box.right = static_cast<UINT>(box.left + sizeof(ParticleConsts));
 			box.top = 0; box.bottom = 1; box.front = 0; box.back = 1;
 
-			// ߿: CPU  ҽ ġ iŭ ̵Ѿ 
 			const void* pSrcData = data.data() + i;
 
 			context->UpdateSubresource(m_consts.GetBuffer(), 0, &box, pSrcData, 0, 0);
 		}
 	}
 
-	// FrameConsts ϰ 
+	// FrameConsts  
 	void ParticleMemoryPool::UpdateFrameConsts(const std::vector<UINT>& emitterIDs, const std::vector<ParticleFrameConsts>& data)
 	{
 		if (emitterIDs.size() != data.size()) return;
@@ -506,8 +504,8 @@ namespace DE {
 		context->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
 		ID3D11ShaderResourceView* srvs[] = {
 			nullptr,                              // t16
-			GetReadAliveCount().GetSRV(),          // t17
-			m_frameConsts.GetSRV(),                              // t18
+			GetReadAliveCount().GetSRV(),         // t17
+			m_frameConsts.GetSRV(),               // t18
 			nullptr,                              // t19
 			nullptr,                              // t20
 			m_emitterIDs.GetSRV()                 // t21
@@ -741,7 +739,7 @@ namespace DE {
 		// Upload emitter list
 		if (!emitterList.empty()) {
 			for (size_t i = 0; i < emitterList.size(); ++i) {
-				m_batchEmitterList.Get(i) = emitterList[i];
+				m_batchEmitterList.Get((UINT)i) = emitterList[i];
 			}
 			m_batchEmitterList.Upload(context.Get());
 		}
@@ -749,7 +747,7 @@ namespace DE {
 		// Upload descriptors
 		if (!descriptors.empty()) {
 			for (size_t i = 0; i < descriptors.size(); ++i) {
-				m_batchDescriptors.Get(i) = descriptors[i];
+				m_batchDescriptors.Get((UINT)i) = descriptors[i];
 			}
 			m_batchDescriptors.Upload(context.Get());
 		}

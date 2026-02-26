@@ -65,12 +65,12 @@ namespace DE {
 
 		void SetHotReloadInfo(const std::wstring& path, FileWatcher::CallbackID id);
 		
-		// Texture Bake   (Spawn )
+		// Texture Bake
 		void SetBakedSpawnPath(const std::string& path);
 		UINT LoadBakedSpawnData(std::vector<Vector3>& outBakedSpawnPos);
 		const std::string& GetBakedPath() const { return m_bakedPath; }
 
-		// յ SpawnPos 
+		// Spawn Pos
 		void SetSpawnPosInfo(UINT offset) { m_spawnPosPoolOffset = offset; }
 		UINT GetSpawnPosOffset() const { return m_spawnPosPoolOffset; }
 		

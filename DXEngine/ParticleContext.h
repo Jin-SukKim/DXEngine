@@ -12,9 +12,7 @@ class MaterialModule;
 class ParticleSystem;
 struct ArgsParam;
 
-//=============================================================================
-// ParticleInitContext - �ʱ�ȭ �� ���
-//=============================================================================
+// ParticleInitContext
 struct ParticleInitContext {
     ID3D11Device* device;
     ParticleConsts& consts;
@@ -32,7 +30,7 @@ struct ParticleContext {
     ID3D11DeviceContext* context;
 };
 
-// SimulationContext - SpawnPos ���� ����
+// SimulationContext - SpawnPos  
 struct SimulationContext : ParticleContext {
     float dt;
     ArgsParam* dispatchArgs;

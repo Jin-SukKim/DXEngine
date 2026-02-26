@@ -2,12 +2,12 @@ Texture2D g_texture0 : register(t0);
 SamplerState g_sampler : register(s0);
 
 cbuffer SamplingPSConstantData : register(b4) {
-    // Texture�� Pixel ���� (������ �ػ󵵿� ���� dx, dy���� �ٸ�)
+    // Texture Pixel  ( ػ󵵿  dx, dy ٸ)
     float dx; 
     float dy;
     float threadhold;
     float strength;
-    float4 options; // ���⼭ Option�� ������� ����
+    float4 options; // ⼭ Option  
 }
 
 struct SamplingPSInput {

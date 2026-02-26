@@ -15,7 +15,7 @@ StructuredBuffer<float3> meshNormals : register(t4);
 ConsumeStructuredBuffer<uint> deadIndices : register(u4);
 
 // --- [Robust Random Functions (Wang Hash)] ---
-// (���� �Լ��� �״�� ����)
+// ( Լ ״ )
 uint wang_hash(uint seed)
 {
     seed = (seed ^ 61) ^ (seed >> 16);
@@ -38,7 +38,7 @@ float rand_signed(inout uint state)
 }
 
 // --- [Spawn Functions] ---
-// (���� ���� �Լ��� BoxSpawn, SphereSpawn �� �״�� ����...)
+// (  Լ BoxSpawn, SphereSpawn  ״ ...)
 float3 BoxSpawn(inout uint rngState, float3 volume, float innerRatio)
 {
     float3 pos;
@@ -124,7 +124,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     if (dtID.x >= clampedSpawn)
         return;
     
-    // �õ� �ʱ�ȭ
+    // õ ʱȭ
     uint rngState = dtID.x * 1973 + uint(frameConsts[emitterID].time * 10000.0f);
     rngState = wang_hash(rngState);
 
@@ -141,7 +141,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
     else if (spawn.spawnShape == 4) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, 0, dtID.x, false);
     else if (spawn.spawnShape == 5) spawnPos = SpawnFromPositions(rngState, spawn.bakedCount, spawn.spawnStartIndex, dtID.x, true);
 
-    // ��ġ �� �ӵ� ���
+    // ġ  ӵ 
     Particle p;
     float3 localPos = spawnPos + spawn.localPos;
     // Surface spawn: lift particle slightly above mesh surface to prevent overlap
@@ -196,7 +196,7 @@ void main(uint3 dtID : SV_DispatchThreadID)
 
     particles[particleIdx] = p;
 
-    // AliveIndices�� �߰�
+    // AliveIndices ߰
     uint aliveSlot;
     InterlockedAdd(writeAliveCount[emitterID], 1, aliveSlot);
     // Defense-in-depth: aliveSlot이 maxParticles를 초과하면 다른 에미터 구획을 덮어쓰지 않도록 중단

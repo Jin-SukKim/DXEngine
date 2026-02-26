@@ -49,7 +49,6 @@
 namespace DE {
 	ParticleEditor::ParticleEditor() : Scene(), m_Lclick(m_lButton), m_Rclick(m_rButton)
 	{
-		// ... (���� ��� ��� �ڵ�� ����) ...
 		ParticleModuleFactory::Register<SpawnModule>("Spawn");
 		ParticleModuleFactory::Register<VisualModule>("Visual");
 		ParticleModuleFactory::Register<ForceModule>("Force");
@@ -62,7 +61,6 @@ namespace DE {
 		ClickEffectManager::Get().Initialize();
 		ClickEffectManager::Get().SetScene(this);
 		ground = AddObject<SquareActor>(L"Ground");
-		// ���� Spawner�� ��� ���ΰų� �����ص� �� (���⼱ ����)
 		m_spawner = AddObject<ParticleSpawner>(L"FireworkSpawner");
 		m_spawner->SetScene(this);
 		m_spawner->SetActorType<Firework>();
@@ -82,15 +80,12 @@ namespace DE {
 		//m_rose = AddObject<RoseEffect>(L"RoseOrbit");
 
 		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\Explosion\\Explosion.json");
-		//m_test1 = ParticleManager::Get().CreateSystem(L"Particles\\Effects\\OrbitModule\\OrbitTilted.json");
-		
-		// ── Realistic ────────────────────────────────────────────────────
+
 		m_rain = SpawnEffect<EffectActor>(
 			L"Rain",
 			L"Particles\\Effects\\Realistic\\Rain\\System_Rain.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── Spectacular ──────────────────────────────────────────────────
 		m_crystalShatter = SpawnEffect<EffectActor>(
 			L"CrystalShatter",
 			L"Particles\\Effects\\Spectacular\\CrystalShatter\\System_CrystalShatter.json",
@@ -101,19 +96,16 @@ namespace DE {
 			L"Particles\\Effects\\Spectacular\\GalaxySwirl\\System_Galaxy.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── UnrealQuality ────────────────────────────────────────────────
 		m_portalGateway = SpawnEffect<EffectActor>(
 			L"PortalGateway",
 			L"Particles\\Effects\\UnrealQuality\\PortalGateway\\System_PortalGateway.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── Explosion ────────────────────────────────────────────────────
 		m_explosion = SpawnEffect<EffectActor>(
 			L"Explosion",
 			L"Particles\\Effects\\Explosion\\Explosion.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── Combination ──────────────────────────────────────────────────
 		m_holySword = SpawnEffect<EffectActor>(
 			L"HolySword",
 			L"Particles\\Effects\\Combination\\HolySword\\System_HolySword.json",
@@ -124,19 +116,16 @@ namespace DE {
 			L"",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── Magic ────────────────────────────────────────────────────────
 		m_magicCast = SpawnEffect<EffectActor>(
 			L"MagicCast",
 			L"Particles\\Effects\\Magic\\System_MagicCast.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── ForceModule ──────────────────────────────────────────────────
 		m_curlNoiseFirefly = SpawnEffect<EffectActor>(
 			L"CurlNoiseFirefly",
 			L"Particles\\Effects\\ForceModule\\CurlNoise_Firefly.json",
 			Vector3(0.f, 0.f, 0.f));
 
-		// ── Misc / Custom ────────────────────────────────────────────────
 		m_fireEffect = SpawnEffect<EffectActor>(
 			L"FireEffect",
 			L"Particles\\FireEffect.json",
@@ -180,8 +169,7 @@ namespace DE {
 	}
 
 	ParticleEditor::~ParticleEditor()
-	{
-		// �Ҹ� �� ����ϰ� ����
+	{ 
 		if (m_test1) {
 			ParticleManager::Get().DestroyInstance(m_test1);
 			m_test1 = nullptr;
@@ -200,7 +188,7 @@ namespace DE {
 	{
 		Scene::Initialize();
 
-		// ── Effect 배치 위치 설정 ──────────────────────────────────────────
+		// Effect 배치 위치 설정
 		// 각 Effect를 일정 간격으로 배열하여 씬에서 한눈에 확인할 수 있도록 배치합니다.
 		// 필요에 따라 위치·간격을 조정하세요.
 
@@ -211,7 +199,7 @@ namespace DE {
 		struct EffectPlacement { EffectActor** actor; Vector3 pos; };
 		const EffectPlacement placements[] =
 		{
-			// ── Row 1 (Z = -8): Realistic → Combination ─────────────────────────────
+			// Row 1 (Z = -8)
 			{ &m_boxMesh,		   Vector3(-32.f, 0.f,  -8.f) },
 			{ &m_rain,             Vector3(-24.f, 0.f, -8.f) },
 			{ &m_crystalShatter,   Vector3(-16.f, 0.f, -8.f) },
@@ -220,7 +208,7 @@ namespace DE {
 			{ &m_explosion,        Vector3(  8.f, 0.f, -8.f) },
 			{ &m_holySword,        Vector3( 16.f, 0.f, -8.f) },
 			{ &m_swordClash,       Vector3( 24.f, 0.f, -8.f) },  // SwordBurst
-			// ── Row 2 (Z = +8): Magic → Misc ────────────────────────────────────────
+			// Row 2 (Z = +8)
 			{ &m_magicCast,        Vector3(-20.f, 0.f,  8.f) },
 			{ &m_curlNoiseFirefly, Vector3(-12.f, 0.f,  8.f) },
 			{ &m_fireEffect,       Vector3( -6.f, 0.f,  8.f) },
@@ -243,10 +231,6 @@ namespace DE {
 		if (auto* burst = dynamic_cast<SwordBurstEffect*>(m_swordClash))
 			burst->RepositionChildren();
 
-		//auto tr = m_spawner2->GetComponent<TransformComponent>();
-		//if (tr)
-		//	tr->SetPos(Vector3(25.f, 0.f, 0.f));
-		//m_smoke->SetPosOffset(Vector3(3.f, -2.5f, 0.f));
 		AppBase::GetInputManager().BindInputAction(m_lButton, InputState::Pressed, this, &ParticleEditor::ClickEvent);
 		AppBase::GetInputManager().BindInputAction(m_zButton, InputState::Pressed, this, &ParticleEditor::ClickDestroy);
 	}

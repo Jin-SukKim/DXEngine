@@ -1,6 +1,6 @@
 #pragma once
 #include "Scene.h"
-#include <vector> // �߰�
+#include <vector>
 
 namespace DE {
 
@@ -11,7 +11,7 @@ namespace DE {
 	class Firework;
 	class RoseEffect;
 	class TestActor;
-	class ParticleSystem; // ���� ���� Ȯ��
+	class ParticleSystem; 
 	class SmokeActor;
 	class FireEffect;
 

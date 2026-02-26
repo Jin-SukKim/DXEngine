@@ -36,12 +36,12 @@ uint NextPowerOf2(uint v) {
 [numthreads(1, 1, 1)]
 void main(uint3 dtID : SV_DispatchThreadID)
 {
-    // 1. Aggregate batch sort params
+    // 1) 파티클 수 집계 (기존엔 CPU가 Download 받아서 했던 일)
     uint totalParticleCount = 0;
     uint baseOffset = 0xFFFFFFFF;
 
     for (uint b = firstBatchIdx; b <= lastBatchIdx; ++b) {
-        BatchSortParam param = batchSortParams[b];
+        BatchSortParam param = batchSortParams[b]; // GPU 메모리에서 직접 읽기!
         if (param.particleCount > 0) {
             if (baseOffset == 0xFFFFFFFF)
                 baseOffset = param.baseOffset;
@@ -82,20 +82,21 @@ void main(uint3 dtID : SV_DispatchThreadID)
         return;
     }
 
-    // 2. Compute sort size (power of 2, at least BLOCK_SIZE)
+    // 2) sortSize 계산
     uint sortSize = max(NextPowerOf2(totalParticleCount), BLOCK_SIZE);
 
-    // 3. GenKeys dispatch args
+    // 3) GenKeys dispatch args (offset 0)
     dispatchArgs[0] = (sortSize + 1023) / 1024;
     dispatchArgs[1] = 1;
     dispatchArgs[2] = 1;
 
-    // 4. Sort step dispatch args
+    // 4) 각 sort step의 dispatch args (offset (i+1)*3)
     for (uint i = 0; i < numSortSteps; ++i) {
         SortStepGPU step = sortStepTable[i];
         uint offset = (i + 1) * 3;
 
         if (sortSize >= step.minSortSize) {
+            // 이 step 실행 필요 → group 수 계산
             uint groups = 0;
             if (step.phase == 1 || step.phase == 3) {
                 // Phase 1 (BlockSort) / Phase 3 (InnerSort): groups = sortSize / BLOCK_SIZE
@@ -108,19 +109,20 @@ void main(uint3 dtID : SV_DispatchThreadID)
             dispatchArgs[offset + 1] = 1;
             dispatchArgs[offset + 2] = 1;
         } else {
+            // no-op! DispatchIndirect가 아무것도 안 함
             dispatchArgs[offset]     = 0;
             dispatchArgs[offset + 1] = 1;
             dispatchArgs[offset + 2] = 1;
         }
     }
 
-    // 5. CopyBack dispatch args
+    // 5) CopyBack dispatch args (offset (numSortSteps+1)*3)
     uint copyOffset = (numSortSteps + 1) * 3;
     dispatchArgs[copyOffset]     = (totalParticleCount + 1023) / 1024;
     dispatchArgs[copyOffset + 1] = 1;
     dispatchArgs[copyOffset + 2] = 1;
 
-    // 6. Write GPU sort params
+    // 6) GPUSortParams 기록 (GenKeys/CopyBack 셰이더가 이걸 읽음)
     GPUSortParams sp;
     sp.sortBaseOffset = baseOffset;
     sp.sortParticleCount = totalParticleCount;

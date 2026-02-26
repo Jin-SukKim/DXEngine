@@ -25,11 +25,11 @@ namespace DE {
 		void Present();
 
 		void SetRender();
-		// HDR Pipeline�� �ʿ��� Buffer�� ����
+		// HDR Pipeline 
 		void CreateBuffers();
-		// �������ϰ� ���� ȭ�� ũ�⿡ �´� Viewport ����
+		// Viewport 
 		void SetViewport();
-		// DepthStencilView Buffer ����
+		// DepthStencilView Buffer 
 		void CreateDepthStencilBuffer();
 		void SetDepthOnlyRender();
 
@@ -47,14 +47,11 @@ namespace DE {
 
 		void CopyIndexForPicking(int mouseX, int mouseY, uint8_t* dest);
 
-		// Stencil Buffer�� 0���� �ʱ�ȭ
 		void ClearStencilBuffer();
-		// Depth Buffer�� 1.0���� �ʱ�ȭ
 		void ClearDepthBuffer();
 		Texture2D& GetDepthOnlyBuffer() { return m_depthOnlyBuffer; };
-		// Shadow Map�� viewport ����
+		// Shadow Map viewport 
 		void SetShadowViewport(float width, float height);
-		// �׸��ڸʵ鵵 ���� Texture�� ���Ŀ� �߰��ϰ� �ִ� ������ PS�� t15���� �߰�
 		void SetShadowSRVs();
 		void SetShadowMap(int idx);
 
@@ -66,7 +63,6 @@ namespace DE {
 		ID3D11ShaderResourceView* GetLowResSceneDepthSRV() const { return m_lowResDepthUAV.GetSRV(); }
 		ID3D11ShaderResourceView* GetFullResSceneDepthSRV() const { return m_depthOnlyBuffer.GetSRV(); }
 
-		// �̸� �����ص� Setting��
 		static GraphicsCommon graphicsCommon;
 		static ComputeCommon computeCommon;
 	protected:
@@ -78,26 +74,26 @@ namespace DE {
 		ComPtr<IDXGISwapChain> m_swapChain;
 		ComPtr<ID3D11RenderTargetView> m_backBufferRTV;
 
-		// �ﰢ�� ������ȭ -> float(MSAA) -> Resolved(No MSAA) -> Post-Process -> BackBuffer(���� Swap-Chain Present)
+		// ?? -> float(MSAA) -> Resolved(No MSAA) -> Post-Process -> BackBuffer( Swap-Chain Present)
 		Texture2D m_floatBuffer;
 		Texture2D m_resolvedBuffer;
 		//Texture2D m_postEffectsBuffer;
 		
 		// Picking
 		ComPtr<ID3D11Texture2D> m_indexTempTexture;
-		ComPtr<ID3D11Texture2D> m_indexTexture; // Picking�� ���� Index�� ������ Texture
+		ComPtr<ID3D11Texture2D> m_indexTexture; // Picking  Index  Texture
 		ComPtr<ID3D11RenderTargetView> m_indexRTV; 
-		ComPtr<ID3D11Texture2D> m_indexStagingTexture; // Picking�� �ϸ� ������ 1x1 pixel data
+		ComPtr<ID3D11Texture2D> m_indexStagingTexture; // Picking 1x1 pixel data
 
 		// TODO
 		//ComPtr<ID3D11Texture2D> m_tempTexture;
-		//ComPtr<ID3D11ShaderResourceView> m_backBufferSRV; // �ӽ÷� PostProcessing�� ���� SRV ����
+		//ComPtr<ID3D11ShaderResourceView> m_backBufferSRV; // PostProcessing  SRV 
 		Texture2D m_prevFrame;
 
-		// Swap-Buffer�� Back Buffer ������ �����ؼ� ����� �� ����
+		// Swap-Buffer Back Buffer
 		DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 32-bit color (Low Dynamic Range Image)
-		// [0.0, 1.0]���� ������ ������ �ƴ� float���� �� ���� ������ ���ؼ� �������� �� �� ����
-		//DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT; // 64-bit color (HDR Pipeline ���)
+		// [0.0, 1.0] float range
+		//DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT; // 64-bit color (HDR Pipeline )
 
 		D3D11_VIEWPORT m_screenViewport = D3D11_VIEWPORT();
 		bool m_drawAsWire = false;
@@ -108,23 +104,20 @@ namespace DE {
 		Texture2D m_depthOnlyBuffer;
 		ComPtr<ID3D11DepthStencilView> m_depthOnlyDSV;
 
-		// TODO: ���� ���� PostProcess�� ����Ϸ��� Vector�� ����ϴ°� ���� ������?
+		// TODO: PostProcess Vector로 여러 PostProcessing 적용
 		PostProcess* m_postProcess = nullptr;
 		GraphicsPSO m_postProcessPSO;
-		// TODO: �ӽ÷� ���⼭ Tone Mapping ���, Scene�̳� AppBase���� �ϴ°� ���ƺ���
+		// TODO: ToneMapping을 AppBase에서 마지막에 실행하는건?
 		std::shared_ptr<ToneMappingFilter> m_toneMapping;
 		Texture2D m_toneMapTexture;
 
-		// Shadow
-		// Shadow Map�� �ػ󵵰� �ٸ��� ȭ�� �ػ󵵿� ���� �ʿ䰡 ����
-		// ���� Texture�� ���簢���̱� ������ ratio�� 1:1�� �ػ󵵷� ����
+		// Shadow Map은 Texture를 1:1 Ratio를 사용
 		int m_shadowWidth = 1280;
 		int m_shadowHeight = 1280; 
-		// ������ �׸��� �� �ػ󵵿� ���缭 �׸��ڸʿ� viewport ����
-		Texture2D m_shadowArrayBuffer; // light ������ŭ shadow �� ����
+		Texture2D m_shadowArrayBuffer; // light의 Shadow
 		std::vector<ComPtr<ID3D11DepthStencilView>> m_shadowDSVs;
 
-		// Particle ��
+		// Particle 
 		ComPtr<ID3D11DepthStencilView> m_lowResDSV;
 		Texture2D m_lowResDepth;
 		Texture2D m_lowResDepthUAV;  // Temporary UAV texture for depth downsampling

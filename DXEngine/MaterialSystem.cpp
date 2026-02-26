@@ -12,8 +12,6 @@ namespace DE {
 		constant.roughnessFactor = 0.5f;
 		constant.metallicFactor = 0.5f;
 		constant.emissionFactor = Vector3(0.f);
-		// All use*Map flags are explicitly 0 (no textures)
-		// This ensures particles without Material module show glow circle
 
 		static std::vector<std::string> textures = { "Materials\\default.png" };
 		CreateMaterial("DefaultMaterial", constant, textures);
@@ -263,22 +261,18 @@ namespace DE {
 
 	std::string MaterialSystem::SimplifyTexturePath(const std::string& fullPath)
 	{
-		// "Models/DamagedHelmet/Default_albedo.jpg" �� "DamagedHelmet/Default_albedo.jpg"
-		// "Models/" �κ� ����
-		
+		// 경로 예시 : "Models/DamagedHelmet/Default_albedo.jpg"  "DamagedHelmet/Default_albedo.jpg"
 		size_t modelsPos = fullPath.find("Assets/");
 		if (modelsPos != std::string::npos) {
-			// "Models/" ���� �κ� ��ȯ
-			return fullPath.substr(modelsPos + 7); // "Models/" ���� = 7
+			return fullPath.substr(modelsPos + 7);
 		}
 		
-		// "Models\"�� ����� ��� (Windows ���)
+		// "Models\"   (Windows )
 		modelsPos = fullPath.find("Assets\\");
 		if (modelsPos != std::string::npos) {
 			return fullPath.substr(modelsPos + 7);
 		}
 		
-		// "Models/"�� ������ �״�� ��ȯ
 		return fullPath;
 	}
 
@@ -296,7 +290,6 @@ namespace DE {
 		data["Metallic"] = constants.metallicFactor;
 		data["Emission"] = { constants.emissionFactor.x, constants.emissionFactor.y, constants.emissionFactor.z };
 
-		// �ؽ�ó ��� ���� �� "Models/" �κ� ����
 		if (mat->albedoTexture >= 0) {
 			std::string path = TextureManager::Get().GetTexturePath(mat->albedoTexture);
 			data["Textures"]["albedo"] = SimplifyTexturePath(path);
@@ -326,14 +319,12 @@ namespace DE {
 			data["Textures"]["height"] = SimplifyTexturePath(path);
 		}
 
-		// ���ϸ��� name�� ������ �κ� ���
 		std::filesystem::path baseDir = "..\\Assets\\Materials\\";
 		std::filesystem::path materialPath(mat->name);
-		std::string filename = materialPath.stem().string();  // Ȯ���� ����
+		std::string filename = materialPath.stem().string();  // Ȯ 
 
 		std::filesystem::path fullPath = baseDir / (filename + ".json");
 
-		// ���丮�� ������ ����
 		if (!std::filesystem::exists(baseDir))
 			std::filesystem::create_directories(baseDir);
 
@@ -352,25 +343,21 @@ namespace DE {
 	{
 		std::ifstream file("..\\Assets\\" + jsonPath);
 		if (!file.is_open()) {
-			// �α�: ���� ���� ����
-			return 0; // Default ����
+			return 0; // Default 
 		}
 
 		json data;
 		file >> data;
 		file.close();
 
-		// 2. JSON ������ �Ľ�
 		std::string matName = data.value("Name", "Unnamed_Material");
 
-		// �̸����� �ߺ� Ȯ��
 		if (m_materialMap.find(matName) != m_materialMap.end())
 			return m_materialMap[matName];
 
 		MaterialConstants constants;
 		std::vector<std::string> texPaths(7); // Albedo, Normal, Metallic, Roughness, AO, Emissive, Height
 
-		// �� �ε�
 		if (data.contains("Albedo")) constants.albedoFactor = JsonToVec3(data["Albedo"]);
 		else if (data.contains("AlbedoFactor")) constants.albedoFactor = JsonToVec3(data["AlbedoFactor"]);
 
@@ -383,7 +370,6 @@ namespace DE {
 		if (data.contains("Emission")) constants.emissionFactor = JsonToVec3(data["Emission"]);
 		else if (data.contains("EmissionFactor")) constants.emissionFactor = JsonToVec3(data["EmissionFactor"]);
 
-		// �ؽ�ó ��� �ε�
 		if (data.contains("Textures")) {
 			auto& tex = data["Textures"];
 			if (tex.contains("albedo")) texPaths[0] = tex["albedo"];
@@ -395,7 +381,6 @@ namespace DE {
 			if (tex.contains("height")) texPaths[6] = tex["height"];
 		}
 
-		// 3. ���� ���� ȣ��
 		return CreateMaterial(matName, constants, texPaths);
 	}
 }

@@ -47,7 +47,7 @@ namespace DE {
         void SetActorType() {
             static_assert(std::is_base_of<EffectActor, T>::value, "T must derive from EffectActor");
 
-            // 지정된 타입 T(예: Firework)를 생성하여 반환하는 람다 등록
+            // 지정된 타입 T(예: Firework)를 생성하여 반환하는 Lambda 등록
             m_actorFactory = [](const std::wstring& name) -> std::unique_ptr<EffectActor> {
                 return std::make_unique<T>(name);
             };

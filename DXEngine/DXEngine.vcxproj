@@ -310,6 +310,7 @@
     <ClCompile Include="AppBase.cpp" />
     <ClCompile Include="BasicParticleScene.cpp" />
     <ClCompile Include="BillboardEffectsActor.cpp" />
+    <ClCompile Include="BillboardRenderModule.cpp" />
     <ClCompile Include="BoxMeshEffect.cpp" />
     <ClCompile Include="BreathEffect.cpp" />
     <ClCompile Include="ClickEffectManager.cpp" />
@@ -327,6 +328,7 @@
     <ClCompile Include="MaterialModule.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="MeshEffectsActor.cpp" />
+    <ClCompile Include="MeshRenderModule.cpp" />
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="NecroEffect.cpp" />
     <ClCompile Include="NightSkyEffect.cpp" />
@@ -717,6 +719,15 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="PrepareSortDispatchCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="RenderArgsUpdateCS.hlsl">

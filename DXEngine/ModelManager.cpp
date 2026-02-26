@@ -170,7 +170,7 @@ namespace DE {
 		}
 
 		// 오프셋 갱신
-		m_currentVertexOffset += newVertices.size();
-		m_currentIndexOffset += newIndices.size();
+		m_currentVertexOffset += (UINT)newVertices.size();
+		m_currentIndexOffset += (UINT)newIndices.size();
 	}
 }

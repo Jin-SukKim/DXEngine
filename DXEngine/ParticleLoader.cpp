@@ -14,14 +14,13 @@ void ParticleLoader::ApplyJsonTo<ParticleEmitter>(ParticleEmitter* target, const
 	target->ClearModules();
 	target->ClearSubEmitters();
 
-	// Spawn  bakedPath Ȯ (ParticleEmitter εϱ )
+	// Spawn  bakedPath
 	if (jsonData.contains("Spawn") && jsonData["Spawn"].contains("bakedPath")) {
 		std::string bakedPath = jsonData["Spawn"]["bakedPath"];
 		target->SetBakedSpawnPath(bakedPath);
 	}
 
 	for (auto& [key, value] : jsonData.items()) {
-		// Module  ƴ϶ Emitter  ؿ
 		if (key == "Name" || key == "Duration" || key == "CompletionDelay" || key == "SubEmitters" || key == "overdrawControl")
 			continue;
 

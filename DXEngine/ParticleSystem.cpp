@@ -67,7 +67,7 @@ namespace DE {
 		m_currentParticleOffset = 0;
 		m_maxEmitters = 0;
 		m_currentEmitterIndex = 0;
-		m_currentSpawnPosOffset = 0;  // յ offset
+		m_currentSpawnPosOffset = 0;
 		m_subEmitterPool.clear();
 		m_meshEmitters.clear();
 		m_billboardEmitters.clear();
@@ -159,7 +159,7 @@ namespace DE {
 		ParticleEmitter* emitter,
 		ParticleInitializer& initialData, std::set<std::wstring>& processedPaths)
 	{
-		//   emitter SubEmitter  (iterator)
+		// emitter SubEmitter  (iterator)
 		std::vector<SubEmitter> subEmittersCopy = emitter->GetSubEmitters();
 		
 		for (const auto& sub : subEmittersCopy) {
@@ -195,7 +195,7 @@ namespace DE {
 
 	void ParticleSystem::OnSpawn()
 	{
-		// Main Emitter OnSpawn (SubEmitter ̺Ʈ ߻  Ȱȭ)
+		// Main Emitter OnSpawn (SubEmitter)
 		for (auto& emitter : m_emitters) {
 			emitter->OnSpawn();
 		}
@@ -248,7 +248,7 @@ namespace DE {
 
 		auto context = GET_SINGLE(RenderBase)->GetContext();
 
-		// Ϸ SubEmitter 
+		// SubEmitter 
 		std::erase_if(m_activeMeshSubEmitters, [](auto* em) { return em->IsCompleted(); });
 		std::erase_if(m_activeBillboardSubEmitters, [](auto* em) { return em->IsCompleted(); });
 
@@ -261,7 +261,6 @@ namespace DE {
 
 	void ParticleSystem::ActivateSubEmitters()
 	{
-		//   SubEmitter Ȱȭ
 		for (auto& [emitter, pos] : m_pendingSubEmitters) {
 			emitter->Reset();
 			emitter->SetSpawnOffset(pos);

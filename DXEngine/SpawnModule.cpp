@@ -7,7 +7,6 @@ namespace DE {
 	{
 		ctx.frameConsts.maxParticles = m_maxParticles;
 		
-		// ��� �� �ʱ�ȭ (OnSpawn���� �̵�)
 		SpawnConsts& consts = ctx.consts.spawn;
 		consts.localPos = m_localPos;
 		consts.spawnVolume = m_spawnVolume;
@@ -16,7 +15,6 @@ namespace DE {
 		consts.lifeRange = m_lifeRange;
 		consts.simulationSpace = m_simulationSpace;
 
-		// Custom(5) ��常 ���� ó�� �ʿ�
 		if (m_spawnShape == 5) // Custom Mode
 		{
 			ctx.customPositions = m_customPositions;
@@ -31,14 +29,12 @@ namespace DE {
 	void SpawnModule::OnPreUpdate(const SimulationContext& ctx)
 	{
 		ParticleModule::OnPreUpdate(ctx);
-		// Burst ����: ���� �߻� �� �߰�, ������ Burst ������ �ִٸ�
 		if (m_burstCount > 0 && !m_burstFired)
 		{
 			m_spawnAccumulator += (float)m_burstCount;
-			m_burstFired = true; // �߻� �Ϸ� ó��
+			m_burstFired = true;
 		}
 
-		// Rate ���� (���� ����)
 		if (m_spawnRate > 0.0f)
 		{
 			m_spawnAccumulator += m_spawnRate * ctx.dt;
@@ -59,13 +55,8 @@ namespace DE {
 	{
 		ParticleModule::LateUpdate(ctx);
 		
-		// [����ȭ] ���� ��ȯ
 		if (m_totalSpawnCount == 0)
 			return;
-
-		// SpawnPosition ���۴� ParticleMemoryPool::BindCompute()���� �̹� ���ε���
-		// Shape 2,3,4,5 ��� ���յ� m_spawnPositions ���� ��� (t10 ����)
-		// ���� ���ε� ���ʿ�
 
 		// CSSetShader는 ParticleManager에서 루프 밖에서 한 번만 호출
 		UINT groupCount = (m_totalSpawnCount + 1023) >> 10;

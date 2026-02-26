@@ -315,13 +315,13 @@ namespace DE {
 		// D3D11_BLEND_OP_ADD Linear Interpolation  ϸ  
 		mirrorBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD; 
 
-		// Alpha    ( ü Ǿ ִ  ߿ϰ )
+		// Alpha    ( ü Ǿ ִ  ߿ )
 		mirrorBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 		mirrorBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 		mirrorBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 		// ʿϴٸ RGBA  ؼ  
-		// RGBA ؼ    ְ, ݴ  ϰ    
+		// RGBA ؼ    ְ, ݴ      
 		mirrorBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 		ThrowIfFailed(device->CreateBlendState(&mirrorBlendDesc, mirrorBS.GetAddressOf()));
