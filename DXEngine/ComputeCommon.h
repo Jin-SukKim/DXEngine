@@ -25,7 +25,7 @@ namespace DE {
 			ComputePSO buildAliveIndicesCS;   // BuildAliveIndicesCS.hlsl
 			ComputePSO copySortedIndicesCS;   // CopySortedIndicesCS.hlsl
 			ComputePSO generateSortKeysCS;   // GenerateSortKeysCS.hlsl
-		ComputePSO prepareSortDispatchCS; // PrepareSortDispatchCS.hlsl
+			ComputePSO prepareSortDispatchCS; // PrepareSortDispatchCS.hlsl
 		} particle;
 
 		// BitonicSort
